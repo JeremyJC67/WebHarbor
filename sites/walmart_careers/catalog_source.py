@@ -589,7 +589,7 @@ HOURLY_FAMILIES = [
             ("2110", "Full time", "WD,WE", 15.50, 26.00, 3, None),
             ("2050", "Part time", "WE,SE", 17.50, 28.00, 2, None),
             ("471", "Full time", "WD,SD", 15.00, 25.00, 4, None),
-            ("1236", "Part time", "WN,SN", 16.00, 26.00, 2, None),
+            ("1236", "Part time", "WN,SN", 16.00, 26.00, 2, {"job_id": "CP-1236-10888"}),
             ("5388", "Full time", "WN", 16.50, 27.00, 2, None),
         ],
     },
@@ -1149,6 +1149,9 @@ HOURLY_FAMILIES = [
             ("2073", "Intern", "WD,FX", 16.50, 20.50, 1, None),
             ("4137", "Intern", "WE,FX", 17.00, 21.00, 1, None),
             ("2503", "Intern", "WD,SD", 15.00, 19.00, 1, None),
+            ("2050", "Intern", "WD,FX", 16.25, 20.25, 1, None),
+            ("1179", "Intern", "WE,FX", 16.75, 20.75, 1, None),
+            ("3387", "Intern", "WD,SD", 15.50, 19.50, 1, None),
         ],
     },
     {
@@ -1172,6 +1175,8 @@ HOURLY_FAMILIES = [
         "placements": [
             ("6608", "Intern", "WD,FX", 18.00, 22.00, 1, None),
             ("6318", "Intern", "WE,FX", 16.50, 20.50, 1, None),
+            ("8259", "Intern", "WD,SD", 17.25, 21.25, 1, None),
+            ("6216", "Intern", "WE,FX", 17.75, 21.75, 1, None),
         ],
     },
 ]
@@ -1220,6 +1225,8 @@ SALARIED_FAMILIES = [
              {"job_id": "R-2463275"}),
             ("10101", "Full time", 132000, 264000, "Regular/Permanent",
              ("computer science, computer engineering, or related area", 5, 8, 3), None),
+            ("12200", "Full time", 128000, 246000, "Regular/Permanent",
+             ("computer science, electrical engineering, or related area", 6, 9, 3), None),
         ],
     },
     {
@@ -1249,6 +1256,8 @@ SALARIED_FAMILIES = [
              ("computer engineering, software engineering, or related area", 4, 7, 2), None),
             ("10101", "Full time", 96000, 192000, "Regular/Permanent",
              ("information systems, computer science, or related area", 2, 4, 1), None),
+            ("12200", "Full time", 105000, 195000, "Regular/Permanent",
+             ("embedded systems, computer engineering, or related area", 3, 6, 2), None),
         ],
     },
     {
@@ -1272,7 +1281,7 @@ SALARIED_FAMILIES = [
                      "software at scale.",
         "placements": [
             ("12200", "Full time", 90000, 180000, "Regular/Permanent",
-             ("computer science or related area", 2, 4, 3), None),
+             ("computer science or related area", 2, 4, 3), {"job_id": "R-2413636"}),
         ],
     },
     {
@@ -1295,11 +1304,13 @@ SALARIED_FAMILIES = [
                      "product teams.",
         "placements": [
             ("10101", "Full time", 110000, 220000, "Regular/Permanent",
-             ("business, analytics, engineering, or related area", 5, 7, 2), None),
+             ("business, analytics, engineering, or related area", 5, 7, 2), {"job_id": "R-2414279"}),
             ("11807", "Full time", 132000, 264000, "Regular/Permanent",
              ("computer science, business, or related area", 6, 9, 3), None),
             ("11003", "Full time", 90000, 180000, "Regular/Permanent",
              ("marketing, business, or related area", 4, 6, 1), None),
+            ("12200", "Full time", 118000, 225000, "Regular/Permanent",
+             ("electrical engineering, product design, or related area", 5, 8, 3), None),
         ],
     },
     {
@@ -1325,6 +1336,8 @@ SALARIED_FAMILIES = [
         "placements": [
             ("10101", "Full time", 130000, 260000, "Regular/Permanent",
              ("business, engineering, or related area", 8, 11, 4), None),
+            ("12200", "Full time", 125000, 245000, "Regular/Permanent",
+             ("electrical engineering, business, or related area", 7, 10, 4), None),
         ],
     },
     {
@@ -1354,6 +1367,8 @@ SALARIED_FAMILIES = [
              ("applied mathematics, statistics, or related area", 3, 5, 1), None),
             ("11500", "Full time", 100000, 175000, "Regular/Permanent",
              ("operations research, statistics, or related area", 3, 6, 2), None),
+            ("12200", "Full time", 112000, 205000, "Regular/Permanent",
+             ("data science, statistics, or related area", 4, 7, 2), None),
         ],
     },
     {
@@ -1379,6 +1394,8 @@ SALARIED_FAMILIES = [
              ("information technology, cybersecurity, or related area", 5, 8, 3), None),
             ("11807", "Full time", 140000, 280000, "Regular/Permanent",
              ("computer science, cybersecurity, or related area", 6, 9, 4), None),
+            ("12200", "Full time", 122000, 235000, "Regular/Permanent",
+             ("information assurance, computer science, or related area", 4, 7, 3), None),
         ],
     },
     {
@@ -1453,6 +1470,8 @@ SALARIED_FAMILIES = [
         "placements": [
             ("11807", "Full time", 150000, 275000, "Regular/Permanent",
              ("psychology, human-computer interaction, or related area", 7, 10, 4), None),
+            ("12200", "Full time", 138000, 255000, "Regular/Permanent",
+             ("cognitive science, design research, or related area", 6, 9, 3), None),
         ],
     },
     {
@@ -1535,6 +1554,8 @@ SALARIED_FAMILIES = [
              ("accounting, finance, or related area", 5, 7, 3), None),
             ("11500", "Full time", 90000, 180000, "Regular/Permanent",
              ("finance, economics, or related area", 4, 6, 2), None),
+            ("12200", "Full time", 98000, 190000, "Regular/Permanent",
+             ("corporate finance, accounting, or related area", 3, 5, 2), None),
         ],
     },
     {
@@ -1562,6 +1583,8 @@ SALARIED_FAMILIES = [
              ("accounting, business, or related area", 2, 5, 1), None),
             ("11500", "Full time", 72000, 134000, "Regular/Permanent",
              ("economics, finance, or related area", 3, 5, 2), None),
+            ("12200", "Full time", 71000, 132000, "Regular/Permanent",
+             ("finance, business analytics, or related area", 1, 3, 1), None),
         ],
     },
     {
@@ -1613,6 +1636,8 @@ SALARIED_FAMILIES = [
              ("human resources or related area", 3, 5, 2), None),
             ("11109", "Full time", 78000, 146000, "Regular/Permanent",
              ("business administration or related area", 2, 4, 1), None),
+            ("12200", "Full time", 82000, 152000, "Regular/Permanent",
+             ("organizational psychology, human resources, or related area", 4, 6, 2), None),
         ],
     },
     {
@@ -1662,6 +1687,8 @@ SALARIED_FAMILIES = [
              ("marketing, advertising, or related area", 6, 8, 3), None),
             ("11500", "Full time", 105000, 200000, "Regular/Permanent",
              ("communications, marketing, or related area", 5, 7, 2), None),
+            ("12200", "Full time", 102000, 196000, "Regular/Permanent",
+             ("brand management, marketing, or related area", 4, 6, 2), None),
         ],
     },
     {
@@ -1684,6 +1711,8 @@ SALARIED_FAMILIES = [
         "placements": [
             ("11109", "Full time", 65000, 120000, "Regular/Permanent",
              ("marketing or related area", 2, 4, 1), None),
+            ("12200", "Full time", 68000, 126000, "Regular/Permanent",
+             ("marketing, media studies, or related area", 3, 5, 2), None),
         ],
     },
     {
@@ -1808,6 +1837,8 @@ SALARIED_FAMILIES = [
              ("supply chain management or related area", 3, 5, 2), None),
             ("10101", "Full time", 86000, 166000, "Regular/Permanent",
              ("industrial engineering, logistics, or related area", 4, 6, 2), None),
+            ("12200", "Full time", 88000, 168000, "Regular/Permanent",
+             ("operations management, logistics, or related area", 2, 4, 1), None),
         ],
     },
     {
@@ -1830,6 +1861,8 @@ SALARIED_FAMILIES = [
         "placements": [
             ("11500", "Full time", 66000, 122000, "Regular/Permanent",
              ("business analytics, economics, or related area", 2, 4, 1), None),
+            ("12200", "Full time", 70000, 128000, "Regular/Permanent",
+             ("operations analytics, business, or related area", 3, 5, 2), None),
         ],
     },
     {
@@ -1857,6 +1890,8 @@ SALARIED_FAMILIES = [
              ("business, marketing, or supply chain", 2, 1, 2), None),
             ("10101", "Intern", 66000, 92000, "Intern (Fixed Term)",
              ("business administration or merchandising", 2, 1, 1), None),
+            ("11500", "Intern", 62000, 88000, "Intern (Fixed Term)",
+             ("business, merchandising, or analytics", 1, 2, 1), None),
         ],
     },
     {
@@ -1882,6 +1917,8 @@ SALARIED_FAMILIES = [
              ("computer science or computer engineering", 2, 1, 1), None),
             ("10101", "Intern", 72000, 98000, "Intern (Fixed Term)",
              ("computer science or information systems", 1, 2, 1), None),
+            ("11003", "Intern", 76000, 102000, "Intern (Fixed Term)",
+             ("software engineering or computer engineering", 3, 2, 1), None),
         ],
     },
     {
@@ -1905,6 +1942,8 @@ SALARIED_FAMILIES = [
         "placements": [
             ("10101", "Intern", 60000, 84000, "Intern (Fixed Term)",
              ("finance, accounting, or economics", 2, 1, 1), None),
+            ("11500", "Intern", 58000, 82000, "Intern (Fixed Term)",
+             ("accounting or business administration", 1, 2, 1), None),
         ],
     },
     {
@@ -1927,6 +1966,54 @@ SALARIED_FAMILIES = [
         "placements": [
             ("11003", "Intern", 70000, 96000, "Intern (Fixed Term)",
              ("statistics, data science, or economics", 2, 1, 1), None),
+            ("11807", "Intern", 74000, 100000, "Intern (Fixed Term)",
+             ("computer science, statistics, or mathematics", 1, 3, 1), None),
         ],
     },
+]
+
+
+# --------------------------------------------------------------------------- #
+# Hub copy for the four is_hub offices, keyed by store number:
+# (display name, blurb, image file). Seeded onto Store.hub_name / hub_blurb /
+# hub_image so the locations and career-area templates read it from the DB.
+# --------------------------------------------------------------------------- #
+HUB_COPY = {
+    "10101": (
+        "Northwest Arkansas",
+        "Northwest Arkansas offers trails, local eats, and the Crystal Bridges Museum - while our "
+        "12 new Home Office buildings reflect the company's story through thoughtful design.",
+        "loc-nwa.jpg",
+    ),
+    "11807": (
+        "Sunnyvale",
+        "A weekend hike through the mountains. An evening walk next to the ocean. A quick visit to a "
+        "museum. The best of both worlds - work and leisure - are waiting for you right here.",
+        "loc-sunnyvale.jpg",
+    ),
+    "11003": (
+        "Hoboken",
+        "Just across from Lower Manhattan, Hoboken is a walkable, character-filled town on the Hudson "
+        "with a truly unique charm.",
+        "loc-hoboken.jpg",
+    ),
+    "11500": (
+        "Dallas",
+        "Our Dallas office anchors merchandising, finance and supply chain teams in the middle of one "
+        "of the fastest-growing metros in the country.",
+        "loc-dc-metro.jpg",
+    ),
+}
+
+
+# --------------------------------------------------------------------------- #
+# Job ids surfaced as "Trending roles" on the home page, the hiring page and the
+# logged-out saved-roles page. Seeded onto Job.is_trending, which is what the
+# handlers query. These three placements pin their job_id in `extras` so a
+# catalog edit cannot silently point this list at a different posting.
+# --------------------------------------------------------------------------- #
+TRENDING_JOB_IDS = [
+    "R-2414279",
+    "R-2413636",
+    "CP-1236-10888",
 ]

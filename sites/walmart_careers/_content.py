@@ -15,15 +15,6 @@ MIRROR_REFERENCE_DATE = date(2026, 8, 31)
 SITE_NAME = "Walmart Careers"
 COPYRIGHT = "©2026 Walmart Inc."
 
-# Job ids surfaced as "Trending roles" on the home page, the hiring page and the
-# logged-out saved-roles page. None of them is the target of a benchmark task —
-# a trending card would otherwise hand an agent the target without a search.
-TRENDING_JOB_IDS = [
-    "R-2414279",
-    "R-2413636",
-    "CP-1236-10888",
-]
-
 HERO_HEADLINE_1 = "Cashiers wanted."
 HERO_HEADLINE_2 = "Next move, yours."
 SEARCH_PLACEHOLDER = "Search by team, department, keyword"
@@ -172,32 +163,6 @@ LOCATIONS_BLURB = (
     "Our hubs spark collaboration and innovation, so you're free to energize and push boundaries "
     "from the space that serves you best."
 )
-HUB_COPY = {
-    "10101": (
-        "Northwest Arkansas",
-        "Northwest Arkansas offers trails, local eats, and the Crystal Bridges Museum - while our "
-        "12 new Home Office buildings reflect the company's story through thoughtful design.",
-        "loc-nwa.jpg",
-    ),
-    "11807": (
-        "Sunnyvale",
-        "A weekend hike through the mountains. An evening walk next to the ocean. A quick visit to a "
-        "museum. The best of both worlds - work and leisure - are waiting for you right here.",
-        "loc-sunnyvale.jpg",
-    ),
-    "11003": (
-        "Hoboken",
-        "Just across from Lower Manhattan, Hoboken is a walkable, character-filled town on the Hudson "
-        "with a truly unique charm.",
-        "loc-hoboken.jpg",
-    ),
-    "11500": (
-        "Dallas",
-        "Our Dallas office anchors merchandising, finance and supply chain teams in the middle of one "
-        "of the fastest-growing metros in the country.",
-        "loc-dc-metro.jpg",
-    ),
-}
 LOCATIONS_CLOSING = (
     "Between making an impact at scale and our culture of promoting from within, from coders all the "
     "way to cashiers, Walmart is the best place to build a career, period."

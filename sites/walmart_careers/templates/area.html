@@ -62,13 +62,12 @@
     <h2>Our hubs</h2>
     <div class="hub-grid">
       {% for hub in hubs %}
-        {% set copy = content.HUB_COPY.get(hub.store_number) %}
-        {% if copy %}
+        {% if hub.hub_blurb %}
           <div class="hub-card">
-            <img src="{{ url_for('static', filename='images/' ~ copy[2]) }}" alt="{{ copy[0] }}">
+            <img src="{{ url_for('static', filename='images/' ~ hub.hub_image) }}" alt="{{ hub.hub_name }}">
             <div class="cap">
-              <h3>{{ copy[0] }}</h3>
-              <p>{{ copy[1] }}</p>
+              <h3>{{ hub.hub_name }}</h3>
+              <p>{{ hub.hub_blurb }}</p>
               <a class="btn btn-secondary btn-sm"
                  href="{{ url_for('results', loc=hub.city ~ ', ' ~ hub.state, radius=25) }}">See roles near {{ hub.city }}</a>
             </div>

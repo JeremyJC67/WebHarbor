@@ -136,6 +136,9 @@ class Store(db.Model):
     lng = db.Column(db.Float, nullable=False)
     is_hub = db.Column(db.Boolean, nullable=False, default=False)
     is_office = db.Column(db.Boolean, nullable=False, default=False)
+    hub_name = db.Column(db.String(80), nullable=True)
+    hub_blurb = db.Column(db.Text, nullable=True)
+    hub_image = db.Column(db.String(80), nullable=True)
 
     @property
     def banner_line(self) -> str:
@@ -162,6 +165,7 @@ class Job(db.Model):
     max_pay = db.Column(db.Numeric(10, 2), nullable=False)
     posted_date = db.Column(db.Date, nullable=False)
     sort_rank = db.Column(db.Integer, nullable=False, default=0)
+    is_trending = db.Column(db.Boolean, nullable=False, default=False)
     summary = db.Column(db.Text, nullable=False, default="")
     description = db.Column(db.Text, nullable=False, default="")
     additional_description_json = db.Column(db.Text, nullable=True)
@@ -333,7 +337,7 @@ def resolve_location(raw: str) -> dict | None:
     * ``{"kind": "state", "state": "PR", "label": "Puerto Rico", "store": <anchor>}``
       when the text names a whole state or territory — the result set is then
       every role in that state, with no radius applied.
-    * ``{"kind": "store", "store": <Store>, "label": "Cleveland, OH"}`` when the
+    * ``{"kind": "store", "store": <Store>, "label": "Rochester, NY"}`` when the
       text names a city, a "City, ST" pair or a ZIP — the radius then applies.
     """
     text = (raw or "").strip()
@@ -643,8 +647,7 @@ def pin_card_svg(store: Store, width: int = 490, height: int = 230) -> str:
 
 
 def trending_jobs() -> list[Job]:
-    jobs = [db.session.get(Job, jid) for jid in content.TRENDING_JOB_IDS]
-    return [j for j in jobs if j is not None]
+    return Job.query.filter_by(is_trending=True).order_by(Job.job_id).all()
 
 
 def related_jobs(job: Job, limit: int = 3) -> list[Job]:

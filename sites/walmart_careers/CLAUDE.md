@@ -8,12 +8,16 @@ alt-port test container maps it to **41019**.
 | file | role |
 |---|---|
 | `app.py` | models, routes, scored search, deterministic SVG maps, bootstrap |
-| `catalog_source.py` | the source catalog: areas, categories, 44 stores, 37 hourly + 29 salaried title families with explicit placements |
+| `catalog_source.py` | the source catalog: areas, categories, 44 stores, 37 hourly + 29 salaried title families with explicit placements, hub copy, trending job ids |
 | `seed_data.py` | turns the catalog into SQLite; `build_seed_database()` is the freezer |
-| `_content.py` | CMS-style prose, design constants, US/PR map outlines |
+| `_content.py` | static chrome strings only: headings, boilerplate prose, design constants, US/PR map outlines |
 | `templates/` | 19 Jinja2 templates + `_job_card.html` macro |
-| `scripts_dev/` | local-only helpers; gitignored and dockerignored |
-| `VERIFICATION.md` | what was verified, how, and what still needs human judgment |
+| `static/` | `css/`, `js/`, `icons/`, `fonts/` in git; `images/` HF-managed |
+| `scripts_dev/` | local-only helpers and build-time invariants; gitignored and dockerignored |
+
+Everything a handler renders about a job, a store or a hub comes from SQLAlchemy.
+`_content.py` holds no per-record content: hub name/blurb/image live on `Store`,
+and the trending flag lives on `Job.is_trending`.
 
 ## Rebuilding the seed DB
 
@@ -22,13 +26,16 @@ cd sites/walmart_careers
 PYTHONHASHSEED=0 python seed_data.py     # writes instance_seed/walmart_careers.db
 ```
 
-Run it twice and compare md5s — the build is byte-reproducible. `build_seed_database()`
-also runs `_assert_distractors()`, which fails the build if a catalog edit breaks a
-volume invariant (jobs per category/store/state/shift) or a task's near-miss set.
-`_assert_distractors()` never runs at import or at `/reset` time. It covers all 20
-tasks: `TASK_TARGETS` proves each task's locator (title + city, or title + store)
-resolves to exactly one posting, and each task block checks its result set has ≥6 rows
-with ≤50 % of them satisfying every constraint the task states.
+Run it twice and compare md5s — the build is byte-reproducible.
+
+`build_seed_database()` also runs the build-time invariant checks, which fail the
+build if a catalog edit breaks a volume invariant (jobs per category/store/state/
+shift) or a benchmark task's near-miss set. Those checks live in
+`scripts_dev/assert_distractors.py`, which the freezer loads by path *only if the
+file exists* — it is git-ignored and docker-ignored, so it never reaches the shipped
+tree, and a checkout without it builds the identical database and prints a note that
+the checks were skipped. Nothing in `seed_data.py` or `app.py` encodes what a task
+is looking for. The checks never run at import, bootstrap or `/reset` time.
 
 ## Determinism rules that must hold
 
@@ -48,8 +55,11 @@ python scripts_dev/robustness.py  <base_url>
 python scripts_dev/shots.py       <base_url> <out_dir>   # 1440px screenshots
 ```
 
-`walkthrough.py`, `leak_audit.py` and `robustness.py` hold the ground-truth answers,
-which is exactly why `scripts_dev/` is in both `.gitignore` and `.dockerignore`.
+`assert_distractors.py` is not run directly — the freezer imports it by path.
+
+`assert_distractors.py`, `walkthrough.py`, `leak_audit.py`, `robustness.py` and
+`VERIFICATION.md` hold the ground-truth answers, which is exactly why `scripts_dev/`
+is in both `.gitignore` and `.dockerignore`.
 
 ## Assets
 
