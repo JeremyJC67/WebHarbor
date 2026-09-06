@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ area.name }} careers | Walmart Careers{% endblock %}
+{% block content %}
+<div class="area-hero">
+  <img src="{{ url_for('static', filename='images/' ~ area.hero_image) }}" alt="{{ area.name }}">
+  <div class="overlay">
+    <div class="wrap">
+      <h1>{{ area.name }}</h1>
+      <p>{{ area.blurb }}</p>
+      {% if area.is_filterable %}
+        <a class="btn btn-spark" href="{{ url_for('results', area=area.slug) }}">See all open roles</a>
+      {% else %}
+        <a class="btn btn-spark" href="{{ url_for('results') }}">See all open roles</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if categories %}
+<section>
+  <div class="wrap">
+    <h2>Join our team</h2>
+    <div class="category-grid">
+      {% for category in categories %}
+        <a href="{{ url_for('results', area=area.slug, category=category.slug) }}">
+          <span>{{ category.name }}</span>
+          <span class="count">{{ counts[category.id] }} open</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% else %}
+<section>
+  <div class="wrap">
+    <div class="empty-panel">
+      <h2>Programs, not a job family</h2>
+      <p>{{ area.name }} hiring runs through every career area on this site. Browse open roles and filter
+         by the career area, brand, shift or location that fits you.</p>
+      <a class="btn" href="{{ url_for('results') }}">Browse all open roles</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Explore our benefits</h2>
+    <div class="benefit-list">
+      {% for name, blurb, icon in content.BENEFIT_ROWS %}
+        <div class="benefit-row">
+          <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="">
+          <div><b>{{ name }}</b><span>{{ blurb }}</span></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Our hubs</h2>
+    <div class="hub-grid">
+      {% for hub in hubs %}
+        {% set copy = content.HUB_COPY.get(hub.store_number) %}
+        {% if copy %}
+          <div class="hub-card">
+            <img src="{{ url_for('static', filename='images/' ~ copy[2]) }}" alt="{{ copy[0] }}">
+            <div class="cap">
+              <h3>{{ copy[0] }}</h3>
+              <p>{{ copy[1] }}</p>
+              <a class="btn btn-secondary btn-sm"
+                 href="{{ url_for('results', loc=hub.city ~ ', ' ~ hub.state, radius=25) }}">See roles near {{ hub.city }}</a>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <p style="margin-top:20px"><a class="btn btn-secondary" href="{{ url_for('resources_location') }}">See all hubs</a></p>
+  </div>
+</section>
+{% endblock %}

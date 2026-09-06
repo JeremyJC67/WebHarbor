@@ -1,0 +1,32 @@
+{% macro job_card(job, saved_ids) -%}
+<article class="job-card">
+  <img class="spark"
+       src="{{ url_for('static', filename='icons/' ~ ('sams-spark.svg' if job.brand == "Sam's Club" else 'spark-yellow-card.svg')) }}"
+       alt="{{ job.brand }}">
+  <div class="body">
+    <h3><a href="{{ url_for('job_detail', job_id=job.job_id) }}">{{ job.title }}</a></h3>
+    <div class="meta">
+      <div>{{ job.store.banner }} #{{ job.store.store_number }}</div>
+      <div>{{ job.store.city }}, {{ job.store.state }}</div>
+      <div>{{ job.store.zip }}</div>
+    </div>
+    <div class="pay">{{ job.shift_label }} &bull; {{ job.pay_range }}</div>
+    <div class="actions">
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('job_detail', job_id=job.job_id) }}">View role</a>
+      {% if job.job_id in saved_ids %}
+        <form method="post" action="{{ url_for('unsave_job', job_id=job.job_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <button type="submit" class="btn btn-secondary btn-sm">Saved &check;</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('save_job', job_id=job.job_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <button type="submit" class="btn btn-secondary btn-sm">Save role</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</article>
+{%- endmacro %}

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Careers at Walmart{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='icons/spark-yellow.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='icons/spark-yellow.svg') }}" alt="Walmart spark">
+      <span>Careers</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      {% for area in nav_areas if area.is_filterable %}
+        <a href="{{ url_for('career_area', slug=area.slug) }}">{{ area.name }}</a>
+      {% endfor %}
+      <a href="{{ url_for('resources_hiring') }}">Resources</a>
+      <a href="{{ url_for('career_area', slug='Military') }}">Military</a>
+    </nav>
+    <div class="header-search">
+      <form action="{{ url_for('results') }}" method="get" role="search">
+        <input type="text" name="q" value="{{ search_q }}"
+               placeholder="Search by team, department, keyword" aria-label="Search jobs">
+        <button type="submit" aria-label="Search">
+          <img src="{{ url_for('static', filename='icons/search_icon.png') }}" alt="">
+        </button>
+      </form>
+    </div>
+    <div class="user-menu">
+      <div class="user-links">
+        <a href="{{ url_for('saved_roles') }}">Saved roles</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('applications') }}">My applications</a>
+          <a href="{{ url_for('account') }}" title="{{ current_user.display_name }}">
+            <span class="avatar">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
+          </a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="linkish">Log out</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login/Signup</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="wrap">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h4>Careers</h4>
+        <ul>
+          {% for label, slug in content.FOOTER_CAREER_LINKS %}
+            <li><a href="{{ url_for('career_area', slug=slug) }}">{{ label }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4>Brands</h4>
+        <ul>
+          {% for brand in content.FOOTER_BRANDS %}
+            <li><a href="{{ url_for('results', brand=('Vizio' if brand == 'VIZIO' else brand)) }}">{{ brand }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="{{ url_for('resources_hiring') }}">How we hire</a></li>
+          <li><a href="{{ url_for('resources_location') }}">Office Locations</a></li>
+          <li><a href="{{ url_for('resources_terms') }}">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>About</h4>
+        <ul>
+          <li><a href="{{ url_for('career_area', slug='Military') }}">Military</a></li>
+          <li><a href="{{ url_for('results') }}">All open roles</a></li>
+          <li><a href="{{ url_for('saved_roles') }}">Candidate home</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="social">
+      {% for name, icon in content.FOOTER_SOCIAL %}
+        <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="{{ name }}" title="{{ name }}">
+      {% endfor %}
+    </div>
+    <p class="legal-text">{{ content.FOOTER_EEO }}</p>
+    <p class="legal-text">{{ content.FOOTER_BENEFITS_NOTE }}</p>
+    <div class="footer-bottom">
+      <span>{{ content.COPYRIGHT }}</span>
+      <a href="{{ url_for('resources_terms') }}">Terms &amp; Conditions</a>
+      <a href="{{ url_for('resources_terms') }}">Privacy Policy</a>
+      <a href="{{ url_for('resources_terms') }}">Notice At Collection</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

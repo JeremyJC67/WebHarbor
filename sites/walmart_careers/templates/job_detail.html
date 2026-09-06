@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% from "_job_card.html" import job_card %}
+{% block title %}{{ job.title }} in {{ job.store.city }}, {{ job.store.state }} | Walmart Careers{% endblock %}
+{% block content %}
+<div class="job-hero">
+  <div class="wrap">
+    <h1>{{ job.title }}</h1>
+    <div class="loc">{{ job.store.city }}, {{ job.store.state }}</div>
+    <div class="hero-actions">
+      <a class="btn btn-spark" href="{{ url_for('apply_contact', job_id=job.job_id) }}">Apply now</a>
+      {% if is_saved %}
+        <form method="post" action="{{ url_for('unsave_job', job_id=job.job_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('job_detail', job_id=job.job_id) }}">
+          <button type="submit" class="btn btn-secondary">Saved &check; &mdash; remove</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('save_job', job_id=job.job_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('job_detail', job_id=job.job_id) }}">
+          <button type="submit" class="btn btn-secondary">Save job</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="photos">
+    {% for image in job.hero_images %}
+      <img src="{{ url_for('static', filename='images/' ~ image) }}" alt="">
+    {% endfor %}
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="detail-layout">
+    <nav class="detail-nav" aria-label="On this page">
+      <ul>
+        <li><a href="#role-details">Role Details</a></li>
+        {% if job.population == 'hourly' %}
+          <li class="sub"><a href="#role-summary">Role summary</a></li>
+          <li class="sub"><a href="#what-youll-do">What you'll do</a></li>
+          <li class="sub"><a href="#what-youll-bring">What you'll bring</a></li>
+        {% else %}
+          <li class="sub"><a href="#role-summary">Position Summary</a></li>
+          <li class="sub"><a href="#what-youll-do">What you'll do</a></li>
+          <li class="sub"><a href="#minimum-qualifications">Minimum Qualifications</a></li>
+          <li class="sub"><a href="#preferred-qualifications">Preferred Qualifications</a></li>
+        {% endif %}
+        <li><a href="#benefits">Benefits</a></li>
+        <li><a href="#life-at-walmart">Life at Walmart</a></li>
+      </ul>
+    </nav>
+
+    <div class="detail-body" id="role-details">
+      <h2 id="role-summary">{{ 'Role summary' if job.population == 'hourly' else 'Position Summary...' }}</h2>
+      <p>{{ job.summary }}</p>
+
+      <h2 id="what-youll-do">What you'll do...</h2>
+      {% for paragraph in job.description.split('\n\n') %}
+        <p>{{ paragraph }}</p>
+      {% endfor %}
+
+      {% if job.population == 'hourly' %}
+        <h2 id="what-youll-bring">What you'll bring</h2>
+        <ul>
+          {% for bullet in job.additional_description %}<li>{{ bullet }}</li>{% endfor %}
+        </ul>
+        {% if job.hashtag %}<p class="hashtag">{{ job.hashtag }}</p>{% endif %}
+        <div class="legal">
+          {% for line in content.HOURLY_PAY_NOTICE %}<p>*{{ line }}</p>{% endfor %}
+        </div>
+      {% else %}
+        <h2 id="minimum-qualifications">Minimum Qualifications...</h2>
+        <p>{{ content.MIN_QUAL_PREAMBLE }}</p>
+        <ul>
+          {% for option in job.min_qualifications %}<li>{{ option }}</li>{% endfor %}
+        </ul>
+        <h2 id="preferred-qualifications">Preferred Qualifications...</h2>
+        <p>{{ content.PREF_QUAL_PREAMBLE }}</p>
+        <p>{{ job.preferred_qualifications }}</p>
+        <h2 id="primary-location">Primary Location...</h2>
+        <p>{{ job.store.street }}, {{ job.store.city }}, {{ job.store.state }} {{ job.store.zip }},
+           United States of America</p>
+      {% endif %}
+      <p class="legal">{{ content.DRUG_FREE_NOTICE }}</p>
+    </div>
+
+    <aside>
+      <div class="fact-card">
+        <h2>{{ job.title }}</h2>
+        {% if not job.store.is_office %}
+          <p><b>{{ job.store.banner }} #{{ job.store.store_number }}</b></p>
+        {% else %}
+          <p><b>{{ job.store.location_name }}</b></p>
+        {% endif %}
+        <address>
+          {{ job.store.street }}<br>
+          {{ job.store.city }}, {{ job.store.state }} {{ job.store.zip }}
+        </address>
+        {% if job.positions_available %}
+          <div class="positions">{{ job.positions_available }} open position{{ '' if job.positions_available == 1 else 's' }}</div>
+        {% endif %}
+        {% if job.population == 'hourly' %}
+          <div class="req-id">Shifts: {{ job.shifts|join(', ') }}</div>
+        {% endif %}
+        <div class="req-id">Requisition ID {{ job.job_id }}</div>
+        {{ map_svg|safe }}
+        <div class="chips">
+          <span class="chip">{{ job.pay_range }}{% if job.min_age_note %}*{% endif %}</span>
+          {% if job.population == 'salaried' %}
+            <span class="chip">{{ job.employment_type }}</span>
+            <span class="chip">{{ job.worker_type }}</span>
+            <span class="chip">Salaried</span>
+          {% else %}
+            <span class="chip">{{ job.employment_type }}</span>
+            <span class="chip">Hourly</span>
+            {% if job.shift_time %}<span class="chip">{{ job.shift_time }}</span>{% endif %}
+          {% endif %}
+        </div>
+        {% if job.min_age_note %}
+          <p class="footnote">* Must be at least 18 years old</p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+
+<section class="section-alt" id="benefits">
+  <div class="wrap">
+    <h2>Benefits you'll enjoy</h2>
+    <div class="benefit-tiles">
+      {% for title, kicker, body, icon in benefit_tiles %}
+        <div class="benefit-tile">
+          <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="">
+          <b>{{ title }}</b>
+          <em>{{ kicker }}</em>
+          <p>{{ body }}</p>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="benefit-list" style="margin-top:28px">
+      {% for name, blurb, icon in content.JOB_BENEFIT_ROWS %}
+        <div class="benefit-row">
+          <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="">
+          <div><b>{{ name }}</b><span>{{ blurb }}</span></div>
+        </div>
+      {% endfor %}
+    </div>
+    <p style="margin-top:20px"><a class="btn btn-secondary" href="{{ url_for('resources_hiring') }}">Learn more</a></p>
+  </div>
+</section>
+
+<section id="life-at-walmart">
+  <div class="wrap">
+    <h2>{{ content.LIFE_AT_WALMART_HEADING }}</h2>
+    <div class="bento">
+      <div class="card values">
+        {% for paragraph in content.LIFE_AT_WALMART %}<p>{{ paragraph }}</p>{% endfor %}
+      </div>
+      <div class="card"><img src="{{ url_for('static', filename='images/life-associates.jpg') }}" alt="Walmart associates"></div>
+    </div>
+    <div class="quote-band" style="margin-top:24px">{{ content.LIFE_AT_WALMART_QUOTE }}</div>
+  </div>
+</section>
+
+{% if related %}
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Related roles</h2>
+    <div class="job-grid">
+      {% for other in related %}{{ job_card(other, saved_ids) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

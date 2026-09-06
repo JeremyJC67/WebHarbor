@@ -11,6 +11,7 @@ sites/*/static/external_cache/
 # =============================================================
 # scrape pipeline intermediate; runtime data lives in instance_seed/*.db
 sites/*/scraped_data/
+/scraped_data/
 # rebuilt at every container boot from instance_seed/
 sites/*/instance/
 sites/*/venv/

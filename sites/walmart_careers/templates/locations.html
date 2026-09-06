@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Our locations | Walmart Careers{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1 style="font-size:44px;font-weight:400;margin:0 0 12px">{{ content.LOCATIONS_HEADING }}</h1>
+    <p style="max-width:720px;font-size:18px">{{ content.LOCATIONS_BLURB }}</p>
+  </div>
+</section>
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Hubs around the world</h2>
+    <div class="hub-grid">
+      {% for hub in hubs %}
+        {% set copy = content.HUB_COPY.get(hub.store_number) %}
+        <div class="hub-card">
+          <img src="{{ url_for('static', filename='images/' ~ (copy[2] if copy else 'loc-international.jpg')) }}"
+               alt="{{ copy[0] if copy else hub.city }}">
+          <div class="cap">
+            <h3>{{ copy[0] if copy else hub.city }}</h3>
+            <p>{{ copy[1] if copy else 'A Walmart hub location.' }}</p>
+            <p class="form-note">{{ hub.location_name }} &mdash; {{ hub.street }}, {{ hub.city }},
+               {{ hub.state }} {{ hub.zip }} &mdash; {{ counts[hub.id] }} open roles</p>
+            <a class="btn btn-secondary btn-sm"
+               href="{{ url_for('results', loc=hub.city ~ ', ' ~ hub.state, radius=25) }}">See roles near {{ hub.city }}</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <p style="margin-top:28px;max-width:760px">{{ content.LOCATIONS_CLOSING }}</p>
+  </div>
+</section>
+{% endblock %}

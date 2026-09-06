@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% from "_job_card.html" import job_card %}
+{% block title %}Careers at Walmart{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="wrap inner">
+    <h1><span>{{ content.HERO_HEADLINE_1 }}</span><span>{{ content.HERO_HEADLINE_2 }}</span></h1>
+    <form class="hero-search" action="{{ url_for('results') }}" method="get" role="search">
+      <input type="text" name="q" placeholder="{{ content.SEARCH_PLACEHOLDER }}" aria-label="Search open roles">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+  <img class="hero-photo" src="{{ url_for('static', filename='images/home-hero.jpg') }}" alt="Walmart associates at work">
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="carousel">
+      {% for name, role, cta, slug, image in content.CAROUSEL %}
+        <a href="{{ url_for('career_area', slug=slug) }}">
+          <img src="{{ url_for('static', filename='images/' ~ image) }}" alt="{{ name }}, {{ role }}">
+          <span class="cap">
+            <b>{{ name }}</b>
+            <em>{{ role }}</em>
+            <i>{{ cta }}</i>
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Trending roles</h2>
+    <div class="job-grid">
+      {% for job in trending %}{{ job_card(job, saved_ids) }}{% endfor %}
+    </div>
+    <p style="margin-top:24px"><a class="btn" href="{{ url_for('results') }}">See all open roles</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Grow your career here</h2>
+    <div class="ribbon">
+      {% for area in ribbon_areas %}
+        <a href="{{ url_for('career_area', slug=area.slug) }}">{{ area.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Guided by our values</h2>
+    <div class="bento">
+      <div class="card"><img src="{{ url_for('static', filename='images/home-values.jpg') }}" alt="Associates on the sales floor"></div>
+      <div class="card values">
+        <h3>People-led. Tech-powered.</h3>
+        <ul>
+          {% for name, blurb in content.VALUES %}
+            <li><b>{{ name }}</b> &mdash; {{ blurb }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Explore our Benefits</h2>
+    <div class="benefit-list">
+      {% for name, blurb, icon in content.BENEFIT_ROWS %}
+        <div class="benefit-row">
+          <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="">
+          <div><b>{{ name }}</b><span>{{ blurb }}</span></div>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="form-note">{{ content.BENEFIT_FOOTNOTE }}</p>
+  </div>
+</section>
+
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Here, every job is a step toward something greater</h2>
+    <div class="stat-grid">
+      {% for figure, caption in content.STAT_CARDS %}
+        <div class="stat-card"><b>{{ figure }}</b>{{ caption }}</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>See our associates in action</h2>
+    <div class="tile-grid">
+      {% for role, kicker, image in content.DAY_IN_THE_LIFE %}
+        <div class="tile">
+          <img src="{{ url_for('static', filename='images/' ~ image) }}" alt="{{ role }}">
+          <div class="cap"><em>{{ kicker }}</em><br><b>{{ role }}</b></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section-blue">
+  <div class="wrap">
+    <h2>Find the role that's a perfect fit</h2>
+    <form class="hero-search" action="{{ url_for('results') }}" method="get" role="search">
+      <input type="text" name="q" placeholder="{{ content.SEARCH_PLACEHOLDER }}" aria-label="Search open roles">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

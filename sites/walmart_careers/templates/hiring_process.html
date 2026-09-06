@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_job_card.html" import job_card %}
+{% block title %}How we hire | Walmart Careers{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1 style="font-size:44px;font-weight:400;margin:0 0 12px">{{ content.HIRING_HEADING }}</h1>
+    <p style="max-width:820px;font-size:18px">{{ content.HIRING_BLURB }}</p>
+  </div>
+</section>
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Explore something new</h2>
+    <div class="steps">
+      {% for title, blurb in content.HIRING_STEPS %}
+        <div class="step"><h3>{{ title }}</h3><p>{{ blurb }}</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<section>
+  <div class="wrap faq">
+    {% for heading, questions in content.HIRING_FAQ %}
+      <h2>{{ heading }}</h2>
+      {% for question, answer in questions %}
+        <details>
+          <summary>{{ question }}</summary>
+          <p>{{ answer }}</p>
+        </details>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</section>
+<section class="section-alt">
+  <div class="wrap">
+    <h2>Trending roles</h2>
+    <div class="job-grid">
+      {% for job in trending %}{{ job_card(job, saved_ids) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

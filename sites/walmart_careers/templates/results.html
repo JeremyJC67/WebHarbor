@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% from "_job_card.html" import job_card %}
+{% block title %}{{ total }} open roles{% if filters.q %} for "{{ filters.q }}"{% endif %} | Walmart Careers{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="results-layout">
+    <aside class="results-aside">
+      <div class="panel">
+        <h3>Roles near you</h3>
+        {{ map_svg|safe }}
+      </div>
+      <div class="panel">
+        <h3>Add your location</h3>
+        <form method="get" action="{{ url_for('results') }}" class="filter-panel">
+          {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+          {% for key in ['area','category','brand','shift','type','rate'] %}
+            {% for value in filters[key] %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+          {% endfor %}
+          <div class="field">
+            <label for="loc">City, state or ZIP</label>
+            <input type="text" id="loc" name="loc" value="{{ filters.loc }}" placeholder="Cleveland, OH">
+          </div>
+          <fieldset>
+            <legend>Radius</legend>
+            {% for radius in radius_values %}
+              <label><input type="radio" name="radius" value="{{ radius }}"
+                            {% if filters.radius == radius %}checked{% endif %}> Within {{ radius }} miles</label>
+            {% endfor %}
+          </fieldset>
+          <div class="filter-actions">
+            <button class="btn btn-sm" type="submit">Save location</button>
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('results') }}?{{ qs(filters, loc='', page=1) }}">Reset</a>
+          </div>
+        </form>
+        {% if location_failed %}
+          <p class="flash warning">We couldn't find that location.</p>
+        {% elif location_store %}
+          <p class="form-note">Showing roles within {{ filters.radius }} miles of
+            {{ location_store.city }}, {{ location_store.state }}.</p>
+        {% endif %}
+      </div>
+
+      <div class="panel">
+        <h3>Filters</h3>
+        <form method="get" action="{{ url_for('results') }}" class="filter-panel">
+          {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+          {% if filters.loc %}
+            <input type="hidden" name="loc" value="{{ filters.loc }}">
+            <input type="hidden" name="radius" value="{{ filters.radius }}">
+          {% endif %}
+          <fieldset>
+            <legend>Brand</legend>
+            {% for value in brand_values %}
+              <label><input type="checkbox" name="brand" value="{{ value }}"
+                            {% if value in filters.brand %}checked{% endif %}> {{ value }}</label>
+            {% endfor %}
+          </fieldset>
+          <fieldset>
+            <legend>Shift</legend>
+            {% for value in shift_values %}
+              <label><input type="checkbox" name="shift" value="{{ value }}"
+                            {% if value in filters.shift %}checked{% endif %}> {{ value }}</label>
+            {% endfor %}
+          </fieldset>
+          <fieldset>
+            <legend>Employment Type</legend>
+            {% for value in employment_type_values %}
+              <label><input type="checkbox" name="type" value="{{ value }}"
+                            {% if value in filters.type %}checked{% endif %}> {{ value }}</label>
+            {% endfor %}
+          </fieldset>
+          <fieldset>
+            <legend>Rate</legend>
+            {% for value in rate_values %}
+              <label><input type="checkbox" name="rate" value="{{ value }}"
+                            {% if value in filters.rate %}checked{% endif %}> {{ value }}</label>
+            {% endfor %}
+          </fieldset>
+          <fieldset>
+            <legend>Career Area</legend>
+            {% for area in areas %}
+              <label><input type="checkbox" name="area" value="{{ area.slug }}"
+                            {% if area.slug in filters.area %}checked{% endif %}> {{ area.name }}</label>
+              <details class="cat-group">
+                <summary>Categories in {{ area.name }}</summary>
+                {% for category in area.categories %}
+                  <label><input type="checkbox" name="category" value="{{ category.slug }}"
+                                {% if category.slug in filters.category %}checked{% endif %}> {{ category.name }}</label>
+                {% endfor %}
+              </details>
+            {% endfor %}
+          </fieldset>
+          <div class="filter-actions">
+            <button class="btn btn-sm" type="submit">Apply</button>
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('results') }}">Reset</a>
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <div>
+      <div class="tabs">
+        <a class="{% if filters.tab == 'jobs' %}active{% endif %}"
+           href="{{ url_for('results') }}?{{ qs(filters, tab='jobs') }}">Open roles</a>
+        <a class="{% if filters.tab == 'future' %}active{% endif %}"
+           href="{{ url_for('results') }}?{{ qs(filters, tab='future') }}">Future roles</a>
+        <a class="{% if filters.tab == 'content' %}active{% endif %}"
+           href="{{ url_for('results') }}?{{ qs(filters, tab='content') }}">Content</a>
+      </div>
+
+      {% if filters.tab == 'future' %}
+        <div class="empty-panel">
+          <h2>No future roles here</h2>
+          <p>{{ content.EMPTY_FUTURE_ROLES }}</p>
+          <a class="btn" href="{{ url_for('results') }}?{{ qs(filters, tab='jobs') }}">Back to open roles</a>
+        </div>
+      {% elif filters.tab == 'content' %}
+        <div class="empty-panel">
+          <h2>No content results</h2>
+          <p>{{ content.EMPTY_CONTENT_TAB }}</p>
+          <a class="btn" href="{{ url_for('results') }}?{{ qs(filters, tab='jobs') }}">Back to open roles</a>
+        </div>
+      {% else %}
+        <div class="results-head">
+          <h1>{{ "{:,}".format(total) }} open role{{ '' if total == 1 else 's' }}{% if filters.q %} for &ldquo;{{ filters.q }}&rdquo;{% endif %}</h1>
+        </div>
+        <div class="sort-row">
+          <span>Sort by:</span>
+          <a href="{{ url_for('results') }}?{{ qs(filters, sort='relevance', page=1) }}"
+             {% if filters.sort == 'relevance' %}aria-current="true"{% endif %}>
+            <b>{% if filters.sort == 'relevance' %}&#9679;{% else %}&#9675;{% endif %}</b> Relevance</a>
+          <a href="{{ url_for('results') }}?{{ qs(filters, sort='most_recent', page=1) }}"
+             {% if filters.sort == 'most_recent' %}aria-current="true"{% endif %}>
+            <b>{% if filters.sort == 'most_recent' %}&#9679;{% else %}&#9675;{% endif %}</b> Most recent</a>
+        </div>
+
+        {% if jobs %}
+          <div class="job-grid">
+            {% for job in jobs %}{{ job_card(job, saved_ids) }}{% endfor %}
+          </div>
+          {% if pages > 1 %}
+            <nav class="pagination" aria-label="Pagination">
+              {% if page > 1 %}
+                <a href="{{ url_for('results') }}?{{ qs(filters, page=page-1) }}">Prev</a>
+              {% endif %}
+              {% for n in range(1, pages + 1) %}
+                {% if n == page %}
+                  <span class="current" aria-current="page">{{ n }}</span>
+                {% elif n <= 3 or n > pages - 2 or (n >= page - 1 and n <= page + 1) %}
+                  <a href="{{ url_for('results') }}?{{ qs(filters, page=n) }}"
+                     aria-label="Show me page number {{ n }}">{{ n }}</a>
+                {% elif n == 4 or n == pages - 2 %}
+                  <span>&hellip;</span>
+                {% endif %}
+              {% endfor %}
+              {% if page < pages %}
+                <a href="{{ url_for('results') }}?{{ qs(filters, page=page+1) }}">Next</a>
+              {% endif %}
+            </nav>
+          {% endif %}
+        {% else %}
+          <div class="empty-panel">
+            <h2>No roles matched</h2>
+            <p>Try a different keyword, widen your location radius, or clear a filter.</p>
+            <a class="btn" href="{{ url_for('results') }}">Reset all filters</a>
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
