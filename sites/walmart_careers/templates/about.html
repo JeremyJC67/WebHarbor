@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}About Us | Walmart Careers{% endblock %}
+{% block content %}
+<section class="section-blue">
+  <div class="wrap">
+    <h1 style="font-size:44px;font-weight:400;margin:0 0 16px">{{ content.ABOUT_HEADING }}</h1>
+    <p style="max-width:760px;font-size:19px;margin:0">{{ content.ABOUT_BLURB }}</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="category-grid">
+      {% for heading, body in content.ABOUT_SECTIONS %}
+        <div class="stat-card">
+          <h3>{{ heading }}</h3>
+          <p style="margin:0">{{ body }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section-alt">
+  <div class="wrap">
+    <h2>{{ content.LIFE_AT_WALMART_HEADING }}</h2>
+    <div class="bento">
+      <div class="card values">
+        {% for paragraph in content.LIFE_AT_WALMART %}<p>{{ paragraph }}</p>{% endfor %}
+        <ul>
+          {% for title, blurb in content.VALUES %}<li><b>{{ title }}</b> — {{ blurb }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="card">
+        <img src="{{ url_for('static', filename='images/life-associates.jpg') }}" alt="Walmart associates">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Explore our career areas</h2>
+    <div class="ribbon">
+      {% for area in areas %}<a href="{{ area.nav_url }}">{{ area.name }}</a>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

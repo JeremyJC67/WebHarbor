@@ -102,6 +102,14 @@ class Area(db.Model):
     def url(self) -> str:
         return url_for("career_area", slug=self.slug)
 
+    @property
+    def nav_url(self) -> str:
+        """Where the "Career areas" menu points: the area page when there is one,
+        otherwise straight to that area's open roles."""
+        if self.has_index_page:
+            return url_for("career_area", slug=self.slug)
+        return url_for("results", area=self.slug)
+
 
 class Category(db.Model):
     __tablename__ = "categories"
@@ -317,31 +325,60 @@ def safe_next(raw: str | None) -> str | None:
     return raw
 
 
-def resolve_location(raw: str) -> Store | None:
-    """Resolve free text against seeded stores: 'City, ST', 'City', 'ST' or a ZIP prefix."""
+def resolve_location(raw: str) -> dict | None:
+    """Resolve free text typed into the location box.
+
+    Returns ``None`` when nothing matches, otherwise a scope dict:
+
+    * ``{"kind": "state", "state": "PR", "label": "Puerto Rico", "store": <anchor>}``
+      when the text names a whole state or territory — the result set is then
+      every role in that state, with no radius applied.
+    * ``{"kind": "store", "store": <Store>, "label": "Cleveland, OH"}`` when the
+      text names a city, a "City, ST" pair or a ZIP — the radius then applies.
+    """
     text = (raw or "").strip()
     if not text:
         return None
     stores = Store.query.order_by(Store.store_number).all()
+
+    def state_scope(code: str) -> dict | None:
+        anchor = next((s for s in stores if s.state == code), None)
+        if anchor is None:
+            return None
+        return {
+            "kind": "state",
+            "state": code,
+            "label": content.STATE_NAMES.get(code, code),
+            "store": anchor,
+        }
+
+    # Whole-state searches: "PR", "Puerto Rico", "Ohio".
+    upper = text.upper()
+    if len(upper) == 2 and upper in content.STATE_NAMES:
+        scope = state_scope(upper)
+        if scope:
+            return scope
+    code = content.STATE_CODES_BY_NAME.get(text.lower())
+    if code:
+        scope = state_scope(code)
+        if scope:
+            return scope
+
     digits = re.sub(r"[^0-9]", "", text)
     if len(digits) >= 5:
         for store in stores:
             if store.zip.replace("-", "").startswith(digits[:5]):
-                return store
+                return {"kind": "store", "store": store, "label": store.city_state}
     parts = [p.strip() for p in text.split(",") if p.strip()]
     city = parts[0].lower() if parts else ""
     state = parts[1].upper()[:2] if len(parts) > 1 else ""
     if state:
         for store in stores:
             if store.city.lower() == city and store.state == state:
-                return store
+                return {"kind": "store", "store": store, "label": store.city_state}
     for store in stores:
         if store.city.lower() == city:
-            return store
-    if len(text) == 2:
-        for store in stores:
-            if store.state == text.upper():
-                return store
+            return {"kind": "store", "store": store, "label": store.city_state}
     return None
 
 
@@ -441,14 +478,14 @@ def score_job(job: Job, tokens: list[str]) -> float:
     return score
 
 
-def search_jobs(filters: dict) -> tuple[list[Job], Store | None, bool]:
-    """Return (ordered jobs, resolved location store, location_failed)."""
+def search_jobs(filters: dict) -> tuple[list[Job], dict | None, bool]:
+    """Return (ordered jobs, resolved location scope, location_failed)."""
     jobs = Job.query.order_by(Job.job_id).all()
-    location_store = None
+    location = None
     location_failed = False
     if filters["loc"]:
-        location_store = resolve_location(filters["loc"])
-        location_failed = location_store is None
+        location = resolve_location(filters["loc"])
+        location_failed = location is None
 
     if filters["brand"]:
         jobs = [j for j in jobs if j.brand in filters["brand"]]
@@ -473,12 +510,16 @@ def search_jobs(filters: dict) -> tuple[list[Job], Store | None, bool]:
             j for j in jobs
             if j.category and (j.category.slug.lower() in wanted_cats or j.category.name.lower() in wanted_cats)
         ]
-    if location_store is not None:
-        radius = filters["radius"]
-        jobs = [
-            j for j in jobs
-            if haversine_miles(location_store.lat, location_store.lng, j.store.lat, j.store.lng) <= radius
-        ]
+    if location is not None:
+        if location["kind"] == "state":
+            jobs = [j for j in jobs if j.store.state == location["state"]]
+        else:
+            anchor = location["store"]
+            radius = filters["radius"]
+            jobs = [
+                j for j in jobs
+                if haversine_miles(anchor.lat, anchor.lng, j.store.lat, j.store.lng) <= radius
+            ]
 
     tokens = tokenize(filters["q"])
     if tokens:
@@ -494,18 +535,25 @@ def search_jobs(filters: dict) -> tuple[list[Job], Store | None, bool]:
             jobs.sort(key=lambda j: (-j.posted_date.toordinal(), j.sort_rank))
         else:
             jobs.sort(key=lambda j: (j.sort_rank, j.job_id))
-    return jobs, location_store, location_failed
+    return jobs, location, location_failed
 
 
-def cluster_map_svg(jobs: list[Job], width: int = 520, height: int = 380) -> str:
-    """Deterministic server-rendered cluster map (no third-party map tiles)."""
+def cluster_map_svg(jobs: list[Job], width: int = 520, height: int = 620) -> str:
+    """Deterministic server-rendered cluster map (no third-party map tiles).
+
+    Equirectangular with a cos(mean latitude) correction so the outline keeps a
+    believable shape, then centred vertically in the panel.
+    """
     lon_min, lon_max = -125.0, -65.0
     lat_min, lat_max = 17.0, 50.0
     pad = 12
+    scale = (width - 2 * pad) / (lon_max - lon_min)
+    lat_scale = scale / math.cos(math.radians((lat_min + lat_max) / 2))
+    y_offset = (height - (lat_max - lat_min) * lat_scale) / 2
 
     def project(lat: float, lng: float) -> tuple[float, float]:
-        x = pad + (lng - lon_min) / (lon_max - lon_min) * (width - 2 * pad)
-        y = pad + (lat_max - lat) / (lat_max - lat_min) * (height - 2 * pad)
+        x = pad + (lng - lon_min) * scale
+        y = y_offset + (lat_max - lat) * lat_scale
         return round(x, 1), round(y, 1)
 
     def path_for(points: list[tuple[float, float]]) -> str:
@@ -530,9 +578,9 @@ def cluster_map_svg(jobs: list[Job], width: int = 520, height: int = 380) -> str
         f'<svg class="cluster-map" viewBox="0 0 {width} {height}" width="100%" '
         f'role="img" aria-label="Map of open roles by location" '
         f'xmlns="http://www.w3.org/2000/svg">',
-        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#E9F1FE"/>',
-        f'<path d="{path_for(content.US_OUTLINE)}" fill="#FFFFFF" stroke="#C8D6EA" stroke-width="1.2"/>',
-        f'<path d="{path_for(content.PR_OUTLINE)}" fill="#FFFFFF" stroke="#C8D6EA" stroke-width="1.2"/>',
+        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#9CD9EA"/>',
+        f'<path d="{path_for(content.US_OUTLINE)}" fill="#D8EFD3" stroke="#B7CFB1" stroke-width="1.2"/>',
+        f'<path d="{path_for(content.PR_OUTLINE)}" fill="#D8EFD3" stroke="#B7CFB1" stroke-width="1.2"/>',
     ]
     for x, y, radius, count, label in bubbles:
         parts.append(
@@ -550,24 +598,48 @@ def cluster_map_svg(jobs: list[Job], width: int = 520, height: int = 380) -> str
     return "".join(parts)
 
 
-def pin_card_svg(store: Store, width: int = 300, height: int = 170) -> str:
-    """Small deterministic SVG pin card used on the job detail page."""
-    return (
+def pin_card_svg(store: Store, width: int = 490, height: int = 230) -> str:
+    """Small deterministic SVG map card used beside the address on the detail page.
+
+    Stands in for the Google Maps thumbnail on the live page: same palette, a road
+    grid seeded from the store's own coordinates, and a pin over the location.
+    """
+    seed = int(abs(store.lat * 1000) + abs(store.lng * 1000)) % 97
+    vx = 40 + (seed % 7) * 22
+    vy = 60 + (seed % 5) * 18
+    parts = [
         f'<svg class="pin-card" viewBox="0 0 {width} {height}" width="100%" '
-        f'role="img" aria-label="Location pin for {store.city}, {store.state}" '
-        f'xmlns="http://www.w3.org/2000/svg">'
-        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#E9F1FE"/>'
-        f'<path d="M0 118 L70 96 L150 122 L228 92 L{width} 110 L{width} {height} L0 {height} Z" fill="#D7E6FA"/>'
-        f'<path d="M0 62 L86 44 L162 70 L246 40 L{width} 58 L{width} 118 L228 92 L150 122 L70 96 L0 118 Z" fill="#F2F7FE"/>'
-        f'<g transform="translate({width / 2 - 14} 48)">'
-        f'<path d="M14 0 C6 0 0 6.4 0 14.3 C0 25 14 44 14 44 S28 25 28 14.3 C28 6.4 22 0 14 0 Z" fill="#0053E2"/>'
-        f'<circle cx="14" cy="14" r="5.5" fill="#FFC220"/>'
+        f'role="img" aria-label="Map of {store.city}, {store.state}" '
+        f'xmlns="http://www.w3.org/2000/svg">',
+        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#D8EFD3"/>',
+        # water
+        f'<path d="M0 {vy} C {width * 0.25} {vy - 26}, {width * 0.45} {vy + 34}, '
+        f'{width} {vy - 12} L {width} {vy + 22} C {width * 0.45} {vy + 62}, '
+        f'{width * 0.25} {vy + 4}, 0 {vy + 28} Z" fill="#AEDBF2"/>',
+        # roads
+        f'<path d="M{vx} 0 L{vx - 18} {height}" stroke="#FFFFFF" stroke-width="9" fill="none"/>',
+        f'<path d="M{vx + 150} 0 L{vx + 176} {height}" stroke="#FFFFFF" stroke-width="6" fill="none"/>',
+        f'<path d="M0 {height * 0.72} L{width} {height * 0.62}" stroke="#FFFFFF" stroke-width="7" fill="none"/>',
+        f'<path d="M0 {height * 0.28} L{width} {height * 0.34}" stroke="#F3D28C" stroke-width="5" fill="none"/>',
+    ]
+    px, py = width / 2, height / 2 - 18
+    parts.append(
+        f'<g transform="translate({px - 13} {py - 30})">'
+        f'<path d="M13 0 C5.8 0 0 5.9 0 13.2 C0 23 13 40 13 40 S26 23 26 13.2 C26 5.9 20.2 0 13 0 Z" '
+        f'fill="#0053E2"/>'
+        f'<circle cx="13" cy="13" r="5" fill="#FFC220"/>'
         f'</g>'
-        f'<text x="{width / 2}" y="118" text-anchor="middle" font-size="13" fill="#001E60" '
-        f'font-weight="700">{store.city}, {store.state}</text>'
-        f'<text x="{width / 2}" y="136" text-anchor="middle" font-size="11" fill="#515357">{store.zip}</text>'
-        f'</svg>'
     )
+    parts.append(
+        f'<text x="{px + 22}" y="{py - 4}" font-size="13" fill="#001E60" font-weight="700">'
+        f'{store.city}</text>'
+    )
+    parts.append(
+        f'<text x="{width - 8}" y="{height - 7}" text-anchor="end" font-size="9" fill="#4A5A6A">'
+        f'Map data ©2026 Walmart Careers mirror</text>'
+    )
+    parts.append("</svg>")
+    return "".join(parts)
 
 
 def trending_jobs() -> list[Job]:
@@ -591,6 +663,7 @@ def related_jobs(job: Job, limit: int = 3) -> list[Job]:
             Job.query.filter(
                 Job.area_id == job.area_id,
                 Job.job_id != job.job_id,
+                Job.store_id != job.store_id,
                 ~Job.job_id.in_([r.job_id for r in rows]),
             )
             .order_by(Job.sort_rank, Job.job_id)
@@ -612,13 +685,13 @@ def saved_job_ids() -> set[str]:
 
 @app.context_processor
 def inject_globals():
-    areas = (
-        Area.query.filter_by(has_index_page=True)
-        .order_by(Area.display_order)
-        .all()
-    )
     return {
-        "nav_areas": areas,
+        # the six career areas listed in the header "Career areas" menu
+        "nav_areas": (
+            Area.query.filter_by(is_filterable=True)
+            .order_by(Area.display_order)
+            .all()
+        ),
         "content": content,
         "current_year": content.MIRROR_REFERENCE_DATE.year,
         "search_q": (request.args.get("q") or request.args.get("searchQuery") or ""),
@@ -644,10 +717,45 @@ def index():
     )
 
 
+FACET_KEYS = ("area", "category", "brand", "shift", "type", "rate")
+
+
+def active_filter_count(filters: dict) -> int:
+    """How many facet selections are active — the number on the Filters button."""
+    return sum(len(filters[key]) for key in FACET_KEYS)
+
+
+def active_filter_chips(filters: dict) -> list[dict]:
+    """One removable chip per active selection, so the current filter state stays
+    readable without leaving the Filters popover hanging open over the results."""
+    names = {a.slug: a.name for a in Area.query.all()}
+    names.update({c.slug: c.name for c in Category.query.all()})
+    chips: list[dict] = []
+    for key in FACET_KEYS:
+        for value in filters[key]:
+            remaining = [v for v in filters[key] if v != value]
+            chips.append(
+                {
+                    "label": names.get(value, value),
+                    "remove": url_for("results")
+                    + "?"
+                    + filters_query(filters, page=1, **{key: remaining}),
+                }
+            )
+    if filters["loc"]:
+        chips.append(
+            {
+                "label": f"{filters['loc']} · within {filters['radius']} miles",
+                "remove": url_for("results") + "?" + filters_query(filters, loc="", page=1),
+            }
+        )
+    return chips
+
+
 @app.route("/results")
 def results():
     filters = current_filters()
-    jobs, location_store, location_failed = search_jobs(filters)
+    jobs, location, location_failed = search_jobs(filters)
     total = len(jobs)
     pages = max(1, math.ceil(total / PAGE_SIZE))
     page = min(filters["page"], pages)
@@ -669,11 +777,13 @@ def results():
         employment_type_values=EMPLOYMENT_TYPE_VALUES,
         rate_values=RATE_VALUES,
         radius_values=RADIUS_VALUES,
-        location_store=location_store,
+        location=location,
         location_failed=location_failed,
         map_svg=cluster_map_svg(jobs),
         saved_ids=saved_job_ids(),
         qs=filters_query,
+        filter_count=active_filter_count(filters),
+        filter_chips=active_filter_chips(filters),
     )
 
 
@@ -849,6 +959,14 @@ def resources_hiring():
 @app.route("/resources/terms-and-conditions")
 def resources_terms():
     return render_template("terms.html")
+
+
+@app.route("/about-us")
+def about_us():
+    return render_template(
+        "about.html",
+        areas=Area.query.filter_by(is_filterable=True).order_by(Area.display_order).all(),
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])

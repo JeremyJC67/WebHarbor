@@ -15,11 +15,13 @@ MIRROR_REFERENCE_DATE = date(2026, 8, 31)
 SITE_NAME = "Walmart Careers"
 COPYRIGHT = "©2026 Walmart Inc."
 
-# Job ids surfaced as "Trending roles" on the home page and the hiring page.
+# Job ids surfaced as "Trending roles" on the home page, the hiring page and the
+# logged-out saved-roles page. None of them is the target of a benchmark task —
+# a trending card would otherwise hand an agent the target without a search.
 TRENDING_JOB_IDS = [
-    "R-2463275",
-    "R-2451180",
-    "CP-9046-11101",
+    "R-2414279",
+    "R-2413636",
+    "CP-1236-10888",
 ]
 
 HERO_HEADLINE_1 = "Cashiers wanted."
@@ -355,3 +357,70 @@ US_OUTLINE = [
 PR_OUTLINE = [
     (-67.3, 18.5), (-66.4, 18.5), (-65.6, 18.4), (-65.6, 17.9), (-66.6, 17.9), (-67.3, 18.1),
 ]
+
+
+# --------------------------------------------------------------------------- #
+# Header navigation. The dropdown groups mirror the live top bar:
+# Career areas | Brands | Resources | About Us | Military.
+# --------------------------------------------------------------------------- #
+# (label, brand filter value) for the Brands dropdown.
+NAV_BRANDS = [
+    ("Walmart", "Walmart"),
+    ("Sam's Club", "Sam's Club"),
+    ("VIZIO", "Vizio"),
+]
+# (label, endpoint) for the Resources dropdown.
+NAV_RESOURCES = [
+    ("How we hire", "resources_hiring"),
+    ("Office Locations", "resources_location"),
+    ("Terms & Conditions", "resources_terms"),
+]
+
+ABOUT_HEADING = "About Us"
+ABOUT_BLURB = (
+    "Walmart is a people-led, tech-powered omnichannel retailer. Around the world our associates "
+    "serve customers in stores, clubs, distribution centers and online, and every one of those jobs "
+    "is a step toward something greater."
+)
+ABOUT_SECTIONS = [
+    (
+        "Our purpose",
+        "We save people money so they can live better. That purpose has guided every decision since "
+        "Sam Walton opened the first store in Rogers, Arkansas, and it still shapes how we hire, how "
+        "we promote, and how we invest in the communities we serve.",
+    ),
+    (
+        "How we work",
+        "We are people-led and tech-powered. Associates in stores, clubs, supply chain and the home "
+        "office work with the same tools and the same data, so a good idea can start anywhere and "
+        "reach millions of customers quickly.",
+    ),
+    (
+        "Where you can grow",
+        "About three quarters of our salaried store managers began as hourly associates. Live Better U "
+        "pays for tuition, books and fees, and Walmart Academy runs skills training in every market we "
+        "operate in.",
+    ),
+]
+
+# --------------------------------------------------------------------------- #
+# US state / territory names, used to resolve a plain state in the location box
+# ("PR", "Puerto Rico", "Ohio") into a state-wide result set.
+# --------------------------------------------------------------------------- #
+STATE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DC": "District of Columbia",
+    "DE": "Delaware", "FL": "Florida", "GA": "Georgia", "HI": "Hawaii",
+    "IA": "Iowa", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana",
+    "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "MA": "Massachusetts",
+    "MD": "Maryland", "ME": "Maine", "MI": "Michigan", "MN": "Minnesota",
+    "MO": "Missouri", "MS": "Mississippi", "MT": "Montana", "NC": "North Carolina",
+    "ND": "North Dakota", "NE": "Nebraska", "NH": "New Hampshire", "NJ": "New Jersey",
+    "NM": "New Mexico", "NV": "Nevada", "NY": "New York", "OH": "Ohio",
+    "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico",
+    "RI": "Rhode Island", "SC": "South Carolina", "SD": "South Dakota", "TN": "Tennessee",
+    "TX": "Texas", "UT": "Utah", "VA": "Virginia", "VI": "U.S. Virgin Islands",
+    "VT": "Vermont", "WA": "Washington", "WI": "Wisconsin", "WV": "West Virginia",
+    "WY": "Wyoming",
+}
+STATE_CODES_BY_NAME = {name.lower(): code for code, name in sorted(STATE_NAMES.items())}

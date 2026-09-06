@@ -7,10 +7,23 @@
     <h1><span>{{ content.HERO_HEADLINE_1 }}</span><span>{{ content.HERO_HEADLINE_2 }}</span></h1>
     <form class="hero-search" action="{{ url_for('results') }}" method="get" role="search">
       <input type="text" name="q" placeholder="{{ content.SEARCH_PLACEHOLDER }}" aria-label="Search open roles">
-      <button type="submit">Search</button>
+      <button type="submit" aria-label="Search">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M15.2 15.2 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M18.4 3.2l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z" fill="currentColor"/>
+        </svg>
+      </button>
     </form>
   </div>
-  <img class="hero-photo" src="{{ url_for('static', filename='images/home-hero.jpg') }}" alt="Walmart associates at work">
+  <div class="hero-strip">
+    <img src="{{ url_for('static', filename='images/area-corporate.jpg') }}" alt="Associates in a home office space">
+    <div class="hero-strip-mid">
+      <img src="{{ url_for('static', filename='images/home-hero.jpg') }}" alt="Walmart associates at work">
+      <a class="pill hero-pill" href="{{ url_for('career_area', slug='stores-and-clubs') }}">Stores &amp; Clubs Careers <span>+</span></a>
+    </div>
+    <img src="{{ url_for('static', filename='images/area-supply-chain.jpg') }}" alt="Associates in a distribution center">
+  </div>
 </div>
 
 <section>
@@ -30,10 +43,10 @@
   </div>
 </section>
 
-<section class="section-alt">
+<section>
   <div class="wrap">
     <h2>Trending roles</h2>
-    <div class="job-grid">
+    <div class="job-grid three-col">
       {% for job in trending %}{{ job_card(job, saved_ids) }}{% endfor %}
     </div>
     <p style="margin-top:24px"><a class="btn" href="{{ url_for('results') }}">See all open roles</a></p>

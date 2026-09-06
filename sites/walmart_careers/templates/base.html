@@ -11,43 +11,81 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="{{ url_for('index') }}">
-      <img src="{{ url_for('static', filename='icons/spark-yellow.svg') }}" alt="Walmart spark">
-      <span>Careers</span>
+    <a class="brand" href="{{ url_for('index') }}" aria-label="Walmart Careers home">
+      <img src="{{ url_for('static', filename='icons/home-logo.svg') }}" alt="Walmart Careers">
     </a>
     <nav class="main-nav" aria-label="Primary">
-      {% for area in nav_areas if area.is_filterable %}
-        <a href="{{ url_for('career_area', slug=area.slug) }}">{{ area.name }}</a>
-      {% endfor %}
-      <a href="{{ url_for('resources_hiring') }}">Resources</a>
-      <a href="{{ url_for('career_area', slug='Military') }}">Military</a>
+      <details class="nav-menu">
+        <summary>Career areas</summary>
+        <div class="nav-pop">
+          {% for area in nav_areas %}
+            <a href="{{ area.nav_url }}">{{ area.name }}</a>
+          {% endfor %}
+        </div>
+      </details>
+      <details class="nav-menu">
+        <summary>Brands</summary>
+        <div class="nav-pop">
+          {% for label, value in content.NAV_BRANDS %}
+            <a href="{{ url_for('results', brand=value) }}">{{ label }}</a>
+          {% endfor %}
+        </div>
+      </details>
+      <details class="nav-menu">
+        <summary>Resources</summary>
+        <div class="nav-pop">
+          {% for label, endpoint in content.NAV_RESOURCES %}
+            <a href="{{ url_for(endpoint) }}">{{ label }}</a>
+          {% endfor %}
+        </div>
+      </details>
+      <a class="nav-link" href="{{ url_for('about_us') }}">About Us</a>
+      <a class="nav-link" href="{{ url_for('career_area', slug='Military') }}">Military</a>
     </nav>
     <div class="header-search">
       <form action="{{ url_for('results') }}" method="get" role="search">
         <input type="text" name="q" value="{{ search_q }}"
-               placeholder="Search by team, department, keyword" aria-label="Search jobs">
+               placeholder="{{ content.SEARCH_PLACEHOLDER }}" aria-label="Search jobs">
         <button type="submit" aria-label="Search">
-          <img src="{{ url_for('static', filename='icons/search_icon.png') }}" alt="">
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M15.2 15.2 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18.4 3.2l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z" fill="currentColor"/>
+          </svg>
         </button>
       </form>
     </div>
-    <div class="user-menu">
-      <div class="user-links">
-        <a href="{{ url_for('saved_roles') }}">Saved roles</a>
+    <details class="user-menu">
+      <summary aria-label="Account menu" title="Account menu">
         {% if current_user.is_authenticated %}
+          <span class="avatar">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
+        {% else %}
+          <svg class="user-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M4.5 20c0-4.1 3.4-6.5 7.5-6.5s7.5 2.4 7.5 6.5"
+                  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        {% endif %}
+      </summary>
+      <div class="nav-pop user-pop">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('account') }}"><b>My account</b></a>
+          <a href="{{ url_for('saved_roles') }}">Saved roles</a>
           <a href="{{ url_for('applications') }}">My applications</a>
-          <a href="{{ url_for('account') }}" title="{{ current_user.display_name }}">
-            <span class="avatar">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
-          </a>
+          <hr>
           <form method="post" action="{{ url_for('logout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="linkish">Log out</button>
           </form>
         {% else %}
+          <a href="{{ url_for('account') }}"><b>My account</b></a>
+          <a href="{{ url_for('saved_roles') }}">Saved roles</a>
+          <hr>
           <a href="{{ url_for('login') }}">Login/Signup</a>
         {% endif %}
+        <span class="lang">EN</span>
       </div>
-    </div>
+    </details>
   </div>
 </header>
 
@@ -78,22 +116,23 @@
       <div>
         <h4>Brands</h4>
         <ul>
-          {% for brand in content.FOOTER_BRANDS %}
-            <li><a href="{{ url_for('results', brand=('Vizio' if brand == 'VIZIO' else brand)) }}">{{ brand }}</a></li>
+          {% for label, value in content.NAV_BRANDS %}
+            <li><a href="{{ url_for('results', brand=value) }}">{{ label }}</a></li>
           {% endfor %}
         </ul>
       </div>
       <div>
         <h4>Resources</h4>
         <ul>
-          <li><a href="{{ url_for('resources_hiring') }}">How we hire</a></li>
-          <li><a href="{{ url_for('resources_location') }}">Office Locations</a></li>
-          <li><a href="{{ url_for('resources_terms') }}">Terms &amp; Conditions</a></li>
+          {% for label, endpoint in content.NAV_RESOURCES %}
+            <li><a href="{{ url_for(endpoint) }}">{{ label }}</a></li>
+          {% endfor %}
         </ul>
       </div>
       <div>
         <h4>About</h4>
         <ul>
+          <li><a href="{{ url_for('about_us') }}">About Us</a></li>
           <li><a href="{{ url_for('career_area', slug='Military') }}">Military</a></li>
           <li><a href="{{ url_for('results') }}">All open roles</a></li>
           <li><a href="{{ url_for('saved_roles') }}">Candidate home</a></li>
