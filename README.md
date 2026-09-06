@@ -43,10 +43,10 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40016:40000-40016 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40017:40000-40017 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40016` to explore 17 local mirrors of webvoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, and IKEA`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40017` to explore 18 local mirrors of webvoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, and Walmart Careers`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
