@@ -270,9 +270,9 @@ Fixed in this run:
   the `Open roles` tab only; `Add your location` is a link that opens a Location
   popover; `Filters` is a button that opens the facet panel; `Sort by: Relevance` is a
   dropdown. The permanently expanded sidebar panels are gone — the left column is the
-  map only. Cards are population-aware: salaried cards show title / `City, ST zip` /
-  `shift • $x - $y/yr`; hourly cards add the `banner #store` line above the city. Both
-  buttons are styled as the live outlined `Select +` pill.
+  map only. Cards are population-aware: a salaried card shows title / `City, ST` /
+  `$x - $y/yr` only; an hourly card adds the `banner #store` line, the ZIP and the
+  shift label. Both buttons are styled as the live outlined `Select +` pill.
 - **Job detail**: two layouts branched on `job.population`, both matching their
   reference screenshot — the three-photo masthead with the identity card (solid
   ld-blue for salaried, blue-over-navy for hourly), the left `Role Details` rail
@@ -300,21 +300,16 @@ Remaining differences from `scraped_data/reference/*.png`:
    mirror exposes more facets at once (Brand, Shift, Employment Type + Rate, Career
    Area with nested categories); a single column would need scrolling to reach the
    career areas that tasks 5, 7, 18 and 19 depend on.
-5. **The salaried card keeps the ZIP and the shift prefix** (`Sunnyvale, CA 94089-4731`
-   / `Multiple shifts • $143,000 - $286,000/yr`). The run instruction said "title /
-   City, ST / pay only", but `reference/home.png`'s trending cards show the ZIP and the
-   shift prefix on salaried cards, so the reference was followed. The banner line — the
-   part that genuinely differs between populations — is dropped for offices.
-6. **The salaried detail page keeps the three-photo masthead.** The run instruction
+5. **The salaried detail page keeps the three-photo masthead.** The run instruction
    described the salaried layout as "no hero photos", but `reference/job_detail_corp.png`
    shows the same three-photo masthead as the hourly page (with corporate photography
    rather than store photography), so the reference was followed. The two layouts still
    branch on `job.population` for the identity-card colour, the left rail's sub-items,
    the open-positions pill and the chip set.
-7. **`About Us` links to a local `/about-us` page** assembled from the existing CMS
+6. **`About Us` links to a local `/about-us` page** assembled from the existing CMS
    constants. The live nav item points at an off-domain corporate site, which is out of
    scope for an offline mirror.
-8. Minor typography drift: the mirror uses the harvested `EverydaySansUI` variable
+7. Minor typography drift: the mirror uses the harvested `EverydaySansUI` variable
    font, so line breaks inside long body paragraphs differ slightly from the reference
    captures.
 
@@ -346,13 +341,14 @@ the two `SITES` lists. Nothing else hard-codes the port; the dev-only scripts un
    reset each). See §3 — the reviewer's verifiers should match the `applications` row,
    not assume a unique string. Flagged rather than changed because the brief fixed the
    numbering scheme.
-2. **Two run-instruction deviations, both resolved in favour of the reference
-   screenshots**: salaried cards keep ZIP + shift prefix, and the salaried detail page
-   keeps its three-photo masthead (§7 items 5 and 6). Say the word and both flip to the
-   literal instruction.
-3. **Task 2's `upstream_url`** points at `…/jobs/CP-9046-11101`, a real posting URL of
-   the right page type, but the same posting task 14 references. Harmless (the field is
-   documentation of the upstream page shape) but a reviewer may prefer a distinct URL.
+2. **One run-instruction deviation remains**: the salaried detail page keeps its
+   three-photo masthead (§7 item 5), because `reference/job_detail_corp.png` shows one.
+   See item 7 below for why upstream can look either way. The salaried result card has
+   since been reverted to title / City, ST / pay only.
+3. **Every `upstream_url` is now distinct.** Task 2 previously duplicated task 14's
+   posting URL; it now points at `…/jobs/CP-9054-11013`, the real upstream Freight
+   Handler posting at store #9054 in Porterville, CA (harvested in
+   `scraped_data/recon_raw/results_gql_full.json`).
 4. **Location search accepts a whole state or territory** ("Puerto Rico", "PR", "Ohio")
    and then ignores the radius. The live site only geocodes cities/ZIPs. This was added
    so task 16 has a reliable route to every Puerto Rico posting; the radius route
@@ -365,6 +361,11 @@ the two `SITES` lists. Nothing else hard-codes the port; the dev-only scripts un
    task 0 target is not rank 1 for `q=optician`. That shifts the seeded requisition IDs
    for the four Optician postings (the target is now `CP-5991-11240`). Any verifier
    drafted against an earlier build of this DB must be re-derived from the frozen seed.
-7. **The mirror's `instance_seed/walmart_careers.db` is HF-managed and gitignored.**
+7. **Upstream serves two salaried detail templates** — the three-photo masthead
+   captured in `reference/job_detail_corp.png` and a Workday-style variant with a white
+   sticky bar and no masthead. The mirror implements the masthead variant for both
+   populations, branching on `job.population` for the identity-card colour, the left
+   rail's sub-items, the open-positions pill and the chip set.
+8. **The mirror's `instance_seed/walmart_careers.db` is HF-managed and gitignored.**
    `faf1c03a780314e71f9586d5b0edc69b` is the md5 to expect in the assets PR; the code
    PR alone will not reproduce it without `scripts/fetch_assets.sh`.
