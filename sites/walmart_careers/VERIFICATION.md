@@ -4,7 +4,7 @@ Everything below was executed against this working tree on 2026-09-06. Commands 
 say "container" ran against `webharbor:dev` started as
 
 ```bash
-docker run -d --rm --name wh-test -p 8201:8101 -p 41000-41017:40000-40017 webharbor:dev
+docker run -d --rm --name wh-test -p 8201:8101 -p 41000-41019:40000-40019 webharbor:dev
 ```
 
 The dev-only drivers used here live in `sites/walmart_careers/scripts_dev/`
@@ -55,13 +55,13 @@ Both md5s match in both directions. Bootstrap seeding is gated per whole functio
 (`seed_database()` on `Job.query.count() > 0`, `seed_benchmark_users()` on the
 presence of `alice.j@test.com`), so a populated DB triggers no commit at all.
 
-### All 18 sites still serve
+### All 20 sites still serve
 
 ```
-$ for p in $(seq 41000 41017); do curl -so /dev/null -w "$p %{http_code}\n" http://localhost:$p/; done
-41000 200 … 41017 200        # all eighteen returned 200
-$ curl -s http://localhost:8201/health   # 18 sites, alive: true for every one
-$ curl -s http://localhost:41017/_health
+$ for p in $(seq 41000 41019); do curl -so /dev/null -w "$p %{http_code}\n" http://localhost:$p/; done
+41000 200 … 41019 200        # all twenty returned 200
+$ curl -s http://localhost:8201/health   # 20 sites, alive: true for every one
+$ curl -s http://localhost:41019/_health
 {"areas":7,"categories":33,"jobs":200,"ok":true,"site":"walmart_careers","stores":44,"users":4}
 ```
 
@@ -104,7 +104,7 @@ submissions). Run against the container with a control-plane reset before each t
 so every task starts from the frozen seed state:
 
 ```
-$ python scripts_dev/walkthrough.py http://localhost:41017 \
+$ python scripts_dev/walkthrough.py http://localhost:41019 \
         http://localhost:8201/reset/walmart_careers
 ```
 
@@ -315,21 +315,21 @@ Remaining differences from `scraped_data/reference/*.png`:
 
 ---
 
-## 8. Files that reference port 40017
+## 8. Files that reference port 40019
 
 | file | reference |
 |---|---|
-| `websyn_start.sh` | `walmart_careers` is index 17 of `SITES=( … )` → 40000 + 17 |
-| `control_server.py` | `'walmart_careers'` is the 18th entry of `SITES` (same order) |
-| `Dockerfile` | `EXPOSE 8101 40000-40017` |
-| `sites/walmart_careers/tasks.jsonl` | `"web": "http://localhost:40017/"` on all 20 rows |
-| `sites/walmart_careers/CLAUDE.md` | "Port **40017** … alt-port **41017**" |
-| `README.md` | `-p 40000-40017:40000-40017`, and the 18-mirror list |
-| `AGENTS.md` | three `40000-40017` occurrences plus `41000-41017` in the pre-PR block |
-| `CONTRIBUTING.md` | TL;DR `-p 40000-40017:40000-40017` |
-| `CLAUDE.md` | `:40000-40017` / `:41000-41017` in "Existing containers" |
+| `websyn_start.sh` | `walmart_careers` is index 19 of `SITES=( … )` → 40000 + 19 |
+| `control_server.py` | `'walmart_careers'` is the 20th entry of `SITES` (same order) |
+| `Dockerfile` | `EXPOSE 8101 40000-40019` |
+| `sites/walmart_careers/tasks.jsonl` | `"web": "http://localhost:40019/"` on all 20 rows |
+| `sites/walmart_careers/CLAUDE.md` | "Port **40019** … alt-port **41019**" |
+| `README.md` | `-p 40000-40019:40000-40019`, and the 20-mirror list |
+| `AGENTS.md` | three `40000-40019` occurrences plus `41000-41019` in the pre-PR block |
+| `CONTRIBUTING.md` | TL;DR `-p 40000-40019:40000-40019` |
+| `CLAUDE.md` | `:40000-40019` / `:41000-41019` in "Existing containers" |
 
-Reassigning the slot is a single `sed` over `40017`/`41017` plus moving the entry in
+Reassigning the slot is a single `sed` over `40019`/`41019` plus moving the entry in
 the two `SITES` lists. Nothing else hard-codes the port; the dev-only scripts under
 `scripts_dev/` take the base URL as an argument.
 
