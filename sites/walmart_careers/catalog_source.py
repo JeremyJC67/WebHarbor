@@ -140,6 +140,7 @@ STORES = [
     ("5260", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #5260", "1400 SE Walton Blvd", "Bentonville", "AR", "72712-6220", 36.354900, -94.202500, False, False, "Walmart"),
     ("144", "WM Supercenter", "WM SUPERCENTER #144", "2110 W Walnut St", "Rogers", "AR", "72756-3611", 36.334100, -94.152800, False, False, "Walmart"),
     ("8259", "Sam's Club", "SAM'S CLUB #8259", "1101 SE Walton Blvd", "Bentonville", "AR", "72712-6191", 36.357800, -94.199200, False, False, "Sam's Club"),
+    ("8155", "Sam's Club", "SAM'S CLUB #8155", "3081 N College Ave", "Fayetteville", "AR", "72703-5100", 36.101000, -94.158000, False, False, "Sam's Club"),
     # --- California --------------------------------------------------------
     ("9054", "eComm Whse Logistics", "ECOMM WHSE LOGISTICS #9054", "1290 W Henderson Ave", "Porterville", "CA", "93257-5969", 36.070300, -119.041800, False, False, "Walmart"),
     ("2050", "WM Supercenter", "WM SUPERCENTER #2050", "3680 W Shaw Ave", "Fresno", "CA", "93711-3204", 36.808900, -119.828600, False, False, "Walmart"),
@@ -151,6 +152,7 @@ STORES = [
     ("9399", "eComm Whse Logistics", "ECOMM WHSE LOGISTICS #9399", "3401 Quincy St", "Plainview", "TX", "79072-3308", 34.164300, -101.700900, False, False, "Walmart"),
     ("4750", "Sam's Club", "SAM'S CLUB #4750", "3000 E Plano Pkwy", "Plano", "TX", "75074-7440", 33.017200, -96.671900, False, False, "Sam's Club"),
     ("471", "WM Supercenter", "WM SUPERCENTER #471", "4215 Canyon Dr", "Amarillo", "TX", "79110-1109", 35.166900, -101.850700, False, False, "Walmart"),
+    ("3826", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #3826", "1521 N Cockrell Hill Rd", "Dallas", "TX", "75211-7407", 32.779000, -96.887000, False, False, "Walmart"),
     # --- Florida -----------------------------------------------------------
     ("3387", "WM Supercenter", "WM SUPERCENTER #3387", "17000 Toledo Blade Blvd", "North Port", "FL", "34287-7281", 27.056300, -82.183200, False, False, "Walmart"),
     ("6318", "Sam's Club", "SAM'S CLUB #6318", "4763 Millenia Plaza Way", "Orlando", "FL", "32839-6014", 28.485600, -81.430200, False, False, "Sam's Club"),
@@ -160,6 +162,9 @@ STORES = [
     ("5388", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #5388", "6594 Ridge Rd", "Parma", "OH", "44129-5546", 41.387000, -81.748000, False, False, "Walmart"),
     ("6636", "Sam's Club", "SAM'S CLUB #6636", "3950 W Dublin Granville Rd", "Columbus", "OH", "43235-2701", 40.098700, -83.083100, False, False, "Sam's Club"),
     ("5439", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #5439", "5821 W Central Ave", "Toledo", "OH", "43615-2159", 41.673900, -83.673400, False, False, "Walmart"),
+    ("2075", "WM Supercenter", "WM SUPERCENTER #2075", "8585 Pearl Rd", "Strongsville", "OH", "44136-1618", 41.314000, -81.829000, False, False, "Walmart"),
+    ("5133", "WM Supercenter", "WM SUPERCENTER #5133", "24801 Brookpark Rd", "North Olmsted", "OH", "44070-3407", 41.429000, -81.916000, False, False, "Walmart"),
+    ("4744", "Sam's Club", "SAM'S CLUB #4744", "3560 Steelyard Dr", "Cleveland", "OH", "44109-2101", 41.458600, -81.688900, False, False, "Sam's Club"),
     # --- New York ----------------------------------------------------------
     ("9046", "eComm Whse Logistics", "ECOMM WHSE LOGISTICS #9046", "8827 Old River Rd", "Marcy", "NY", "13403-3030", 43.173965, -75.315183, False, False, "Walmart"),
     ("6038", "Regional DC", "REGIONAL DISTRIBUTION CENTER #6038", "5000 Halsey Rd", "Marcy", "NY", "13403-2317", 43.155900, -75.297400, False, False, "Walmart"),
@@ -179,11 +184,13 @@ STORES = [
     ("4137", "WM Supercenter", "WM SUPERCENTER #4137", "1965 S Union Ave", "Tacoma", "WA", "98405-1615", 47.242300, -122.484500, False, False, "Walmart"),
     ("6216", "Sam's Club", "SAM'S CLUB #6216", "9950 N Newport Hwy", "Spokane", "WA", "99218-1240", 47.741400, -117.400600, False, False, "Sam's Club"),
     ("5382", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #5382", "8102 Evergreen Way", "Everett", "WA", "98203-6428", 47.905400, -122.229900, False, False, "Walmart"),
+    ("7021", "Regional DC", "REGIONAL DISTRIBUTION CENTER #7021", "1300 Wine Country Rd", "Grandview", "WA", "98930-9704", 46.254000, -119.901000, False, False, "Walmart"),
     # --- Puerto Rico -------------------------------------------------------
     ("2503", "WM Supercenter", "WM SUPERCENTER #2503", "Carr 2 KM 11.4", "Bayamon", "PR", "00959-5100", 18.394200, -66.155300, False, False, "Walmart"),
     ("2610", "WM Supercenter", "WM SUPERCENTER #2610", "500 Ave Rafael Cordero", "Caguas", "PR", "00725-3607", 18.245600, -66.036200, False, False, "Walmart"),
     ("3512", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #3512", "2000 Ave Las Americas", "Ponce", "PR", "00717-0777", 18.019800, -66.612600, False, False, "Walmart"),
     ("8763", "Sam's Club", "SAM'S CLUB #8763", "100 Ave Fragoso", "Carolina", "PR", "00979-1234", 18.417400, -65.977300, False, False, "Sam's Club"),
+    ("3593", "Neighborhood Market", "WM NEIGHBORHOOD MARKET #3593", "65 Ave De Diego", "San Juan", "PR", "00927-3300", 18.398500, -66.055300, False, False, "Walmart"),
     # --- Virginia ----------------------------------------------------------
     ("1399", "WM Supercenter", "WM SUPERCENTER #1399", "1123 E Lynchburg Salem Tpke", "Bedford", "VA", "24523-3446", 37.323200, -79.502400, False, False, "Walmart"),
     ("6088", "Import", "IMPORT DISTRIBUTION CENTER #6088", "8109 Merrimac Trail", "Williamsburg", "VA", "23185-6255", 37.288600, -76.664900, False, False, "Walmart"),
@@ -252,6 +259,7 @@ HOURLY_FAMILIES = [
             ("6038", "Full time", "WE", 19.75, 23.25, 2, {"shift_time": "Shift may start between 3:00pm - 7:30pm"}),
             ("9281", "Part time", "WD", 18.90, 22.40, 3, None),
             ("6014", "Part time", "SD", 19.40, 22.90, 5, None),
+            ("7021", "Full time", "WN", 20.50, 24.00, 3, None),
         ],
     },
     {
@@ -305,6 +313,7 @@ HOURLY_FAMILIES = [
             ("7133", "Part time", "SE,FX", 18.40, 21.90, 2, None),
             ("6038", "Part time", "WD,FX", 20.10, 23.60, 3, None),
             ("9399", "Full time", "SN,FX", 19.85, 23.35, 2, None),
+            ("7021", "Part time", "SD,FX", 19.30, 22.80, 2, None),
         ],
     },
     {
@@ -410,6 +419,7 @@ HOURLY_FAMILIES = [
             ("6038", "Full time", "SD", 27.00, 34.50, 2, None),
             ("7133", "Full time", "WE,FX", 26.00, 33.50, 3, None),
             ("6014", "Part time", "FX", 25.25, 32.75, 1, None),
+            ("7021", "Full time", "WD,FX", 26.25, 33.75, 1, None),
         ],
     },
     {
@@ -512,9 +522,12 @@ HOURLY_FAMILIES = [
             ("2503", "Part time", "WD,SD", 15.00, 24.00, 5, None),
             ("2610", "Full time", "WD,WE,SD", 15.00, 24.00, 3, None),
             ("3512", "Part time", "SE,SN", 15.00, 23.00, 4, None),
-            ("8763", "Part time", "WD,SN", 16.00, 25.00, 2, None),
+            ("8763", "Part time", "SE,SN", 16.00, 25.00, 2, None),
             ("2110", "Full time", "WD,WE", 15.50, 26.00, 4, None),
             ("5382", "Part time", "WE,SE", 17.00, 28.00, 3, None),
+            ("3593", "Part time", "WE,SN", 15.00, 23.50, 4, None),
+            ("2075", "Part time", "WE,SE", 15.50, 25.50, 2, None),
+            ("3826", "Part time", "WE,SE", 15.00, 24.50, 2, None),
         ],
     },
     {
@@ -564,6 +577,8 @@ HOURLY_FAMILIES = [
             ("8259", "Full time", "WD,SD", 18.00, 26.00, 2, None),
             ("6318", "Part time", "WE,SE", 16.00, 24.00, 3, None),
             ("8763", "Full time", "WD,WE", 16.00, 24.00, 1, None),
+            ("4744", "Part time", "WE,SE", 16.50, 24.50, 3, None),
+            ("8155", "Full time", "WD,SD", 17.00, 25.00, 2, None),
         ],
     },
     {
@@ -591,6 +606,7 @@ HOURLY_FAMILIES = [
             ("471", "Full time", "WD,SD", 15.00, 25.00, 4, None),
             ("1236", "Part time", "WN,SN", 16.00, 26.00, 2, {"job_id": "CP-1236-10888"}),
             ("5388", "Full time", "WN", 16.50, 27.00, 2, None),
+            ("5133", "Full time", "WE,SN", 16.00, 26.50, 2, None),
         ],
     },
     {
@@ -616,6 +632,7 @@ HOURLY_FAMILIES = [
             ("6608", "Full time", "WD,WN", 19.00, 27.00, 1, None),
             ("4750", "Part time", "SN,WN", 17.50, 25.50, 2, None),
             ("8253", "Full time", "WN,SN", 17.00, 25.00, 1, None),
+            ("8155", "Part time", "WN,SN", 17.50, 25.50, 2, None),
         ],
     },
     {
@@ -641,6 +658,7 @@ HOURLY_FAMILIES = [
             ("3387", "Part time", "WD,SD", 15.00, 25.00, 2, None),
             ("1179", "Full time", "WE,SE,WN", 15.00, 25.00, 4, None),
             ("954", "Part time", "WD,WE", 15.00, 24.00, 2, None),
+            ("5133", "Part time", "SD,SE", 15.50, 25.50, 3, None),
         ],
     },
     {
@@ -664,6 +682,8 @@ HOURLY_FAMILIES = [
         "placements": [
             ("1230", "Full time", "WN", 15.50, 24.50, 3, None),
             ("2163", "Part time", "SN,WN", 16.50, 26.50, 2, None),
+            ("2075", "Full time", "WD,SD", 16.00, 25.00, 3, None),
+            ("3593", "Part time", "WN", 15.00, 24.00, 2, None),
         ],
     },
     {
@@ -718,6 +738,9 @@ HOURLY_FAMILIES = [
             ("5991", "Part time", "WE,SE", 17.50, 28.00, 4, None),
             ("5260", "Full time", "WD,WE,SE", 15.00, 28.00, 2, None),
             ("5388", "Part time", "WE,SE", 16.00, 27.00, 2, None),
+            ("2075", "Full time", "WD,WE", 15.50, 26.50, 3, None),
+            ("3826", "Full time", "WD,SD", 15.00, 26.00, 2, None),
+            ("3593", "Full time", "WD,SE", 14.50, 25.00, 4, None),
         ],
     },
     {
@@ -768,6 +791,7 @@ HOURLY_FAMILIES = [
             ("8259", "Part time", "WD,SD", 16.00, 23.00, 1, None),
             ("6318", "Part time", "SD,SE,FX", 15.50, 22.50, 3, None),
             ("6636", "Part time", "WD,SD", 16.00, 23.00, 2, None),
+            ("4744", "Full time", "WD,SD", 16.50, 23.50, 2, None),
         ],
     },
     {
@@ -870,6 +894,7 @@ HOURLY_FAMILIES = [
             ("1230", "Full time", "WD,WE", 17.00, 30.00, 5, None),
             ("471", "Part time", "WE,SE", 16.50, 29.00, 2, None),
             ("1179", "Full time", "WD,SD", 17.50, 30.50, 1, None),
+            ("5133", "Full time", "WD,SD", 17.50, 30.50, 2, None),
         ],
     },
     {
@@ -997,6 +1022,7 @@ HOURLY_FAMILIES = [
             ("4137", "Part time", "WE,SE", 19.50, 32.00, 1, None),
             ("2110", "Full time", "WD,WE", 18.50, 30.50, 1, None),
             ("2050", "Part time", "SD,SE", 20.00, 33.00, 2, None),
+            ("3826", "Full time", "WD,WE", 18.50, 31.00, 3, None),
         ],
     },
     {
@@ -1047,6 +1073,8 @@ HOURLY_FAMILIES = [
             ("5382", "Part time", "WE,SE", 23.00, 36.00, 1, None),
             ("1236", "Full time", "WD,WE", 21.00, 34.00, 1, None),
             ("5991", "Full time", "WD,WE,SD", 22.00, 35.00, 2, None),
+            ("5133", "Full time", "WD,SD", 21.50, 34.50, 1, None),
+            ("3826", "Part time", "WE,SE", 22.50, 35.50, 1, None),
         ],
     },
     {
@@ -1177,6 +1205,8 @@ HOURLY_FAMILIES = [
             ("6318", "Intern", "WE,FX", 16.50, 20.50, 1, None),
             ("8259", "Intern", "WD,SD", 17.25, 21.25, 1, None),
             ("6216", "Intern", "WE,FX", 17.75, 21.75, 1, None),
+            ("4744", "Intern", "WD,FX", 17.00, 21.00, 1, None),
+            ("8155", "Intern", "WE,FX", 17.50, 21.50, 1, None),
         ],
     },
 ]
@@ -2001,7 +2031,7 @@ HUB_COPY = {
         "Dallas",
         "Our Dallas office anchors merchandising, finance and supply chain teams in the middle of one "
         "of the fastest-growing metros in the country.",
-        "loc-dc-metro.jpg",
+        "loc-dallas.jpg",
     ),
 }
 

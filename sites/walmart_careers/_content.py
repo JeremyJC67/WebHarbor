@@ -19,14 +19,6 @@ HERO_HEADLINE_1 = "Cashiers wanted."
 HERO_HEADLINE_2 = "Next move, yours."
 SEARCH_PLACEHOLDER = "Search by team, department, keyword"
 
-CAROUSEL = [
-    ("Jorden", "Associate Merchant", "Corporate Careers", "corporate", "home-tile-corporate.png"),
-    ("Tatiana", "Software Engineer", "Tech Careers", "technology", "home-tile-tech.png"),
-    ("Jamaily", "Club Manager", "Stores & Clubs Careers", "stores-and-clubs", "home-tile-stores.png"),
-    ("Caleb", "Maintenance Tech", "Supply Chain Careers", "supply-chain-and-transportation", "home-tile-supply.png"),
-    ("Yasinya", "Pharmacy Tech", "Healthcare Careers", "healthcare", "home-tile-health.png"),
-]
-
 VALUES = [
     ("Respect for the individual", "We listen, we support, and we help each other grow."),
     ("Service to the customer", "Everything starts with the people who shop with us."),
@@ -40,24 +32,6 @@ BENEFIT_ROWS = [
     ("Comprehensive health benefits", "Medical, dental, vision and wellness programs for you and your family.", "benefit-health.svg"),
     ("Wellbeing programs", "Access mental health resources and assistance programs for life's challenges.", "benefit-wellbeing.svg"),
     ("Career growth opportunities", "Training, leadership programs, and clear paths to advance.", "benefit-growth.svg"),
-]
-
-BENEFIT_FOOTNOTE = (
-    "That's just the beginning. We offer more perks specific to your work location and role."
-)
-
-STAT_CARDS = [
-    ("$1 billion", "invested in associate career training and development"),
-    ("75%", "of salaried managers began as hourly associates"),
-    ("300,000", "associates have earned a 10+ year badge"),
-    ("120,000", "U.S. associates have participated in Live Better U"),
-]
-
-DAY_IN_THE_LIFE = [
-    ("Store Coach", "Day in the life", "life-associates.jpg"),
-    ("Optician", "Day in the life", "life-8th-plate.jpg"),
-    ("Store Manager", "Day in the life", "life-crystal-bridges.jpg"),
-    ("Pharmacy Tech", "Day in the life", "life-amp.jpg"),
 ]
 
 # --------------------------------------------------------------------------- #
@@ -389,3 +363,145 @@ STATE_NAMES = {
     "WY": "Wyoming",
 }
 STATE_CODES_BY_NAME = {name.lower(): code for code, name in sorted(STATE_NAMES.items())}
+
+
+# --------------------------------------------------------------------------- #
+# Home page chrome below the fold: the values bento, the milestone badges and
+# the "See our associates in action" strip. Static marketing copy only.
+# --------------------------------------------------------------------------- #
+HOME_INTRO_HEADLINE = ("Grow your future.", "Make an impact.")
+HOME_INTRO_CTA = "See our values in action"
+BENEFITS_ASIDE = "That's just the beginning. We offer more perks specific to your work location and role."
+BENEFITS_CTA = "Learn more about benefits"
+MILESTONE_HEADING = "Here, every job is a step toward something greater"
+# (figure sentence, badge label, style) — style picks the badge colour scheme.
+MILESTONE_BADGES = [
+    ("$1 billion invested in associate career training and development", "", "sky"),
+    ("75% of salaried managers began as hourly associates", "5 YEARS", "spark"),
+    ("300,000 associates have earned a 10+ year badge", "10 YEARS", "navy"),
+    ("120,000 U.S. associates have participated in Live Better U", "20 YEARS", "blue"),
+]
+ASSOCIATES_HEADING = "See our associates in action"
+ASSOCIATES_BLURB = (
+    "Every day, Walmart associates step up - solving problems, serving communities, and making a "
+    "difference. They don't just do the job; they bring it to life."
+)
+FIND_ROLE_HEADING = "Find the role that's a perfect fit"
+FIND_ROLE_PLACEHOLDER = "Search by team, department, or keyword"
+
+# --------------------------------------------------------------------------- #
+# Career-area page chrome (per area slug): the lower sections of the L1 pages.
+# --------------------------------------------------------------------------- #
+AREA_PAGE = {
+    "stores-and-clubs": {
+        "tiles": ("Purpose", "Growth", "Pride"),
+        "headline": "You power the experience for millions",
+        "cta": "See all stores and clubs roles",
+        "photos": ("area-stores-3.jpg", "area-stores-2.jpg"),
+        "quote": "At Walmart and Sam's Club, our stores and clubs are powered by people, dedicated "
+                 "associates working together to create exceptional experiences for the communities "
+                 "we serve.",
+        "testimonials": [
+            ("Curtis", "Store Manager", "Every shift is a chance to make someone's day a little easier."),
+            ("D'Rogelio", "Store Manager", "You can be you in this environment and still succeed."),
+            ("Jamaily", "Club Manager", "I started on the floor. Now I run the building."),
+        ],
+    },
+    "supply-chain-and-transportation": {
+        "tiles": ("Safety", "Scale", "Momentum"),
+        "headline": "Move what matters, at scale",
+        "cta": "See all supply chain roles",
+        "photos": ("area-supply-chain-2.jpg", "supply-drone.jpg"),
+        "quote": "Our supply chain associates move millions of items a day through a network that "
+                 "reaches nearly every community in the country - and they do it safely.",
+        "testimonials": [
+            ("Caleb", "Maintenance Tech", "The equipment is the most advanced I've worked on anywhere."),
+            ("Renee", "Yard Driver", "I know exactly how my work gets product to a shelf."),
+            ("Marcus", "Area Manager", "We promote from the floor. That's not a slogan here."),
+        ],
+    },
+    "healthcare": {
+        "tiles": ("Care", "Community", "Growth"),
+        "headline": "Care for the communities you call home",
+        "cta": "See all healthcare roles",
+        "photos": ("area-healthcare.jpg", "jobhero-wm-2.jpg"),
+        "quote": "Our pharmacies, vision centers and clinics put affordable care within a short drive "
+                 "of most of the country - and our associates make it personal.",
+        "testimonials": [
+            ("Yasinya", "Pharmacy Tech", "Patients know my name. That's the part I love."),
+            ("Andre", "Optician", "Every fitting is a small problem to solve well."),
+            ("Priya", "Pharmacy Manager", "Walmart paid for my certification through Live Better U."),
+        ],
+    },
+    "technology": {
+        "tiles": ("Belonging", "Impact"),
+        "headline": "Tech with real-world impact",
+        "cta": "See all technology roles",
+        "photos": ("area-technology-2.jpg", "supply-drone.jpg"),
+        "quote": "Our vision is strong here. Walmart Global Tech works at the forefront of "
+                 "cutting-edge technologies inspired by the vision of transforming retail tech.",
+        "hubs_heading": "Three hubs. One mission. Endless possibilities",
+        "hubs_blurb": "Our hubs spark collaboration and innovation, so you're free to energize and push "
+                      "boundaries from the space that serves you best.",
+        "testimonials": [
+            ("Tatiana", "Software Engineer (iOS)", "The scale of what ships every week still amazes me."),
+            ("Christopher", "Senior Manager, Food Media Insights",
+             "We're data geeks, and the depth we get to explore here keeps us excited every single day."),
+            ("Antony", "Yield Manager", "I get to work on problems no other retailer has."),
+        ],
+    },
+    "corporate": {
+        "tiles": ("Curiosity", "Ownership", "Impact"),
+        "headline": "Shape how the world shops",
+        "cta": "See all corporate roles",
+        "photos": ("area-corporate-2.jpg", "jobhero-corp-3.jpg"),
+        "quote": "From merchandising to finance to people, our home office teams make decisions that "
+                 "reach 240 million customers a week.",
+        "hubs_heading": "Hubs built for the way you work",
+        "hubs_blurb": "Bentonville, Sunnyvale, Hoboken and Dallas: pick the space that serves you best.",
+        "testimonials": [
+            ("Jorden", "Associate Merchant", "I own a category. At 26. That doesn't happen elsewhere."),
+            ("Nina", "Finance Manager", "The numbers are big, but the teams are small and close."),
+            ("Sam", "People Partner", "We hire for potential and then we invest in it."),
+        ],
+    },
+    "Military": {
+        "tiles": ("Transition", "Translate", "Thrive"),
+        "headline": "Walmart supports Veterans",
+        "cta": "See all opportunities",
+        "photos": ("area-military.jpg", "military-banner.png"),
+        "quote": "Every day, thousands of veterans build careers at Walmart. Learn more about our "
+                 "commitment to veterans and military families.",
+        "testimonials": [
+            ("Mark", "Veteran, Store Coach", "My leadership experience translated on day one."),
+            ("Kim", "Store Manager", "Walmart's not only committed to the veteran - veteran spouses have just the same opportunity."),
+            ("Jeremy", "Club Manager", "SkillBridge got me in the door. The team kept me here."),
+        ],
+    },
+}
+AREA_PAGE_DEFAULT = {
+    "tiles": ("Purpose", "Growth", "Pride"),
+    "headline": "Grow your future. Make an impact.",
+    "cta": "See all open roles",
+    "photos": ("area-stores-3.jpg", "area-stores-2.jpg"),
+    "quote": LIFE_AT_WALMART_QUOTE,
+    "testimonials": [],
+}
+INSPIRATION_HEADING = "Inspiration in every role"
+
+# Locations page hero and the promo block on the saved-roles page.
+LOCATIONS_HERO_IMAGE = "loc-silicon-valley.jpg"
+SAVED_PROMO_HEADLINE = ("Get more out of", "Walmart Careers")
+SAVED_PROMO_BLURB = (
+    "With an account you get role recommendations, create job alerts, and view your application "
+    "status from a personalized dashboard."
+)
+SAVED_PROMO_IMAGE = "area-healthcare.jpg"
+SAVED_EMPTY_NOTE = "You have no saved roles."
+
+# Footer links on the stripped sign-in / register layout.
+AUTH_FOOTER_LINKS = [
+    "Give feedback", "Terms of Use", "Privacy Notice", "California Supply Chain Act",
+    "Your Privacy Choices", "Customer Privacy Center", "Notice at Collection",
+]
+AUTH_COPYRIGHT = "© 2026 Walmart. All Rights Reserved."

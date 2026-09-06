@@ -7,7 +7,7 @@
   <link rel="icon" href="{{ url_for('static', filename='icons/spark-yellow.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="site-header">
   <div class="wrap">
@@ -42,6 +42,8 @@
       <a class="nav-link" href="{{ url_for('about_us') }}">About Us</a>
       <a class="nav-link" href="{{ url_for('career_area', slug='Military') }}">Military</a>
     </nav>
+    {# The live home page carries no header search pill: the hero pill is the search. #}
+    {% if request.endpoint != 'index' %}
     <div class="header-search">
       <form action="{{ url_for('results') }}" method="get" role="search">
         <input type="text" name="q" value="{{ search_q }}"
@@ -55,6 +57,9 @@
         </button>
       </form>
     </div>
+    {% else %}
+    <div class="header-spacer"></div>
+    {% endif %}
     <details class="user-menu">
       <summary aria-label="Account menu" title="Account menu">
         {% if current_user.is_authenticated %}
@@ -83,7 +88,14 @@
           <hr>
           <a href="{{ url_for('login') }}">Login/Signup</a>
         {% endif %}
-        <span class="lang">EN</span>
+        <span class="lang">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"
+                  fill="none" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          EN
+        </span>
       </div>
     </details>
   </div>

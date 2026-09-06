@@ -1,18 +1,18 @@
 {% extends "base.html" %}
+{% block body_class %}l1{% endblock %}
 {% block title %}{{ area.name }} careers | Walmart Careers{% endblock %}
 {% block content %}
+{% set page = content.AREA_PAGE.get(area.slug, content.AREA_PAGE_DEFAULT) %}
+{% set hero_image = 'military-banner.png' if area.slug == 'Military' else area.hero_image %}
+{% set roles_url = url_for('results', area=area.slug) if area.is_filterable else url_for('results') %}
+{% set office_area = area.slug in ('technology', 'corporate') %}
+
 <div class="area-hero">
-  <img src="{{ url_for('static', filename='images/' ~ area.hero_image) }}" alt="{{ area.name }}">
-  <div class="overlay">
-    <div class="wrap">
-      <h1>{{ area.name }}</h1>
-      <p>{{ area.blurb }}</p>
-      {% if area.is_filterable %}
-        <a class="btn btn-spark" href="{{ url_for('results', area=area.slug) }}">See all open roles</a>
-      {% else %}
-        <a class="btn btn-spark" href="{{ url_for('results') }}">See all open roles</a>
-      {% endif %}
-    </div>
+  <img src="{{ url_for('static', filename='images/' ~ hero_image) }}" alt="{{ area.name }}">
+  <div class="area-card">
+    <h1>{{ area.name }}</h1>
+    <p>{{ area.blurb }}</p>
+    <a class="btn" href="{{ roles_url }}">{{ 'See all opportunities' if area.slug == 'Military' else 'See all open roles' }}</a>
   </div>
 </div>
 
@@ -20,13 +20,18 @@
 <section>
   <div class="wrap">
     <h2>Join our team</h2>
-    <div class="category-grid">
-      {% for category in categories %}
-        <a href="{{ url_for('results', area=area.slug, category=category.slug) }}">
-          <span>{{ category.name }}</span>
-          <span class="count">{{ counts[category.id] }} open</span>
-        </a>
-      {% endfor %}
+    <div class="join-grid">
+      <div class="stack-card">
+        <span class="stack-band band-navy"></span>
+        <span class="stack-band band-sky"></span>
+        <img src="{{ url_for('static', filename='images/' ~ page.photos[0]) }}" alt="{{ area.name }} associates">
+        <div class="stack-controls" aria-hidden="true"><i>&#8593;</i><i>&#8214;</i><i>&#8595;</i></div>
+      </div>
+      <ul class="category-list">
+        {% for category in categories %}
+          <li><a href="{{ url_for('results', area=area.slug, category=category.slug) }}">{{ category.name }}</a></li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 </section>
@@ -43,39 +48,145 @@
 </section>
 {% endif %}
 
-<section class="section-alt">
+<section>
   <div class="wrap">
     <h2>Explore our benefits</h2>
-    <div class="benefit-list">
-      {% for name, blurb, icon in content.BENEFIT_ROWS %}
-        <div class="benefit-row">
+    <div class="benefit-tiles">
+      {% for name, headline, blurb, icon in content.benefit_tiles_for('Walmart', 'salaried' if office_area else 'hourly') %}
+        <div class="benefit-tile tile-{{ loop.index }}">
           <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="">
-          <div><b>{{ name }}</b><span>{{ blurb }}</span></div>
+          <em>{{ name }}</em>
+          <b>{{ headline }}</b>
+          <p>{{ blurb }}</p>
         </div>
       {% endfor %}
+    </div>
+    <div class="benefit-grid two-col">
+      {% for name, blurb, icon in content.JOB_BENEFIT_ROWS %}
+        <div class="benefit-item">
+          <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="">
+          <b>{{ name }}</b>
+          <span>{{ blurb }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    <p style="margin-top:24px"><a class="btn btn-secondary" href="{{ url_for('about_us') }}">Learn more about benefits</a></p>
+  </div>
+</section>
+
+{% if office_area %}
+<section class="quote-section">
+  <div class="wrap"><p class="quote-band-text">{{ page.quote }}</p></div>
+</section>
+{% endif %}
+
+<section class="bento-section">
+  <div class="wrap-bleed">
+    <div class="bento-layout">
+      <div class="bento area-bento">
+        <a class="tile tile-blue tile-sq" href="{{ roles_url }}">
+          <span class="tile-label">{{ page.tiles[0] }}</span><span class="circle-arrow">&#8250;</span>
+        </a>
+        <div class="tile tile-photo tile-wide">
+          <img src="{{ url_for('static', filename='images/' ~ page.photos[1]) }}" alt="">
+        </div>
+        {% if page.tiles|length > 2 %}
+        <div class="tile tile-photo tile-wide">
+          <img src="{{ url_for('static', filename='images/' ~ page.photos[0]) }}" alt="">
+        </div>
+        <a class="tile tile-navy tile-sq" href="{{ roles_url }}">
+          <span class="tile-label">{{ page.tiles[1] }}</span><span class="circle-arrow circle-arrow-back">&#8249;</span>
+        </a>
+        <a class="tile tile-pale tile-sq" href="{{ roles_url }}">
+          <span class="tile-label">{{ page.tiles[2] }}</span><span class="circle-arrow">&#8250;</span>
+        </a>
+        {% else %}
+        <span class="tile-gap"></span>
+        <a class="tile tile-navy tile-sq" href="{{ roles_url }}">
+          <span class="tile-label">{{ page.tiles[1] }}</span><span class="circle-arrow circle-arrow-back">&#8249;</span>
+        </a>
+        {% endif %}
+      </div>
+      <div class="bento-aside">
+        <h2>{{ page.headline }}</h2>
+        <a class="btn btn-secondary" href="{{ roles_url }}">{{ page.cta }}</a>
+      </div>
     </div>
   </div>
 </section>
 
+{% if not office_area %}
+<section class="quote-section">
+  <div class="wrap"><p class="quote-band-text">{{ page.quote }}</p></div>
+</section>
+{% endif %}
+
+{% if office_area %}
 <section>
   <div class="wrap">
-    <h2>Our hubs</h2>
-    <div class="hub-grid">
+    <h2 class="tight">{{ page.hubs_heading }}</h2>
+    <p class="section-blurb">{{ page.hubs_blurb }}</p>
+    <div class="hub-links">
       {% for hub in hubs %}
-        {% if hub.hub_blurb %}
-          <div class="hub-card">
-            <img src="{{ url_for('static', filename='images/' ~ hub.hub_image) }}" alt="{{ hub.hub_name }}">
-            <div class="cap">
-              <h3>{{ hub.hub_name }}</h3>
-              <p>{{ hub.hub_blurb }}</p>
-              <a class="btn btn-secondary btn-sm"
-                 href="{{ url_for('results', loc=hub.city ~ ', ' ~ hub.state, radius=25) }}">See roles near {{ hub.city }}</a>
-            </div>
-          </div>
+        {% if hub.hub_name %}
+          <a href="{{ url_for('results', loc=hub.city ~ ', ' ~ hub.state, radius=25) }}">{{ hub.hub_name }}
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg></a>
         {% endif %}
       {% endfor %}
     </div>
-    <p style="margin-top:20px"><a class="btn btn-secondary" href="{{ url_for('resources_location') }}">See all hubs</a></p>
+    <p style="margin-top:28px"><a class="btn btn-secondary btn-sm" href="{{ url_for('resources_location') }}">See all hubs</a></p>
+  </div>
+</section>
+{% else %}
+<section>
+  <div class="wrap">
+    <h2 class="tight">{{ content.ASSOCIATES_HEADING }}</h2>
+    <p class="section-blurb">{{ content.ASSOCIATES_BLURB }}</p>
+    <div class="video-strip dark">
+      {% for name, role, _quote in page.testimonials %}
+        <div class="video-tile{% if loop.index == 2 %} wide{% endif %}">
+          <img src="{{ url_for('static', filename='images/' ~ page.photos[loop.index0 % 2]) }}" alt="">
+          <div class="v-cap"><em>Meet {{ name }}</em><b>{{ role }}</b><span class="play" aria-hidden="true"></span></div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="dots" aria-hidden="true"><i></i><i class="on"></i><i></i><i></i></div>
+  </div>
+</section>
+{% endif %}
+
+{% if page.testimonials %}
+<section>
+  <div class="wrap">
+    <h2>{{ content.INSPIRATION_HEADING }}</h2>
+    <div class="quote-cards">
+      {% for name, role, quote in page.testimonials %}
+        <div class="quote-card{% if loop.index == 2 %} on{% endif %}">
+          <b>{{ name }}, {{ role }}</b>
+          <p>&ldquo;{{ quote }}&rdquo;</p>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+  </div>
+</section>
+{% endif %}
+
+<section class="find-role">
+  <div class="wrap">
+    <h2>Find the role that's a perfect fit.</h2>
+    <form class="find-search" action="{{ url_for('results') }}" method="get" role="search">
+      <input type="text" name="q" placeholder="{{ content.SEARCH_PLACEHOLDER }}" aria-label="Search open roles">
+      <button type="submit" aria-label="Search">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M15.2 15.2 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M18.4 3.2l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z" fill="currentColor"/>
+        </svg>
+      </button>
+    </form>
   </div>
 </section>
 {% endblock %}

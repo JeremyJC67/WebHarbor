@@ -443,21 +443,24 @@ def filters_query(filters: dict, **overrides) -> str:
 
 
 def _stem_match(token: str, blob_tokens: set[str]) -> bool:
-    """Loose match so 'optician' also surfaces 'Optical Services' rows.
+    """Loose match for inflected forms ('drivers' ~ 'driver', 'stocking' ~ 'stocker').
 
-    Two words match when they share a prefix of at least five characters; the
-    search is scored, never a strict AND, so this only widens the result set.
+    Two words match when they share a prefix of at least six characters and
+    their lengths are within three of each other. A five-letter prefix was
+    too loose: 'technician' matched 'Technology' and pulled half the catalog
+    into a title search. The search is scored, never a strict AND, so this
+    tier only widens a result set.
     """
-    if len(token) < 5:
+    if len(token) < 6:
         return False
     for other in blob_tokens:
-        if len(other) < 5:
+        if len(other) < 6 or abs(len(other) - len(token)) > 3:
             continue
         limit = min(len(token), len(other))
         shared = 0
         while shared < limit and token[shared] == other[shared]:
             shared += 1
-        if shared >= 5:
+        if shared >= 6:
             return True
     return False
 
@@ -471,7 +474,9 @@ def score_job(job: Job, tokens: list[str]) -> float:
     for token in tokens:
         if token in blob_tokens:
             score += 2.0
-        elif token in blob:
+        elif any(other.startswith(token) for other in blob_tokens):
+            # word-prefix tier: 'cashi' -> cashier, 'hand' -> handler. A raw
+            # substring test let 'care' light up every Healthcare posting.
             score += 1.0
         elif _stem_match(token, blob_tokens):
             score += 0.5
@@ -928,8 +933,11 @@ def apply_submitted(job_id: str):
 @app.route("/careers-areas/<slug>")
 def career_area(slug: str):
     area = Area.query.filter(db.func.lower(Area.slug) == slug.lower()).first()
-    if area is None or not area.has_index_page:
+    if area is None:
         abort(404)
+    if not area.has_index_page:
+        # Students has no index page upstream either; send it to its open roles.
+        return redirect(url_for("results", area=area.slug))
     categories = (
         Category.query.filter_by(area_id=area.id)
         .order_by(Category.display_order)

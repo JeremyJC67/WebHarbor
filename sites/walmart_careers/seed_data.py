@@ -58,8 +58,11 @@ USER_CREATED_AT = datetime(2026, 6, 12, 9, 30, 0)
 # (user email, job title, store number) — resolved to job ids after the catalog is built.
 SEED_SAVED_JOBS = [
     ("alice.j@test.com", "Freight Handler", "9046", datetime(2026, 8, 3, 14, 12, 0)),
+    ("alice.j@test.com", "Cosmetics Cashier", "2503", datetime(2026, 8, 7, 19, 41, 0)),
     ("alice.j@test.com", "Optician", "5991", datetime(2026, 8, 9, 10, 5, 0)),
-    ("alice.j@test.com", "Cosmetics Cashier", "2503", datetime(2026, 8, 17, 19, 41, 0)),
+    ("alice.j@test.com", "Automation Technician", "6088", datetime(2026, 8, 13, 8, 16, 0)),
+    ("alice.j@test.com", "Senior UX Designer", "11807", datetime(2026, 8, 17, 12, 27, 0)),
+    ("alice.j@test.com", "Team Lead", "4137", datetime(2026, 8, 22, 17, 58, 0)),
     ("bob.c@test.com", "Asset Protection Associate", "5991", datetime(2026, 8, 4, 8, 22, 0)),
     ("bob.c@test.com", "Class A CDL Truck Driver", "6038", datetime(2026, 8, 11, 16, 48, 0)),
     ("bob.c@test.com", "Senior Data Scientist", "11500", datetime(2026, 8, 20, 12, 3, 0)),

@@ -8,10 +8,10 @@ alt-port test container maps it to **41019**.
 | file | role |
 |---|---|
 | `app.py` | models, routes, scored search, deterministic SVG maps, bootstrap |
-| `catalog_source.py` | the source catalog: areas, categories, 44 stores, 37 hourly + 29 salaried title families with explicit placements, hub copy, trending job ids |
+| `catalog_source.py` | the source catalog: areas, categories, 51 stores, 37 hourly + 29 salaried title families with explicit placements, hub copy, trending job ids |
 | `seed_data.py` | turns the catalog into SQLite; `build_seed_database()` is the freezer |
 | `_content.py` | static chrome strings only: headings, boilerplate prose, design constants, US/PR map outlines |
-| `templates/` | 19 Jinja2 templates + `_job_card.html` macro |
+| `templates/` | 20 Jinja2 templates (`base.html`, the stripped `base_auth.html` for sign-in/register) + `_job_card.html` macro |
 | `static/` | `css/`, `js/`, `icons/`, `fonts/` in git; `images/` HF-managed |
 | `scripts_dev/` | local-only helpers and build-time invariants; gitignored and dockerignored |
 
@@ -68,7 +68,8 @@ Brand chrome (`static/icons/`, `static/fonts/`) is committed; photography
 `cms.careers.walmart.com/content/dam/careers/...`, `careers.walmart.com/assets/svgs/...`,
 and the `EverydaySansUI` / `LivingDesign` font files from `i5.walmartimages.com`.
 `scripts_dev/harvest_assets.py` records the exact URL → filename mapping and re-downloads
-them; images are then downscaled to 1600px wide (16 MB total).
+them; images are then downscaled to 1600px wide. Upstream carries no Dallas hub photo, so
+`loc-dallas.jpg` is the Global Tech office interior from the same CMS (see `harvest_assets.py`).
 
 ## Things that are deliberately not mirrored
 
