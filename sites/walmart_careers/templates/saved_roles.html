@@ -19,12 +19,14 @@
         <a class="btn" href="{{ url_for('results') }}">Browse open roles</a>
       </div>
     {% else %}
-      <div class="job-grid" style="margin-top:24px">
+      <div class="job-grid saved-grid" style="margin-top:24px">
         {% for row in rows %}{{ job_card(row.job, saved_ids) }}{% endfor %}
       </div>
     {% endif %}
   </div>
 </section>
+{# Recommendations only fill the page when there is nothing saved to show. #}
+{% if not current_user.is_authenticated or not rows %}
 <section class="section-alt">
   <div class="wrap">
     <h2>Trending roles</h2>
@@ -33,4 +35,5 @@
     </div>
   </div>
 </section>
+{% endif %}
 {% endblock %}

@@ -225,7 +225,7 @@ HOURLY_FAMILIES = [
         "title": "Freight Handler",
         "area": "supply-chain-and-transportation",
         "category": "SC&T Operations",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#freighthandlerjobs",
         "summary": "Career opportunities in Freight Handling roles include Receiving, Unloading, "
                    "Processing, Orderfilling and Shipping.",
         "do": [
@@ -258,7 +258,7 @@ HOURLY_FAMILIES = [
         "title": "eCom Warehouse Worker",
         "area": "supply-chain-and-transportation",
         "category": "SC&T Operations",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#ecomwarehousejobs",
         "summary": "Pick, pack and ship the online orders that customers are waiting on, inside one of "
                    "our fulfillment buildings.",
         "do": [
@@ -285,7 +285,7 @@ HOURLY_FAMILIES = [
         "title": "Order Filler",
         "area": "supply-chain-and-transportation",
         "category": "SC&T Operations",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#orderfillerjobs",
         "summary": "Build store-ready pallets from the pick line and stage them for the outbound fleet.",
         "do": [
             "Order Fillers at {banner} #{store} in {city}, {state} select cases from the pick line, build "
@@ -311,7 +311,7 @@ HOURLY_FAMILIES = [
         "title": "Yard Driver-Off Property",
         "area": "supply-chain-and-transportation",
         "category": "Drivers",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#yarddriverjobs",
         "summary": "Move trailers between the yard, the dock doors and nearby off-property lots.",
         "do": [
             "Yard Drivers at {banner} #{store} in {city}, {state} shuttle trailers between dock doors, the "
@@ -362,7 +362,7 @@ HOURLY_FAMILIES = [
         "title": "Asset Protection Associate - All DC/FC",
         "area": "supply-chain-and-transportation",
         "category": "Security and Asset Protection",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#dcassetprotectionjobs",
         "summary": "Protect people, product and property inside a distribution or fulfillment building.",
         "do": [
             "Asset Protection Associates at {banner} #{store} in {city}, {state} control access at the guard "
@@ -389,7 +389,7 @@ HOURLY_FAMILIES = [
         "title": "Facility Maintenance Technician",
         "area": "supply-chain-and-transportation",
         "category": "Engineering",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#facilitymaintenancejobs",
         "summary": "Keep conveyors, dock equipment and building systems running across the shift.",
         "do": [
             "Facility Maintenance Technicians at {banner} #{store} in {city}, {state} perform preventive "
@@ -416,7 +416,7 @@ HOURLY_FAMILIES = [
         "title": "Automation Technician",
         "area": "supply-chain-and-transportation",
         "category": "Engineering",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#automationtechjobs",
         "summary": "Support the robotics and controls that run our automated storage and retrieval systems.",
         "do": [
             "Automation Technicians at {banner} #{store} in {city}, {state} maintain the robotics cells, "
@@ -441,7 +441,7 @@ HOURLY_FAMILIES = [
         "title": "Aviation Line Service Technician",
         "area": "supply-chain-and-transportation",
         "category": "Aviation",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#aviationjobs",
         "summary": "Fuel, tow and service company aircraft on the ramp at a fleet operations base.",
         "do": [
             "Line Service Technicians supporting {banner} #{store} in {city}, {state} marshal, fuel, tow and "
@@ -466,7 +466,7 @@ HOURLY_FAMILIES = [
         "title": "Inventory Control Clerk",
         "area": "supply-chain-and-transportation",
         "category": "SC&T Operations",
-        "hashtag": "#supplychainjobs",
+        "hashtag": "#inventorycontroljobs",
         "summary": "Own cycle counts, research and the paperwork that keeps building inventory accurate.",
         "do": [
             "Inventory Control Clerks at {banner} #{store} in {city}, {state} run daily cycle counts, "
@@ -493,7 +493,7 @@ HOURLY_FAMILIES = [
         "title": "Cashier & Front End Services",
         "area": "stores-and-clubs",
         "category": "Cashier and Front-End Services",
-        "hashtag": "#storejobs",
+        "hashtag": "#frontendservicesjobs",
         "summary": "Greet members and customers at the front end, ring transactions and keep lines moving.",
         "do": [
             "At {banner} #{store} in {city}, {state} you are the last person a customer sees, so you set the "
@@ -521,7 +521,7 @@ HOURLY_FAMILIES = [
         "title": "Cosmetics Cashier",
         "area": "stores-and-clubs",
         "category": "Cashier and Front-End Services",
-        "hashtag": "#storejobs",
+        "hashtag": "#cosmeticscashierjobs",
         "summary": "Run the beauty counter register and keep the cosmetics department shoppable.",
         "do": [
             "The cosmetics counter at {banner} #{store} in {city}, {state} has its own register and its own "
@@ -546,7 +546,7 @@ HOURLY_FAMILIES = [
         "title": "Member Services Associate",
         "area": "stores-and-clubs",
         "category": "Cashier and Front-End Services",
-        "hashtag": "#samsclubjobs",
+        "hashtag": "#memberservicesjobs",
         "summary": "Sign up new members, renew memberships and solve problems at the member services desk.",
         "do": [
             "At {banner} #{store} in {city}, {state} you own the member services desk: new sign-ups, "
@@ -570,7 +570,7 @@ HOURLY_FAMILIES = [
         "title": "Food & Grocery Associate",
         "area": "stores-and-clubs",
         "category": "Food and Grocery",
-        "hashtag": "#storejobs",
+        "hashtag": "#foodandgroceryjobs",
         "summary": "Stock, rotate and merchandise the grocery aisles, coolers and freezers.",
         "do": [
             "Food & Grocery Associates at {banner} #{store} in {city}, {state} unload the grocery truck, "
@@ -597,7 +597,7 @@ HOURLY_FAMILIES = [
         "title": "Freezer/Cooler Associate",
         "area": "stores-and-clubs",
         "category": "Food and Grocery",
-        "hashtag": "#samsclubjobs",
+        "hashtag": "#freezercoolerjobs",
         "summary": "Work the club's freezer and cooler boxes, stocking bulk frozen and chilled product.",
         "do": [
             "At {banner} #{store} in {city}, {state} you spend most of the shift inside the freezer and "
@@ -622,7 +622,7 @@ HOURLY_FAMILIES = [
         "title": "General Merchandise Associate",
         "area": "stores-and-clubs",
         "category": "General Merchandise, Stocking, and Unloading",
-        "hashtag": "#storejobs",
+        "hashtag": "#generalmerchandisejobs",
         "summary": "Unload, sort and stock general merchandise across the sales floor.",
         "do": [
             "General Merchandise Associates at {banner} #{store} in {city}, {state} unload trailers, sort "
@@ -647,7 +647,7 @@ HOURLY_FAMILIES = [
         "title": "Stocking Associate",
         "area": "stores-and-clubs",
         "category": "General Merchandise, Stocking, and Unloading",
-        "hashtag": "#storejobs",
+        "hashtag": "#stockingassociatejobs",
         "summary": "Work the overnight stocking team, filling the store before the doors open.",
         "do": [
             "Stocking Associates at {banner} #{store} in {city}, {state} work the truck overnight: unload, "
@@ -670,7 +670,7 @@ HOURLY_FAMILIES = [
         "title": "Merchandising and Stocking Associate",
         "area": "stores-and-clubs",
         "category": "General Merchandise, Stocking, and Unloading",
-        "hashtag": "#samsclubjobs",
+        "hashtag": "#merchandisingjobs",
         "summary": "Build club pallets and keep the sales floor merchandised to plan.",
         "do": [
             "At {banner} #{store} in {city}, {state} you stock bulk club pallets, build feature displays at "
@@ -697,7 +697,7 @@ HOURLY_FAMILIES = [
         "title": "Online Order Filling Team Associate",
         "area": "stores-and-clubs",
         "category": "Digital Pickup and Delivery",
-        "hashtag": "#storejobs",
+        "hashtag": "#onlineorderfillingjobs",
         "summary": "Shop, stage and hand off customer pickup and delivery orders.",
         "do": [
             "Online Order Filling Team Associates at {banner} #{store} in {city}, {state} shop customer "
@@ -724,7 +724,7 @@ HOURLY_FAMILIES = [
         "title": "Online Order Filling Team Supervisor",
         "area": "stores-and-clubs",
         "category": "Digital Pickup and Delivery",
-        "hashtag": "#storejobs",
+        "hashtag": "#digitalpickupleadjobs",
         "summary": "Lead the pickup and delivery team through the day's order volume.",
         "do": [
             "The Online Order Filling Team Supervisor at {banner} #{store} in {city}, {state} runs the "
@@ -749,7 +749,7 @@ HOURLY_FAMILIES = [
         "title": "Cafe Associate",
         "area": "stores-and-clubs",
         "category": "Cafe",
-        "hashtag": "#samsclubjobs",
+        "hashtag": "#cafeassociatejobs",
         "summary": "Run the club cafe: prep, grill, serve and keep the counter to food safety standard.",
         "do": [
             "Cafe Associates at {banner} #{store} in {city}, {state} take orders, prep and cook to the "
@@ -774,7 +774,7 @@ HOURLY_FAMILIES = [
         "title": "Team Lead",
         "area": "stores-and-clubs",
         "category": "Retail Management",
-        "hashtag": "#storejobs",
+        "hashtag": "#teamleadjobs",
         "summary": "Lead a department team, own its standards and develop the associates on it.",
         "do": [
             "Team Leads at {banner} #{store} in {city}, {state} run a department end to end: staffing the "
@@ -800,7 +800,7 @@ HOURLY_FAMILIES = [
         "title": "Coach",
         "area": "stores-and-clubs",
         "category": "Retail Management",
-        "hashtag": "#storejobs",
+        "hashtag": "#storeleadershipjobs",
         "summary": "Lead several departments and the team leads who run them.",
         "do": [
             "Coaches at {banner} #{store} in {city}, {state} lead a group of departments and the team leads "
@@ -824,7 +824,7 @@ HOURLY_FAMILIES = [
         "title": "Fuel Station Associate",
         "area": "stores-and-clubs",
         "category": "Fuel Station",
-        "hashtag": "#samsclubjobs",
+        "hashtag": "#fuelstationjobs",
         "summary": "Run the club fuel station: assist members, check equipment and keep the site compliant.",
         "do": [
             "Fuel Station Associates at {banner} #{store} in {city}, {state} greet members at the pumps, "
@@ -850,7 +850,7 @@ HOURLY_FAMILIES = [
         "title": "Auto Care Center Technician",
         "area": "stores-and-clubs",
         "category": "Auto Care Center",
-        "hashtag": "#storejobs",
+        "hashtag": "#autocarecenterjobs",
         "summary": "Perform tire, battery and light maintenance service in the Auto Care Center.",
         "do": [
             "Auto Care Center Technicians at {banner} #{store} in {city}, {state} mount and balance tires, "
@@ -876,7 +876,7 @@ HOURLY_FAMILIES = [
         "title": "Tire & Battery Technician",
         "area": "stores-and-clubs",
         "category": "Auto Services",
-        "hashtag": "#samsclubjobs",
+        "hashtag": "#tireandbatteryjobs",
         "summary": "Service member vehicles in the club tire and battery center.",
         "do": [
             "Tire & Battery Technicians at {banner} #{store} in {city}, {state} install and rotate tires, "
@@ -901,7 +901,7 @@ HOURLY_FAMILIES = [
         "title": "Maintenance Technician",
         "area": "stores-and-clubs",
         "category": "Maintenance",
-        "hashtag": "#storejobs",
+        "hashtag": "#storemaintenancejobs",
         "summary": "Keep store equipment, refrigeration and building systems running.",
         "do": [
             "Maintenance Technicians at {banner} #{store} in {city}, {state} respond to equipment calls "
@@ -926,7 +926,7 @@ HOURLY_FAMILIES = [
         "title": "Asset Protection Associate",
         "area": "stores-and-clubs",
         "category": "Security and Asset Protection",
-        "hashtag": "#storejobs",
+        "hashtag": "#assetprotectionjobs",
         "summary": "Reduce shrink and keep associates and customers safe inside the store.",
         "do": [
             "Asset Protection Associates at {banner} #{store} in {city}, {state} work the floor and the "
@@ -952,7 +952,7 @@ HOURLY_FAMILIES = [
         "title": "Asset Protection Customer Specialist",
         "area": "stores-and-clubs",
         "category": "Security and Asset Protection",
-        "hashtag": "#storejobs",
+        "hashtag": "#apcustomerspecialistjobs",
         "summary": "Greet at the entrance, verify receipts and keep the front of the store secure.",
         "do": [
             "Asset Protection Customer Specialists at {banner} #{store} in {city}, {state} work the "
@@ -977,7 +977,7 @@ HOURLY_FAMILIES = [
         "title": "Pharmacy Technician",
         "area": "healthcare",
         "category": "Pharmacy Services",
-        "hashtag": "#healthcarejobs",
+        "hashtag": "#pharmacytechjobs",
         "summary": "Support the pharmacist with intake, data entry, filling and patient pickup.",
         "do": [
             "Pharmacy Technicians at {banner} #{store} in {city}, {state} take in prescriptions, enter and "
@@ -1003,7 +1003,7 @@ HOURLY_FAMILIES = [
         "title": "Certified Pharmacy Technician",
         "area": "healthcare",
         "category": "Pharmacy Services",
-        "hashtag": "#healthcarejobs",
+        "hashtag": "#certifiedpharmacytechjobs",
         "summary": "Work at the top of your certification supporting immunizations and clinical services.",
         "do": [
             "Certified Pharmacy Technicians at {banner} #{store} in {city}, {state} do everything a "
@@ -1027,7 +1027,7 @@ HOURLY_FAMILIES = [
         "title": "Optician",
         "area": "healthcare",
         "category": "Optical Services",
-        "hashtag": "#healthcarejobs",
+        "hashtag": "#opticianjobs",
         "summary": "Fit, adjust and dispense eyewear in the Vision Center.",
         "do": [
             "Opticians at {banner} #{store} in {city}, {state} interpret prescriptions, take measurements, "
@@ -1043,17 +1043,17 @@ HOURLY_FAMILIES = [
             "Complies with company policies, procedures, and standards of ethics and integrity.",
         ],
         "placements": [
-            ("5991", "Full time", "WD,WE,SD", 22.00, 35.00, 2, None),
             ("2073", "Full time", "WD,SD", 21.50, 34.50, 1, None),
             ("5382", "Part time", "WE,SE", 23.00, 36.00, 1, None),
             ("1236", "Full time", "WD,WE", 21.00, 34.00, 1, None),
+            ("5991", "Full time", "WD,WE,SD", 22.00, 35.00, 2, None),
         ],
     },
     {
         "title": "Vision Center Associate",
         "area": "healthcare",
         "category": "Optical Services",
-        "hashtag": "#healthcarejobs",
+        "hashtag": "#visioncenterjobs",
         "summary": "Greet vision center customers, schedule exams and support the optician.",
         "do": [
             "Vision Center Associates at {banner} #{store} in {city}, {state} welcome customers, schedule "
@@ -1076,7 +1076,7 @@ HOURLY_FAMILIES = [
         "title": "Health & Wellness Operations Associate",
         "area": "healthcare",
         "category": "Health and Wellness Operations",
-        "hashtag": "#healthcarejobs",
+        "hashtag": "#healthandwellnessjobs",
         "summary": "Keep the health and wellness area stocked, compliant and ready for patients.",
         "do": [
             "Health & Wellness Operations Associates at {banner} #{store} in {city}, {state} own the "
@@ -1102,7 +1102,7 @@ HOURLY_FAMILIES = [
         "title": "Certified Medical Assistant",
         "area": "healthcare",
         "category": "Clinical Care",
-        "hashtag": "#healthcarejobs",
+        "hashtag": "#clinicalcarejobs",
         "summary": "Room patients, take vitals and support the clinician in a community care setting.",
         "do": [
             "Certified Medical Assistants supporting {banner} #{store} in {city}, {state} greet and room "
@@ -1129,7 +1129,7 @@ HOURLY_FAMILIES = [
         "title": "Retail Operations Intern",
         "area": "students",
         "category": "Internship",
-        "hashtag": "#studentjobs",
+        "hashtag": "#walmartinternships",
         "summary": "A paid store internship rotating through front end, digital and merchandising.",
         "do": [
             "Retail Operations Interns at {banner} #{store} in {city}, {state} spend the term rotating "
@@ -1155,7 +1155,7 @@ HOURLY_FAMILIES = [
         "title": "Club Operations Intern",
         "area": "students",
         "category": "Internship",
-        "hashtag": "#studentjobs",
+        "hashtag": "#samsclubinternships",
         "summary": "A paid club internship focused on membership growth and fresh operations.",
         "do": [
             "Club Operations Interns at {banner} #{store} in {city}, {state} work with the club manager on "
