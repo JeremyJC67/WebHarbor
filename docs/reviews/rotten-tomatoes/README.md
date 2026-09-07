@@ -1,142 +1,85 @@
-# Review: Rotten Tomatoes — source data, functional repairs, and seven grading contracts
+# Review: Rotten Tomatoes — homepage coverage, sourced catalog, and seven grading contracts
 
-**Draft status: not ready for maintainer approval.** Runtime code: `6cee8aa1ebba2d520319e4d688ba1cbbfa2282f1`. The full-image attempt failed when the local Docker storage became read-only during COPY after host disk space was exhausted. Recovery and a fresh build are pending; this is not an environment PASS. This review builds on [derenlei's original PR #26](https://github.com/aiming-lab/WebHarbor/pull/26). The original Flask site, account workflows, movie identities, and integration remain the foundation; this is a reviewer continuation of that contribution. The changes below do not constitute a completed end-to-end benchmark evaluation.
+**Draft; not ready for maintainer approval. Accepted task runs: 0.** This continues [derenlei's original PR #26](https://github.com/aiming-lab/WebHarbor/pull/26), retaining the original Flask site, account workflows, integration and 147 movie identities. The expanded assets are uploaded to [HF PR #55](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/55) at immutable revision `61f62d1275121975cae704acc10504d42def6c39`; the PR ref and file identities are independently verified. The repository pins this revision. The owner-approved visual baseline and accepted independent task evaluations remain pending. The recorded 20-site image passed engineering checks for its identified inputs. The integrated 21-site image also passed engineering checks. Its frozen R0 predates the Netflix revision; that external task/rubric revision is separately hash-bound to commit `6a4bf4d1a652085d0ec145a946596d71f5a1cf9f`. Three assisted read-only runs now pass the official primary verifier at code `80b9c1c14f04ea71f69ac6235b00f7c736a126dc`, and 116 regression methods pass. Unchanged application and seed inputs reuse the image checks. The Claude Code blind-review package has not been frozen.
 
-## Changes and source coverage
+## Homepage and source coverage
 
-The candidate keeps the original 147 movie IDs and slugs and rebuilds their public facts from the corresponding official Rotten Tomatoes movie and linked cast pages captured on September 7, 2026. The tracked `sites/rotten_tomatoes/data/source_catalog.json` records source URLs, retrieval times, and source hashes. It is a build input; request handlers read SQLite.
+An earlier review candidate reduced the homepage to three sections and incorrectly treated TV, editorial content and current-release sections as outside scope without an approved scope change. Inspection confirmed that the reference already had 14 main sections; this was an omission, not a later source-site update. This revision restores those sections in their captured source order, including four compact rankings, seven hero slides, side cards, trending links and complete View All destinations.
 
-The resulting catalog contains 147 movies, 20 genres, 2,236 people, and 2,709 credits across Actor, Director, Producer, and Screenwriter. Source corrections cover release dates, runtimes, genres, credits, scores, and watch availability. Subscription access is distinct from rental or purchase offers. Missing facts remain unknown: 17 audience scores are NULL, and 558 catalog people have no verified photo reference. Unsupported biographies and critic-review text are removed rather than presented as sourced facts. These records document what the captured pages displayed; they are not a guarantee that later upstream pages will retain the same values.
+The sequence is Movies in Theaters; Free To Watch; Limited Releases Now Playing; Coming Soon To Theaters; Popular Streaming Movies; Popular TV; New to Rent/Buy at Home; Best New Animated Movies; New TV This Week; Top 10 Box Office; Latest Certified Fresh Movies & TV; RT Recommends: Weekly Staff Picks; Trailers & Videos; Discover More. Popularity and box-office ordering come from the captured homepage; audience-score sorting is not substituted for them.
 
-All 147 movies have source-confirmed posters and hero images; 1,678 catalog people reference verified photos. The broader download audit validated 2,380 image outputs, including people outside the final catalog's referenced photo set. Each selected source URL was explicitly present in the captured source, and each output passed MIME checks, image decoding, dimensions, RGB JPEG conversion, and an independent output-hash recheck. Small thumbnail wrappers were not enlarged into desktop posters. Missing identities were not merged by similar names; an explicitly mapped local credit can retain a photo without inventing a Rotten Tomatoes person URL.
+The September 7, 2026 source snapshot adds 123 movies while preserving the previous 147 rows and all 2,236 existing person identities. The catalog now contains **270 movies and 3,852 people**; new credits reuse 248 existing person IDs. The increment includes **1,371 decoded and hash-checked assets**: 123 posters, 120 hero images and 1,128 person photos. No preexisting image was overwritten. The candidate archive also preserves all 1,986 previous static files.
 
-The four synthetic benchmark accounts, 16 watchlist entries, and 12 personal ratings remain separate from public movie facts. Synthetic audience reviews were reduced from 28 to 23 by retaining the latest row for each user/movie pair. An explicit unique constraint now enforces that relationship. The offline migration writes a separate output database and preserves its source; startup does not silently migrate populated databases.
+There are **23 TV detail records and 19 feature records** (14 official editorial pages plus five homepage video/promotion cards). TV fields retain their own season, score and viewing-information semantics. Features offer short source summaries and original-source links. Full articles, remote video playback, advertising and commercial services are not reproduced or claimed to work offline.
 
-Functional repairs include:
+The tracked [movie/person catalog](../../../sites/rotten_tomatoes/data/source_catalog.json), [homepage snapshot](../../../sites/rotten_tomatoes/data/homepage.json), [TV catalog](../../../sites/rotten_tomatoes/data/tv_catalog.json) and [feature catalog](../../../sites/rotten_tomatoes/data/feature_catalog.json) retain source URLs, capture times and hashes. Explicit offline seed construction imports movie/person rows and three SQLAlchemy `ContentSnapshot` documents into SQLite. HTTP requests read SQL and use local image files; they do not depend on runtime JSON reads, remote JavaScript or image hotlinks. Existing populated databases are not silently migrated. The explicit migration requires authorization for additions and binds its receipt to the input hashes.
 
-- Safe local/same-origin login and watchlist return destinations, while preserving legitimate `next` links.
-- Visible validation for bcrypt's 72 UTF-8-byte password limit, invalid ratings and reviews, and account-name boundaries; invalid submissions retain their draft input.
-- Atomic SQLite conflict handling for account, watchlist, rating, and review writes. Ratings retain update semantics; duplicate reviews retain the existing review and show an informative message.
-- POST logout with CSRF protection, plus regression coverage for existing CSRF and object-ownership checks, invalid IDs, repeated submissions, and rating boundaries.
-- Credit-aware, accent-normalized search; role-specific filmography; stable browsing order; NULL-safe scores; and revised listing, detail, person, and account presentation. Visual fidelity still requires the checks listed below.
+Unknown facts stay unknown. Three new movies have no verified hero image; 1,046 people in the merged catalog have no verified photo. Missing scores, dates, roles or TV viewing information are not invented. Movie Info fields and full linked cast pages take precedence over incomplete or conflicting JSON-LD. Homepage and detail snapshots retain their separate source context when they differ.
 
-## Seven retained tasks
+The four synthetic benchmark accounts, 16 watchlist entries and 12 personal ratings remain intact. Earlier repairs retain safe return destinations, CSRF-protected POST logout, ownership checks, input validation, atomic conflict handling and the unique user/movie review relationship. Public facts and synthetic account state remain separate.
 
-The candidate reduces the original 20 tasks to seven. Useful excluded workflows remain functional regression cases. The selection avoids manufacturing extra catalog entries, hiding normal counts, or imposing unrelated navigation to make a task appear harder.
+## Task and verifier impact
 
-| Task ID suffix | Public task and grading focus |
+Seven candidate tasks remain; this revision does not add tasks to meet a quota or relax scoring to match execution results.
+
+| Suffix | Contract and effect of the expanded catalog |
 | --- | --- |
-| `0` | Browse Sci-Fi in Streaming at Home; compare streaming-release dates and report every latest-date tie with all screenwriters, as a table or equivalent JSON. Movie year sorting cannot substitute for date comparison. |
-| `3` | Search Christopher Nolan; compare Oppenheimer and The Dark Knight for the complete shared-producer intersection and each movie's own streaming date. No third movie is required. |
-| `8` | Register the specified new account and confirm its authenticated account page; require the exact new account and no unrelated state changes. |
-| `9` | Change Bob's display name and confirm it on the account page; permit only the requested field change. |
-| `11` | Remove the specified movie from David's watchlist and report the remaining total; a guessed count without the deletion fails. |
-| `14` | Compare Carol's My Ratings and My Watchlist; report the complete rated-minus-watchlisted set with correctly paired personal scores, without changing state. |
-| `18` | Find the highest audience score among movies crediting Kevin Feige as Producer; include ties and streaming dates. Accept either eligible-candidate comparison or a valid global descending-score exclusion argument. |
+| `0` | The unrestricted 41-title task imposed excessive repetitive detail-page work. Its public prompt and rubric now select Subscription Platform = Netflix: 8 Sci-Fi/at-home candidates, all with listed dates. The latest is War Machine, March 6, 2026, with Patrick Hughes and James Beaufort. All 8 still require comparison; the generic missing-date and tied-result rules remain, and legitimate same-origin navigation is valid. |
+| `3` | Search Christopher Nolan; report the complete shared producers of Oppenheimer and The Dark Knight and their own streaming dates. Required facts remain unchanged. A bounded parser repair accepts valid Chinese prose and separates producer names from the following streaming-date field. |
+| `8`, `9`, `11`, `14` | Registration, display-name update, watchlist deletion and rated-minus-watchlisted comparison retain their exact state contracts. Homepage/navigation changes require fresh UI runs. |
+| `18` | Four Kevin Feige Producer candidates now include Spider-Man: Brand New Day, the 97% maximum with no listed streaming date. Prompt and rubric explicitly require reporting that absence; the winner cannot be excluded or assigned a guessed date. Complete eligible comparison may use each candidate's Movie Info or the complete Kevin Feige Producer Filmography plus winner Movie Info. The valid global descending-score exclusion route also remains accepted. Valid explanatory comparisons do not add movies to the selected result set. |
 
-The removed tasks had combinations of thin natural search results, trivial card/count answers, ambiguous or unsupported constraints, or redundant workflows. Search-specific candidate requirements are inapplicable to direct registration/account operations and private-list comparison; that does not exempt those tasks from UI and state evidence. The small private-list task is not claimed to be difficult. The broader date and producer comparisons are plausible challenging tasks, with difficulty still awaiting independent measurement.
+Verifiers require native browser observations, screenshots and frozen before/after SQLite snapshots. Information tasks require unchanged business state, including the new content table; state tasks permit only the requested delta. A correct answer without observed UI evidence is insufficient.
 
-Grading contracts reside in `tasks.jsonl` and `verify/`; answer keys are confined to verifiers. They require trusted browser observations and frozen before/after SQLite snapshots. Synchronous DOM evidence, when available, is authoritative; otherwise screenshot claims are checked against their actual trajectory frames through the configured vision judge. Agent thoughts or a correct final answer alone are insufficient. Information tasks require unchanged business state; state tasks require the exact permitted delta. No grader reads a later live database as a substitute for a missing snapshot.
+The earlier **77-method fixture suite passed** and remains historical evidence for the unrestricted R0 version. An independent informed review found two missing-date parser defects: rejection of clear prose/Markdown and acceptance of partial streaming-date guesses or conflicting JSON aliases. Both were reproduced, fixed and retested against the same closed matrix. All seven original samples now receive their expected verdicts, and the independent rerun passed all 77 methods. The parser remains bounded; this is not a claim of arbitrary natural-language understanding. After the explicit Netflix scope revision, **88 fixture methods passed** (43.133 seconds): the applicable earlier regressions plus 11 new scope checks. They cover omitted/wrong/conflicting platform restrictions, outside-scope winners, incomplete candidates or writers, immutable unrelated state, legitimate direct/keyboard routes and the unchanged missing-date rule. All 8 source records were checked against saved official metadata and the static seed. The separate informed R0 scope recheck returned **GO**: 27 relevant methods passed (1.112 seconds), and 24 independent samples (6 expected PASS, 18 expected FAIL) had no unexpected verdicts. Four public-CLI checks also returned the expected exit codes. This is not an independent rerun of all 88 methods. See the [compact R0 recheck](r0-independent-review.json) and [historical 88-method output](r0-netflix-fixture-tests.txt).
 
-## Visual comparison
+The closed R18 repair then passed [100 methods](r18-repair-100-tests.txt) (16.909 seconds). Its screenshot-only compatibility follow-up passed [106 methods](r18-screenshot-106-tests.txt) (16.796 seconds), retaining the earlier methods and adding six mocked dispatch/refusal checks. After ten R3 Chinese-prose regression methods, the final combined suite passed **[116 methods](combined-verifier-116-tests.txt)** (15.265 seconds). All 17 tested source/test files matched the checkout byte for byte, the seed was unchanged, and no external LLM was called. Original R18 missing-date and R3 English paraphrase samples kept their expected verdicts. Screenshot mocks verify routing and evidence refusal; actual vision accuracy has not been evaluated. See the [source hashes and reproducible command](verifier-regression-summary.json). All these suites are constructed tests, not agent executions, accepted runs or Claude blind-review results.
 
-The original mirror used a navy header, text/emoji branding, oversized score blocks, and a narrow-screen header that exceeded the viewport. The candidate restores the red header, source logo and fonts, featured-image composition, compact score/synopsis panels, and responsive navigation. The following are unedited, logged-out browser screenshots at equal viewport sizes. Blank image regions in a capture are not by themselves proof of a missing asset. Upstream advertising, trailer playback, TV/editorial sections and the changing current-release catalog are outside this fixed movie benchmark; their absence is a disclosed fidelity limit.
+## Assisted read-only task executions
 
-| Page and viewport | Upstream reference | Original PR | Candidate |
-| --- | --- | --- | --- |
-| Home · 1440 × 1000 | ![upstream](images/home-desktop-upstream.jpg) | ![before](images/home-desktop-before.jpg) | ![candidate](images/home-desktop-candidate.jpg) |
-| Browse · 1440 × 1000 | ![upstream](images/browse-desktop-upstream.jpg) | ![before](images/browse-desktop-before.jpg) | ![candidate](images/browse-desktop-candidate.jpg) |
-| Oppenheimer · 1440 × 1000 | ![upstream](images/oppenheimer-desktop-upstream.jpg) | ![before](images/oppenheimer-desktop-before.jpg) | ![candidate](images/oppenheimer-desktop-candidate.jpg) |
-| Home · 390 × 844 | ![upstream](images/home-narrow-upstream.jpg) | ![before](images/home-narrow-before.jpg) | ![candidate](images/home-narrow-candidate.jpg) |
+All three runs used an **independent decision agent + informed controller**: the decision agent received the task and browser observations; the controller already knew the implementation and mechanically executed the chosen actions. The model disclosure is GPT-6 for both roles; exact deployment aliases are unavailable. This is not a fully blind control chain. The original observations, answers and frozen state were preserved, and scoring outputs were saved separately.
 
-The candidate was also inspected at 768 and 320 CSS pixels, including mobile navigation and registration. Document width matched the requested viewport in these checks. Five movie detail templates were inspected: Oppenheimer, Dune: Part Two, Parasite, Superman, and Cold Storage. Offscreen requests were still pending in some captures; these screenshots only establish their visible state. Human comparison and approval of a local regression baseline remain pending. Screenshot identities are recorded in [visual-manifest.json](visual-manifest.json).
+| Task | Recorded actions / PNGs | Original primary | Final primary at `80b9c1c` | Interpretation |
+| --- | --- | --- | --- | --- |
+| R0 | 20 / 41 | PASS | PASS | Compared all eight Netflix candidates, then reported the latest date and complete screenwriter set. |
+| R3 | 6 / 13 | FAIL | PASS | The correct Chinese answer was rejected by producer-field parsing. The bounded repair fixes Chinese boundaries and the next date heading without changing the task or original run. |
+| R18 | 6 / 13 | FAIL | PASS | The original scorer treated lower-score explanation as extra selected results and omitted the complete Producer Filmography route. The repair accepts that evidenced route and validated comparison prose. |
 
-## Verification completed and still pending
+The final official primary reevaluation used the same three frozen originals and separately bound the current grader/helper hashes. All three returned exit 0, with unchanged business state. Primary PASS does not complete acceptance: **accepted runs remain 0**, tasks **8, 9, 11 and 14 remain incomplete**, and owner visual approval, auxiliary LLM judgments and Claude blind review remain pending. The R3/R18 repairs were informed code diagnosis, not blind evaluation.
 
-Completed engineering checks: **35 application tests passed** (27 functional, five source/catalog, three source-download tests). The final portable verifier suite passed **59 unittest methods** (12 date-comparison, 28 producer-comparison, and 19 state/private-list methods), including 73 state/private-list verdict cases. These are constructed fixtures, **not real browser runs**; they establish neither agent success rates nor independent review results. The suite covers no-op and answer-only cases, missing observations, date/name/score pairing, exact database changes, and legitimate alternative routes and response forms. See the [public verifier test log](verifier-tests.txt) and [input/version manifest](verification.json).
+The [redacted execution and scoring summary](assisted-task-executions.json) records each full run hash, input/trajectory identity, original failure and latest result. Five byte-identical screenshots illustrate [R0 Netflix scope](images/task-r0-netflix-scope.png), [R0 selected Movie Info](images/task-r0-winner-info.png), [R3 search](images/task-r3-search.png), [R18 complete Filmography](images/task-r18-filmography.png) and [R18 selected Movie Info](images/task-r18-winner-info.png). Each is decoded as PNG and visually checked for credentials; [dimensions and hashes](assisted-task-screenshots.json) bind them to the originals. These few images cannot substitute for complete trajectory/state evidence. Raw trajectories, databases, DOM dumps, internal skills and review case materials are excluded from this public package.
 
-The final scoring audit also corrected a hidden route restriction in task 0 and a natural-language false negative in task 3. The task requirements were unchanged by those two fixes; portable regression cases preserve both the legitimate alternatives and invalid shortcuts.
+## Evidence and remaining acceptance
 
-A guided registration pilot completed the account operation but failed verification because a browser observation timeout left a missing intermediate screenshot. The original run is retained as a failure; its evidence is not repaired after the fact. The recording adapter is being corrected before independent runs.
+[Compact verification](homepage-verification.json), [test output](homepage-verification.txt) and [screenshot identities](homepage-visual-manifest.json) separate the evidence purposes:
 
-The current asset candidate is [HF PR #55](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/55), currently **open**, at immutable revision:
+- **Engineering:** isolated Flask checks produced the expected statuses for 298 GET requests; 1,715 unique rendered image references resolved locally. All 14 source/migration tests passed. Requests still worked with the three content JSON files removed from the isolated fixture; foreign-key checks were clean and the canonical seed stayed byte-identical. These checks establish route/data integrity, not visual fidelity.
+- **Earlier 20-site full-image engineering:** the rebuilt image `sha256:4f7a2006c5daa2339073be9a348f8da30016134204fd97109e429ef8e4a654c6` matched all 50 checked source/seed/UI/task/verifier files at that check, including the latest R18 fix. Those task inputs predate the Netflix scope change and the registry predates the TED integration; this image does not establish current 21-site acceptance. At boot, after RT reset and after reset-all, all 20 sites were alive and all 20 homepages returned HTTP 200. Controlled HTTP registration changed users from 4 to 5; official reset removed that fixture user and restored the seed bytes. Reset-all also restored the seed, and a subsequent official RT restart reported ready with all 20 sites alive and unchanged RT bytes. All **44 application tests** passed (27 functional, 14 source/migration, 3 download; 20.934 seconds) in an isolated code/DB fixture; the live service retained seed-byte equality. See [full-environment.json](full-environment.json) and [unmodified application test output](full-app-tests.txt). The verifier suite was not rerun as part of this check.
+- **21-site integrated engineering:** image `sha256:b614f764ecb968f820bcde355fdc3e88f77d3f38d382ccbc475ca9888b7f1528` at code `abb70237e66dde47daf822e6bed5505162298e6a` matched 102 frozen files. Three rounds each passed all 21 health/homepage checks. Controlled HTTP registration changed RT users 4→5; restart preserved dirty bytes, reset restored seed bytes, and reset-all recovered all 21 sites. The prior 44 application-test inputs match exactly, so their result is reused without a claimed rerun. This image predates the Netflix R0 revision; later verifier fixture results are separate, and revised task/verifier inputs are explicitly bound to the current external runner. The build used locally verified assets. The later HF upload has independently verified remote identities; a clean remote-only download/rebuild has not been performed. See [versioned full-environment evidence](full-environment.json).
+- **Actual informed browser checks:** 1440, 768, 390 and 320 CSS-pixel widths, hero arrows/dots/End-key control, poster-rail navigation and disabled end control, TV and feature entry points, mobile navigation, login, watchlist addition/removal and logout were exercised. Recorded page widths matched the viewports. SQL evidence recorded one added watchlist row, its removal restored the original rows, and the official reset restored the seed hash. These operations are UI smoke checks, not independent benchmark runs.
+- **Pending:** owner approval of the visual regression baseline; four login/state task runs; accepted task evaluations with secondary judgments; a frozen Claude Code blind-review handoff; the final public evidence revision. R0/R3/R18 primary results and source identities are recorded above, with accepted runs still 0. The earlier storage-exhaustion build remains failed historical evidence; a superseded image with old R18 code was not accepted. The recorded engineering PASS applies only to the tested image and frozen inputs identified above. The earlier registration pilot with a missing screenshot remains failed evidence.
 
-```text
-68798983027ceaf17df62f6167625baae38a160a
-rotten_tomatoes.tar.gz: 777480887 bytes
-SHA-256: 67d7206031d284e268d9f5887693ebe8059555a671a604efb22c51a5fae6934d
-```
+| Current candidate | Capture |
+| --- | --- |
+| Desktop homepage | ![1440-pixel homepage](images/home-repair-desktop.jpg) |
+| Streaming and TV rankings | ![Restored rankings](images/home-repair-rankings.jpg) |
+| Mobile homepage | ![390-pixel homepage](images/home-repair-mobile.jpg) |
 
-The archive's public LFS identity matches this hash. `.assets-revision` points to this review revision; it is not yet a merged-asset claim. Final acceptance remains **PENDING**:
+Additional unchanged screenshots cover [768 pixels](images/home-repair-tablet.jpg), [320 pixels](images/home-repair-narrow.jpg), [box office](images/home-repair-box-office.jpg), [TV](images/home-repair-tv.jpg) [feature summaries](images/home-repair-feature.jpg), and the [settled rail end](images/home-repair-rail-end.jpg). These are candidate observations awaiting owner approval. Earlier upstream, original-PR and pre-expansion candidate images remain identified by [visual-manifest.json](visual-manifest.json); the previous [verification manifest](verification.json) and [59-method log](verifier-tests.txt) remain historical evidence and do not establish acceptance of this expanded version.
 
-- A clean full-image build after recovery from the failed local storage attempt, all 20 site health checks, and reset/restart/reset-all checks with seed-byte equality.
-- Independent real runs of all seven revised tasks, primary verifier and secondary LLM judgments, and targeted shortcut/no-op/wrong-state/missing-evidence checks.
-- Human visual comparison against the attached upstream/candidate screenshots and the running mirror. Automated viewport checks do not substitute for human acceptance.
-- Independent Claude Code review, HF merge, and the final code/asset revision pair.
+## Reproduction status
 
-## Reproduction
-
-Run from the review checkout's repository root with Docker, Python 3.12, `uv`, and the `hf` CLI installed. These instructions describe a fresh reproduction after storage recovery. The failed local build did not reach full-image HTTP and reset verification. They follow the repository's [contribution workflow](https://github.com/aiming-lab/WebHarbor/blob/main/CONTRIBUTING.md).
+The new [HF asset verification](hf-asset-verification.json) confirms RT archive SHA256 `38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1`, the downloaded manifest hash, and TED identity; all 20 other baseline site archives are unchanged. Tar identities were checked through official LFS/HEAD metadata, without full archive redownload/extraction. The repository pins `.assets-revision` to `61f62d1275121975cae704acc10504d42def6c39`. The tested local archive matches the remote LFS SHA256, so the same application/assets evidence is reused; a full remote-only redownload/rebuild was not performed. Follow the repository [build and contribution workflow](https://github.com/aiming-lab/WebHarbor/blob/main/CONTRIBUTING.md), wait for bounded HTTP readiness, and run:
 
 ```bash
-set -e
-ASSETS_REVISION=68798983027ceaf17df62f6167625baae38a160a ./scripts/fetch_assets.sh
-python3 - <<'PY'
-import hashlib
-from pathlib import Path
-p = Path('sites/.cache/tarballs/rotten_tomatoes.tar.gz')
-with p.open('rb') as f:
-    assert hashlib.file_digest(f, 'sha256').hexdigest() == \
-        '67d7206031d284e268d9f5887693ebe8059555a671a604efb22c51a5fae6934d'
-PY
-./scripts/build.sh webharbor:pr26-review
-docker run -d --rm --name wh-pr26-review \
-  -p 8201:8101 -p 41000-41019:40000-40019 webharbor:pr26-review
-curl --fail --silent --show-error --retry 60 --retry-delay 1 \
-  --retry-connrefused --retry-max-time 120 http://localhost:8201/health
-for port in $(seq 41000 41019); do
-  curl --fail --silent --output /dev/null "http://localhost:$port/"
-done
-curl --fail -X POST http://localhost:8201/reset/rotten_tomatoes
-docker exec wh-pr26-review sha256sum \
-  /opt/WebSyn/rotten_tomatoes/instance/rotten_tomatoes.db \
-  /opt/WebSyn/rotten_tomatoes/instance_seed/rotten_tomatoes.db
-docker exec wh-pr26-review python -m unittest discover \
-  -s /opt/WebSyn/rotten_tomatoes/tests -v
-docker exec wh-pr26-review python -m unittest discover \
-  -s /opt/WebSyn/rotten_tomatoes/verify -p 'test_*contracts.py' -v
+python -m unittest discover -s sites/rotten_tomatoes/tests -v
+python -m unittest discover -s sites/rotten_tomatoes/verify -p 'test_*contracts.py' -v
 ```
 
-Require readiness and matching database hashes before continuing. Exercise `POST /restart/rotten_tomatoes` and `POST /reset-all` on port 8201 and recheck readiness; repeat the seed comparison after reset. Wait for readiness after boot rather than treating an initial connection failure as a completed test.
-
-To execute one independent example, configure `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `JUDGE_MODEL` for the supported agent/judge endpoint. Capture consistent snapshots with SQLite's backup API, before the agent starts and after it ends **before any reset**:
+Run the tests in the site's configured Python environment; the final 116-method receipt used Python 3.12.3 and an isolated byte-identical copy of the verifier directory. Its machine-specific interpreter path is omitted from the public receipt. For actual tasks, capture SQLite backups before execution and immediately after it, before any reset. With an authorized absolute run directory and a separate absolute output path, the official primary invocation is:
 
 ```bash
-set -e
-(cd agent_demo && uv sync && uv run playwright install chromium)
-rt_run_dir="$PWD/runs/rotten-tomatoes-3"
-test ! -e "$rt_run_dir"
-mkdir -p "$rt_run_dir"
-snapshot_rt() {
-  docker exec wh-pr26-review python -c '
-import sqlite3
-with sqlite3.connect("file:/opt/WebSyn/rotten_tomatoes/instance/rotten_tomatoes.db?mode=ro", uri=True) as src:
-    with sqlite3.connect("/tmp/rt-snapshot.db") as dst:
-        src.backup(dst)
-'
-  docker cp wh-pr26-review:/tmp/rt-snapshot.db "$1"
-}
-curl --fail -X POST http://localhost:8201/reset/rotten_tomatoes
-snapshot_rt "$rt_run_dir/before.db"
-uv run --project agent_demo python agent_demo/agent.py \
-  --tasks_file sites/rotten_tomatoes/tasks.jsonl \
-  --task_id RottenTomatoes--3 --url http://localhost:41019/ \
-  --max_steps 40 --out_dir "$rt_run_dir"
-snapshot_rt "$rt_run_dir/after.db"
-uv run --project agent_demo python agent_demo/eval_judge.py \
-  --run_dir "$rt_run_dir" --verifier True --out "$rt_run_dir/verifier.json"
-uv run --project agent_demo python agent_demo/eval_judge.py \
-  --run_dir "$rt_run_dir" --out "$rt_run_dir/llm-judge.json"
+python agent_demo/eval_judge.py --run_dir "$TASK_RUN_DIR" --verifier True --out "$TASK_SCORE_OUTPUT"
 ```
 
-Repeat with distinct, fresh output directories and a reset for suffixes `0, 3, 8, 9, 11, 14, 18`; choose and report a sufficient step budget for each task. Preserve the actual trajectory, screenshots, snapshots, model settings, and grader outputs. Do not substitute constructed evidence or edit a trajectory to repair missing observations. Use absolute run-directory paths because the verifier subprocess runs from `agent_demo`.
+The recorded primary reevaluations used the existing offline environment and no external LLM; auxiliary judgments remain pending. Raw run directories are not part of this public package, so the command documents how to score a supplied run rather than claiming that the summary alone reproduces a run. Preserve trajectories and failed observations without editing them. Maintainers retain final approval and merge authority.

@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "purpose": "full-container HTTP/SQL/control checks and isolated application tests; not browser task runs or owner/Claude approval",
+  "engineering_status": "PASS",
+  "image_id": "sha256:4f7a2006c5daa2339073be9a348f8da30016134204fd97109e429ef8e4a654c6",
+  "http_reset_smoke_started_at_utc": "2026-09-07T14:41:39.733578+00:00",
+  "http_reset_smoke_finished_at_utc": "2026-09-07T14:41:55.755391+00:00",
+  "site_names": [
+    "allrecipes",
+    "amazon",
+    "apple",
+    "arxiv",
+    "bbc_news",
+    "booking",
+    "cambridge_dictionary",
+    "coursera",
+    "espn",
+    "github",
+    "google_flights",
+    "google_map",
+    "google_search",
+    "huggingface",
+    "ikea",
+    "merriam_webster",
+    "phys_org",
+    "rotten_tomatoes",
+    "target",
+    "wolfram_alpha"
+  ],
+  "image_source_match": {
+    "status": "MATCH",
+    "files_matched": 50,
+    "differences": [],
+    "site_relative_file_sha256": {
+      "app.py": "988a96876cfd22554828f13e38e6e8663f19af81393505f2e8ab6c3efcd4eed2",
+      "seed_data.py": "0df124f94d3c2adc7669886bfd7fc860d336ce0d63778d66e32ff47b0da84e4d",
+      "refresh_seed.py": "a8820132f02569f8d056a51855c3de2e88d22dca8606803b34bb7087ca9e1856",
+      "tasks.jsonl": "d6395cb9ce5444816f885c854a75a8abb8c0afd5129c1e481a86720bb70af6cd",
+      "templates/score_icons.html": "1b6b7a7c3c0c7f1ac672617f8397387961e5e871ae6a150ebb892de78f8d80b7",
+      "templates/movie_detail.html": "aaf563f2051b260e2bd16bf2e76e44c61fa550998e522686159eb35068604b69",
+      "templates/search_results.html": "384f69ec76e1576a7bff8a62c74eaad62e4578d929abe6e22cad995ad897661f",
+      "templates/index.html": "94c3dcabb54176d3c31ac997e272928264bdc451db21d78ee2e2bc6efc2c7b0d",
+      "templates/browse.html": "1aba9668314374c613d2c4b0db3a00f596a847b47ca14ee656a953aa2b80d7f8",
+      "templates/base.html": "0973ae295d49ddfcd43101652a79b8a6f774647bd94eba2a1b788f31a4b492a3",
+      "templates/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "templates/content_list.html": "ad6293afe654367db6b176ce8dbdd0460e1ec65f8bee7077d40ab809d350b88e",
+      "templates/site_information.html": "babf931692d31478f016889099ece394643d5c73a03665f6d611868c2a8a4895",
+      "templates/register.html": "593e71d75db6465626ffdf7c50ea86f51ab17eaf8a91bcb735c10d6bd942b476",
+      "templates/login.html": "729ed82a41c603b851f5629a6c22c5ca36dd6649b543e6220289cb6420f92484",
+      "templates/account.html": "4e44306a39ade064208142a28e6683391a9c70a15d5f86e9ad87e83ef4f75006",
+      "templates/tv_detail.html": "955701c4e6f70dff76379879a81a6d89fdeadf548329a62da47b9b0525457fc1",
+      "templates/profile_tabs.html": "63b6707c1c64164fc2faca1f7631421884c13c61dd1411344c2125b57481e26a",
+      "templates/user_reviews.html": "9fc0cbbcf69c0ebc6ce824bcf2a21af01e862d6951543e31bcb94e8fc270aa3c",
+      "templates/feature_detail.html": "46040d5643216ed1b3d54d83098665a268f9887ba23289c8168d9bf23b735ffc",
+      "templates/watchlist.html": "ebe45a693a3f290dece6de490f1cd4d839f8a9dcf4d8421f7e354d91a2176124",
+      "templates/celebrity.html": "5e20ddc7c2991035f2e983ea3fe48fc08137683b6c52188531be7562fcaa93d8",
+      "templates/user_ratings.html": "fb6c2db2bde397dd94dcad49f902d70461e4acd9287e88fd3f235c2e0e79dcb5",
+      "templates/account_edit.html": "4e2885e5eeace7ecbe9aab91c741659f1a5d042e783c69d895dd678bcfb520a8",
+      "templates/home/_cards.html": "5617a2105a79e045731af08eb4cda23ecd7e28df778f8a0d7bfb1c43d6576d11",
+      "data/feature_catalog.json": "be1b1d958c396a69c5df66351999c7d70a16b7c48322d8bdfb2db5083ab579da",
+      "data/source_catalog.json": "1094580d1299187fbc59cd338f461694955600f37225bcd1e7e2ad1f05e31084",
+      "data/tv_catalog.json": "1a21e057f013e1c419eb451652a5dcb2f30128fd073707f86b487ca548ee4db2",
+      "data/homepage.json": "ce83c423cae4d09dd3ab1a97b879a6d2427d6284074560735fe982efe0564781",
+      "verify/verify_14.py": "e910eb128268a14e3bad6182d4610ff9aa2d1e0a376e2a97c3153329dcceb931",
+      "verify/test_missing_date_contracts.py": "f3861d8704d4c84851f43d01c45607b9c35167cfff4f15b79cf8f5336c86a4f7",
+      "verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+      "verify/verify_0.py": "e7087f102560fb174a277822aa90c9d35ba2f7ccc4fe4ca6fdf8d71ce1cc8c20",
+      "verify/test_state_contracts.py": "c2a48ba4738bc3ff3d58976baf0c9b12d86e49559c91bfe7389d26cf7843e9b1",
+      "verify/test_info_contracts.py": "e5cdc06e7c2109e9f44edeb2021492b2644f78bfb2227e2ac4a7a97688478540",
+      "verify/verify_18.py": "2884079b935b8c0a96c25961374d4358761e6d6b45a8609354c467f3951a5f37",
+      "verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+      "verify/verify_3.py": "8e2694e80c5187d487b94828bf07ccd1dc7a278f9a85f73a37f502d71b63f817",
+      "verify/contracts.py": "c80db3f8d3e6d39370611a8fe2dc9e5e0f5727c30820a51fd9e3bc31d7903967",
+      "verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+      "verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+      "verify/test_date_contracts.py": "fca65082755cde71c840ad995d80708d3693d3b707fd9890356eb9b57d45d190",
+      "verify/test_catalog_expansion_contracts.py": "32ee35e0472d09d75b6b59d271b50c9b587f6b0723b9e493581f2835efc6a3b6",
+      "static/css/home.css": "d00176e149bab80ef59231820845ae7db0cb393dee80d0abbb3526871247ea55",
+      "static/css/content.css": "1635e2dd4754c6f697e1068c010eb9050f8430c0ad3d07b34a4bd5bfb2b46844",
+      "static/css/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "static/css/style.css": "3fba11c174064bb892ebe80aba4b929f8baa59b5abe3400abbad0e9eb113343e",
+      "static/js/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "static/js/home.js": "f92dfc57242ff89a8e55b3a216a82e4bf25669e13527fa5eb0f77bd701b0d4ba",
+      "instance_seed/rotten_tomatoes.db": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+    }
+  },
+  "all_site_http_health_rounds": [
+    {
+      "stage": "boot",
+      "control_http_status": 200,
+      "all_sites_alive": true,
+      "site_count": 20,
+      "homepage_http_status_counts": {
+        "200": 20
+      },
+      "rt": {
+        "counts": {
+          "movies": 270,
+          "persons": 3852,
+          "users": 4,
+          "watchlist_items": 16,
+          "user_ratings": 12,
+          "audience_reviews": 23,
+          "content_snapshots": 3
+        },
+        "fixture_user_count": 0,
+        "foreign_key_errors": [],
+        "current_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+        "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+      }
+    },
+    {
+      "stage": "after-rt-reset",
+      "control_http_status": 200,
+      "all_sites_alive": true,
+      "site_count": 20,
+      "homepage_http_status_counts": {
+        "200": 20
+      },
+      "rt": {
+        "counts": {
+          "movies": 270,
+          "persons": 3852,
+          "users": 4,
+          "watchlist_items": 16,
+          "user_ratings": 12,
+          "audience_reviews": 23,
+          "content_snapshots": 3
+        },
+        "fixture_user_count": 0,
+        "foreign_key_errors": [],
+        "current_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+        "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+      }
+    },
+    {
+      "stage": "after-reset-all",
+      "control_http_status": 200,
+      "all_sites_alive": true,
+      "site_count": 20,
+      "homepage_http_status_counts": {
+        "200": 20
+      },
+      "rt": {
+        "counts": {
+          "movies": 270,
+          "persons": 3852,
+          "users": 4,
+          "watchlist_items": 16,
+          "user_ratings": 12,
+          "audience_reviews": 23,
+          "content_snapshots": 3
+        },
+        "fixture_user_count": 0,
+        "foreign_key_errors": [],
+        "current_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+        "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+      }
+    }
+  ],
+  "controlled_http_dirty_state": {
+    "purpose": "engineering HTTP fixture, not a browser registration run",
+    "registration_response_status": 200,
+    "users_before": 4,
+    "users_after": 5,
+    "fixture_users_after": 1,
+    "dirty_db_sha256": "728ae4035e1df4dfdf8df07a7b766c901ea90e2e87a397791485720e8634158d",
+    "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+  },
+  "official_reset": {
+    "method": "POST",
+    "path": "/reset/rotten_tomatoes",
+    "http_status": 200,
+    "ready": true,
+    "seconds": 0.7217010419999994,
+    "fixture_user_removed": true,
+    "db_restored_to_seed_bytes": true
+  },
+  "official_reset_all": {
+    "method": "POST",
+    "path": "/reset-all",
+    "http_status": 200,
+    "sites_ready": 20,
+    "all_ready": true,
+    "seconds": 2.201014583000001,
+    "rt_db_restored_to_seed_bytes": true
+  },
+  "official_restart": {
+    "method": "POST",
+    "path": "/restart/rotten_tomatoes",
+    "ready": true,
+    "note": "restart only, DB not reset",
+    "seconds": 1.044058833,
+    "rt_health": {
+      "movies": 270,
+      "ok": true,
+      "persons": 3852,
+      "site": "rotten_tomatoes"
+    },
+    "all_20_alive": true,
+    "instance_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "status": "PASS"
+  },
+  "application_tests": {
+    "purpose": "isolated code copy and temporary databases; live service unchanged",
+    "methods": 44,
+    "groups": {
+      "functional": 27,
+      "source_and_migration": 14,
+      "source_downloads": 3
+    },
+    "seconds": 20.934,
+    "result": "OK",
+    "output": "full-app-tests.txt",
+    "output_sha256": "f570ae3aefe6c6a6abc4e1c7defdb55dfc6aecb027aee1e2ca4d2f51de75a069",
+    "output_unmodified": true,
+    "site_relative_input_sha256": {
+      "app.py": "988a96876cfd22554828f13e38e6e8663f19af81393505f2e8ab6c3efcd4eed2",
+      "data/feature_catalog.json": "be1b1d958c396a69c5df66351999c7d70a16b7c48322d8bdfb2db5083ab579da",
+      "data/homepage.json": "ce83c423cae4d09dd3ab1a97b879a6d2427d6284074560735fe982efe0564781",
+      "data/source_catalog.json": "1094580d1299187fbc59cd338f461694955600f37225bcd1e7e2ad1f05e31084",
+      "data/tv_catalog.json": "1a21e057f013e1c419eb451652a5dcb2f30128fd073707f86b487ca548ee4db2",
+      "download_source_images.py": "ed0f4b81e7f8d40642a1174ecbcf91697c6d2de736c0d5a98aeb1b123caf6921",
+      "refresh_seed.py": "a8820132f02569f8d056a51855c3de2e88d22dca8606803b34bb7087ca9e1856",
+      "seed_data.py": "0df124f94d3c2adc7669886bfd7fc860d336ce0d63778d66e32ff47b0da84e4d",
+      "templates/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "templates/account.html": "4e44306a39ade064208142a28e6683391a9c70a15d5f86e9ad87e83ef4f75006",
+      "templates/account_edit.html": "4e2885e5eeace7ecbe9aab91c741659f1a5d042e783c69d895dd678bcfb520a8",
+      "templates/base.html": "0973ae295d49ddfcd43101652a79b8a6f774647bd94eba2a1b788f31a4b492a3",
+      "templates/browse.html": "1aba9668314374c613d2c4b0db3a00f596a847b47ca14ee656a953aa2b80d7f8",
+      "templates/celebrity.html": "5e20ddc7c2991035f2e983ea3fe48fc08137683b6c52188531be7562fcaa93d8",
+      "templates/content_list.html": "ad6293afe654367db6b176ce8dbdd0460e1ec65f8bee7077d40ab809d350b88e",
+      "templates/feature_detail.html": "46040d5643216ed1b3d54d83098665a268f9887ba23289c8168d9bf23b735ffc",
+      "templates/home/_cards.html": "5617a2105a79e045731af08eb4cda23ecd7e28df778f8a0d7bfb1c43d6576d11",
+      "templates/index.html": "94c3dcabb54176d3c31ac997e272928264bdc451db21d78ee2e2bc6efc2c7b0d",
+      "templates/login.html": "729ed82a41c603b851f5629a6c22c5ca36dd6649b543e6220289cb6420f92484",
+      "templates/movie_detail.html": "aaf563f2051b260e2bd16bf2e76e44c61fa550998e522686159eb35068604b69",
+      "templates/profile_tabs.html": "63b6707c1c64164fc2faca1f7631421884c13c61dd1411344c2125b57481e26a",
+      "templates/register.html": "593e71d75db6465626ffdf7c50ea86f51ab17eaf8a91bcb735c10d6bd942b476",
+      "templates/score_icons.html": "1b6b7a7c3c0c7f1ac672617f8397387961e5e871ae6a150ebb892de78f8d80b7",
+      "templates/search_results.html": "384f69ec76e1576a7bff8a62c74eaad62e4578d929abe6e22cad995ad897661f",
+      "templates/site_information.html": "babf931692d31478f016889099ece394643d5c73a03665f6d611868c2a8a4895",
+      "templates/tv_detail.html": "955701c4e6f70dff76379879a81a6d89fdeadf548329a62da47b9b0525457fc1",
+      "templates/user_ratings.html": "fb6c2db2bde397dd94dcad49f902d70461e4acd9287e88fd3f235c2e0e79dcb5",
+      "templates/user_reviews.html": "9fc0cbbcf69c0ebc6ce824bcf2a21af01e862d6951543e31bcb94e8fc270aa3c",
+      "templates/watchlist.html": "ebe45a693a3f290dece6de490f1cd4d839f8a9dcf4d8421f7e354d91a2176124",
+      "tests/test_functional_contract.py": "38996d9fb635434279158168473f61c962d8fa6254a3afc9b59fe35cec408517",
+      "tests/test_source_catalog.py": "52558b71a43e9d27df14a400ff678f8028474e22670da5333044d2c5d236208e",
+      "tests/test_source_downloads.py": "9a7917e8243500674692cdcda4bbd4c724fc910b5bca0e783733cb83d0375b51"
+    },
+    "input_differences": []
+  },
+  "post_application_tests": {
+    "checked_at_utc": "2026-09-07T14:45:23.769324+00:00",
+    "container_state": "running",
+    "all_20_alive": true,
+    "rt_database_sha256": {
+      "instance": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+      "instance_seed": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+    }
+  },
+  "verifier_tests_rerun_in_this_check": false,
+  "limitations": [
+    "Engineering PASS applies to this matching image only.",
+    "The prior storage-failure and superseded-image evidence is retained.",
+    "Expanded HF asset upload is pending.",
+    "Accepted task runs remain 0; owner visual baseline and Claude blind-review handoff remain pending."
+  ],
+  "version_scope": {
+    "tested_site_count": 20,
+    "tested_rt_port": 40019,
+    "current_site_count": 21,
+    "current_rt_port": 40020,
+    "current_candidate_equivalent": false,
+    "reason": "Current registry adds TED and moves RT; public R0 now scopes Netflix. Recorded successes remain valid for this earlier image only.",
+    "current_integrated_build_and_checks": "PASS_ENGINEERING_ONLY_SEE_CURRENT_21_SITE_ENGINEERING"
+  },
+  "current_21_site_engineering": {
+    "purpose": "21-site engineering only; local verified assets; task/browser/remote reproducibility not established",
+    "status": "PASS",
+    "frozen_code": "abb70237e66dde47daf822e6bed5505162298e6a",
+    "image_id": "sha256:b614f764ecb968f820bcde355fdc3e88f77d3f38d382ccbc475ca9888b7f1528",
+    "matched_files_at_freeze": 102,
+    "source_receipt_sha256": "da33333bdae988022f9c4ec5717053dd4cc48adcd3e03612884c8170a79bfa43",
+    "final_snapshot_sha256": "1ca2e716f3aa966fd7b76afbb964813513de7747d7b95edacd22d67f6376bff6",
+    "site_count": 21,
+    "rt_port": 40020,
+    "ted_port": 40019,
+    "rounds": [
+      {
+        "stage": "boot",
+        "health_alive": 21,
+        "homepage_http_200": 21,
+        "rt_seed_equal": true,
+        "ted_seed_equal": true
+      },
+      {
+        "stage": "after-rt-reset",
+        "health_alive": 21,
+        "homepage_http_200": 21,
+        "rt_seed_equal": true,
+        "ted_seed_equal": true
+      },
+      {
+        "stage": "after-reset-all",
+        "health_alive": 21,
+        "homepage_http_200": 21,
+        "rt_seed_equal": true,
+        "ted_seed_equal": true
+      }
+    ],
+    "rt_counts": {
+      "movies": 270,
+      "persons": 3852,
+      "users": 4,
+      "watchlist_items": 16,
+      "user_ratings": 12,
+      "audience_reviews": 23,
+      "content_snapshots": 3
+    },
+    "rt_seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "controlled_http_registration_users": [
+      4,
+      5
+    ],
+    "restart_preserved_dirty_bytes": true,
+    "restart_seconds": 0.37813562500377884,
+    "reset_seconds": 0.34919991700007813,
+    "reset_all_seconds": 1.6491611250021379,
+    "prior_44_application_input_differences": [],
+    "application_tests_rerun": false,
+    "new_R0_included_in_image": false,
+    "new_R0_fixture_suite": {
+      "methods": 88,
+      "result": "OK",
+      "evidence": "r0-netflix-fixture-tests.txt"
+    },
+    "new_R0_runner_binding": "PENDING",
+    "remote_new_asset_reproducibility": "PENDING",
+    "accepted_task_runs": 0
+  },
+  "later_asset_identity_check": {
+    "status": "PASS",
+    "revision": "61f62d1275121975cae704acc10504d42def6c39",
+    "evidence": "hf-asset-verification.json",
+    "clean_remote_only_rebuild": "NOT_VERIFIED"
+  }
+}

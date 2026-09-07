@@ -1,0 +1,241 @@
+{
+  "purpose": "candidate visual observations, not owner approval or accepted task runs",
+  "owner_baseline_status": "PENDING",
+  "capture_images_modified": false,
+  "images": [
+    {
+      "path": "images/home-repair-desktop.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Homepage; 1440 CSS pixels",
+      "captured_at_utc": "2026-09-07T14:39:33.870Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 0,
+      "document_scroll_width": 1440,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "afd555c4322e75ce90d2bb1ae307c4dc35e215fd1c9c9d49eacb1caf9f6250b2",
+      "bytes": 194978
+    },
+    {
+      "path": "images/home-repair-rankings.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Popular streaming and TV rankings",
+      "captured_at_utc": "2026-09-07T14:19:31.349Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 2303.5,
+      "document_scroll_width": 1440,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "72f68c08339d2fb9e44b6eadcff779b63143330e84f7dc2c89d2777037f5f51a",
+      "bytes": 148130
+    },
+    {
+      "path": "images/home-repair-box-office.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "New TV and top box-office rankings",
+      "captured_at_utc": "2026-09-07T14:20:52.645Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 3771,
+      "document_scroll_width": 1440,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "a4d94920776929ad5dd03f9cc44462b9229c2d806e99eedbf7ad8654813ee51c",
+      "bytes": 142212
+    },
+    {
+      "path": "images/home-repair-tablet.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Homepage; 768 CSS pixels",
+      "captured_at_utc": "2026-09-07T14:23:32.411Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 768,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 768,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 0,
+      "document_scroll_width": 768,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "068d0a38a263afa6517382394da627e9a8d656679d99858ec7af30a6eba7ecae",
+      "bytes": 136372
+    },
+    {
+      "path": "images/home-repair-mobile.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Homepage; 390 CSS pixels",
+      "captured_at_utc": "2026-09-07T14:23:54.814Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 0,
+      "document_scroll_width": 390,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "571b2306228f9e36385cb4b49024a38a11acc65dab478ab0fe9b278c5ea54908",
+      "bytes": 65521
+    },
+    {
+      "path": "images/home-repair-narrow.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Homepage; 320 CSS pixels",
+      "captured_at_utc": "2026-09-07T14:31:06.143Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 320,
+        "height": 844
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 0,
+      "document_scroll_width": 320,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "c2818997e5c484b6ccbfcbc59574c3ed283c23bcb5f5ee43748f6c7187302a11",
+      "bytes": 55900
+    },
+    {
+      "path": "images/home-repair-tv.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "TV detail entry point",
+      "captured_at_utc": "2026-09-07T14:20:23.168Z",
+      "page_path": "/tv/lanterns/s01",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 0,
+      "document_scroll_width": 1440,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "d6d7551ecc36b4933fb3248c0d05deb8e3cf2c5599ba4059cafc0a1de70b79bd",
+      "bytes": 109675
+    },
+    {
+      "path": "images/home-repair-feature.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Feature summary entry point",
+      "captured_at_utc": "2026-09-07T14:23:31.915Z",
+      "page_path": "/news/607184fbd93ce8b9",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 0,
+      "document_scroll_width": 1440,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "5a0a6ba613a0946795cd070f6247645dad18ae78ec899a315e5331d124ddf181",
+      "bytes": 84966
+    },
+    {
+      "path": "images/home-repair-rail-end.jpg",
+      "purpose": "actual_informed_browser_observation",
+      "caption": "Settled rail end; right control disabled",
+      "captured_at_utc": "2026-09-07T14:38:45.952Z",
+      "page_path": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "dpr": 1
+      },
+      "image_dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "image_format": "JPEG",
+      "mime_type": "image/jpeg",
+      "inspection": "Pillow full pixel decode",
+      "dimensions_match_viewport_pixels": true,
+      "scroll_y": 283.5,
+      "document_scroll_width": 1440,
+      "unchanged_from_capture": true,
+      "owner_baseline_approved": false,
+      "sha256": "e06340bcd81d1b6c9701bbc0751d2aa01e26da8f177f53654bcf4f20ab0b7a22",
+      "bytes": 218373
+    }
+  ]
+}

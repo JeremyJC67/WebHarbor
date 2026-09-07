@@ -1,0 +1,623 @@
+{
+  "schema_version": 1,
+  "status": {
+    "review": "DRAFT",
+    "accepted_task_runs": 0,
+    "owner_visual_baseline": "PENDING",
+    "claude_blind_review_package": "NOT_FROZEN",
+    "expanded_asset_upload": "UPLOADED_REMOTE_IDENTITY_VERIFIED",
+    "clean_full_image_rebuild": "PASS_21_SITE_ENGINEERING_FROZEN_INPUTS",
+    "all_20_site_health_and_reset_checks": "PASS_TESTED_20_SITE_VERSION",
+    "official_rt_restart": "PASS_21_SITE_DIRTY_STATE_PRESERVED",
+    "full_application_tests": "PASS",
+    "current_21_site_http_health_reset_checks": "PASS_ENGINEERING_ONLY",
+    "current_R0_independent_scope_review": "GO",
+    "current_R0_runner_input_binding": "PENDING",
+    "repository_asset_pin": "PENDING_ROOT",
+    "remote_only_clean_rebuild": "NOT_VERIFIED"
+  },
+  "source_scope": {
+    "official_home_url": "https://www.rottentomatoes.com/",
+    "captured_at_utc": "2026-09-07T13:23:34.990472+00:00",
+    "source_html_sha256": "6cea45e4fe524114424dab5278af283566a5f7cb3e3e22c9c38910a0f5a05119",
+    "main_section_count": 14,
+    "source_order": [
+      {
+        "id": "movies-in-theaters",
+        "title": "Movies in Theaters",
+        "cards": 20
+      },
+      {
+        "id": "free-to-watch",
+        "title": "Free To Watch",
+        "cards": 20
+      },
+      {
+        "id": "limited-releases-now-playing",
+        "title": "Limited Releases Now Playing",
+        "cards": 11
+      },
+      {
+        "id": "coming-soon-to-theaters",
+        "title": "Coming Soon To Theaters",
+        "cards": 20
+      },
+      {
+        "id": "popular-streaming-movies",
+        "title": "Popular Streaming Movies",
+        "cards": 10
+      },
+      {
+        "id": "popular-tv",
+        "title": "Popular TV",
+        "cards": 10
+      },
+      {
+        "id": "new-to-rent-buy-at-home",
+        "title": "New to Rent/Buy at Home",
+        "cards": 20
+      },
+      {
+        "id": "best-new-animated-movies",
+        "title": "Best New Animated Movies",
+        "cards": 14
+      },
+      {
+        "id": "new-tv-this-week",
+        "title": "New TV This Week",
+        "cards": 10
+      },
+      {
+        "id": "top-10-box-office",
+        "title": "Top 10 Box Office",
+        "cards": 10
+      },
+      {
+        "id": "latest-certified-fresh-movies-tv",
+        "title": "Latest Certified Fresh Movies & TV",
+        "cards": 20
+      },
+      {
+        "id": "rt-recommends-weekly-staff-picks",
+        "title": "RT Recommends: Weekly Staff Picks",
+        "cards": 15
+      },
+      {
+        "id": "trailers-videos",
+        "title": "Trailers & Videos",
+        "cards": 5
+      },
+      {
+        "id": "discover-more",
+        "title": "Discover More",
+        "cards": 4
+      }
+    ],
+    "hero_slides": 7,
+    "compact_rankings": 4,
+    "movies": 270,
+    "people": 3852,
+    "tv_records": 23,
+    "feature_records": 19,
+    "old_movie_identities_preserved": 147,
+    "old_person_identities_preserved": 2236,
+    "new_movie_person_assets": {
+      "downloaded_and_validated_assets": 1371,
+      "by_kind": {
+        "posters": 123,
+        "hero": 120,
+        "people": 1128
+      },
+      "source_null_media_retained": 491,
+      "preexisting_files_overwritten": 0
+    },
+    "null_person_photos_in_merged_catalog": 1046,
+    "movie_hero_images_unknown": 3,
+    "runtime_content_storage": "SQLAlchemy ContentSnapshot in SQLite; 3 documents"
+  },
+  "engineering": {
+    "purpose": "isolated Flask/SQL/file-path checks, not real browser runs",
+    "get_requests": 298,
+    "expected_status_counts": {
+      "200": 286,
+      "302": 5,
+      "400": 3,
+      "404": 4
+    },
+    "unexpected_requests": [],
+    "unique_local_rendered_images": 1715,
+    "errors": [],
+    "observations": {
+      "home_sections": 14,
+      "home_rankings": 4,
+      "home_slides": 7,
+      "unique_home_links": 199,
+      "fandango_movie_count": 204,
+      "fandango_persisted_form_input": true,
+      "netflix_movie_count": 41,
+      "netflix_persisted_form_input": true,
+      "amazon-prime-video-us_movie_count": 4,
+      "amazon-prime-video-us_persisted_form_input": true,
+      "hbo-max_movie_count": 29,
+      "hbo-max_persisted_form_input": true,
+      "fixture_login_status": 302,
+      "image_unique_count": 1715,
+      "missing_images_by_kind": {
+        "people": 0,
+        "other": 0,
+        "external-or-invalid": 0
+      },
+      "database_movie_count": 270,
+      "content_snapshot_count": 3,
+      "foreign_key_errors": [],
+      "seed_byte_identical_after_smoke": true
+    },
+    "catalog_assets": {
+      "counts": {
+        "movie-poster": {
+          "expected": 270,
+          "present": 270,
+          "missing": 0
+        },
+        "movie-hero": {
+          "expected": 267,
+          "present": 267,
+          "missing": 0
+        },
+        "person-photo": {
+          "expected": 2806,
+          "present": 2806,
+          "missing": 0
+        }
+      },
+      "missing": [],
+      "null_person_photos": 1046
+    },
+    "content_json_removed_during_http": true,
+    "seed_before_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "seed_after_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "source_tests": {
+      "methods": 14,
+      "seconds": 2.567,
+      "result": "OK",
+      "purpose": "constructed regression tests"
+    },
+    "input_sha256": {
+      "sites/rotten_tomatoes/app.py": "988a96876cfd22554828f13e38e6e8663f19af81393505f2e8ab6c3efcd4eed2",
+      "sites/rotten_tomatoes/data/feature_catalog.json": "be1b1d958c396a69c5df66351999c7d70a16b7c48322d8bdfb2db5083ab579da",
+      "sites/rotten_tomatoes/data/homepage.json": "ce83c423cae4d09dd3ab1a97b879a6d2427d6284074560735fe982efe0564781",
+      "sites/rotten_tomatoes/data/source_catalog.json": "1094580d1299187fbc59cd338f461694955600f37225bcd1e7e2ad1f05e31084",
+      "sites/rotten_tomatoes/data/tv_catalog.json": "1a21e057f013e1c419eb451652a5dcb2f30128fd073707f86b487ca548ee4db2",
+      "sites/rotten_tomatoes/refresh_seed.py": "a8820132f02569f8d056a51855c3de2e88d22dca8606803b34bb7087ca9e1856",
+      "sites/rotten_tomatoes/seed_data.py": "0df124f94d3c2adc7669886bfd7fc860d336ce0d63778d66e32ff47b0da84e4d",
+      "sites/rotten_tomatoes/templates/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sites/rotten_tomatoes/templates/account.html": "4e44306a39ade064208142a28e6683391a9c70a15d5f86e9ad87e83ef4f75006",
+      "sites/rotten_tomatoes/templates/account_edit.html": "4e2885e5eeace7ecbe9aab91c741659f1a5d042e783c69d895dd678bcfb520a8",
+      "sites/rotten_tomatoes/templates/base.html": "0973ae295d49ddfcd43101652a79b8a6f774647bd94eba2a1b788f31a4b492a3",
+      "sites/rotten_tomatoes/templates/browse.html": "1aba9668314374c613d2c4b0db3a00f596a847b47ca14ee656a953aa2b80d7f8",
+      "sites/rotten_tomatoes/templates/celebrity.html": "5e20ddc7c2991035f2e983ea3fe48fc08137683b6c52188531be7562fcaa93d8",
+      "sites/rotten_tomatoes/templates/content_list.html": "ad6293afe654367db6b176ce8dbdd0460e1ec65f8bee7077d40ab809d350b88e",
+      "sites/rotten_tomatoes/templates/feature_detail.html": "46040d5643216ed1b3d54d83098665a268f9887ba23289c8168d9bf23b735ffc",
+      "sites/rotten_tomatoes/templates/home/_cards.html": "5617a2105a79e045731af08eb4cda23ecd7e28df778f8a0d7bfb1c43d6576d11",
+      "sites/rotten_tomatoes/templates/index.html": "94c3dcabb54176d3c31ac997e272928264bdc451db21d78ee2e2bc6efc2c7b0d",
+      "sites/rotten_tomatoes/templates/login.html": "729ed82a41c603b851f5629a6c22c5ca36dd6649b543e6220289cb6420f92484",
+      "sites/rotten_tomatoes/templates/movie_detail.html": "aaf563f2051b260e2bd16bf2e76e44c61fa550998e522686159eb35068604b69",
+      "sites/rotten_tomatoes/templates/profile_tabs.html": "63b6707c1c64164fc2faca1f7631421884c13c61dd1411344c2125b57481e26a",
+      "sites/rotten_tomatoes/templates/register.html": "593e71d75db6465626ffdf7c50ea86f51ab17eaf8a91bcb735c10d6bd942b476",
+      "sites/rotten_tomatoes/templates/score_icons.html": "1b6b7a7c3c0c7f1ac672617f8397387961e5e871ae6a150ebb892de78f8d80b7",
+      "sites/rotten_tomatoes/templates/search_results.html": "384f69ec76e1576a7bff8a62c74eaad62e4578d929abe6e22cad995ad897661f",
+      "sites/rotten_tomatoes/templates/site_information.html": "babf931692d31478f016889099ece394643d5c73a03665f6d611868c2a8a4895",
+      "sites/rotten_tomatoes/templates/tv_detail.html": "955701c4e6f70dff76379879a81a6d89fdeadf548329a62da47b9b0525457fc1",
+      "sites/rotten_tomatoes/templates/user_ratings.html": "fb6c2db2bde397dd94dcad49f902d70461e4acd9287e88fd3f235c2e0e79dcb5",
+      "sites/rotten_tomatoes/templates/user_reviews.html": "9fc0cbbcf69c0ebc6ce824bcf2a21af01e862d6951543e31bcb94e8fc270aa3c",
+      "sites/rotten_tomatoes/templates/watchlist.html": "ebe45a693a3f290dece6de490f1cd4d839f8a9dcf4d8421f7e354d91a2176124",
+      "sites/rotten_tomatoes/tests/test_functional_contract.py": "38996d9fb635434279158168473f61c962d8fa6254a3afc9b59fe35cec408517",
+      "sites/rotten_tomatoes/tests/test_source_catalog.py": "52558b71a43e9d27df14a400ff678f8028474e22670da5333044d2c5d236208e",
+      "sites/rotten_tomatoes/tests/test_source_downloads.py": "9a7917e8243500674692cdcda4bbd4c724fc910b5bca0e783733cb83d0375b51"
+    }
+  },
+  "verifier": {
+    "purpose": "constructed fixtures plus independent informed code/probe review; not task runs or Claude blind review",
+    "task_suffixes": [
+      0,
+      3,
+      8,
+      9,
+      11,
+      14,
+      18
+    ],
+    "r18": {
+      "frozen_movies": 270,
+      "eligible_producer_candidates": 4,
+      "global_threshold_candidates": 14,
+      "winner": "spider_man_brand_new_day",
+      "audience_score": 97,
+      "streaming_date": null,
+      "legal_paths": [
+        "all_eligible_comparison",
+        "global_descending_exclusion"
+      ]
+    },
+    "methods": 88,
+    "local_seconds": 43.133,
+    "local_result": "OK",
+    "new_scope_methods": 11,
+    "prior_methods": 77,
+    "prior_R0_fixture_facts_updated": true,
+    "independent_scope_review": "GO",
+    "prior_R18_V1_V2_closed": true,
+    "r0": {
+      "subscription_platform": "Netflix",
+      "candidates": 8,
+      "listed_dates": 8,
+      "missing_date_evidence": [],
+      "dated_winner": "war_machine",
+      "generic_missing_date_rule_retained": true,
+      "official_source_and_static_seed_records_checked": 8
+    },
+    "input_sha256": {
+      "sites/rotten_tomatoes/tasks.jsonl": "f929a9bf43f95115e05d05f40ab0787b1592cc995d217c80b1028d16648fce05",
+      "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55",
+      "sites/rotten_tomatoes/verify/test_catalog_expansion_contracts.py": "c063ec7a8434d2d80d05cba874a1b73652ef16b0320b1ff092c7e532e7a900c0",
+      "sites/rotten_tomatoes/verify/test_date_contracts.py": "b99ab51326c52f6878aa36bf6b72677279e308876719006111defd7a02aef0d5",
+      "sites/rotten_tomatoes/verify/test_info_contracts.py": "e5cdc06e7c2109e9f44edeb2021492b2644f78bfb2227e2ac4a7a97688478540",
+      "sites/rotten_tomatoes/verify/test_missing_date_contracts.py": "f3861d8704d4c84851f43d01c45607b9c35167cfff4f15b79cf8f5336c86a4f7",
+      "sites/rotten_tomatoes/verify/test_netflix_scope_contracts.py": "2202607378103061068942d4f2e0e84b1238fad3fcb8f500b6f1a5fc9c524be3",
+      "sites/rotten_tomatoes/verify/test_state_contracts.py": "c2a48ba4738bc3ff3d58976baf0c9b12d86e49559c91bfe7389d26cf7843e9b1",
+      "sites/rotten_tomatoes/verify/verify_0.py": "2b4f5262949fdcb34338d614a321fb22b51251b096274c547b524816041171fd",
+      "sites/rotten_tomatoes/verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+      "sites/rotten_tomatoes/verify/verify_14.py": "e910eb128268a14e3bad6182d4610ff9aa2d1e0a376e2a97c3153329dcceb931",
+      "sites/rotten_tomatoes/verify/verify_18.py": "2884079b935b8c0a96c25961374d4358761e6d6b45a8609354c467f3951a5f37",
+      "sites/rotten_tomatoes/verify/verify_3.py": "8e2694e80c5187d487b94828bf07ccd1dc7a278f9a85f73a37f502d71b63f817",
+      "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+      "sites/rotten_tomatoes/verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+      "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9"
+    },
+    "test_output": "r0-netflix-fixture-tests.txt",
+    "independent_R0_scope_summary": {
+      "methods": 27,
+      "seconds": 1.112,
+      "samples": 24,
+      "positive_samples": 6,
+      "negative_samples": 18,
+      "unexpected_outcomes": 0,
+      "evidence": "r0-independent-review.json"
+    }
+  },
+  "real_ui_smoke": {
+    "purpose": "actual informed UI operations, not accepted independent task runs or owner visual approval",
+    "started_at_utc": "2026-09-07T14:17:44.753Z",
+    "ended_at_utc": "2026-09-07T14:39:33.870Z",
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "recorded_scroll_width": 1440
+      },
+      {
+        "width": 768,
+        "height": 1000,
+        "recorded_scroll_width": 768
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "recorded_scroll_width": 390
+      },
+      {
+        "width": 320,
+        "height": 844,
+        "recorded_scroll_width": 320
+      }
+    ],
+    "all_recorded_page_widths_match_viewport": true,
+    "hero_observed_slides": {
+      "desktop-start": "1 of 7",
+      "desktop-next-story": "2 of 7",
+      "desktop-story-dot": "3 of 7",
+      "desktop-story-key-end": "7 of 7"
+    },
+    "settled_rail_boundary": {
+      "observedAt": "2026-09-07T14:38:45.602Z",
+      "left": 2400,
+      "max": 2400,
+      "rightDisabled": true,
+      "predicate": "left == max and rightDisabled == true",
+      "observed_after_scroll_animation": true
+    },
+    "other_exercised_operations": [
+      "poster rail navigation",
+      "TV entry",
+      "feature entry",
+      "mobile navigation",
+      "login",
+      "watchlist add",
+      "watchlist remove",
+      "logout"
+    ],
+    "watchlist_delta": {
+      "only_changed_table_on_add": "watchlist_items",
+      "before_rows": 16,
+      "after_add_rows": 17,
+      "after_remove_rows": 16,
+      "all_business_rows_restored_after_remove": true,
+      "unrelated_tables_unchanged_on_add": true
+    },
+    "after_official_reset_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4"
+  },
+  "prepared_assets": {
+    "publication_status": "prepared locally; updated HF upload pending",
+    "hf_discussion_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/55",
+    "archive_sha256": "38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1",
+    "manifest_sha256": "a696c391ed8a8ed01f4ce4f1ad0d2b4b59e67dea4e4746b7749391b0c7a9422d",
+    "seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "archive_members": 3672,
+    "previous_static_files_preserved": 1986,
+    "archive_payload_hashes_match": true
+  },
+  "published_evidence": {
+    "test_output": "homepage-verification.txt",
+    "screenshots": "homepage-visual-manifest.json",
+    "historical_manifest_retained": "verification.json",
+    "historical_visual_manifest_retained": "visual-manifest.json",
+    "full_environment": "full-environment.json",
+    "full_application_test_output": "full-app-tests.txt",
+    "current_R0_fixture_output": "r0-netflix-fixture-tests.txt",
+    "hf_remote_identity": "hf-asset-verification.json",
+    "independent_R0_scope": "r0-independent-review.json"
+  },
+  "full_environment": {
+    "purpose": "21-site engineering only; local verified assets; task/browser/remote reproducibility not established",
+    "status": "PASS",
+    "frozen_code": "abb70237e66dde47daf822e6bed5505162298e6a",
+    "image_id": "sha256:b614f764ecb968f820bcde355fdc3e88f77d3f38d382ccbc475ca9888b7f1528",
+    "matched_files_at_freeze": 102,
+    "source_receipt_sha256": "da33333bdae988022f9c4ec5717053dd4cc48adcd3e03612884c8170a79bfa43",
+    "final_snapshot_sha256": "1ca2e716f3aa966fd7b76afbb964813513de7747d7b95edacd22d67f6376bff6",
+    "site_count": 21,
+    "rt_port": 40020,
+    "ted_port": 40019,
+    "rounds": [
+      {
+        "stage": "boot",
+        "health_alive": 21,
+        "homepage_http_200": 21,
+        "rt_seed_equal": true,
+        "ted_seed_equal": true
+      },
+      {
+        "stage": "after-rt-reset",
+        "health_alive": 21,
+        "homepage_http_200": 21,
+        "rt_seed_equal": true,
+        "ted_seed_equal": true
+      },
+      {
+        "stage": "after-reset-all",
+        "health_alive": 21,
+        "homepage_http_200": 21,
+        "rt_seed_equal": true,
+        "ted_seed_equal": true
+      }
+    ],
+    "rt_counts": {
+      "movies": 270,
+      "persons": 3852,
+      "users": 4,
+      "watchlist_items": 16,
+      "user_ratings": 12,
+      "audience_reviews": 23,
+      "content_snapshots": 3
+    },
+    "rt_seed_sha256": "abd1446a23fb04b4141d78f15c048a35ef729bd3968d997501cdbd77de0d5df4",
+    "controlled_http_registration_users": [
+      4,
+      5
+    ],
+    "restart_preserved_dirty_bytes": true,
+    "restart_seconds": 0.37813562500377884,
+    "reset_seconds": 0.34919991700007813,
+    "reset_all_seconds": 1.6491611250021379,
+    "prior_44_application_input_differences": [],
+    "application_tests_rerun": false,
+    "new_R0_included_in_image": false,
+    "new_R0_fixture_suite": {
+      "methods": 88,
+      "result": "OK",
+      "evidence": "r0-netflix-fixture-tests.txt"
+    },
+    "new_R0_runner_binding": "PENDING",
+    "remote_new_asset_reproducibility": "PENDING",
+    "accepted_task_runs": 0,
+    "evidence": "full-environment.json"
+  },
+  "historical_verifier_77": {
+    "purpose": "constructed fixtures plus independent informed code/probe review; not task runs or Claude blind review",
+    "task_suffixes": [
+      0,
+      3,
+      8,
+      9,
+      11,
+      14,
+      18
+    ],
+    "existing_methods_unchanged": 70,
+    "new_closed_review_methods": 7,
+    "methods": 77,
+    "local_seconds": 39.032,
+    "local_result": "OK",
+    "independent_seconds": 30.744,
+    "independent_result": "OK",
+    "closed_review_decision": "GO for V1/V2 and direct regressions only",
+    "misclassification_retests": [
+      {
+        "case": "plain_good",
+        "expected": true,
+        "before": true,
+        "after": true
+      },
+      {
+        "case": "bold_field_good",
+        "expected": true,
+        "before": false,
+        "after": true
+      },
+      {
+        "case": "bold_value_good",
+        "expected": true,
+        "before": false,
+        "after": true
+      },
+      {
+        "case": "natural_omission_good",
+        "expected": true,
+        "before": false,
+        "after": true
+      },
+      {
+        "case": "speculative_year_bad",
+        "expected": false,
+        "before": true,
+        "after": false
+      },
+      {
+        "case": "speculative_month_bad",
+        "expected": false,
+        "before": true,
+        "after": false
+      },
+      {
+        "case": "contradictory_json_bad",
+        "expected": false,
+        "before": true,
+        "after": false
+      }
+    ],
+    "r0": {
+      "candidates": 41,
+      "listed_dates": 40,
+      "missing_date_evidence": [
+        "onslaught"
+      ],
+      "dated_winner": "supergirl_2026"
+    },
+    "r18": {
+      "frozen_movies": 270,
+      "eligible_producer_candidates": 4,
+      "global_threshold_candidates": 14,
+      "winner": "spider_man_brand_new_day",
+      "audience_score": 97,
+      "streaming_date": null,
+      "legal_paths": [
+        "all_eligible_comparison",
+        "global_descending_exclusion"
+      ]
+    },
+    "input_sha256": {
+      "sites/rotten_tomatoes/verify/contracts.py": "c80db3f8d3e6d39370611a8fe2dc9e5e0f5727c30820a51fd9e3bc31d7903967",
+      "sites/rotten_tomatoes/verify/test_catalog_expansion_contracts.py": "32ee35e0472d09d75b6b59d271b50c9b587f6b0723b9e493581f2835efc6a3b6",
+      "sites/rotten_tomatoes/verify/test_date_contracts.py": "fca65082755cde71c840ad995d80708d3693d3b707fd9890356eb9b57d45d190",
+      "sites/rotten_tomatoes/verify/test_info_contracts.py": "e5cdc06e7c2109e9f44edeb2021492b2644f78bfb2227e2ac4a7a97688478540",
+      "sites/rotten_tomatoes/verify/test_missing_date_contracts.py": "f3861d8704d4c84851f43d01c45607b9c35167cfff4f15b79cf8f5336c86a4f7",
+      "sites/rotten_tomatoes/verify/test_state_contracts.py": "c2a48ba4738bc3ff3d58976baf0c9b12d86e49559c91bfe7389d26cf7843e9b1",
+      "sites/rotten_tomatoes/verify/verify_0.py": "e7087f102560fb174a277822aa90c9d35ba2f7ccc4fe4ca6fdf8d71ce1cc8c20",
+      "sites/rotten_tomatoes/verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+      "sites/rotten_tomatoes/verify/verify_14.py": "e910eb128268a14e3bad6182d4610ff9aa2d1e0a376e2a97c3153329dcceb931",
+      "sites/rotten_tomatoes/verify/verify_18.py": "2884079b935b8c0a96c25961374d4358761e6d6b45a8609354c467f3951a5f37",
+      "sites/rotten_tomatoes/verify/verify_3.py": "8e2694e80c5187d487b94828bf07ccd1dc7a278f9a85f73a37f502d71b63f817",
+      "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+      "sites/rotten_tomatoes/verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+      "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+      "sites/rotten_tomatoes/tasks.jsonl": "d6395cb9ce5444816f885c854a75a8abb8c0afd5129c1e481a86720bb70af6cd"
+    }
+  },
+  "current_registry": {
+    "site_count": 21,
+    "rotten_tomatoes_port": 40020
+  },
+  "historical_20_site_full_environment": {
+    "purpose": "Historical 20-site full-image engineering result for the frozen pre-Netflix-R0 inputs; current 21-site integration pending",
+    "status": "PASS_TESTED_FROZEN_VERSION",
+    "image_id": "sha256:4f7a2006c5daa2339073be9a348f8da30016134204fd97109e429ef8e4a654c6",
+    "matching_files": 50,
+    "all_site_http_health_rounds": 3,
+    "sites_per_round": 20,
+    "homepage_http_200_count": 60,
+    "official_controls_tested": [
+      "reset/rotten_tomatoes",
+      "reset-all",
+      "restart/rotten_tomatoes"
+    ],
+    "application_test_methods": 44,
+    "application_test_seconds": 20.934,
+    "evidence": "full-environment.json",
+    "application_test_output": "full-app-tests.txt",
+    "verifier_suite_rerun_in_this_check": false,
+    "current_checkout_equivalent": false
+  },
+  "asset_upload_remote_verification": {
+    "purpose": "official Hub remote commit/ref/file identity check; not full archive extraction or clean remote-only rebuild",
+    "status": "PASS",
+    "verified_at_utc": "2026-09-07T16:20:51.481666+00:00",
+    "api_library": "huggingface_hub 0.30.2",
+    "repo_id": "ChilleD/WebHarbor",
+    "revision": "61f62d1275121975cae704acc10504d42def6c39",
+    "pull_request_ref": {
+      "ref": "refs/pr/55",
+      "resolved_sha": "61f62d1275121975cae704acc10504d42def6c39",
+      "file_map_equals_immutable": true
+    },
+    "commit_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/commit/61f62d1275121975cae704acc10504d42def6c39",
+    "baseline_revision": "480c892e976bada6c0ea3f5a66e2b9efda65525d",
+    "baseline_unchanged_files": 22,
+    "baseline_unchanged_site_archives": 20,
+    "baseline_differences": [],
+    "added_files_relative_to_baseline": [
+      "rotten_tomatoes.manifest.json",
+      "rotten_tomatoes.tar.gz"
+    ],
+    "files": [
+      {
+        "path": "rotten_tomatoes.tar.gz",
+        "bytes": 1314568851,
+        "sha256": "38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1",
+        "method": "official repository LFS SHA256 metadata; no full archive download",
+        "head_commit": "61f62d1275121975cae704acc10504d42def6c39",
+        "head_etag": "38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1"
+      },
+      {
+        "path": "rotten_tomatoes.manifest.json",
+        "bytes": 1442642,
+        "sha256": "a696c391ed8a8ed01f4ce4f1ad0d2b4b59e67dea4e4746b7749391b0c7a9422d",
+        "method": "immutable download SHA256 plus official metadata",
+        "head_commit": "61f62d1275121975cae704acc10504d42def6c39",
+        "head_etag": "b6f91b699976a7fcc03dcbdbf3c2763b9cca3ac6"
+      },
+      {
+        "path": "ted.tar.gz",
+        "bytes": 5301076,
+        "sha256": "2d6a65fd37ac819e05890357b74cf463f61f3172e398356748fdbff3adc026d2",
+        "method": "official repository LFS SHA256 metadata; no full archive download",
+        "head_commit": "61f62d1275121975cae704acc10504d42def6c39",
+        "head_etag": "2d6a65fd37ac819e05890357b74cf463f61f3172e398356748fdbff3adc026d2"
+      }
+    ],
+    "manifest_download_hashed": true,
+    "full_archive_redownload_and_extraction": false,
+    "remote_only_clean_rebuild": "NOT_VERIFIED",
+    "repository_pin_update": "PENDING_ROOT",
+    "verification_receipt_sha256": "88f1785c7b62327fe473b8cad9991a7deb6484f24305f46ebac8f2249531ca69",
+    "main_ref_observed": {
+      "resolved_sha": "480c892e976bada6c0ea3f5a66e2b9efda65525d",
+      "matches_frozen_baseline": true
+    }
+  },
+  "task_evaluation_status": {
+    "accepted_runs": 0,
+    "R18_primary": "NO_VALID_VERDICT_YET",
+    "note": "Preliminary R18 UI observations exist; primary evaluation has not produced a valid verdict. UI observation counts do not establish task acceptance."
+  }
+}

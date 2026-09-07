@@ -1,0 +1,202 @@
+{
+  "purpose": "independent informed R0 public scope and direct regression recheck; constructed fixtures, not UI runs or Claude blind review",
+  "decision": "GO",
+  "scope": "R0 Netflix revision and direct regressions only; R18 V1/V2 not reopened",
+  "verified_file_sha256": {
+    "sites/rotten_tomatoes/tasks.jsonl": "f929a9bf43f95115e05d05f40ab0787b1592cc995d217c80b1028d16648fce05",
+    "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55",
+    "sites/rotten_tomatoes/verify/verify_0.py": "2b4f5262949fdcb34338d614a321fb22b51251b096274c547b524816041171fd",
+    "sites/rotten_tomatoes/verify/test_date_contracts.py": "b99ab51326c52f6878aa36bf6b72677279e308876719006111defd7a02aef0d5",
+    "sites/rotten_tomatoes/verify/test_catalog_expansion_contracts.py": "c063ec7a8434d2d80d05cba874a1b73652ef16b0320b1ff092c7e532e7a900c0",
+    "sites/rotten_tomatoes/verify/test_netflix_scope_contracts.py": "2202607378103061068942d4f2e0e84b1238fad3fcb8f500b6f1a5fc9c524be3"
+  },
+  "original_relevant_methods": 27,
+  "original_relevant_seconds": 1.112,
+  "original_relevant_result": "OK",
+  "full_88_suite_rerun_independently": false,
+  "independent_samples": 24,
+  "expected_pass_samples": 6,
+  "expected_fail_samples": 18,
+  "unexpected_outcomes": [],
+  "samples": [
+    {
+      "name": "full-eight-source-backed",
+      "expected_pass": true,
+      "actual_pass": true,
+      "input_manifest_sha256": "b7639ac7a42394f63c192010786de4635328c2db84516703c45d647e5d98f130"
+    },
+    {
+      "name": "goto-reverse-encoded-query",
+      "expected_pass": true,
+      "actual_pass": true,
+      "input_manifest_sha256": "2152da5f6e6da5fed3ee683531eb97cd57dc0e65cf993f8743da70f7e984be4f"
+    },
+    {
+      "name": "keyboard-reverse",
+      "expected_pass": true,
+      "actual_pass": true,
+      "input_manifest_sha256": "163ca1a492ca986502f1ea374ac17e0cfb5f63c9cc1755ce60b6aaf1971c6bff"
+    },
+    {
+      "name": "redundant-visible-netflix-provider",
+      "expected_pass": true,
+      "actual_pass": true,
+      "input_manifest_sha256": "516bb764bbe707a1ebd315488300068f1265ae17bd492734ff19adddf519a5e3"
+    },
+    {
+      "name": "localized-json-all-writers-reordered",
+      "expected_pass": true,
+      "actual_pass": true,
+      "input_manifest_sha256": "67215ca1ea86a791f0840da4c1894e1d223afafcf3ce407f5cf24a74a71d9334"
+    },
+    {
+      "name": "missing-platform-both-evidence-sides",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "43f73180808e873a8ee3650c0646e5cb2ee2eebfe3c7bebf0e636f18e959c4a1"
+    },
+    {
+      "name": "wrong-platform-both-evidence-sides",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "8f31586c7b0337d5f6bdefad3067463540edd18b7cab91475263885eb6f4be39"
+    },
+    {
+      "name": "missing-platform-dom-only",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "319d26f4fc2bc28546a28443838efc1e32931dc9aeea2ce65e56a9525a438de4"
+    },
+    {
+      "name": "wrong-platform-url-only",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "da414f3f300f53138ac4c9c9cce51f50913bedf68eaee219d3a300ef14fd0630"
+    },
+    {
+      "name": "omitted-detail-godzilla_minus_one",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "b35627d8321b76b788acb50703651935aef2cc284e659cdcc8a5c89a52c36264"
+    },
+    {
+      "name": "omitted-detail-bugonia",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "735671d7743202c4c41f60838275784d2e7a93502cd3b66256c1b2b44104d49f"
+    },
+    {
+      "name": "omitted-detail-war_machine",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "dbb6e7ba85c4c62a29cab573045b25c6cf5969ad62049f3de752b9d62a6e608d"
+    },
+    {
+      "name": "omitted-detail-frankenstein_2025",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "6f1255272bfb6751618a55355e3c180eefec0be69a3e5167c6abc7bb4a2e48d1"
+    },
+    {
+      "name": "omitted-detail-the_hunger_games_the_ballad_of_songbirds_and_snakes",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "74cd66dbb5a9c18f7af2359176986a18cfcfddd74cd1271d5800c6dab7b23372"
+    },
+    {
+      "name": "omitted-detail-jurassic_world_rebirth",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "28fea3b85adaf7edd7427ce99557408963da54282c15a3c82bed3601849fbba9"
+    },
+    {
+      "name": "omitted-detail-the_hunger_games",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "be7edf19305f4a79ef4476e1935c29e57c982953757495499c125d3f97455b85"
+    },
+    {
+      "name": "omitted-detail-the_hunger_games_catching_fire",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "780a9038908ed8173d4b6e9884246cf0e147a115a525f38355ccf5d131e9a4a4"
+    },
+    {
+      "name": "missing-one-listing-card",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "e61a36c144099f7bf2a0f8b3687ee92c5bd7af865e40be2c2bee8ce01269e1a7"
+    },
+    {
+      "name": "missing-winner-writer-in-answer",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "f321ed8f971227c41924f42604373569822cfbbf4422052d434fbb21085387f6"
+    },
+    {
+      "name": "missing-winner-writer-in-ui",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "d8021539840f202c03da07e1af8e033c7dd8dc37eb0a6c19a5bf24fb79704495"
+    },
+    {
+      "name": "wrong-streaming-date",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "eb9568d6e783db651aacbbf6fa0bdd05cc8800fec7fbe94ed40007f70c580f0e"
+    },
+    {
+      "name": "old-all-platform-winner",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "f5c650696cfafa6080ceb940609be03ffff18dea50fed006f0b37b19c4ed1ce9"
+    },
+    {
+      "name": "newest-sort-complete-comparison",
+      "expected_pass": true,
+      "actual_pass": true,
+      "input_manifest_sha256": "dac600b55de3c7a040c75f42cfa34dffe3bf1b535e142554a7e6be4c01b8a9f7"
+    },
+    {
+      "name": "newest-sort-without-comparison",
+      "expected_pass": false,
+      "actual_pass": false,
+      "input_manifest_sha256": "efc7e81897fed104b1b18a09808cf6c458caa77cf31adbe55add35a6da77beb5"
+    }
+  ],
+  "actual_cli_checks": [
+    {
+      "case": "goto-reverse-encoded-query",
+      "exit_code": 0,
+      "output_sha256": "8cc2294dbce6d1161cbf4fef8d1b4b8dfa5baef0df2a6344a59a33762b38114e"
+    },
+    {
+      "case": "keyboard-reverse",
+      "exit_code": 0,
+      "output_sha256": "8cc2294dbce6d1161cbf4fef8d1b4b8dfa5baef0df2a6344a59a33762b38114e"
+    },
+    {
+      "case": "missing-platform-both-evidence-sides",
+      "exit_code": 1,
+      "output_sha256": "5703a292148076839b99c3e27a331d9cdf68d1619f9a8e0492867d3aa7dbec87"
+    },
+    {
+      "case": "missing-winner-writer-in-ui",
+      "exit_code": 1,
+      "output_sha256": "0ac0470ef20e9d307169d3ea331cf0fa46ea38bd1746456fdfd0ee42f1b2a129"
+    }
+  ],
+  "source_membership_check": {
+    "all_original_scope_html": 41,
+    "netflix_included": 8,
+    "other_platform_excluded": 33,
+    "included_metadata_checked": [
+      "Genre",
+      "Release Date (Streaming)",
+      "Screenwriter"
+    ]
+  },
+  "report_sha256": "a3047041bb43159ff763caa2969f345131daaf8dc1f943dc7978154c98348380",
+  "result_sha256": "494da213debfb2f53fb71609a1ab2e3ee6bcea9d7a62a8b0cc8c948366127ce7",
+  "accepted_task_runs_added": 0
+}

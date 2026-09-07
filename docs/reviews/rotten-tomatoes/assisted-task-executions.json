@@ -1,0 +1,294 @@
+{
+  "schema": 1,
+  "purpose": "Public, redacted execution and primary-score summary; raw observations, answers and databases are retained separately and linked only by hash.",
+  "execution_method": "independent decision agent + informed controller",
+  "model_disclosure": "GPT-6 decision agent and GPT-6 CUA controller; exact deployment aliases unavailable",
+  "fully_blind_control_chain": false,
+  "accepted_task_runs": 0,
+  "current_scoring_code_commit": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc",
+  "current_asset_revision": "61f62d1275121975cae704acc10504d42def6c39",
+  "primary_scoring": "Official primary verifier with synchronous DOM and frozen state evidence; no auxiliary LLM, Claude blind review or actual vision evaluation is claimed.",
+  "runs": [
+    {
+      "task_id": "RottenTomatoes--0",
+      "run_hash": "bf67d6e790bb77a2a3e27a346878b87c6e5fe03802fdab2c73f53aa0f0482b25",
+      "input_sha256": "6ddf074191967a7c926f940ed09bff55b287529ab1551f9edee2a925f36a6ad3",
+      "trajectory_sha256": "586c33d5ec4d3662c7c31fa0a59899dcf2cc9a87101420cf08eee4724ae5579b",
+      "recorded_actions": 20,
+      "png_screenshots": 41,
+      "runtime_code_commit": "abb70237e66dde47daf822e6bed5505162298e6a",
+      "asset_identity_at_capture": "61f62d1275121975cae704acc10504d42def6c39",
+      "public_ui_path_summary": "Streaming at Home → Sci-Fi → Netflix → all eight Movie Info dates → selected War Machine screenwriters.",
+      "original_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "The complete at-home Sci-Fi date comparison and exact result facts are evidenced; all database tables are unchanged.",
+        "original_output_sha256": "57f7337e2da8fa826693629fd6cc677fbba846bbb4fbfab96a392dcdebb8e2af",
+        "evidence_checks": [
+          "read_only_all_tables",
+          "at_home_sci_fi_netflix_scope",
+          "candidate_collection",
+          "compared_streaming_date:war_machine",
+          "compared_streaming_date:bugonia",
+          "compared_streaming_date:frankenstein_2025",
+          "compared_streaming_date:jurassic_world_rebirth",
+          "compared_streaming_date:godzilla_minus_one",
+          "compared_streaming_date:the_hunger_games_the_ballad_of_songbirds_and_snakes",
+          "compared_streaming_date:the_hunger_games",
+          "compared_streaming_date:the_hunger_games_catching_fire",
+          "all_screenwriters:war_machine",
+          "calendar_maximum_and_exact_result_records"
+        ]
+      },
+      "latest_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "The complete at-home Sci-Fi date comparison and exact result facts are evidenced; all database tables are unchanged.",
+        "original_output_sha256": "57f7337e2da8fa826693629fd6cc677fbba846bbb4fbfab96a392dcdebb8e2af",
+        "evidence_checks": [
+          "read_only_all_tables",
+          "at_home_sci_fi_netflix_scope",
+          "candidate_collection",
+          "compared_streaming_date:war_machine",
+          "compared_streaming_date:bugonia",
+          "compared_streaming_date:frankenstein_2025",
+          "compared_streaming_date:jurassic_world_rebirth",
+          "compared_streaming_date:godzilla_minus_one",
+          "compared_streaming_date:the_hunger_games_the_ballad_of_songbirds_and_snakes",
+          "compared_streaming_date:the_hunger_games",
+          "compared_streaming_date:the_hunger_games_catching_fire",
+          "all_screenwriters:war_machine",
+          "calendar_maximum_and_exact_result_records"
+        ]
+      },
+      "latest_primary_scored_at_utc": "2026-09-07T16:58:50.093500+00:00",
+      "latest_primary_scorer_sha256": {
+        "sites/rotten_tomatoes/verify/verify_14.py": "e910eb128268a14e3bad6182d4610ff9aa2d1e0a376e2a97c3153329dcceb931",
+        "sites/rotten_tomatoes/verify/test_missing_date_contracts.py": "f3861d8704d4c84851f43d01c45607b9c35167cfff4f15b79cf8f5336c86a4f7",
+        "sites/rotten_tomatoes/verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+        "sites/rotten_tomatoes/verify/test_r3_prose_contracts.py": "6dc7c2bc5209953e59c968a61a7ef1482e23e491da171d784f1bf73b8394e6bb",
+        "sites/rotten_tomatoes/verify/verify_0.py": "2b4f5262949fdcb34338d614a321fb22b51251b096274c547b524816041171fd",
+        "sites/rotten_tomatoes/verify/test_netflix_scope_contracts.py": "2202607378103061068942d4f2e0e84b1238fad3fcb8f500b6f1a5fc9c524be3",
+        "sites/rotten_tomatoes/verify/test_state_contracts.py": "c2a48ba4738bc3ff3d58976baf0c9b12d86e49559c91bfe7389d26cf7843e9b1",
+        "sites/rotten_tomatoes/verify/test_info_contracts.py": "e5cdc06e7c2109e9f44edeb2021492b2644f78bfb2227e2ac4a7a97688478540",
+        "sites/rotten_tomatoes/verify/verify_18.py": "cd233681eefd988185c99da7cd8fb75f6a397e4edfd113f9f225b1c7386f7911",
+        "sites/rotten_tomatoes/verify/test_filmography_comparison_contracts.py": "e35c650445b813856ee7d5d81595b7c71a5e19a8a633abc4dc1191cc5736350c",
+        "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+        "sites/rotten_tomatoes/verify/verify_3.py": "89132f786d3a999eaaab3612f2de80863f5ad78a0ef31694d02b1bfe32e01310",
+        "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55",
+        "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+        "sites/rotten_tomatoes/verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+        "sites/rotten_tomatoes/verify/test_date_contracts.py": "b99ab51326c52f6878aa36bf6b72677279e308876719006111defd7a02aef0d5",
+        "sites/rotten_tomatoes/verify/test_catalog_expansion_contracts.py": "c063ec7a8434d2d80d05cba874a1b73652ef16b0320b1ff092c7e532e7a900c0",
+        "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589"
+      },
+      "run_files_unchanged": true,
+      "before_after_database_bytes_equal": true,
+      "selected_screenshots": [
+        "images/task-r0-netflix-scope.png",
+        "images/task-r0-winner-info.png"
+      ],
+      "repair_summary": null,
+      "accepted": false,
+      "external_task_contract_commit": "6a4bf4d1a652085d0ec145a946596d71f5a1cf9f",
+      "prior_repaired_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "The complete at-home Sci-Fi date comparison and exact result facts are evidenced; all database tables are unchanged.",
+        "original_output_sha256": "57f7337e2da8fa826693629fd6cc677fbba846bbb4fbfab96a392dcdebb8e2af",
+        "evidence_checks": [
+          "read_only_all_tables",
+          "at_home_sci_fi_netflix_scope",
+          "candidate_collection",
+          "compared_streaming_date:war_machine",
+          "compared_streaming_date:bugonia",
+          "compared_streaming_date:frankenstein_2025",
+          "compared_streaming_date:jurassic_world_rebirth",
+          "compared_streaming_date:godzilla_minus_one",
+          "compared_streaming_date:the_hunger_games_the_ballad_of_songbirds_and_snakes",
+          "compared_streaming_date:the_hunger_games",
+          "compared_streaming_date:the_hunger_games_catching_fire",
+          "all_screenwriters:war_machine",
+          "calendar_maximum_and_exact_result_records"
+        ]
+      },
+      "latest_primary_code_commit": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc"
+    },
+    {
+      "task_id": "RottenTomatoes--3",
+      "run_hash": "6ee8e2576100a9c950329600fa67befa9ada1b5fcf685c2077b9226473a6eedb",
+      "input_sha256": "12bdece160a465b3bd1f92c2702959296f845f3485cce4ee2f14bacbbe0de93c",
+      "trajectory_sha256": "fb9b5bf9b7d411776e6b051d6df548947d2c45903209f4a11e185258da463822",
+      "recorded_actions": 6,
+      "png_screenshots": 13,
+      "runtime_code_commit": "a091db15b28f8780bec208d2456ea8c19ba173d5",
+      "asset_identity_at_capture": "61f62d1275121975cae704acc10504d42def6c39",
+      "public_ui_path_summary": "Search Christopher Nolan → Oppenheimer Movie Info → The Dark Knight Movie Info.",
+      "original_primary": {
+        "verdict": "FAIL",
+        "success": false,
+        "exit_code": 1,
+        "reason": "producer assertion contains an extra or unrecognized credited name",
+        "original_output_sha256": "a6fd357f6572df2ecbbe1b3eb1667283a975ef3117d5445035bccf10cb61e510",
+        "evidence_checks": []
+      },
+      "latest_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "Search, both Movie Info pages, complete intersection and paired dates are evidenced; business state is unchanged.",
+        "original_output_sha256": "d9ad3032510007088c89ee3a735e0cddcae5f7c2cdbeedd4eca735ab16bbb026",
+        "evidence_checks": [
+          "Christopher_Nolan_search",
+          "complete_producer_field_oppenheimer_2023",
+          "streaming_date_oppenheimer_2023",
+          "complete_producer_field_the_dark_knight",
+          "streaming_date_the_dark_knight"
+        ]
+      },
+      "latest_primary_scored_at_utc": "2026-09-07T16:58:50.741766+00:00",
+      "latest_primary_scorer_sha256": {
+        "sites/rotten_tomatoes/verify/verify_14.py": "e910eb128268a14e3bad6182d4610ff9aa2d1e0a376e2a97c3153329dcceb931",
+        "sites/rotten_tomatoes/verify/test_missing_date_contracts.py": "f3861d8704d4c84851f43d01c45607b9c35167cfff4f15b79cf8f5336c86a4f7",
+        "sites/rotten_tomatoes/verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+        "sites/rotten_tomatoes/verify/test_r3_prose_contracts.py": "6dc7c2bc5209953e59c968a61a7ef1482e23e491da171d784f1bf73b8394e6bb",
+        "sites/rotten_tomatoes/verify/verify_0.py": "2b4f5262949fdcb34338d614a321fb22b51251b096274c547b524816041171fd",
+        "sites/rotten_tomatoes/verify/test_netflix_scope_contracts.py": "2202607378103061068942d4f2e0e84b1238fad3fcb8f500b6f1a5fc9c524be3",
+        "sites/rotten_tomatoes/verify/test_state_contracts.py": "c2a48ba4738bc3ff3d58976baf0c9b12d86e49559c91bfe7389d26cf7843e9b1",
+        "sites/rotten_tomatoes/verify/test_info_contracts.py": "e5cdc06e7c2109e9f44edeb2021492b2644f78bfb2227e2ac4a7a97688478540",
+        "sites/rotten_tomatoes/verify/verify_18.py": "cd233681eefd988185c99da7cd8fb75f6a397e4edfd113f9f225b1c7386f7911",
+        "sites/rotten_tomatoes/verify/test_filmography_comparison_contracts.py": "e35c650445b813856ee7d5d81595b7c71a5e19a8a633abc4dc1191cc5736350c",
+        "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+        "sites/rotten_tomatoes/verify/verify_3.py": "89132f786d3a999eaaab3612f2de80863f5ad78a0ef31694d02b1bfe32e01310",
+        "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55",
+        "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+        "sites/rotten_tomatoes/verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+        "sites/rotten_tomatoes/verify/test_date_contracts.py": "b99ab51326c52f6878aa36bf6b72677279e308876719006111defd7a02aef0d5",
+        "sites/rotten_tomatoes/verify/test_catalog_expansion_contracts.py": "c063ec7a8434d2d80d05cba874a1b73652ef16b0320b1ff092c7e532e7a900c0",
+        "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589"
+      },
+      "run_files_unchanged": true,
+      "before_after_database_bytes_equal": true,
+      "selected_screenshots": [
+        "images/task-r3-search.png"
+      ],
+      "repair_summary": "The original producer-prose parser rejected adjacent Chinese wording and punctuation and treated the following Release Date (Streaming) heading as another producer-list line. The closed parser repair respects those field boundaries while retaining complete name matching, date pairing, UI evidence and unchanged-state checks. Ten new positive/negative methods cover the direct boundaries.",
+      "accepted": false,
+      "prior_repaired_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "Search, both Movie Info pages, complete intersection and paired dates are evidenced; business state is unchanged.",
+        "original_output_sha256": "d9ad3032510007088c89ee3a735e0cddcae5f7c2cdbeedd4eca735ab16bbb026",
+        "evidence_checks": [
+          "Christopher_Nolan_search",
+          "complete_producer_field_oppenheimer_2023",
+          "streaming_date_oppenheimer_2023",
+          "complete_producer_field_the_dark_knight",
+          "streaming_date_the_dark_knight"
+        ]
+      },
+      "latest_primary_code_commit": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc",
+      "repair_commit": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc"
+    },
+    {
+      "task_id": "RottenTomatoes--18",
+      "run_hash": "032a071062f9253307042cb0920da09640fef5e014de579553e814881d57fd88",
+      "input_sha256": "7b635fceb39bf98db139fbc53d289b82f9ff9715354747276f3d35d2ae8f0e4a",
+      "trajectory_sha256": "1633bb579689bd0a92b8000e680f69c5f313669ebde8071f50513ec3af586578",
+      "recorded_actions": 6,
+      "png_screenshots": 13,
+      "runtime_code_commit": "abb70237e66dde47daf822e6bed5505162298e6a",
+      "asset_identity_at_capture": "LOCAL_ARCHIVE_SHA256:38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1",
+      "public_ui_path_summary": "Search Kevin Feige → complete four-row Producer Filmography comparison → winner Movie Info.",
+      "original_primary": {
+        "verdict": "FAIL",
+        "success": false,
+        "exit_code": 1,
+        "reason": "answer includes a movie outside the complete eligible maximum set",
+        "original_output_sha256": "9b84e025148e6eb095d161016ebb0a8e3d0925ded526427eb39abe94f06e5a51",
+        "evidence_checks": []
+      },
+      "latest_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "Complete eligible maximum, paired facts and a permitted UI comparison path are evidenced; business state is unchanged.",
+        "original_output_sha256": "b0463c029217cf3305cbf3ae48854c04f9f24f66745ecd4047f5b27f8d325f89",
+        "evidence_checks": [
+          "Kevin_Feige_producer_filmography",
+          "Movie_Info_Producer_spider_man_brand_new_day",
+          "labelled_audience_spider_man_brand_new_day",
+          "winner_streaming_date_spider_man_brand_new_day",
+          "permitted_comparison_path"
+        ]
+      },
+      "latest_primary_scored_at_utc": "2026-09-07T16:58:51.205140+00:00",
+      "latest_primary_scorer_sha256": {
+        "sites/rotten_tomatoes/verify/verify_14.py": "e910eb128268a14e3bad6182d4610ff9aa2d1e0a376e2a97c3153329dcceb931",
+        "sites/rotten_tomatoes/verify/test_missing_date_contracts.py": "f3861d8704d4c84851f43d01c45607b9c35167cfff4f15b79cf8f5336c86a4f7",
+        "sites/rotten_tomatoes/verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+        "sites/rotten_tomatoes/verify/test_r3_prose_contracts.py": "6dc7c2bc5209953e59c968a61a7ef1482e23e491da171d784f1bf73b8394e6bb",
+        "sites/rotten_tomatoes/verify/verify_0.py": "2b4f5262949fdcb34338d614a321fb22b51251b096274c547b524816041171fd",
+        "sites/rotten_tomatoes/verify/test_netflix_scope_contracts.py": "2202607378103061068942d4f2e0e84b1238fad3fcb8f500b6f1a5fc9c524be3",
+        "sites/rotten_tomatoes/verify/test_state_contracts.py": "c2a48ba4738bc3ff3d58976baf0c9b12d86e49559c91bfe7389d26cf7843e9b1",
+        "sites/rotten_tomatoes/verify/test_info_contracts.py": "e5cdc06e7c2109e9f44edeb2021492b2644f78bfb2227e2ac4a7a97688478540",
+        "sites/rotten_tomatoes/verify/verify_18.py": "cd233681eefd988185c99da7cd8fb75f6a397e4edfd113f9f225b1c7386f7911",
+        "sites/rotten_tomatoes/verify/test_filmography_comparison_contracts.py": "e35c650445b813856ee7d5d81595b7c71a5e19a8a633abc4dc1191cc5736350c",
+        "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+        "sites/rotten_tomatoes/verify/verify_3.py": "89132f786d3a999eaaab3612f2de80863f5ad78a0ef31694d02b1bfe32e01310",
+        "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55",
+        "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+        "sites/rotten_tomatoes/verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+        "sites/rotten_tomatoes/verify/test_date_contracts.py": "b99ab51326c52f6878aa36bf6b72677279e308876719006111defd7a02aef0d5",
+        "sites/rotten_tomatoes/verify/test_catalog_expansion_contracts.py": "c063ec7a8434d2d80d05cba874a1b73652ef16b0320b1ff092c7e532e7a900c0",
+        "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589"
+      },
+      "run_files_unchanged": true,
+      "before_after_database_bytes_equal": true,
+      "selected_screenshots": [
+        "images/task-r18-filmography.png",
+        "images/task-r18-winner-info.png"
+      ],
+      "repair_summary": "The original scorer counted explanatory lower-scoring titles as selected results and omitted the complete producer-filmography comparison route. The closed repair distinguishes explicit results from validated comparison prose and accepts person/title/Producer/labelled-score evidence with winner Movie Info. Wrong results, ties, roles, incomplete candidates and conflicting facts remain rejected. Screenshot-only dispatch reuses the existing judge path; six mock tests establish routing and refusal boundaries, not vision accuracy.",
+      "accepted": false,
+      "repair_commit": "17a4d76a08e825be3cca0b90182fa38fc6bcf84e",
+      "prior_repaired_primary": {
+        "verdict": "PASS",
+        "success": true,
+        "exit_code": 0,
+        "reason": "Complete eligible maximum, paired facts and a permitted UI comparison path are evidenced; business state is unchanged.",
+        "original_output_sha256": "b0463c029217cf3305cbf3ae48854c04f9f24f66745ecd4047f5b27f8d325f89",
+        "evidence_checks": [
+          "Kevin_Feige_producer_filmography",
+          "Movie_Info_Producer_spider_man_brand_new_day",
+          "labelled_audience_spider_man_brand_new_day",
+          "winner_streaming_date_spider_man_brand_new_day",
+          "permitted_comparison_path"
+        ]
+      },
+      "latest_primary_code_commit": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc"
+    }
+  ],
+  "pending": {
+    "login_state_task_suffixes": [
+      8,
+      9,
+      11,
+      14
+    ],
+    "owner_visual_baseline": "PENDING",
+    "auxiliary_llm_judgments": "NOT_RUN",
+    "claude_blind_review_package": "NOT_FROZEN",
+    "accepted_task_evaluations": "PENDING"
+  },
+  "limitations": [
+    "Three assisted real executions are distinct from fixture tests and accepted runs.",
+    "Selected screenshots are illustrations and do not replace the complete retained evidence.",
+    "Hashes identify frozen originals; this public summary alone cannot replay private run directories.",
+    "Application/asset image checks are reused only for unchanged inputs; external task and scorer identities are recorded separately."
+  ]
+}

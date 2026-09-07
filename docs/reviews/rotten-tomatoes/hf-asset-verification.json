@@ -1,0 +1,57 @@
+{
+  "purpose": "official Hub remote commit/ref/file identity check; not full archive extraction or clean remote-only rebuild",
+  "status": "PASS",
+  "verified_at_utc": "2026-09-07T16:20:51.481666+00:00",
+  "api_library": "huggingface_hub 0.30.2",
+  "repo_id": "ChilleD/WebHarbor",
+  "revision": "61f62d1275121975cae704acc10504d42def6c39",
+  "pull_request_ref": {
+    "ref": "refs/pr/55",
+    "resolved_sha": "61f62d1275121975cae704acc10504d42def6c39",
+    "file_map_equals_immutable": true
+  },
+  "commit_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/commit/61f62d1275121975cae704acc10504d42def6c39",
+  "baseline_revision": "480c892e976bada6c0ea3f5a66e2b9efda65525d",
+  "baseline_unchanged_files": 22,
+  "baseline_unchanged_site_archives": 20,
+  "baseline_differences": [],
+  "added_files_relative_to_baseline": [
+    "rotten_tomatoes.manifest.json",
+    "rotten_tomatoes.tar.gz"
+  ],
+  "files": [
+    {
+      "path": "rotten_tomatoes.tar.gz",
+      "bytes": 1314568851,
+      "sha256": "38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1",
+      "method": "official repository LFS SHA256 metadata; no full archive download",
+      "head_commit": "61f62d1275121975cae704acc10504d42def6c39",
+      "head_etag": "38f4532aac6307ea6ce7b97f77b4659fd58d10d6bb7f631ae082935fb46f6fe1"
+    },
+    {
+      "path": "rotten_tomatoes.manifest.json",
+      "bytes": 1442642,
+      "sha256": "a696c391ed8a8ed01f4ce4f1ad0d2b4b59e67dea4e4746b7749391b0c7a9422d",
+      "method": "immutable download SHA256 plus official metadata",
+      "head_commit": "61f62d1275121975cae704acc10504d42def6c39",
+      "head_etag": "b6f91b699976a7fcc03dcbdbf3c2763b9cca3ac6"
+    },
+    {
+      "path": "ted.tar.gz",
+      "bytes": 5301076,
+      "sha256": "2d6a65fd37ac819e05890357b74cf463f61f3172e398356748fdbff3adc026d2",
+      "method": "official repository LFS SHA256 metadata; no full archive download",
+      "head_commit": "61f62d1275121975cae704acc10504d42def6c39",
+      "head_etag": "2d6a65fd37ac819e05890357b74cf463f61f3172e398356748fdbff3adc026d2"
+    }
+  ],
+  "manifest_download_hashed": true,
+  "full_archive_redownload_and_extraction": false,
+  "remote_only_clean_rebuild": "NOT_VERIFIED",
+  "repository_pin_update": "PENDING_ROOT",
+  "verification_receipt_sha256": "88f1785c7b62327fe473b8cad9991a7deb6484f24305f46ebac8f2249531ca69",
+  "main_ref_observed": {
+    "resolved_sha": "480c892e976bada6c0ea3f5a66e2b9efda65525d",
+    "matches_frozen_baseline": true
+  }
+}
