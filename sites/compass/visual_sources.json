@@ -139,6 +139,271 @@
       "source_url": "https://www.compass.com/ucfe-assets/homepage/homepage-v4.41.0/assets/before_concierge_tablet2x.jpg",
       "sha256": "5ec4ffedd30565b4f2ae1ae5df19f4d49dc3e2ae0337f1a1b14bb2be335c59cf",
       "retrieved_at": "2026-09-06T16:04:15.057114+00:00"
+    },
+    {
+      "path": "static/external_cache/concierge-living-room---before.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Living_Room_-_Before.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "21c68a9b84d2530205fe69a96149a08fd201faa782b7ecd0895b68b90e1fabcb",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-living-room---after.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Living_Room_-_After.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "ef15c23b25e5f8dfbaafcd055203fc211335c30890047153c9776023d3373462",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-d85-2822-edit.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/D85_2822-Edit.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "9fa1baca03f264f07659c25baeeb29e9dc59136c3eb4730963d01c008cf37016",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-after-1.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/After_1.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "bb82dd7e331a4c5c540bf7cb30e05cfc882c611f5a471d77845491fe253a2b6b",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-before-1.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Before_1.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "1c97cfa7f48fcc373d22a6d76b004fe2a90412e3e6367fa99fd30deb6ed52b70",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-scott-before.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Scott_before.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "89aae7f20a32186a0b29f2e80f7f41432a9ff8043f7ee83f468bc4646e53f89c",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-scott-after.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Scott_after.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "353f6c6a500119c082beead61e6a24bd2881c6b66561d68ecded0dfff9c27988",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-sarah-before.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Sarah_before.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "d1846a05e52ce0b9be838a1a4d2eccc8a012c30b2698803c9e6e1b76cac634d6",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-copy-of-17---kelly-resnick.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Copy_of_17_-_Kelly_Resnick.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "b88f844f98ae129898842fb73558664a5739c0f019b3ec293d7b72bd3e792af5",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-fpoconcierge-1.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/FPOconcierge_1.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "69ef7cca7e11a506a3a41bfda7e064424faa0e49eecb1e5ff37900d09c4324c3",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-concierge-thumb-new.jpg",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/concierge_thumb_new.jpg",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "012c43b951659f83400edadfa0719489d4ad8909bc257a871a3f2e5191571716",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/concierge-concierge-hero.mp4",
+      "source_url": "https://www.compass.com/ucfe-assets/public-media/concierge/Concierge_Hero.mp4",
+      "observed_on": "https://www.compass.com/concierge/",
+      "sha256": "fa5c240da390be941ac677125dca5c5920124a59667d68b2f27c4e2bd522f0af",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-nyc-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/19pgnAj8piggCS2uw4CGGO/af4d249024b375924b0ac7a7b2b98625/NYC-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "9af5ab01d21de10e4361777f92a5e15af4b590bb1d1b0e35b368383d60d29387",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-boston-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/10fe8BsYhC6k2GgMGQ284c/51bc4fc9061da5fe21b1cb234b930abe/Boston-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "9dc00470f1fa1dd5204d4892d8ed5cc2e65800883937ce8a6370ae3f38834acc",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-miami-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/wA3W6ixg9UqW0EI2koKy/b0d46adcd0d671e9119bf0010a32976d/Miami-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "8499d68cb8dcb013c94a0794a320d4a3a143934be24c3ea8c5e7360a922a67ba",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-aspen-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/6n2gvdHcsMWI6MOOoKgWsY/789ae614d5a53bf185b18d46dfb1d7ef/Aspen-geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "c27615db24d623a0f961f541e5015aed9a053f45e7638e5493faca08150dd60c",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-dc-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/3d90Kb4GZWK0E2i86mMEco/141380526375c853a3ad1dc494a3fc48/DC-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "14f6baa084c34a63e250988f414d29481057bd8551a8b42efb529e6874b79a70",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-santabarbara-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/5Dm1IoClWMaGOmiQySIkeq/480d974fa6be025515d7300218148393/SantaBarbara-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "ee9db1661e869408d97536ecb80b22763eb20645cb4a2f65c9e7fb65e211e2b7",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-hamptons-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/F9xOmYgyKkicMUqigq4iG/455eadb06c2a91a24a268479a8e80077/Hamptons-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "6f1201d68a7884a6f35302d885ae4a3ba21eaa22a9c0f7074867b0e177689c3a",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-la-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/4w4cxkiqxOimUcae4Iq6qE/83d8cfd7a0e1402cffca309a28bed2d1/LA-Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "8401351e795b342dd2520cbeda2ea7fca25025f1d65580bc751191439358229d",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-sf---geo--1-.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/4o8tMTm2JO2gCgkAywoK0M/6c63feb00f7f413f22db9919ba9ea55a/SF_-_Geo__1_.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "e74af27dd27e610abe2eb4b73c69f698a3fed49ddc27b37b2e663e5fc0642a68",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-westchester-market-mosaic-tile.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/4y8I1FXpu8kcUm000k00U2/4281895e91ae498a0b57faa0d60fb479/Westchester-market-mosaic_tile.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "197d2f64b266da9a1ba00c978ba8b1c6bfaa1f4a9c086ff57cc07c8c2255d334",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-naplesneighborhoodguidebanner.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/2abKniOTSEcCWSa64GSakk/3540d21389c40ac30e898eed25fd55fb/naplesneighborhoodguidebanner.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "2dc1c514d16c07d066e8f07195b4717a28a8e6a439dbff4a14f094d659a2b767",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-chicago-thumbnail.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/HfTJoB91qC0KQ6SoegeY4/52a3a4eb04e488ac120f044329a811a6/Chicago-Thumbnail.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "4c48eb693b4601ed9f589eda0d3480549d72b8d30597ca191784ecdacbe00cd9",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-greenwich-thumbnail-geo.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/1iqTvMlkeiWQAmAYG08c6S/89b7c56d72c6c84a84f39f44385a649c/Greenwich_Thumbnail_Geo.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "302aee42e79a99143e4c70775d1812d0ef13b2349e5e5237842f4472fa5a7f26",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-philadelphia-geo-mosaic.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/1VQtRdDmy8AE2igk6UeE04/73b8cacd319aefd05cd2be6bbe99c955/Philadelphia_geo_mosaic.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "bc72a29c2b4fba6134de86d339bf03739002c99990764b4484d3c2a2237c7548",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-ca---san-diego---la-jolla---112.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/Aakr2ByP4W6SS0Ycoeaww/f33f82bc9ad8a6bae71d12dc67d14765/CA_-_San_Diego_-_La_Jolla_-_112.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "1b2b84695358526d2d7cd15186b1a87876f42ac98166d4977d8072c534b01f26",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-austion-geo-tile.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/5RvSCcc4qkgeWYWIUGMs4M/1846418f6e2e68376b3fbb60a62237de/Austion-Geo-Tile.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "32bb540ad31850faba6b3da966ffe4eced4979957481cb9ebd7eaf8f5c6ba27b",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-atlanta-geo-tile.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/6OrfYoadwcKKcIi2C24kC4/5fe03d28c74a2930dd2d5c55b711b75c/atlanta-geo-tile.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "1b48d130b01787d1261877e8def272306a616394e561b79a578a56be19761d39",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-seattle-geomosaic-tile.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/3NeMR0z5Z6iQE8wOSEWqKw/12aed6c3e1252f499684ec77a2b6f4f5/Seattle_GeoMosaic_Tile.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "3414b0a399daf631a3b7d09312847442ebe321c95919c1f20f1e69724c7f5f89",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-houston-geo-mosaic.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/5JicZ7jHRCeKuqYyiQY084/1644a44e882b6a4cb89ba035c85358a9/houston-geo_mosaic.png?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "ad336283a4805bec1d1b247a48ca9df4a20e49f8c766948bea8d240e03566c92",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-dallas-market-module--mosaic-grid-markets-.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/69lCuoQ3sc0gS2smYy0MKQ/dc2e3ac43a9c11ac43dbb3faf96348ec/Dallas-Market-Module-_mosaic-grid_markets_.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "6968682946fcef860da5d01c3ed44a4d49e527f0f0a7312307e526cbe69c0f9c",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-nc---charlotte---marketing-imagery---6.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/1lShqhAeCHL47dBPQjq8I7/385a1400f6dac215430e95aca4113706/NC_-_Charlotte_-_Marketing_Imagery_-_6.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "5ed4dd3e4ea2d9f76fc9ffe0ac49cd15ee80aa1d92da09b111fdcdd5cf114285",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-nc---raleigh---marketing-image---14.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/1TnIm8mk2JGpYPKoNHQhWV/d41f5ca6bbc413eb48e19bd5d078309a/NC_-_Raleigh_-_Marketing_Image_-_14.jpeg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "426a27509d4492eaff8ec037934f51857bd79b8df46f55c37cfd32651ba0ea0f",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-compass-web-3.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/3GKbaNhQOjklQogAdEgLEA/cd8bf4fdd1f10eeae2963c6ae0becb86/Compass_web-3.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "6590f6f14c71b4e050538e8b5338b5a94adc2f8dbed550514fb994f911ca0dee",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-in---indianapolis---marketing-image---4.webp",
+      "source_url": "https://images.ctfassets.net/3xf6g0o5qdho/AbyexZ0F0PvPfWXv6J96c/28ecead35edf0873bca40c70a44ea14f/IN_-_Indianapolis_-_Marketing_Image_-_4.jpg?fm=webp&w=480&h=320",
+      "observed_on": "https://www.compass.com/neighborhood-guides/",
+      "sha256": "b05c5473056d9c129437b47bd05c95a84a20daa02bfcf32b0bea524b721224d5",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/guide-cityscape.svg",
+      "source_url": "https://www.compass.com/neighborhood-guides/",
+      "source_type": "inline SVG from directory hero",
+      "sha256": "16d0a9154def1c0e29334f1dbb5a0346bdc40204e23c1d3b45cb79545f616679",
+      "retrieved_at": "2026-09-07T04:00:00Z"
+    },
+    {
+      "path": "static/external_cache/CompassSerif-SemiBold.woff2",
+      "source_url": "https://www.compass.com/ucfe-assets/fonts/3.10.0/CompassSerif-SemiBold.woff2",
+      "sha256": "679d2332d6adf0eea88f09b2dfbc63bf6534497da03a9292f1031ebb652d9217",
+      "retrieved_at": "2026-09-07T04:08:28Z"
     }
   ]
 }

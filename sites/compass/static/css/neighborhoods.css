@@ -1,0 +1,33 @@
+@font-face{font-family:'Compass Serif';src:url('../external_cache/CompassSerif-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+/* Compass neighborhood-guides v2.14.1 directory, observed 2026-09-07. */
+.neighborhood-directory {font-size:16px;line-height:1.5;padding-bottom:24px;}
+.guide-masthead {border-bottom:1px solid #dadada;}
+.guide-masthead h1 {max-width:1170px;padding:16px 24px 15px;margin:auto;font:600 24px/1.3 var(--serif);letter-spacing:0;}
+.guide-intro {display:flex;max-width:1170px;padding:0 24px;margin:48px auto 0;}
+.guide-intro>div {flex:1 0 50%;}
+.guide-intro h2 {background:#000;color:#fff;text-align:center;padding:48px;margin:37.35px 0;font:500 45px/1.25 var(--serif);letter-spacing:0;}
+.guide-intro>div:last-child {display:flex;align-items:center;}
+.guide-intro img {width:100%;}
+.guide-mosaic {display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));grid-auto-flow:dense;gap:24px;max-width:1170px;padding:24px;margin:0 auto;list-style:none;}
+.guide-tile {position:relative;grid-column:span var(--tile-size,1);min-width:240px;overflow:hidden;isolation:isolate;background:#000;}
+.guide-tile::after {content:'';display:block;padding-top:calc(100% / var(--tile-size,1) - 12px);}
+.guide-tile img {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;opacity:.9;transition:transform .3s ease-in-out;}
+.guide-tile a {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;color:#fff;text-align:center;text-shadow:0 0 12px #000;outline-offset:-4px;}
+.guide-tile a:hover {text-decoration:none;}
+.guide-tile:hover img,.guide-tile:focus-within img {transform:scale(1.2);}
+.guide-tile h3 {font:700 24px/1.3 var(--serif);margin:0;padding-bottom:8px;border-bottom:1px solid #fff;letter-spacing:0;}
+.guide-coordinates {display:flex;justify-content:center;font-size:12px;line-height:18px;}
+.guide-coordinates span {padding:2px 8px 0;}
+.guide-coordinates span:not(:last-child) {border-right:1px solid #fff;}
+.guide-boundary {max-width:1170px;margin:12px auto;padding:0 24px;font-size:12px;color:#666;}
+.guide-breadcrumbs {display:flex;gap:16px;justify-content:center;margin:24px 0;font-size:14px;}
+@media(max-width:647px){
+  .neighborhood-directory {font-size:14px;}
+  .guide-masthead h1 {font:500 16px/1.3 var(--sans);padding:16px 16px 15px;}
+  .guide-intro {display:block;margin-top:0;padding:0 16px;}
+  .guide-intro h2 {min-width:min-content;}
+  .guide-intro>div:last-child {display:none;}
+  .guide-tile h3 {font-size:20px;}
+}
+@media(max-width:580px){.guide-tile {--tile-size:1!important;}}
+@media(prefers-reduced-motion:reduce){.guide-tile img{transition:none;}}

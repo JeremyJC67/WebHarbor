@@ -602,8 +602,10 @@ def neighborhoods(region=None):
     listings = []
     if selected and selected[1]:
         listings = Listing.query.filter_by(market_city=selected[1], status="for-sale").order_by(Listing.id).all()
+    with open(os.path.join(app.root_path, "neighborhood_regions.json"), encoding="utf-8") as source:
+        directory = json.load(source)
     return render_template("neighborhoods.html", regions=regions, region=region,
-                           selected=selected, listings=listings)
+                           selected=selected, listings=listings, directory=directory)
 
 
 @app.route("/concierge/")
