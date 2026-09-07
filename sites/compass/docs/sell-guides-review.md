@@ -1,8 +1,8 @@
 # Compass Sell and regional-guide reconstruction
 
-The previous Sell introduction and property-list substitutes did not reproduce the source page structure. This follow-up restores the Sell marketing sections and **24 regional guide landings with 401 community cards**, including their original media/order and responsive layouts. Original contribution: [#25](https://github.com/aiming-lab/WebHarbor/pull/25), **sarendis56 (Peichun Hua)**; reviewer takeover: [Draft #84](https://github.com/aiming-lab/WebHarbor/pull/84).
+The previous Sell introduction and property-list substitutes did not reproduce the source page structure. This follow-up restores the Sell marketing sections and **24 regional guide landings with 401 community cards**, including their original media/order and responsive layouts. Original contribution: [#25](https://github.com/aiming-lab/WebHarbor/pull/25), **sarendis56 (Peichun Hua)**; reviewer takeover: [Review #84](https://github.com/aiming-lab/WebHarbor/pull/84).
 
-**Application `7f6dc008603182c6ace79ad52e52f2f8b804ae4b` · HF `d86ec0bfcbb98f92efbe6b6b4440f9dcc6cceb69` · Compass `40019` in the 20-site registry.** Human visual/scope acceptance and the refreshed independent task17 verdict remain pending. This is a repaired candidate, not a claim of complete Compass service parity or Ready status.
+**Application `7f6dc008603182c6ace79ad52e52f2f8b804ae4b` · HF `d86ec0bfcbb98f92efbe6b6b4440f9dcc6cceb69` · Compass `40019` in the 20-site registry.** Human visual/scope acceptance was recorded on September 7, 2026, with an explicit Ready request. The refreshed independent task17 verdict remains outstanding; see the [maintainer handoff](maintainer-handoff.md). This does not claim complete Compass service parity.
 
 ## Source / before / after
 
@@ -67,4 +67,4 @@ All 24 **regional landing pages** are local; individual community long-form arti
 
 Those service limits are separate from necessary benchmark differences: synthetic accounts, local state, stable catalog recommendations and withholding detailed answers from search cards remain in place. No missing service or visual defect is classified as an answer-leak safeguard.
 
-The source-led structural repairs and local validation are complete for this scope. **Human experience/scope acceptance and the refreshed independent execution verdict are still required; the PR stays Draft.** Maintainers perform the eventual code and asset merges.
+The source-led structural repairs and local validation are complete for this scope. **Human experience/scope is accepted and the PR is being handed to maintainers for review at the owner’s request. The refreshed independent task17 verdict remains outstanding.** Maintainers perform the eventual code and asset merges.

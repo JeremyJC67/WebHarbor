@@ -3,7 +3,7 @@
   "before_application": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
   "integration_base": "90afddb6d4af382935ded9a385f2eead604188cf",
   "generated_at": "2026-09-07T14:19:39.380546+00:00",
-  "status": "DRAFT; human acceptance and refreshed independent execution verdict pending",
+  "status": "Historical validation at capture time; current human acceptance and Ready request are recorded in maintainer-handoff.md. Refreshed task17 verdict still pending.",
   "assets": {
     "archive_sha256": "077cfb2334cb40bf191b2e557c0becd6e28a1901e7ea80183216c1e9db1544aa",
     "archive_bytes": 210301426,

@@ -1,4 +1,4 @@
-> **Current UI follow-up:** [Sell and all 24 regional guide landings](docs/sell-guides-review.md). Human acceptance and the refreshed task17 independent verdict remain pending. Earlier evidence retains its recorded versions.
+> **Current UI follow-up:** [Sell and all 24 regional guide landings](docs/sell-guides-review.md). Human experience and disclosed scope are accepted; [maintainer handoff and remaining work](docs/maintainer-handoff.md) record the Ready request and outstanding refreshed task17 verdict. Earlier evidence retains its recorded versions.
 
 # Compass
 
