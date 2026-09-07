@@ -7,8 +7,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/compass.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
   {% if request.endpoint == 'index' %}<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">{% endif %}
+  {% if request.endpoint == 'sell' %}<link rel="stylesheet" href="{{ url_for('static', filename='css/sell.css') }}"><script defer src="{{ url_for('static', filename='js/sell.js') }}"></script>{% endif %}
   {% if request.endpoint == 'concierge' %}<link rel="stylesheet" href="{{ url_for('static', filename='css/concierge.css') }}"><script defer src="{{ url_for('static',filename='js/concierge.js') }}"></script>{% endif %}
-  {% if request.endpoint == 'neighborhoods' %}<link rel="stylesheet" href="{{ url_for('static',filename='css/neighborhoods.css') }}">{% endif %}
+  {% if request.endpoint == 'neighborhoods' %}<link rel="stylesheet" href="{{ url_for('static',filename='css/neighborhoods.css') }}"><script defer src="{{ url_for('static', filename='js/neighborhoods.js') }}"></script>{% endif %}
   <script defer src="{{ url_for('static', filename='js/compass.js') }}"></script>
 </head>
 <body class="{% if request.endpoint == 'index' %}home-page{% endif %}">

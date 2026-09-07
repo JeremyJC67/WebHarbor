@@ -1,14 +1,13 @@
 {% extends "base.html" %}
-{% block title %}{{ selected[0] if selected else 'Neighborhood Guides' }} | Compass{% endblock %}
+{% block title %}Neighborhood Guides | Compass{% endblock %}
 {% block content %}
-{% if selected %}<section class="catalog-landing"><h1>{{ selected[0] if selected else 'Find the Neighborhood For You' }}</h1><nav class="guide-regions" aria-label="Neighborhood regions">{% for slug,item in regions.items() %}<a href="{{ url_for('neighborhoods',region=slug) }}"{% if slug == region %} aria-current="page"{% endif %}>{{ item[0] }}</a>{% endfor %}</nav><img class="guide-hero" src="{{ url_for('static',filename='external_cache/home-neighborhood-' ~ region ~ '.jpg') }}" alt="{{ selected[0] }}"><p>Explore listings from our {{ selected[1] or selected[0] }} snapshot below. For the full neighborhood guide, visit <a href="https://www.compass.com/neighborhood-guides/{{ region }}/" target="_blank" rel="noopener">Compass ↗</a>.</p>{% if listings %}<div class="grid-cards">{% for L in listings %}{% include "_card.html" %}{% endfor %}</div>{% else %}<p>This snapshot does not contain listings in this region.</p>{% endif %}</section>{% else %}
 <section class="neighborhood-directory" aria-label="Neighborhood guides">
   <header class="guide-masthead"><h1>Neighborhood Guides - Compass</h1></header>
   <div class="guide-intro"><div><h2>Explore the country’s most dynamic communities.</h2></div><div><img src="{{ url_for('static',filename='external_cache/guide-cityscape.svg') }}" alt="" aria-hidden="true"></div></div>
   <ul class="guide-mosaic">
   {% for item in directory %}
     <li class="guide-tile" style="--tile-size:{{ item.size }}">
-      <a href="{{ url_for('neighborhoods',region=item.slug) if item.slug in regions else item.source_url }}"{% if item.slug not in regions %} target="_blank" rel="noopener" aria-label="{{ item.name }} — guide on Compass (opens new tab)"{% endif %}>
+      <a href="{{ url_for('neighborhoods',region=item.slug) }}">
         <h3>{{ item.name }}</h3>
         {% if item.coordinates %}<div class="guide-coordinates">{% for coordinate in item.coordinates %}<span>{{ coordinate }}</span>{% endfor %}</div>{% endif %}
       </a>
@@ -16,7 +15,6 @@
     </li>
   {% endfor %}
   </ul>
-  <p class="guide-boundary">New York City, South Florida, Greater Boston, the Hamptons, Southern California, and DC open local listing snapshots. Other guides open on Compass ↗.</p>
   <nav class="guide-breadcrumbs" aria-label="Breadcrumb"><a href="{{ url_for('index') }}">Compass</a><span aria-hidden="true">›</span><span>All Neighborhood Guides</span></nav>
 </section>
-{% endif %}{% endblock %}
+{% endblock %}

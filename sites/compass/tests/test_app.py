@@ -23,6 +23,7 @@ def client():
     with m.app.app_context():
         m.db.drop_all()
         m.db.create_all()
+        m.seed_neighborhood_guides()
         for name in ("Alice", "Bob"):
             user = m.User(name=name, email=name.lower()+"@example.com", budget_min=100, budget_max=200, beds_min=1)
             user.set_password("test-pass-123")
@@ -260,3 +261,86 @@ def test_marketing_routes_do_not_modify_catalog_or_user_state(client):
         assert before == [(row.id, row.property_facts_json) for row in m.Listing.query.order_by(m.Listing.id)]
         assert m.User.query.count() == users
         assert m.SavedHome.query.count() == m.Tour.query.count() == m.Inquiry.query.count() == 0
+
+
+# Seller leads are local records, independent of listing-specific inquiries.
+def test_seller_lead_persists_and_confirmation_belongs_to_browser(client):
+    original_counts = None
+    with m.app.app_context():
+        original_counts = (m.User.query.count(), m.Listing.query.count(), m.Inquiry.query.count())
+    response = client.post('/sell/', data={
+        'name': 'Taylor Test', 'email': 'taylor@example.com',
+        'phone': '+1 (212) 555-0199', 'zip_code': '10011',
+    })
+    assert response.status_code == 302
+    assert response.location == '/sell/#lead-form'
+    with m.app.app_context():
+        lead = m.SellerInquiry.query.one()
+        assert (lead.name, lead.email, lead.phone, lead.zip_code) == (
+            'Taylor Test', 'taylor@example.com', '+1 (212) 555-0199', '10011')
+        reference = lead.reference
+        assert (m.User.query.count(), m.Listing.query.count(), m.Inquiry.query.count()) == original_counts
+    for _ in range(2):
+        html = client.get('/sell/').get_data(as_text=True)
+        assert reference in html and 'Saved in this local environment' in html
+    assert reference not in m.app.test_client().get('/sell/').get_data(as_text=True)
+    with m.app.app_context():
+        assert m.SellerInquiry.query.count() == 1
+
+
+@pytest.mark.parametrize('field,value', [
+    ('name', ''), ('name', 'x' * 121), ('email', 'not-an-email'),
+    ('phone', 'abc'), ('phone', '1' * 41), ('zip_code', 'abc'), ('zip_code', '123456'),
+])
+def test_seller_lead_rejects_invalid_fields_without_writes(client, field, value):
+    data = {'name': 'Taylor', 'email': 'taylor@example.com', 'phone': '212-555-0199', 'zip_code': '10011'}
+    data[field] = value
+    response = client.post('/sell/', data=data)
+    assert response.status_code == 422
+    assert b'Please check the form' in response.data
+    with m.app.app_context():
+        assert m.SellerInquiry.query.count() == 0
+
+
+def test_seller_lead_requires_csrf_and_escapes_returned_values(client):
+    m.app.config['WTF_CSRF_ENABLED'] = True
+    assert client.post('/sell/', data={'name':'Taylor'}).status_code == 400
+    m.app.config['WTF_CSRF_ENABLED'] = False
+    response = client.post('/sell/', data={'name':'<script>alert(1)</script>', 'email':'invalid',
+                                         'phone':'212-555-0199', 'zip_code':'10011'})
+    assert response.status_code == 422
+    assert b'<script>alert(1)</script>' not in response.data
+    assert b'&lt;script&gt;' in response.data
+
+
+def test_neighborhood_pages_read_seed_and_keep_every_directory_link_local(client, monkeypatch):
+    import builtins
+    from html.parser import HTMLParser
+
+    class Links(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.links = []
+        def handle_starttag(self, tag, attributes):
+            if tag == 'a':
+                self.links.append(dict(attributes).get('href', ''))
+
+    expected = json.loads((SITE / 'neighborhood_guides.json').read_text())
+    original_open = builtins.open
+    def no_runtime_guide_json(file, *args, **kwargs):
+        if str(file).endswith(('neighborhood_guides.json', 'neighborhood_regions.json')):
+            raise AssertionError('Guide handlers must use the SQLite snapshot')
+        return original_open(file, *args, **kwargs)
+    monkeypatch.setattr(builtins, 'open', no_runtime_guide_json)
+    directory = Links()
+    directory.feed(client.get('/neighborhood-guides/').get_data(as_text=True))
+    routes = {f'/neighborhood-guides/{slug}/' for slug in expected}
+    assert routes <= set(directory.links)
+    for slug, guide in expected.items():
+        response = client.get(f'/neighborhood-guides/{slug}/')
+        assert response.status_code == 200
+        links = Links()
+        links.feed(response.get_data(as_text=True))
+        assert [card['source_url'] for card in guide['cards']] == [
+            link for link in links.links if link.startswith(guide['source_url']) and link != guide['source_url']]
+        assert not any(link.startswith('/listing/') for link in links.links)

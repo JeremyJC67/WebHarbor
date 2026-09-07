@@ -101,6 +101,25 @@ class User(db.Model, UserMixin):
             return []
 
 
+class NeighborhoodGuide(db.Model):
+    __tablename__ = "neighborhood_guides"
+    slug = db.Column(db.String(80), primary_key=True)
+    position = db.Column(db.Integer, nullable=False)
+    directory_json = db.Column(db.Text, nullable=False)
+    content_json = db.Column(db.Text, nullable=False)
+
+
+class SellerInquiry(db.Model):
+    __tablename__ = "seller_inquiries"
+    id = db.Column(db.Integer, primary_key=True)
+    reference = db.Column(db.String(32), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(254), nullable=False)
+    phone = db.Column(db.String(40), nullable=False)
+    zip_code = db.Column(db.String(10), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
 class Agent(db.Model):
     __tablename__ = "agents"
     id = db.Column(db.Integer, primary_key=True)
@@ -591,21 +610,14 @@ def market(state):
 @app.route("/neighborhood-guides/")
 @app.route("/neighborhood-guides/<region>/")
 def neighborhoods(region=None):
-    regions = {
-        "nyc": ("New York City", "New York"), "hamptons": ("The Hamptons", None),
-        "miami": ("South Florida", "Miami"), "boston": ("Greater Boston", "Boston"),
-        "la": ("Southern California", "Los Angeles"), "dc": ("DC, Maryland, & Virginia", "Washington"),
-    }
-    if region is not None and region not in regions:
+    if region is None:
+        directory = [json.loads(guide.directory_json) for guide in
+                     NeighborhoodGuide.query.order_by(NeighborhoodGuide.position).all()]
+        return render_template("neighborhoods.html", directory=directory)
+    guide = db.session.get(NeighborhoodGuide, region)
+    if guide is None:
         abort(404)
-    selected = regions.get(region)
-    listings = []
-    if selected and selected[1]:
-        listings = Listing.query.filter_by(market_city=selected[1], status="for-sale").order_by(Listing.id).all()
-    with open(os.path.join(app.root_path, "neighborhood_regions.json"), encoding="utf-8") as source:
-        directory = json.load(source)
-    return render_template("neighborhoods.html", regions=regions, region=region,
-                           selected=selected, listings=listings, directory=directory)
+    return render_template("neighborhood_region.html", guide=json.loads(guide.content_json))
 
 
 @app.route("/concierge/")
@@ -613,9 +625,35 @@ def concierge():
     return render_template("concierge.html")
 
 
-@app.route("/sell/")
+@app.route("/sell/", methods=["GET", "POST"])
 def sell():
-    return render_template("sell.html", page_title="Sell Your Home | Compass")
+    values = {}
+    errors = []
+    if request.method == "POST":
+        values = {field: request.form.get(field, "").strip()
+                  for field in ("name", "email", "phone", "zip_code")}
+        if not 1 <= len(values["name"]) <= 120:
+            errors.append("Enter a name of up to 120 characters.")
+        try:
+            values["email"] = validate_email(values["email"], check_deliverability=False).normalized
+        except EmailNotValidError:
+            errors.append("Enter a valid email address.")
+        phone = values["phone"]
+        if (len(phone) > 40 or not re.fullmatch(r"[+\d() .-]+", phone)
+                or not 7 <= len(re.sub(r"\D", "", phone)) <= 15):
+            errors.append("Enter a valid phone number.")
+        if not re.fullmatch(r"[0-9]{5}(?:-[0-9]{4})?", values["zip_code"]):
+            errors.append("Enter a five-digit ZIP code or ZIP+4.")
+        if not errors:
+            inquiry = SellerInquiry(reference=secrets.token_hex(12), **values)
+            db.session.add(inquiry)
+            db.session.commit()
+            session["seller_inquiry_reference"] = inquiry.reference
+            return redirect(url_for("sell", _anchor="lead-form"))
+    reference = session.get("seller_inquiry_reference")
+    confirmation = SellerInquiry.query.filter_by(reference=reference).first() if reference else None
+    return render_template("sell.html", seller_values=values, seller_errors=errors,
+                           seller_confirmation=confirmation), 422 if errors else 200
 
 
 @app.route("/homes-for-sale")
@@ -1159,13 +1197,14 @@ def server_error(e):
 # ─── Boot ──────────────────────────────────────────────────────────────────────
 
 
-from seed_data import seed_database, seed_benchmark_users  # noqa: E402
+from seed_data import seed_database, seed_benchmark_users, seed_neighborhood_guides  # noqa: E402
 
 with app.app_context():
     db.create_all()
     if os.environ.get("COMPASS_SKIP_SEED") != "1":
         seed_database()
         seed_benchmark_users()
+        seed_neighborhood_guides()
 
 
 if __name__ == "__main__":

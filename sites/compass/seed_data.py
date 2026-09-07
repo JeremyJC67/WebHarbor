@@ -33,6 +33,23 @@ def _gallery_paths(listing_id, count=4):
     return [p for p in paths if os.path.isfile(os.path.join(BASE_DIR, p.lstrip("/")))]
 
 
+def seed_neighborhood_guides():
+    """Import the observed regional pages once; requests read the SQLite snapshot."""
+    from app import NeighborhoodGuide, db
+    if NeighborhoodGuide.query.first():
+        return
+    with open(os.path.join(BASE_DIR, "neighborhood_regions.json"), encoding="utf-8") as source:
+        directory = json.load(source)
+    with open(os.path.join(BASE_DIR, "neighborhood_guides.json"), encoding="utf-8") as source:
+        guides = json.load(source)
+    for position, item in enumerate(directory):
+        db.session.add(NeighborhoodGuide(
+            slug=item["slug"], position=position,
+            directory_json=json.dumps(item), content_json=json.dumps(guides[item["slug"]]),
+        ))
+    db.session.commit()
+
+
 def seed_database():
     from app import Agent, City, Listing, db
     if Listing.query.count():
