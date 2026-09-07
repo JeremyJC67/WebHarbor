@@ -8,7 +8,8 @@
       const depth = (index - selected + cards.length) % cards.length;
       card.style.zIndex = String(cards.length - depth);
       card.style.transform = `translateX(var(--card-offset-x-${depth})) translateY(var(--card-offset-y-${depth}))`;
-      card.querySelector('.sell-card-shade').style.background = depth ? `rgba(0,0,0,${depth / 3})` : 'transparent';
+      const shade = depth === 1 ? 17 : 67;
+      card.querySelector('.sell-card-shade').style.background = depth ? `rgba(${shade},${shade},${shade},${depth / 3})` : 'transparent';
       card.setAttribute('aria-hidden', String(depth !== 0));
     });
     stack.querySelector('[data-stack-status]').textContent = `${cards[selected].getAttribute('aria-label')}, ${selected + 1} of ${cards.length}`;
