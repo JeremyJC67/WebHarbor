@@ -41,8 +41,9 @@ COPY control_server.py  /opt/control_server.py
 COPY site_runner.py     /opt/site_runner.py
 RUN chmod +x /opt/websyn_start.sh
 
-# OSU has no external asset bundle. Materialize its tracked deterministic seed
-# so boot and control-plane resets restore the same database.
+# OSU's real-site image bundle is required, while its database is generated
+# deterministically from tracked source data.
+RUN test -n "$(ls -A /opt/WebSyn/osu/static/images)"
 RUN cd /opt/WebSyn/osu && python3 -c "\
 import app; \
 import os, shutil; \

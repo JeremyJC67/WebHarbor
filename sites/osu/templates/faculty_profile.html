@@ -7,8 +7,10 @@
   <span>{{ member.name }}</span>
 </div>
 
+{% set faculty_photo = image_asset('about-education') %}
 <div class="detail-layout">
   <div>
+    <img class="detail-photo" src="{{ url_for('static', filename='images/' ~ faculty_photo.file) }}" alt="{{ faculty_photo.alt }}" fetchpriority="high">
     <div style="display:flex;gap:24px;align-items:flex-start;margin-bottom:30px">
       <div style="width:80px;height:80px;background:var(--scarlet);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:bold;font-family:sans-serif;flex-shrink:0">
         {{ member.name[0] }}

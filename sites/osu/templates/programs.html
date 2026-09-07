@@ -7,6 +7,8 @@
     <p>Explore undergraduate, graduate, and professional programs at Ohio State.</p>
   </div>
 </div>
+{% set banner = image_asset('academics-graduate') %}
+<figure class="media-banner"><img src="{{ url_for('static', filename='images/' ~ banner.file) }}" alt="{{ banner.alt }}" fetchpriority="high"></figure>
 
 <div class="sidebar-layout">
   <aside class="sidebar">

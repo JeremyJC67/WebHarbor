@@ -7,6 +7,8 @@
     <p>{{ colleges|length }} colleges, {{ total_depts }} departments, {{ total_programs }} degree programs across all campuses.</p>
   </div>
 </div>
+{% set banner = image_asset('academics-undergraduate') %}
+<figure class="media-banner"><img src="{{ url_for('static', filename='images/' ~ banner.file) }}" alt="{{ banner.alt }}" fetchpriority="high"></figure>
 
 <div class="alert alert-info" style="margin-bottom:30px">
   Ohio State is a top-20 public research university with world-class programs across arts, sciences, engineering, medicine, and more.
@@ -15,7 +17,9 @@
 <h2 class="section-title">Colleges &amp; Schools</h2>
 <div class="grid-3" style="margin-bottom:40px">
   {% for college in colleges %}
+  {% set college_photo = college_image(college) %}
   <div class="card">
+    <img class="card-image" src="{{ url_for('static', filename='images/' ~ college_photo.file) }}" alt="{{ college_photo.alt }}" loading="lazy">
     <div class="card-body">
       <h3 class="card-title"><a href="{{ url_for('departments') }}?college={{ college.slug }}">{{ college.name }}</a></h3>
       <p class="card-text">{{ college.description[:140] }}{% if college.description|length > 140 %}...{% endif %}</p>

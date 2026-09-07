@@ -7,8 +7,10 @@
   <span>{{ program.name }}</span>
 </div>
 
+{% set program_photo = image_asset('academics-graduate' if program.degree_type in ['MA', 'MS', 'MBA', 'MPH', 'PhD'] else 'academics-undergraduate') %}
 <div class="detail-layout">
   <div>
+    <img class="detail-photo" src="{{ url_for('static', filename='images/' ~ program_photo.file) }}" alt="{{ program_photo.alt }}" fetchpriority="high">
     <div style="margin-bottom:12px">
       <span class="badge badge-scarlet" style="font-size:14px;padding:5px 12px">{{ program.degree_type }}</span>
       {% if program.is_online %}<span class="badge" style="background:#27ae60;color:#fff;margin-left:6px;font-size:14px;padding:5px 12px">Online Available</span>{% endif %}

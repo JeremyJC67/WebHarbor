@@ -7,8 +7,10 @@
   <span>{{ center.name }}</span>
 </div>
 
+{% set center_photo = research_image(center) %}
 <div class="detail-layout">
   <div>
+    <img class="detail-photo" src="{{ url_for('static', filename='images/' ~ center_photo.file) }}" alt="{{ center_photo.alt }}" fetchpriority="high">
     <h1 style="font-size:32px;color:var(--scarlet);margin-bottom:10px;line-height:1.3">{{ center.name }}</h1>
     {% if center.college %}<p style="font-size:15px;color:var(--gray);font-family:sans-serif;margin-bottom:6px">{{ center.college.name }}</p>{% endif %}
 

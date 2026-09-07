@@ -7,6 +7,8 @@
     <p>$1.3 billion in annual research expenditures. Tackling the world's most pressing challenges.</p>
   </div>
 </div>
+{% set banner = image_asset('research-hero') %}
+<figure class="media-banner"><img src="{{ url_for('static', filename='images/' ~ banner.file) }}" alt="{{ banner.alt }}" fetchpriority="high"></figure>
 
 <div style="background:var(--gray-light);padding:20px;border-radius:8px;margin-bottom:30px">
   <div class="grid-4">
@@ -20,7 +22,9 @@
 <h2 class="section-title">Research Centers &amp; Institutes</h2>
 <div class="grid-3">
   {% for center in centers %}
+  {% set center_photo = research_image(center) %}
   <div class="card">
+    <img class="card-image" src="{{ url_for('static', filename='images/' ~ center_photo.file) }}" alt="{{ center_photo.alt }}" loading="lazy">
     <div class="card-body">
       <h3 class="card-title"><a href="{{ url_for('research_center', slug=center.slug) }}">{{ center.name }}</a></h3>
       {% if center.college %}<div class="card-meta" style="margin-bottom:8px">{{ center.college.name }}</div>{% endif %}

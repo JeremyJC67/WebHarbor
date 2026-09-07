@@ -7,6 +7,8 @@
     <p>The latest stories, discoveries, and achievements from The Ohio State University.</p>
   </div>
 </div>
+{% set banner = image_asset('news-campus') %}
+<figure class="media-banner"><img src="{{ url_for('static', filename='images/' ~ banner.file) }}" alt="{{ banner.alt }}" fetchpriority="high"></figure>
 
 <div class="sidebar-layout">
   <!-- Sidebar filters -->
@@ -48,8 +50,11 @@
 
     {% if articles %}
       {% for article in articles %}
+      {% set article_photo = news_image(article) %}
       <div class="card" style="margin-bottom:16px">
-        <div class="card-body">
+        <div style="display:flex;align-items:stretch;flex-wrap:wrap">
+          <img class="card-image-sm" src="{{ url_for('static', filename='images/' ~ article_photo.file) }}" alt="{{ article_photo.alt }}" loading="lazy">
+          <div class="card-body" style="flex:1;min-width:240px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
             <div style="flex:1">
               <div class="card-meta" style="margin-bottom:8px">
@@ -66,6 +71,7 @@
             <div style="white-space:nowrap">
               <a href="{{ url_for('news_article', slug=article.slug) }}" class="btn btn-sm btn-outline">Read More</a>
             </div>
+          </div>
           </div>
         </div>
       </div>

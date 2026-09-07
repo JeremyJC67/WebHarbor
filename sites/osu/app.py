@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Ohio State University mirror — Flask application."""
+import json
 import os
 import re
 import secrets
@@ -23,6 +24,8 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SITE_PORT = 40020
 BENCHMARK_NOW = datetime(2024, 10, 15, 12, 0, 0)
+with open(os.path.join(BASE_DIR, 'image_sources.json'), encoding='utf-8') as image_manifest_file:
+    IMAGE_ASSETS = {item['file'].removesuffix('.webp'): item for item in json.load(image_manifest_file)['images']}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('OSU_SECRET_KEY') or secrets.token_hex(32)
@@ -88,6 +91,69 @@ def ranked_search(rows, fields, query, limit=10):
         if score:
             ranked.append((score, row.id, row))
     return [row for _score, _row_id, row in sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]]
+
+
+def image_asset(key):
+    return IMAGE_ASSETS[key]
+
+
+def news_image(article):
+    if article.slug == 'ohio-state-researchers-develop-breakthrough-cancer-immunotherapy':
+        return image_asset('cancer-immunotherapy')
+    if article.slug == 'ohio-state-sets-record-for-research-expenditures-at-13-billion':
+        return image_asset('research-hero')
+    category_images = {
+        'Athletics': 'athletics-football',
+        'Health': 'about-health-care',
+        'Research': 'research-microelectronics',
+        'Student': 'academics-graduate',
+        'Faculty': 'about-education',
+        'Campus Life': 'campus-life',
+    }
+    return image_asset(category_images.get(article.category, 'news-campus'))
+
+
+def research_image(center):
+    center_images = {
+        'translational-data-analytics-institute': 'research-hero',
+        'james-cancer-hospital-and-solove-research-institute': 'james-cancer-hospital',
+        'center-for-clean-hydrogen': 'research-mobility',
+        'ohio-supercomputer-center': 'research-microelectronics',
+    }
+    return image_asset(center_images.get(center.slug, 'research-hero'))
+
+
+def college_image(college):
+    college_images = {
+        'arts-and-sciences': 'academics-undergraduate',
+        'fisher-college-of-business': 'fisher-students',
+        'education-and-human-ecology': 'about-education',
+        'engineering': 'research-microelectronics',
+        'food-agricultural-and-environmental-sciences': 'research-mobility',
+        'moritz-college-of-law': 'campus-life',
+        'medicine': 'about-health-care',
+        'nursing': 'about-health-care',
+        'optometry': 'academics-online',
+        'pharmacy': 'research-hero',
+        'public-health': 'about-health-care',
+        'social-work': 'campus-life',
+        'veterinary-medicine': 'research-hero',
+        'john-glenn-college-of-public-affairs': 'home-hero',
+        'dentistry': 'about-health-care',
+        'graduate-school': 'academics-graduate',
+    }
+    return image_asset(college_images.get(college.slug, 'academics-undergraduate'))
+
+
+def athletics_image(team):
+    team_images = {
+        'ohio-state-buckeyes-football': 'athletics-football',
+        'ohio-state-buckeyes-mens-basketball': 'athletics-basketball',
+        'ohio-state-buckeyes-wrestling': 'athletics-wrestling',
+        'ohio-state-buckeyes-fencing': 'athletics-fencing',
+    }
+    key = team_images.get(team.slug)
+    return image_asset(key) if key else None
 
 # ─── Models ───────────────────────────────────────────────────────────────────
 
@@ -284,6 +350,11 @@ def inject_globals():
     return {
         'now': BENCHMARK_NOW,
         'colleges': College.query.order_by(College.name).all(),
+        'image_asset': image_asset,
+        'news_image': news_image,
+        'research_image': research_image,
+        'college_image': college_image,
+        'athletics_image': athletics_image,
     }
 
 # ─── Routes ───────────────────────────────────────────────────────────────────

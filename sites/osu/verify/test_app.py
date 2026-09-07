@@ -28,6 +28,11 @@ class AppTests(unittest.TestCase):
    paths += [f'/programs/{x.slug}' for x in self.module.Program.query.all()];paths += [f'/research/{x.slug}' for x in self.module.ResearchCenter.query.all()];paths += [f'/departments/{x.slug}' for x in self.module.Department.query.all()];paths += [f'/faculty/{x.slug}' for x in self.module.Faculty.query.all()];paths += [f'/news/{x.slug}' for x in self.module.NewsArticle.query.all()];paths += [f'/events/{x.id}' for x in self.module.Event.query.all()];paths += [f'/athletics/{x.slug}' for x in self.module.AthleticTeam.query.all()]
   for path in paths:
    with self.subTest(path=path):self.assertEqual(self.client.get(path).status_code,200)
+ def test_real_image_assets_are_served(self):
+  import json
+  for item in json.loads((SITE/'image_sources.json').read_text())['images']:
+   with self.subTest(file=item['file']):
+    response=self.client.get('/static/images/'+item['file']);self.assertEqual(response.status_code,200);self.assertEqual(response.mimetype,'image/webp');self.assertGreater(len(response.get_data()),5000);response.close()
  def test_get_routes_are_read_only(self):
   before=self.snap()
   for p in ('/','/news/ohio-state-researchers-develop-breakthrough-cancer-immunotherapy','/about','/search?q=cancer+research','/events'):self.assertEqual(self.client.get(p).status_code,200)

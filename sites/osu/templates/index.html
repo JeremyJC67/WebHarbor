@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% block title %}The Ohio State University{% endblock %}
 {% block content %}
+{% set hero_image = image_asset('home-hero') %}
 <div class="hero">
-  <h1>The Ohio State University</h1>
-  <p>A top-20 public research university and home to over 60,000 students and world-class faculty. Go Bucks!</p>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-    <a href="{{ url_for('admissions') }}" class="btn btn-outline" style="border-color:#fff;color:#fff">Apply Now</a>
-    <a href="{{ url_for('programs') }}" class="btn btn-outline" style="border-color:#fff;color:#fff">Explore Programs</a>
-    <a href="{{ url_for('research') }}" class="btn btn-outline" style="border-color:#fff;color:#fff">Our Research</a>
+  <img class="hero-bg" src="{{ url_for('static', filename='images/' ~ hero_image.file) }}" alt="{{ hero_image.alt }}" fetchpriority="high">
+  <div class="hero-content">
+    <h1>The Ohio State University</h1>
+    <p>A top-20 public research university and home to over 60,000 students and world-class faculty. Go Bucks!</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('admissions') }}" class="btn btn-outline" style="border-color:#fff;color:#fff">Apply Now</a>
+      <a href="{{ url_for('programs') }}" class="btn btn-outline" style="border-color:#fff;color:#fff">Explore Programs</a>
+      <a href="{{ url_for('research') }}" class="btn btn-outline" style="border-color:#fff;color:#fff">Our Research</a>
+    </div>
   </div>
 </div>
 
@@ -30,7 +34,9 @@
   <h2 class="section-title">Latest News</h2>
   <div class="grid-3">
     {% for article in featured_news[:3] %}
+    {% set article_image = news_image(article) %}
     <div class="card">
+      <img class="card-image" src="{{ url_for('static', filename='images/' ~ article_image.file) }}" alt="{{ article_image.alt }}" loading="lazy">
       <div class="card-body">
         <div class="card-meta" style="margin-bottom:8px">
           <span class="badge badge-scarlet">{{ article.category }}</span>
@@ -80,7 +86,9 @@
   <h2 class="section-title">Research Excellence</h2>
   <div class="grid-4">
     {% for center in recent_research %}
+    {% set center_image = research_image(center) %}
     <div class="card">
+      <img class="card-image" src="{{ url_for('static', filename='images/' ~ center_image.file) }}" alt="{{ center_image.alt }}" loading="lazy">
       <div class="card-body">
         <div class="card-title" style="font-size:14px"><a href="{{ url_for('research_center', slug=center.slug) }}">{{ center.name }}</a></div>
         <p class="card-text" style="font-size:13px;margin-top:6px">{{ center.description[:100] }}{% if center.description|length > 100 %}...{% endif %}</p>

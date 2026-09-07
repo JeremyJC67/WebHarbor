@@ -7,8 +7,10 @@
   <span>{{ dept.name }}</span>
 </div>
 
+{% set department_photo = image_asset('academics-undergraduate') %}
 <div class="detail-layout">
   <div>
+    <img class="detail-photo" src="{{ url_for('static', filename='images/' ~ department_photo.file) }}" alt="{{ department_photo.alt }}" fetchpriority="high">
     <h1 style="font-size:32px;color:var(--scarlet);margin-bottom:10px">{{ dept.name }}</h1>
     {% if dept.college %}<p style="font-size:16px;color:var(--gray);font-family:sans-serif;margin-bottom:6px">{{ dept.college.name }}</p>{% endif %}
 
