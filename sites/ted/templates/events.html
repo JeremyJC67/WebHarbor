@@ -11,8 +11,9 @@
       <span>{{ event.city }} - {{ event.month }} - {{ event.track }}</span>
       <p>{{ event.capacity }} seats</p>
       <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="event_slug" value="{{ event.slug }}">
-        <button type="submit">Register interest</button>
+        <button type="submit" aria-label="Register interest for {{ event.name }}">Register interest</button>
       </form>
     </article>
   {% endfor %}

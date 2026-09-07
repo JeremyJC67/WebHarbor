@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
-"""Verifier for TED--19: filtered TEDNext culture view-count comparison."""
-import os,sys
-sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import load_run,navigated_to,final_answer,contains_all,Judge,parse_args
-NAYEEMA='nayeema-raza-3-habits-to-practice-curiosity-and-escape-your-phone'
-KATE='kate-canales-the-accidental-brilliance-of-makeshift-signs'
+from verify_lib import Judge, affirmative_contains, check_common, check_read_only, clicked_transition, contains_any, final_answer, has_number, load_run, number_bound_in_comparison, parse_args, visited_in_order, visited_query
+TASK_ID="TED--19";N="/talks/nayeema-raza-3-habits-to-practice-curiosity-and-escape-your-phone";K="/talks/kate-canales-the-accidental-brilliance-of-makeshift-signs";FILTERS={"event":"TEDNext 2025","topic":"culture","max_minutes":"10"}
 def main():
- a=parse_args(); j=Judge('TED--19',a.no_llm); t=load_run(a.run_dir); fa=final_answer(t); urls=' '.join(s.get('url') or s.get('url_after') or s.get('url_before') or '' for s in t.get('steps',[]))
- j.check('nav_filtered_tednext_culture_under10','/talks?' in urls and 'event=TEDNext' in urls and 'topic=culture' in urls and 'max_minutes=10' in urls,f'urls={urls!r}')
- j.check('nav_nayeema',navigated_to(t,NAYEEMA),f'navigated={navigated_to(t,NAYEEMA)}'); j.check('nav_kate',navigated_to(t,KATE),f'navigated={navigated_to(t,KATE)}')
- j.check('answer_nayeema_higher_difference',contains_all(fa,['Nayeema']) and ('351132' in fa.replace(',','') ),f'final={fa!r}'); j.check('final_answer_nonempty',bool(fa),f'final={fa!r}'); j.emit()
-if __name__=='__main__': main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("exact_combined_filters",visited_query(t,"/talks",FILTERS),repr(FILTERS));j.check("filtered_listing_precedes_both",visited_in_order(t,[("/talks",FILTERS),(N,{})]) and visited_in_order(t,[("/talks",FILTERS),(K,{})]),"filtered listing before both details");j.check("clicked_both_results",clicked_transition(t,"/talks",N) and clicked_transition(t,"/talks",K),"both links opened from filtered listing");j.check("nayeema_views_bound",number_bound_in_comparison(answer,554563,("Nayeema","curiosity")),repr(answer));j.check("kate_views_bound",number_bound_in_comparison(answer,203431,("Kate","makeshift")),repr(answer));j.check("exact_difference",has_number(answer,351132),repr(answer));j.check("nayeema_identified_higher",affirmative_contains(answer,"Nayeema") and contains_any(answer,("more views","higher")),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

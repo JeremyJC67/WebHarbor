@@ -12,10 +12,10 @@
   </div>
   {% set lead = featured[0] %}
   <a class="lead-card" href="{{ url_for('talk_detail', slug=lead.slug) }}">
-    <img src="{{ url_for('static', filename=lead.image) }}" alt="">
+    <img src="{{ url_for('static', filename=lead.image) }}" alt="{{ lead.speaker }} speaking at {{ lead.event }}">
     <span>{{ lead.talk_type }}</span>
-    <h2>{{ lead.speaker }}</h2>
-    <p>{{ lead.published_at|date_label }}</p>
+    <h2>{{ lead.title }}</h2>
+    <p>{{ lead.speaker }} · {{ lead.published_at|date_label }}</p>
   </a>
 </section>
 

@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
-"""Verifier for TED--11 filtered TED2026 under-10 navigation."""
-import os,sys
-from urllib.parse import parse_qs,urlparse
-sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import load_run,navigated_to,final_answer,Judge,parse_args
-SLUG='maya-higa-the-wildlife-sanctuary-you-can-visit-from-anywhere'
+from verify_lib import Judge, check_common, check_read_only, clicked_transition, contains_all, final_answer, load_run, parse_args, visited_in_order, visited_query
+TASK_ID="TED--11";PATH="/talks/maya-higa-the-wildlife-sanctuary-you-can-visit-from-anywhere";FILTERS={"event":"TED2026","max_minutes":"10"}
 def main():
- a=parse_args(); j=Judge('TED--11',a.no_llm); t=load_run(a.run_dir); fa=final_answer(t); ok=False
- for s in t.get('steps',[]):
-  u=s.get('url',''); q=parse_qs(urlparse(u).query)
-  if urlparse(u).path=='/talks' and q.get('event')==['TED2026'] and q.get('max_minutes')==['10']: ok=True; break
- j.check('nav_filtered_ted2026_under10',ok,f'filtered={ok}'); j.check('nav_maya_higa',navigated_to(t,SLUG),f'navigated={navigated_to(t,SLUG)}'); j.check('final_answer_nonempty',bool(fa),f'final={fa!r}'); j.emit()
-if __name__=='__main__': main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("exact_listing_filters",visited_query(t,"/talks",FILTERS),repr(FILTERS));j.check("ordered_filter_to_detail",visited_in_order(t,[("/talks",FILTERS),(PATH,{})]),"filtered listing before detail");j.check("clicked_maya_result",clicked_transition(t,"/talks",PATH),"detail opened from listing");j.check("answer_exact_title",contains_all(answer,("The wildlife sanctuary you can visit from anywhere",)),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
-"""Verifier for TED--18: filtered TED2026 AI view-count comparison."""
-import os,sys
-sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import load_run,navigated_to,final_answer,contains_all,extract_ints,Judge,parse_args
-PETER='peter-steinberger-how-i-created-openclaw-the-breakthrough-ai-agent'
-ANIL='anil-seth-why-ai-is-unlikely-to-become-conscious'
+from verify_lib import Judge, affirmative_contains, check_common, check_read_only, clicked_transition, contains_any, final_answer, has_number, load_run, number_bound_in_comparison, parse_args, visited_in_order, visited_query
+TASK_ID="TED--18";P="/talks/peter-steinberger-how-i-created-openclaw-the-breakthrough-ai-agent";A="/talks/anil-seth-why-ai-is-unlikely-to-become-conscious";FILTERS={"event":"TED2026","topic":"ai","max_minutes":"20"}
 def main():
- a=parse_args(); j=Judge('TED--18',a.no_llm); t=load_run(a.run_dir); fa=final_answer(t); urls=' '.join(s.get('url') or s.get('url_after') or s.get('url_before') or '' for s in t.get('steps',[]))
- j.check('nav_filtered_ted2026_ai_under20', '/talks?' in urls and 'event=TED2026' in urls and 'topic=ai' in urls and 'max_minutes=20' in urls, f'urls={urls!r}')
- j.check('nav_peter',navigated_to(t,PETER),f'navigated={navigated_to(t,PETER)}'); j.check('nav_anil',navigated_to(t,ANIL),f'navigated={navigated_to(t,ANIL)}')
- j.check('answer_peter_higher_difference',contains_all(fa,['Peter']) and ('359862' in fa.replace(',','') ),f'final={fa!r}')
- j.check('final_answer_nonempty',bool(fa),f'final={fa!r}'); j.emit()
-if __name__=='__main__': main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("exact_combined_filters",visited_query(t,"/talks",FILTERS),repr(FILTERS));j.check("filtered_listing_precedes_both",visited_in_order(t,[("/talks",FILTERS),(P,{})]) and visited_in_order(t,[("/talks",FILTERS),(A,{})]),"filtered listing before both details");j.check("clicked_both_results",clicked_transition(t,"/talks",P) and clicked_transition(t,"/talks",A),"both links opened from filtered listing");j.check("peter_views_bound",number_bound_in_comparison(answer,551544,("Peter","OpenClaw")),repr(answer));j.check("anil_views_bound",number_bound_in_comparison(answer,191682,("Anil","conscious")),repr(answer));j.check("exact_difference",has_number(answer,359862),repr(answer));j.check("peter_identified_higher",affirmative_contains(answer,"Peter") and contains_any(answer,("more views","higher")),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

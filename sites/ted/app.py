@@ -2,27 +2,43 @@
 import json
 import os
 import re
+import secrets
 import shutil
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import event as sqlalchemy_event
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
-
-from seed_data import EVENTS, PLAYLISTS, TALKS
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "instance" / "ted.db"
 SEED_DB_PATH = BASE_DIR / "instance_seed" / "ted.db"
+SITE_PORT = 40019
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "webharbor-ted-dev-key"
+app.config["SECRET_KEY"] = os.environ.get("TED_SECRET_KEY") or secrets.token_hex(32)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 BASE_DIR.joinpath("instance").mkdir(exist_ok=True)
 
 db = SQLAlchemy(app)
+csrf = CSRFProtect(app)
+
+
+@sqlalchemy_event.listens_for(Engine, "connect")
+def enable_sqlite_foreign_keys(connection, _record):
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 class User(db.Model):
@@ -75,8 +91,14 @@ class Talk(db.Model):
             return f"{self.views // 1000}K"
         return str(self.views)
 
+    @property
+    def exact_views_label(self):
+        return f"{self.views:,}"
+
 
 class SavedTalk(db.Model):
+    __table_args__ = (db.UniqueConstraint("user_id", "talk_id", name="uq_saved_talk_user_talk"),)
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     talk_id = db.Column(db.Integer, db.ForeignKey("talk.id"), nullable=False)
@@ -112,6 +134,8 @@ class Event(db.Model):
 
 
 class Registration(db.Model):
+    __table_args__ = (db.UniqueConstraint("user_id", "event_id", name="uq_registration_user_event"),)
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey("event.id"), nullable=False)
@@ -120,6 +144,16 @@ class Registration(db.Model):
 
 
 STOP_WORDS = {"the", "a", "an", "and", "or", "of", "to", "for", "in", "on", "with", "by", "my", "is"}
+EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+
+
+def safe_next(target, fallback):
+    if not target or "\\" in target:
+        return fallback
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc or not target.startswith("/") or target.startswith("//"):
+        return fallback
+    return target
 
 
 def current_user():
@@ -127,10 +161,10 @@ def current_user():
     return db.session.get(User, uid) if uid else None
 
 
-def require_login():
+def require_login(next_url=None):
     if not current_user():
         flash("Please sign in to continue.", "info")
-        return redirect(url_for("login", next=request.path))
+        return redirect(url_for("login", next=next_url or request.path))
     return None
 
 
@@ -159,88 +193,35 @@ def scored_talks(query, talks):
     for talk in talks:
         text = " ".join([talk.title, talk.speaker, talk.event, talk.description, talk.transcript, " ".join(talk.topics)])
         text_tokens = set(tokenize(text))
-        score = sum(1 for token in tokens if token in text_tokens)
+        score = sum(
+            1
+            for token in tokens
+            if any(
+                token == candidate
+                or (len(token) >= 4 and candidate.startswith(token))
+                or (len(candidate) >= 4 and token.startswith(candidate))
+                for candidate in text_tokens
+            )
+        )
         if score:
             ranked.append((score, talk.views, talk))
     return [talk for _, _, talk in sorted(ranked, key=lambda item: (-item[0], -item[1]))]
 
 
-def seed_database():
-    if Talk.query.count() > 0:
-        return
-    talks_by_topic = {}
-    for row in TALKS:
-        talk = Talk(
-            source_id=row["source_id"],
-            slug=row["slug"],
-            title=row["title"],
-            speaker=row["speaker"],
-            event=row["event"],
-            talk_type=row["talk_type"],
-            duration_seconds=row["duration_seconds"],
-            published_at=row["published_at"],
-            recorded_on=row["recorded_on"],
-            views=row["views"],
-            image=row["image"],
-            canonical_url=row["canonical_url"],
-            description=row["description"],
-            transcript=row["transcript"],
-            topics_json=json.dumps(row["topics"]),
-            recommended_json=json.dumps(row["recommended_for"]),
-        )
-        db.session.add(talk)
-        db.session.flush()
-        for topic in row["topics"]:
-            talks_by_topic.setdefault(topic.lower(), []).append(talk.id)
-
-    for row in PLAYLISTS:
-        playlist = Playlist(**row)
-        db.session.add(playlist)
-        db.session.flush()
-        topic_terms = [term.strip().lower() for term in row["topic"].split("|") if term.strip()]
-        ids = []
-        for term in topic_terms:
-            for talk_id in talks_by_topic.get(term, []):
-                if talk_id not in ids:
-                    ids.append(talk_id)
-        ids = ids[:8]
-        if len(ids) < 4:
-            ids = [talk.id for talk in Talk.query.order_by(Talk.views.desc()).limit(8)]
-        for position, talk_id in enumerate(ids, start=1):
-            db.session.add(PlaylistTalk(playlist_id=playlist.id, talk_id=talk_id, position=position))
-
-    for row in EVENTS:
-        db.session.add(Event(**row))
-    db.session.commit()
+def available_topics():
+    return sorted({topic for talk in Talk.query.all() for topic in talk.topics}, key=str.casefold)
 
 
-def seed_users():
-    if User.query.filter_by(email="alice.j@test.com").first():
-        return
-    users = [
-        ("alice_j", "alice.j@test.com", "Alice Johnson", "Product manager", "Seattle", "AI"),
-        ("bob_c", "bob.c@test.com", "Bob Chen", "Graduate student", "Boston", "science"),
-        ("carol_d", "carol.d@test.com", "Carol Davis", "Workshop facilitator", "Austin", "design"),
-        ("david_k", "david.k@test.com", "David Kim", "Climate researcher", "San Francisco", "climate change"),
-    ]
-    talks = Talk.query.order_by(Talk.views.desc()).limit(12).all()
-    events = Event.query.all()
-    for index, (username, email, name, role, city, topic) in enumerate(users):
-        user = User(
-            username=username,
-            email=email,
-            display_name=name,
-            role=role,
-            city=city,
-            newsletter_topic=topic.lower(),
-            password_hash=generate_password_hash("TestPass123!"),
-        )
-        db.session.add(user)
-        db.session.flush()
-        for talk in talks[index:index + 4]:
-            db.session.add(SavedTalk(user_id=user.id, talk_id=talk.id, note=f"Review for {topic} discussion"))
-        db.session.add(Registration(user_id=user.id, event_id=events[index % len(events)].id, status="confirmed"))
-    db.session.commit()
+def filtered_talks(topic="", event="", max_minutes=None):
+    query = Talk.query
+    if event:
+        query = query.filter(Talk.event == event)
+    if max_minutes is not None:
+        query = query.filter(Talk.duration_seconds <= max_minutes * 60)
+    items = query.order_by(Talk.published_at.desc(), Talk.id.asc()).all()
+    if topic:
+        items = [talk for talk in items if topic.casefold() in {value.casefold() for value in talk.topics}]
+    return items
 
 
 @app.route("/")
@@ -253,19 +234,28 @@ def index():
 
 @app.route("/talks")
 def talks():
-    topic = request.args.get("topic", "").lower()
-    event = request.args.get("event", "")
-    max_minutes = request.args.get("max_minutes", type=int)
-    query = Talk.query
-    if event:
-        query = query.filter(Talk.event == event)
-    items = query.order_by(Talk.published_at.desc()).all()
-    if topic:
-        items = [talk for talk in items if topic in talk.topics]
-    if max_minutes:
-        items = [talk for talk in items if talk.minutes <= max_minutes]
+    topic = request.args.get("topic", "").strip().lower()
+    event = request.args.get("event", "").strip()
+    raw_max_minutes = request.args.get("max_minutes", "").strip()
+    max_minutes = None
+    if raw_max_minutes:
+        try:
+            max_minutes = int(raw_max_minutes)
+        except ValueError:
+            max_minutes = None
+        if max_minutes is not None and not 1 <= max_minutes <= 180:
+            max_minutes = None
+    items = filtered_talks(topic, event, max_minutes)
     events = [row[0] for row in db.session.query(Talk.event).distinct().order_by(Talk.event).all()]
-    return render_template("talks.html", talks=items, topic=topic, event=event, max_minutes=max_minutes, events=events)
+    return render_template(
+        "talks.html",
+        talks=items,
+        topic=topic,
+        event=event,
+        max_minutes=max_minutes,
+        events=events,
+        topics=available_topics(),
+    )
 
 
 @app.route("/search")
@@ -297,8 +287,7 @@ def topics():
 
 @app.route("/topics/<topic>")
 def topic_detail(topic):
-    talks = [talk for talk in Talk.query.order_by(Talk.views.desc()).all() if topic.lower() in talk.topics]
-    return render_template("talks.html", talks=talks, topic=topic.lower(), event="", max_minutes=None, events=[])
+    return redirect(url_for("talks", topic=topic.lower()))
 
 
 @app.route("/playlists")
@@ -317,40 +306,57 @@ def playlist_detail(slug):
 @app.route("/events", methods=["GET", "POST"])
 def events():
     if request.method == "POST":
-        login_redirect = require_login()
+        login_redirect = require_login(url_for("events"))
         if login_redirect:
             return login_redirect
-        event = Event.query.filter_by(slug=request.form.get("event_slug")).first_or_404()
+        event_slug = request.form.get("event_slug", "").strip()
+        event = Event.query.filter_by(slug=event_slug).first_or_404()
         user = current_user()
         existing = Registration.query.filter_by(user_id=user.id, event_id=event.id).first()
         if not existing:
             db.session.add(Registration(user_id=user.id, event_id=event.id, status="waitlisted"))
-            db.session.commit()
-        flash(f"Registration saved for {event.name}.", "success")
+            try:
+                db.session.commit()
+                flash(f"Registration saved for {event.name}.", "success")
+            except IntegrityError:
+                db.session.rollback()
+                flash(f"You are already registered for {event.name}.", "info")
+        else:
+            flash(f"You are already registered for {event.name}.", "info")
         return redirect(url_for("account"))
-    return render_template("events.html", events=Event.query.order_by(Event.month.desc()).all())
+    event_items = Event.query.all()
+    event_items.sort(key=lambda item: datetime.strptime(item.month, "%B %Y"), reverse=True)
+    return render_template("events.html", events=event_items)
 
 
 @app.route("/save/<slug>", methods=["POST"])
 def save_talk(slug):
-    login_redirect = require_login()
+    login_redirect = require_login(url_for("talk_detail", slug=slug))
     if login_redirect:
         return login_redirect
     talk = Talk.query.filter_by(slug=slug).first_or_404()
     user = current_user()
-    if not SavedTalk.query.filter_by(user_id=user.id, talk_id=talk.id).first():
-        db.session.add(SavedTalk(user_id=user.id, talk_id=talk.id, note=request.form.get("note", "")))
-        db.session.commit()
-        flash("Talk saved.", "success")
-    return redirect(request.referrer or url_for("talk_detail", slug=slug))
+    existing = SavedTalk.query.filter_by(user_id=user.id, talk_id=talk.id).first()
+    if not existing:
+        note = request.form.get("note", "").strip()[:240]
+        db.session.add(SavedTalk(user_id=user.id, talk_id=talk.id, note=note))
+        try:
+            db.session.commit()
+            flash("Talk saved.", "success")
+        except IntegrityError:
+            db.session.rollback()
+            flash("This talk is already saved.", "info")
+    else:
+        flash("This talk is already saved.", "info")
+    return redirect(safe_next(request.form.get("next"), url_for("talk_detail", slug=slug)))
 
 
 @app.route("/unsave/<int:saved_id>", methods=["POST"])
 def unsave_talk(saved_id):
-    login_redirect = require_login()
+    login_redirect = require_login(url_for("account"))
     if login_redirect:
         return login_redirect
-    saved = SavedTalk.query.get_or_404(saved_id)
+    saved = db.get_or_404(SavedTalk, saved_id)
     if saved.user_id != current_user().id:
         abort(403)
     db.session.delete(saved)
@@ -366,10 +372,10 @@ def account():
         return login_redirect
     user = current_user()
     if request.method == "POST":
-        user.display_name = request.form.get("display_name", user.display_name).strip() or user.display_name
-        user.role = request.form.get("role", user.role).strip() or user.role
-        user.city = request.form.get("city", user.city).strip()
-        user.newsletter_topic = request.form.get("newsletter_topic", user.newsletter_topic).strip().lower()
+        user.display_name = (request.form.get("display_name", user.display_name).strip() or user.display_name)[:120]
+        user.role = (request.form.get("role", user.role).strip() or user.role)[:120]
+        user.city = request.form.get("city", user.city).strip()[:120]
+        user.newsletter_topic = (request.form.get("newsletter_topic", user.newsletter_topic).strip().lower() or user.newsletter_topic)[:80]
         db.session.commit()
         flash("Profile updated.", "success")
         return redirect(url_for("account"))
@@ -380,40 +386,61 @@ def account():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user():
+        return redirect(url_for("account"))
     if request.method == "POST":
-        email = request.form.get("email", "").lower().strip()
+        email = request.form.get("email", "").lower().strip()[:160]
+        password = request.form.get("password", "")[:256]
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, request.form.get("password", "")):
+        if user and check_password_hash(user.password_hash, password):
+            session.clear()
             session["user_id"] = user.id
             flash("Signed in.", "success")
-            return redirect(request.args.get("next") or url_for("account"))
+            return redirect(safe_next(request.args.get("next"), url_for("account")))
         flash("Invalid email or password.", "error")
     return render_template("login.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if current_user():
+        return redirect(url_for("account"))
     if request.method == "POST":
-        email = request.form.get("email", "").lower().strip()
+        email = request.form.get("email", "").lower().strip()[:160]
         username = re.sub(r"[^a-z0-9_]+", "", request.form.get("username", "").lower())[:40]
-        if User.query.filter((User.email == email) | (User.username == username)).first():
-            flash("That email or username already exists.", "error")
-        else:
-            user = User(
-                email=email,
-                username=username,
-                display_name=request.form.get("display_name", username).strip() or username,
-                password_hash=generate_password_hash(request.form.get("password", "TestPass123!")),
-            )
-            db.session.add(user)
-            db.session.commit()
-            session["user_id"] = user.id
-            flash("Account created.", "success")
-            return redirect(url_for("account"))
+        display_name = request.form.get("display_name", "").strip()[:120]
+        password = request.form.get("password", "")[:256]
+        errors = []
+        if not username:
+            errors.append("Enter a username containing letters, numbers, or underscores.")
+        if not EMAIL_PATTERN.fullmatch(email):
+            errors.append("Enter a valid email address.")
+        if not display_name:
+            errors.append("Enter your name.")
+        if len(password) < 8:
+            errors.append("Password must contain at least 8 characters.")
+        if email and username and User.query.filter((User.email == email) | (User.username == username)).first():
+            errors.append("Unable to create an account with the supplied details.")
+        if errors:
+            for message in errors:
+                flash(message, "error")
+            return render_template("register.html"), 400
+        user = User(
+            email=email,
+            username=username,
+            display_name=display_name,
+            password_hash=generate_password_hash(password),
+        )
+        db.session.add(user)
+        db.session.commit()
+        session.clear()
+        session["user_id"] = user.id
+        flash("Account created.", "success")
+        return redirect(url_for("account"))
     return render_template("register.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     flash("Signed out.", "success")
@@ -425,15 +452,20 @@ def health():
     return {"ok": True, "site": "ted", "talks": Talk.query.count()}
 
 
+def initialize_database():
+    if not SEED_DB_PATH.exists():
+        raise RuntimeError(
+            f"Missing TED seed database at {SEED_DB_PATH}. Run scripts/fetch_assets.sh ted before starting the site."
+        )
+    if not DB_PATH.exists():
+        DB_PATH.parent.mkdir(exist_ok=True)
+        shutil.copy2(SEED_DB_PATH, DB_PATH)
+
+
 with app.app_context():
-    db.create_all()
-    seed_database()
-    seed_users()
-    if not SEED_DB_PATH.exists() and DB_PATH.exists():
-        SEED_DB_PATH.parent.mkdir(exist_ok=True)
-        shutil.copy2(DB_PATH, SEED_DB_PATH)
+    initialize_database()
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", SITE_PORT))
     app.run(host="0.0.0.0", port=port, debug=False)

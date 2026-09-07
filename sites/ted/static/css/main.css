@@ -9,8 +9,9 @@
 body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--ink); background: #fff; }
 a { color: inherit; text-decoration: none; }
 img { display: block; width: 100%; object-fit: cover; }
-button, .button { border: 0; background: #111; color: #fff; padding: 11px 16px; font-weight: 700; cursor: pointer; }
+button, .button { border: 1px solid #111; background: #111; color: #fff; padding: 11px 16px; font-weight: 700; cursor: pointer; }
 input, select { border: 1px solid var(--line); padding: 11px 12px; font: inherit; width: 100%; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #2f6fed; outline-offset: 2px; }
 
 .topbar { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: auto auto minmax(240px, 1fr) auto; gap: 24px; align-items: center; padding: 0 28px; min-height: 64px; background: #fff; border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: baseline; gap: 12px; }
@@ -18,6 +19,8 @@ input, select { border: 1px solid var(--line); padding: 11px 12px; font: inherit
 .brand small { color: var(--muted); font-size: 13px; white-space: nowrap; }
 nav, .auth { display: flex; gap: 18px; align-items: center; font-size: 13px; font-weight: 700; text-transform: uppercase; }
 .join { color: var(--red); }
+.logout-form { margin: 0; }
+.logout-form button { border: 0; padding: 0; background: transparent; color: var(--ink); font: inherit; text-transform: uppercase; }
 .quick-search { display: flex; gap: 8px; }
 .quick-search button { background: var(--red); }
 .flashes { max-width: 1180px; margin: 16px auto 0; padding: 0 24px; }
@@ -57,10 +60,12 @@ main { min-height: 68vh; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
 .list { display: grid; gap: 8px; }
 .row-link { display: grid; gap: 4px; min-width: 0; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.row-link > a { display: grid; gap: 4px; min-width: 0; }
 .row-link span { color: var(--muted); line-height: 1.35; }
 .page-head { display: grid; gap: 14px; border-bottom: 1px solid var(--line); }
 .page-head p { max-width: 720px; color: var(--muted); }
-.filters { display: grid; grid-template-columns: minmax(220px, 1fr) 180px auto; gap: 12px; max-width: 720px; }
+.filters { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(170px, 1fr) minmax(180px, 1fr) auto; gap: 12px; max-width: 940px; align-items: end; }
+.filters label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
 
 .detail-hero { display: grid; grid-template-columns: minmax(360px, 1.08fr) minmax(300px, 0.92fr); gap: 38px; align-items: start; }
 .detail-hero img { aspect-ratio: 16 / 9; }
@@ -71,6 +76,7 @@ main { min-height: 68vh; }
 .stats dt { color: var(--muted); font-size: 12px; text-transform: uppercase; }
 .stats dd { margin: 4px 0 0; font-weight: 800; }
 .save-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.saved-status { padding: 12px 14px; border-left: 4px solid #138a37; background: #effaf2; font-weight: 700; }
 
 .topic-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .topic-grid a, .topic-grid article { display: grid; gap: 8px; min-width: 0; min-height: 130px; padding: 20px; background: var(--soft); border-top: 3px solid var(--red); }
@@ -87,12 +93,13 @@ main { min-height: 68vh; }
 .topic-strip a { color: #fff; border: 1px solid #555; padding: 7px 9px; }
 
 @media (max-width: 900px) {
-  .topbar { grid-template-columns: 1fr; gap: 12px; padding: 14px 18px; }
+  .topbar { position: static; grid-template-columns: 1fr; gap: 12px; padding: 14px 18px; }
   nav, .auth { flex-wrap: wrap; }
   .hero, .split, .detail-hero { grid-template-columns: 1fr; }
   .grid, .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .filters, .save-form { grid-template-columns: 1fr; }
   .footer { display: grid; }
+  .topic-strip { justify-content: flex-start; max-width: none; }
 }
 @media (max-width: 560px) {
   .grid, .topic-grid, .stats { grid-template-columns: 1fr; }

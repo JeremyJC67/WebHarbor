@@ -16,13 +16,16 @@
       <a href="{{ url_for('events') }}">Attend</a>
     </nav>
     <form class="quick-search" action="{{ url_for('search') }}" method="get">
-      <input name="q" value="{{ request.args.get('q', '') }}" placeholder="Search ideas">
+      <input name="q" value="{{ request.args.get('q', '') }}" placeholder="Search ideas" aria-label="Search ideas">
       <button type="submit">Search</button>
     </form>
     <div class="auth">
       {% if current_user %}
         <a href="{{ url_for('account') }}">{{ current_user.display_name }}</a>
-        <a href="{{ url_for('logout') }}">Log out</a>
+        <form class="logout-form" action="{{ url_for('logout') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit">Log out</button>
+        </form>
       {% else %}
         <a href="{{ url_for('login') }}">Log in</a>
         <a class="join" href="{{ url_for('register') }}">Join</a>

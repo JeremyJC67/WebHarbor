@@ -1,31 +1,6 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for TED task TED--6.
-
-Search 'clean energy', open Kimiko Hirata's result, report which event it is from.
-
-Checks (deterministic first; LLM utilities anchored on ground truth):
-nav Kimiko Hirata talk detail | answer names 'TED Countdown Summit 2025'
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer, last_shot,
-                        norm, contains_all, contains_any, answer_equals, extract_ints,
-                        resolve_db, saved_talks_for, saved_titles_for, note_for_saved,
-                        newsletter_topic_for, registered_events_for, user_emails,
-                        SEED_EMAILS, llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
-SLUG = "kimiko-hirata-a-cheat-sheet-for-accelerating-clean-energy"
-
+from verify_lib import Judge, check_common, check_read_only, clicked_transition, contains_all, final_answer, load_run, parse_args, visited_in_order
+TASK_ID="TED--6";PATH="/talks/kimiko-hirata-a-cheat-sheet-for-accelerating-clean-energy"
 def main():
-    a = parse_args()
-    j = Judge('TED--6', a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    j.check("nav_kimiko", navigated_to(t, SLUG), f"navigated={navigated_to(t, SLUG)}")
-    j.check("answer_event", contains_any(fa, ["TED Countdown Summit 2025", "Countdown Summit 2025"]),
-            f"final={fa!r}")
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("ordered_clean_energy_search",visited_in_order(t,[("/search",{"q":"clean energy"}),(PATH,{})]),"search before detail");j.check("clicked_kimiko_result",clicked_transition(t,"/search",PATH),"detail opened from search");j.check("answer_exact_event",contains_all(answer,("TED Countdown Summit 2025",)),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

@@ -1,38 +1,6 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for TED task TED--15.
-
-Among the music-topic talks by Akoth Jumadi and Mr. Lu vs Turkana Sessions,
-which has more views? -> Turkana Sessions (4,223 views vs 2,781).
-
-Checks (deterministic first; LLM utilities anchored on ground truth):
-nav both talk details | answer names Turkana Sessions as having more views
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer, last_shot,
-                        norm, contains_all, contains_any, answer_equals, extract_ints,
-                        resolve_db, saved_talks_for, saved_titles_for, note_for_saved,
-                        newsletter_topic_for, registered_events_for, user_emails,
-                        SEED_EMAILS, llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
-AKOTH = "akoth-jumadi-and-mr-lu-east-african-sound-meets-cosmic-trap"
-TURKANA = "turkana-sessions-a-musical-journey-through-turkana"
-
+from verify_lib import Judge, affirmative_contains, check_common, check_read_only, clicked_transition, contains_any, final_answer, load_run, number_bound_in_comparison, parse_args, visited_in_order
+TASK_ID="TED--15";A="/talks/akoth-jumadi-and-mr-lu-east-african-sound-meets-cosmic-trap";T="/talks/turkana-sessions-a-musical-journey-through-turkana"
 def main():
-    a = parse_args()
-    j = Judge('TED--15', a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    j.check("nav_akoth", navigated_to(t, AKOTH), f"navigated={navigated_to(t, AKOTH)}")
-    j.check("nav_turkana", navigated_to(t, TURKANA), f"navigated={navigated_to(t, TURKANA)}")
-    j.check("answer_turkana_more",
-            contains_any(fa, ["Turkana Sessions", "A musical journey through Turkana"]),
-            f"final={fa!r}")
-    ok, ev = llm_text_match(fa, "Turkana Sessions ('A musical journey through Turkana') has more views",
-        "Which talk has more views: Akoth Jumadi and Mr. Lu, or Turkana Sessions?")
-    j.check("answer_more_views_llm", ok, ev, llm=True)
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("ordered_music_topic_flow",visited_in_order(t,[("/topics",{}),("/talks",{"topic":"music"}),(A,{}),(T,{})]),"music listing and both details");j.check("clicked_both_music_talks",clicked_transition(t,"/topics","/talks") and clicked_transition(t,"/talks",A) and clicked_transition(t,"/talks",T),"visible links used");j.check("akoth_views_bound",number_bound_in_comparison(answer,2781,("Akoth","Mr. Lu","East African")),repr(answer));j.check("turkana_views_bound",number_bound_in_comparison(answer,4223,("Turkana",)),repr(answer));j.check("turkana_identified_higher",affirmative_contains(answer,"Turkana") and contains_any(answer,("more views","higher")),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

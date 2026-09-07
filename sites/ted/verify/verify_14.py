@@ -1,32 +1,6 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for TED task TED--14.
-
-Search 'architecture 3D printing', open the talk about traditional architecture,
-report the speaker. -> Riyad Joucka ('Reimagining traditional architecture for
-modern needs'). Kate Canales's makeshift-signs talk is the near-miss distractor.
-
-Checks (deterministic first; LLM utilities anchored on ground truth):
-nav Riyad Joucka talk detail | answer names the speaker Riyad Joucka
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer, last_shot,
-                        norm, contains_all, contains_any, answer_equals, extract_ints,
-                        resolve_db, saved_talks_for, saved_titles_for, note_for_saved,
-                        newsletter_topic_for, registered_events_for, user_emails,
-                        SEED_EMAILS, llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
-SLUG = "riyad-joucka-reimagining-traditional-architecture-for-modern-needs"
-
+from verify_lib import Judge, check_common, check_read_only, clicked_transition, contains_all, final_answer, load_run, parse_args, visited_in_order
+TASK_ID="TED--14";PATH="/talks/riyad-joucka-reimagining-traditional-architecture-for-modern-needs"
 def main():
-    a = parse_args()
-    j = Judge('TED--14', a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    j.check("nav_riyad", navigated_to(t, SLUG), f"navigated={navigated_to(t, SLUG)}")
-    j.check("answer_speaker", contains_all(fa, ["Riyad Joucka"]), f"final={fa!r}")
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("ordered_architecture_search",visited_in_order(t,[("/search",{"q":"architecture 3D printing"}),(PATH,{})]),"search before detail");j.check("clicked_riyad_result",clicked_transition(t,"/search",PATH),"detail opened from search");j.check("answer_speaker",contains_all(answer,("Riyad Joucka",)),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

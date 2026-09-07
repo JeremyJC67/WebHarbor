@@ -2,7 +2,7 @@
 {% block title %}{{ talk.title }} | TED{% endblock %}
 {% block content %}
 <section class="detail-hero">
-  <img src="{{ url_for('static', filename=talk.image) }}" alt="">
+  <img src="{{ url_for('static', filename=talk.image) }}" alt="{{ talk.speaker }} speaking at {{ talk.event }}">
   <div>
     <p class="eyebrow">{{ talk.event }} - {{ talk.talk_type }}</p>
     <h1>{{ talk.title }}</h1>
@@ -11,12 +11,18 @@
     <dl class="stats">
       <div><dt>Duration</dt><dd>{{ talk.minutes }} minutes</dd></div>
       <div><dt>Published</dt><dd>{{ talk.published_at|date_label }}</dd></div>
-      <div><dt>Views</dt><dd>{{ talk.views_label }}</dd></div>
+      <div><dt>Views</dt><dd>{{ talk.exact_views_label }}</dd></div>
     </dl>
-    <form method="post" action="{{ url_for('save_talk', slug=talk.slug) }}" class="save-form">
-      <input name="note" placeholder="Add a note for your saved list">
-      <button type="submit">{{ "Saved" if saved else "Save talk" }}</button>
-    </form>
+    {% if saved %}
+      <p class="saved-status">This talk is saved to your account.</p>
+    {% else %}
+      <form method="post" action="{{ url_for('save_talk', slug=talk.slug) }}" class="save-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <input name="note" maxlength="240" placeholder="Add a note for your saved list" aria-label="Saved-talk note">
+        <button type="submit">Save talk</button>
+      </form>
+    {% endif %}
   </div>
 </section>
 <section class="split">

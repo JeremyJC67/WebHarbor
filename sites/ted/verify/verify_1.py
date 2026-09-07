@@ -1,43 +1,14 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for TED task TED--1.
-
-Find the TED2026 driverless-cars talk and save it to Alice's account with the
-note 'mobility planning'.
-
-Checks (deterministic first; LLM utilities anchored on ground truth):
-nav Waymo talk detail + /login | DB after: Waymo saved by alice with note containing 'mobility planning', absent in seed
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer, last_shot,
-                        norm, contains_all, contains_any, answer_equals, extract_ints,
-                        resolve_db, saved_talks_for, saved_titles_for, note_for_saved,
-                        newsletter_topic_for, registered_events_for, user_emails,
-                        SEED_EMAILS, llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
-SLUG = "tekedra-mawakana-sal-khan-waymo-s-case-for-a-driverless-future"
-TITLE_SUB = "driverless future"
-EMAIL = "alice.j@test.com"
-
+from verify_lib import Judge, changed_tables, check_common, clicked_transition, load_run, login_submitted_as, parse_args, resolve_db, saved_snapshot, submitted_from_path, table_snapshot, visited_in_order
+TASK_ID="TED--1";EMAIL="alice.j@test.com";SLUG="tekedra-mawakana-sal-khan-waymo-s-case-for-a-driverless-future";PATH=f"/talks/{SLUG}"
 def main():
-    a = parse_args()
-    j = Judge('TED--1', a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    j.check("final_answer_nonempty", bool(fa.strip()), f"final={fa!r}")
-    after = resolve_db(a.after_db, a.container, "instance")
-    init = resolve_db(a.initial_db, a.container, "instance_seed")
-    note = note_for_saved(after, EMAIL, TITLE_SUB)
-    init_titles = saved_titles_for(init)
-    j.check("nav_waymo", navigated_to(t, SLUG), f"navigated={navigated_to(t, SLUG)}")
-    j.check("db_waymo_saved_by_alice", note is not None, f"note={note!r}")
-    j.check("db_note_mobility_planning",
-            note is not None and contains_all(note, ["mobility planning"]), f"note={note!r}")
-    j.check("db_absent_in_seed",
-            init_titles is not None and not any(norm(TITLE_SUB) in norm(x) for x in init_titles),
-            f"initial_saved={init_titles}")
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);check_common(j,t,TASK_ID);j.check("login_as_alice",login_submitted_as(t,EMAIL),EMAIL)
+ j.check("ordered_filtered_save_flow",visited_in_order(t,[("/login",{}),("/talks",{"event":"TED2026"}),(PATH,{})]),"login, TED2026 filter, detail")
+ j.check("clicked_driverless_result",clicked_transition(t,"/talks",PATH),"detail opened from listing");j.check("save_submitted",submitted_from_path(t,PATH,PATH),"save form submitted")
+ initial=resolve_db(a.initial_db,a.container,"instance_seed");after=resolve_db(a.after_db,a.container,"instance");j.check("databases_readable",bool(initial and after),f"initial={initial} after={after}")
+ if initial and after:
+  before=saved_snapshot(initial,EMAIL);now=saved_snapshot(after,EMAIL);before_ids={r['id'] for r in before};added=[r for r in now if r['id'] not in before_ids]
+  before_all=table_snapshot(initial,"saved_talk");after_all=table_snapshot(after,"saved_talk")
+  j.check("exact_saved_delta",len(added)==1 and added[0]['slug']==SLUG and added[0]['note']=="mobility planning" and len(now)==len(before)+1 and all(r in now for r in before),repr(added));j.check("complete_saved_table_delta",len(after_all)==len(before_all)+1 and all(row in after_all for row in before_all),f"before={len(before_all)} after={len(after_all)}");j.check("only_saved_talk_changed",changed_tables(initial,after)=={"saved_talk"},repr(changed_tables(initial,after)))
+ j.emit()
+if __name__=="__main__":main()

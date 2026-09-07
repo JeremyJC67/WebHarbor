@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Verifier for TED--17 TEDNext 2025 month."""
-import os,sys
-sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import load_run,navigated_to,final_answer,contains_all,Judge,parse_args
+from verify_lib import Judge, check_common, check_read_only, contains_all, final_answer, load_run, parse_args, visited_path
+TASK_ID="TED--17"
 def main():
- a=parse_args(); j=Judge('TED--17',a.no_llm); t=load_run(a.run_dir); fa=final_answer(t); j.check('nav_events',navigated_to(t,'/events'),f'navigated={navigated_to(t,"/events")}'); j.check('answer_tednext_november_2025',contains_all(fa,['november','2025']),f'final={fa!r}'); j.check('final_answer_nonempty',bool(fa),f'final={fa!r}'); j.emit()
-if __name__=='__main__': main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("opened_events",visited_path(t,"/events"),"events page visited");j.check("answer_event_month_year",contains_all(answer,("TEDNext 2025","November 2025")),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

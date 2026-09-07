@@ -1,45 +1,12 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for TED task TED--9.
-
-Find a talk about Parkinson's and save it to Alice's account with a note for
-public health review. Ground truth: Joy Milne, 'The nurse who can smell
-Parkinson's'.
-
-Checks (deterministic first; LLM utilities anchored on ground truth):
-nav Joy Milne talk detail + /login | DB after: talk saved by alice with a non-empty note, absent in seed
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer, last_shot,
-                        norm, contains_all, contains_any, answer_equals, extract_ints,
-                        resolve_db, saved_talks_for, saved_titles_for, note_for_saved,
-                        newsletter_topic_for, registered_events_for, user_emails,
-                        SEED_EMAILS, llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
-SLUG = "joy-milne-the-nurse-who-can-smell-parkinson-s"
-TITLE_SUB = "smell Parkinson"
-EMAIL = "alice.j@test.com"
-
+from verify_lib import Judge, changed_tables, check_common, clicked_transition, load_run, login_submitted_as, parse_args, resolve_db, saved_snapshot, submitted_from_path, table_snapshot, visited_in_order
+TASK_ID="TED--9";EMAIL="alice.j@test.com";SLUG="joy-milne-the-nurse-who-can-smell-parkinson-s";PATH=f"/talks/{SLUG}"
 def main():
-    a = parse_args()
-    j = Judge('TED--9', a.no_llm)
-    t = load_run(a.run_dir)
-    after = resolve_db(a.after_db, a.container, "instance")
-    init = resolve_db(a.initial_db, a.container, "instance_seed")
-    note = note_for_saved(after, EMAIL, TITLE_SUB)
-    init_titles = saved_titles_for(init)
-    j.check("nav_parkinson", navigated_to(t, SLUG), f"navigated={navigated_to(t, SLUG)}")
-    j.check("db_parkinson_saved_by_alice", note is not None, f"note={note!r}")
-    j.check("db_note_present", bool(note and note.strip()), f"note={note!r}")
-    j.check("db_absent_in_seed",
-            init_titles is not None and not any(norm(TITLE_SUB) in norm(x) for x in init_titles),
-            f"initial_saved={init_titles}")
-    # The note text is free-form; confirm it reads as a public-health review note (anchored).
-    ok, ev = llm_text_match(note or "", "a note about public health / public health review",
-        "Is this saved-talk note a note for public health review?")
-    j.check("note_public_health_llm", ok, ev, llm=True)
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);check_common(j,t,TASK_ID);j.check("login_as_alice",login_submitted_as(t,EMAIL),EMAIL);j.check("ordered_parkinson_save_flow",visited_in_order(t,[("/login",{}),("/search",{"q":"Parkinson"}),(PATH,{})]),"login, search, detail");j.check("clicked_parkinson_result",clicked_transition(t,"/search",PATH),"detail opened from search");j.check("save_submitted",submitted_from_path(t,PATH,PATH),"save form submitted")
+ initial=resolve_db(a.initial_db,a.container,"instance_seed");after=resolve_db(a.after_db,a.container,"instance");j.check("databases_readable",bool(initial and after),f"initial={initial} after={after}")
+ if initial and after:
+  before=saved_snapshot(initial,EMAIL);now=saved_snapshot(after,EMAIL);before_ids={r['id'] for r in before};added=[r for r in now if r['id'] not in before_ids]
+  before_all=table_snapshot(initial,"saved_talk");after_all=table_snapshot(after,"saved_talk")
+  j.check("exact_saved_delta",len(added)==1 and added[0]['slug']==SLUG and added[0]['note']=="public health review" and len(now)==len(before)+1 and all(r in now for r in before),repr(added));j.check("complete_saved_table_delta",len(after_all)==len(before_all)+1 and all(row in after_all for row in before_all),f"before={len(before_all)} after={len(after_all)}");j.check("only_saved_talk_changed",changed_tables(initial,after)=={"saved_talk"},repr(changed_tables(initial,after)))
+ j.emit()
+if __name__=="__main__":main()

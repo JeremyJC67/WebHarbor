@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-"""Verifier for TED--13 science wine-tasting speaker."""
-import os,sys
-sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import load_run,navigated_to,final_answer,contains_all,Judge,parse_args
-SLUG='qian-janice-wang-the-art-and-science-of-wine-tasting'
+from verify_lib import Judge, check_common, check_read_only, clicked_transition, contains_all, final_answer, load_run, parse_args, visited_in_order
+TASK_ID="TED--13";PATH="/talks/qian-janice-wang-the-art-and-science-of-wine-tasting"
 def main():
- a=parse_args(); j=Judge('TED--13',a.no_llm); t=load_run(a.run_dir); fa=final_answer(t); j.check('nav_wine_talk',navigated_to(t,SLUG),f'navigated={navigated_to(t,SLUG)}'); j.check('answer_speaker_exact',contains_all(fa,['Qian Janice Wang']),f'final={fa!r}'); j.check('final_answer_nonempty',bool(fa),f'final={fa!r}'); j.emit()
-if __name__=='__main__': main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check("ordered_science_topic_flow",visited_in_order(t,[("/topics",{}),("/talks",{"topic":"science"}),(PATH,{})]),"topics, science listing, detail");j.check("clicked_science_and_talk",clicked_transition(t,"/topics","/talks") and clicked_transition(t,"/talks",PATH),"visible links used");j.check("answer_title_and_speaker",contains_all(answer,("The art and science of wine tasting","Qian Janice Wang")),repr(answer));check_read_only(j,a);j.emit()
+if __name__=="__main__":main()

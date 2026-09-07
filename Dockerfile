@@ -31,9 +31,10 @@ COPY sites/ /opt/WebSyn/
 # IKEA's seed is reproducibly materialized from the tracked source catalog so code-only content fixes do not require an asset-repository write. Product images still come from the pinned asset bundle.
 RUN cd /opt/WebSyn/ikea && PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
 
-# Apply tracked, idempotent Phys.org and Target data corrections to their seed assets.
+# Apply tracked, idempotent data corrections to downloaded seed assets.
 RUN cd /opt/WebSyn/phys_org && PYTHONHASHSEED=0 python migrate_seed.py && rm -rf instance
 RUN cd /opt/WebSyn/target && PYTHONHASHSEED=0 python migrate_seed.py && rm -rf instance
+RUN cd /opt/WebSyn/ted && PYTHONHASHSEED=0 python migrate_seed.py && rm -rf instance
 
 COPY websyn_start.sh    /opt/websyn_start.sh
 COPY control_server.py  /opt/control_server.py

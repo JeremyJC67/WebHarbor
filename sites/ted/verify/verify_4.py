@@ -1,35 +1,13 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for TED task TED--4.
-
-Log in as Alice and change the newsletter topic to conservation.
-
-Checks (deterministic first; LLM utilities anchored on ground truth):
-nav /login,/account | DB after: alice newsletter_topic == 'conservation' (seed was 'ai')
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer, last_shot,
-                        norm, contains_all, contains_any, answer_equals, extract_ints,
-                        resolve_db, saved_talks_for, saved_titles_for, note_for_saved,
-                        newsletter_topic_for, registered_events_for, user_emails,
-                        SEED_EMAILS, llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
-EMAIL = "alice.j@test.com"
-
+from verify_lib import Judge, changed_tables, check_common, load_run, login_submitted_as, parse_args, resolve_db, submitted_from_path, user_snapshot, visited_in_order
+TASK_ID="TED--4";EMAIL="alice.j@test.com"
 def main():
-    a = parse_args()
-    j = Judge('TED--4', a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    j.check("final_answer_nonempty", bool(fa.strip()), f"final={fa!r}")
-    after = resolve_db(a.after_db, a.container, "instance")
-    topic = newsletter_topic_for(after, EMAIL)
-    j.check("nav_login", navigated_to(t, "/login"), f"navigated={navigated_to(t, '/login')}")
-    j.check("nav_account", navigated_to(t, "/account"), f"navigated={navigated_to(t, '/account')}")
-    j.check("db_newsletter_conservation", topic is not None and norm(topic) == "conservation",
-            f"newsletter_topic={topic!r}")
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);check_common(j,t,TASK_ID);j.check("login_as_alice",login_submitted_as(t,EMAIL),EMAIL);j.check("ordered_account_flow",visited_in_order(t,[("/login",{}),("/account",{})]),"login then account");j.check("profile_submitted",submitted_from_path(t,"/account","/account"),"account form submitted")
+ initial=resolve_db(a.initial_db,a.container,"instance_seed");after=resolve_db(a.after_db,a.container,"instance");j.check("databases_readable",bool(initial and after),f"initial={initial} after={after}")
+ if initial and after:
+  before=user_snapshot(initial);now=user_snapshot(after);expected=[dict(r) for r in before]
+  for row in expected:
+   if row['email']==EMAIL:row['newsletter_topic']='conservation'
+  j.check("only_requested_profile_field_changed",now==expected,f"before={before} after={now}");j.check("only_user_table_changed",changed_tables(initial,after)=={"user"},repr(changed_tables(initial,after)))
+ j.emit()
+if __name__=="__main__":main()
