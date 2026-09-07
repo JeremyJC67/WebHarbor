@@ -36,6 +36,21 @@ def load_catalog(path=CATALOG_PATH):
     return catalog
 
 
+CONTENT_NAMES = ('homepage', 'tv_catalog', 'feature_catalog')
+
+
+def load_content_documents(directory=BASE_DIR / 'data'):
+    """Build-time inputs only; HTTP handlers use ContentSnapshot in SQLite."""
+    documents = {}
+    for name in CONTENT_NAMES:
+        path = Path(directory) / (name + '.json')
+        document = json.loads(path.read_text(encoding='utf-8'))
+        if not isinstance(document, dict):
+            raise ValueError('Content snapshot must be an object: ' + name)
+        documents[name] = document
+    return documents
+
+
 def runtime_display(minutes):
     if minutes is None:
         return ''
@@ -49,7 +64,7 @@ def joined(values):
 
 def catalog_rows(catalog):
     """One projection shared by cold seeding and explicit SQLite migration."""
-    genre_names = sorted({name for movie in catalog['movies'] for name in movie['genres']})
+    genre_names = sorted({name for movie in catalog['movies'] for name in (movie['genres'] or [])})
     genres = [{'id': index, 'name': name, 'slug': name.lower().replace(' & ', '_').replace(' ', '_')}
               for index, name in enumerate(genre_names, 1)]
     genre_ids = {row['name']: row['id'] for row in genres}
@@ -84,7 +99,7 @@ def catalog_rows(catalog):
             'consensus': '', 'audience_consensus': '', 'box_office': '',
         })
         movie_genres.extend({'movie_id': movie['id'], 'genre_id': genre_ids[name]}
-                            for name in movie['genres'])
+                            for name in (movie['genres'] or []))
         for credit in movie['credits']:
             movie_cast.append({'id': len(movie_cast) + 1, 'movie_id': movie['id'],
                                'person_id': person_ids[credit['person_slug']],
@@ -95,7 +110,7 @@ def catalog_rows(catalog):
 
 
 def seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview,
-             User, UserRating, WatchlistItem):
+             User, UserRating, WatchlistItem, ContentSnapshot=None):
     """Create only an empty database; a populated database is a read-only no-op."""
     if Movie.query.first() is not None:
         return
@@ -141,6 +156,9 @@ def seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview,
     for index, item in enumerate(WATCHLIST_ITEMS, 1):
         db.session.add(WatchlistItem(id=index, user_id=user_map[item['username']].id,
                                      movie_id=movie_map[item['movie_slug']].id))
+    if ContentSnapshot is not None:
+        for name, document in load_content_documents().items():
+            db.session.add(ContentSnapshot(name=name, document=document))
     db.session.commit()
 
 

@@ -8,7 +8,7 @@ from pathlib import Path
 import sqlite3
 import tempfile
 
-from seed_data import CATALOG_PATH, catalog_rows, load_catalog
+from seed_data import CATALOG_PATH, catalog_rows, load_catalog, load_content_documents, CONTENT_NAMES
 
 STATE_TABLES = ('users', 'watchlist_items', 'user_ratings')
 EXTRA_COLUMNS = {'watch_offers': 'TEXT', 'watch_description': 'TEXT', 'available_at_home': 'BOOLEAN'}
@@ -68,13 +68,15 @@ def update_movie_facts(connection, rows):
             raise ValueError('Movie identity changed while applying catalog')
 
 
-def apply_catalog(connection, catalog, deduplicate=False):
+def apply_catalog(connection, catalog, deduplicate=False, allow_additions=False):
     """Run inside one transaction in an isolated copied database."""
     rows = catalog_rows(catalog)
     expected = sorted((row['id'], row['slug']) for row in rows['movies'])
     actual = connection.execute('SELECT id, slug FROM movies ORDER BY id').fetchall()
-    if actual != expected:
+    if (actual != expected and not allow_additions) or not set(actual).issubset(expected):
         raise ValueError('Catalog must match every existing movie ID and slug exactly')
+    existing_ids = {movie_id for movie_id, _ in actual}
+    additions = [row for row in rows['movies'] if row['id'] not in existing_ids]
     groups, removed = duplicate_review_ids(connection, deduplicate)
     before = {table: state_rows(connection, table) for table in STATE_TABLES}
     audience_before = state_rows(connection, 'audience_reviews')
@@ -87,7 +89,8 @@ def apply_catalog(connection, catalog, deduplicate=False):
 
     for table in ('movie_cast', 'movie_genres', 'critic_reviews', 'persons', 'genres'):
         connection.execute(f'DELETE FROM {table}')
-    update_movie_facts(connection, rows['movies'])
+    update_movie_facts(connection, [row for row in rows['movies'] if row['id'] in existing_ids])
+    insert_rows(connection, 'movies', additions)
     for table in ('persons', 'genres', 'movie_genres', 'movie_cast'):
         insert_rows(connection, table, rows[table])
     connection.executemany('DELETE FROM audience_reviews WHERE id = ?', [(value,) for value in removed])
@@ -110,14 +113,18 @@ def apply_catalog(connection, catalog, deduplicate=False):
             'state_hashes_after': {key: state_hash(value) for key, value in after.items()},
             'audience_reviews_before': len(audience_before), 'audience_reviews_after': len(expected_audience),
             'duplicate_pairs': len(groups), 'removed_review_ids': removed,
+            'added_movie_ids': [row['id'] for row in additions],
             'duplicate_selection': 'review_date DESC, id DESC', 'critic_reviews_after': 0}
 
 
-def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False):
+def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False, allow_additions=False, content_dir=None):
     source, output = Path(source).resolve(), Path(output).resolve()
     if source == output:
         raise ValueError('Source and output must be different files')
     source_hash, catalog_hash = sha256(source), sha256(catalog_path)
+    documents = load_content_documents(content_dir) if content_dir is not None else None
+    content_hashes = ({name: sha256(Path(content_dir) / (name + '.json')) for name in CONTENT_NAMES}
+                      if documents is not None else {})
     receipt_path = output.with_name(output.name + '.migration.json')
     if output.exists():
         if not receipt_path.exists():
@@ -125,7 +132,9 @@ def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False):
         receipt = json.loads(receipt_path.read_text())
         if (receipt['source_sha256'] != source_hash or receipt['catalog_sha256'] != catalog_hash
                 or receipt['output_sha256'] != sha256(output)
-                or receipt['deduplicate_benchmark_reviews'] != deduplicate):
+                or receipt['deduplicate_benchmark_reviews'] != deduplicate
+                or receipt.get('allow_catalog_additions', False) != allow_additions
+                or receipt.get('content_sha256', {}) != content_hashes):
             raise ValueError('Existing output does not match source, catalog, and migration receipt')
         return {**receipt, 'status': 'already_migrated'}
     if receipt_path.exists():
@@ -138,7 +147,14 @@ def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False):
                 original.backup(connection)
                 connection.execute('PRAGMA foreign_keys = ON')
                 connection.execute('BEGIN IMMEDIATE')
-                result = apply_catalog(connection, load_catalog(catalog_path), deduplicate)
+                result = apply_catalog(connection, load_catalog(catalog_path), deduplicate, allow_additions)
+                if documents is not None:
+                    connection.execute('CREATE TABLE IF NOT EXISTS content_snapshots '
+                                       '(name VARCHAR(32) PRIMARY KEY, document JSON NOT NULL)')
+                    connection.execute('DELETE FROM content_snapshots')
+                    insert_rows(connection, 'content_snapshots', [
+                        {'name': name, 'document': json.dumps(document, ensure_ascii=False)}
+                        for name, document in documents.items()])
                 connection.commit()
                 if connection.execute('PRAGMA quick_check').fetchone()[0] != 'ok':
                     raise ValueError('SQLite integrity check failed')
@@ -146,6 +162,7 @@ def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False):
             raise ValueError('Source changed during migration; candidate not published')
         receipt = {'source_sha256': source_hash, 'catalog_sha256': catalog_hash,
                    'output_sha256': sha256(candidate), 'deduplicate_benchmark_reviews': deduplicate,
+                   'allow_catalog_additions': allow_additions, 'content_sha256': content_hashes,
                    'status': 'migrated', **result}
         # No overwrite, including accidental reuse of an evidence path.
         os.link(candidate, output)
@@ -161,6 +178,9 @@ if __name__ == '__main__':
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--catalog', type=Path, default=CATALOG_PATH)
     parser.add_argument('--deduplicate-benchmark-reviews', action='store_true')
+    parser.add_argument('--allow-catalog-additions', action='store_true',
+                        help='Explicitly allow new sourced movie identities while retaining every existing ID/slug')
+    parser.add_argument('--content-dir', type=Path, help='Explicitly replace the three build-time content snapshots')
     args = parser.parse_args()
     print(json.dumps(migrate_copy(args.source, args.output, args.catalog,
-                                 args.deduplicate_benchmark_reviews), indent=2))
+                                 args.deduplicate_benchmark_reviews, args.allow_catalog_additions, args.content_dir), indent=2))

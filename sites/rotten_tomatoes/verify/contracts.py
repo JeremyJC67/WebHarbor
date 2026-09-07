@@ -79,5 +79,24 @@ CONTRACTS = {'RottenTomatoes--0': {'task_id': 'RottenTomatoes--0',
                         'prompt': "Using this site's browsing or search features, find the movie with the "
                                   'highest audience score among movies whose Movie Info credits Kevin Feige '
                                   'as a producer. Report its title, audience score, and Release Date '
-                                  '(Streaming). Include every tied movie.',
-                        'kind': 'information'}}
+                                  '(Streaming). Include every tied movie. If Movie Info does not list a '
+                                  'Release Date (Streaming), explicitly report that it is not listed; do not '
+                                  'exclude that movie.',
+                        'kind': 'information',
+                        'judge_rubric': 'Match the complete credited producer name and the Producer role, '
+                                        "compare the eligible movies' displayed audience scores, and report "
+                                        'every tied maximum with the correct title, score, and '
+                                        'streaming-release date. Missing audience scores are not numeric '
+                                        'scores. A movie associated with another Kevin or with a different '
+                                        'credit role does not qualify. Both examining eligible candidates '
+                                        'and a correct descending-score exclusion argument over the catalog '
+                                        'are valid UI paths. Do not require the former anchor movie, every '
+                                        'lower-scoring eligible movie, or one exact search string as hidden '
+                                        'navigation conditions. Claims and recalled movie facts without '
+                                        'relevant UI comparison do not pass. A highest-scoring eligible '
+                                        'movie without a listed streaming-release date remains a result: '
+                                        'report the title and score and explicitly state that the date is '
+                                        'not listed. Evidence must show the complete Movie Info section '
+                                        'lacks that field or explicitly marks it unavailable. Never infer a '
+                                        'date from the theatrical release or exclude the winner because its '
+                                        'streaming date is absent.'}}

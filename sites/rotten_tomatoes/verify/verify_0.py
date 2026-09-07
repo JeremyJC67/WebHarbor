@@ -1,7 +1,10 @@
 """R0: source-frozen Sci-Fi at-home streaming-date comparison.
 
-Facts below derive from the reviewed 147-movie RT source catalog captured on
-2026-09-07 (catalog SHA256 aa04c6ac5acbaf76da631f120e82fad4d8f97eb7fa2e6b238b88c939f8f822e8).
+Facts below derive from the unchanged 147-movie source catalog plus the 123
+homepage additions captured on 2026-09-07. Input catalog SHA256 values:
+aa04c6ac5acbaf76da631f120e82fad4d8f97eb7fa2e6b238b88c939f8f822e8
+76e9ee372f85d08812cc0561e454c69e39e2fc803881adc7c98a78b2492160ca
+A missing streaming date remains None and is excluded from the calendar maximum.
 Only frozen harness snapshots and screenshot-bound UI observations are read.
 No live database, catalog loading, search API, or runner answer is a fact source.
 """
@@ -23,7 +26,16 @@ from verify_lib import Run, Snapshot, VerificationError, heading, main_dom, movi
 
 
 TASK_ID = "RottenTomatoes--0"
-CANDIDATES = [{'slug': 'project_hail_mary',
+CANDIDATES = [{'slug': 'supergirl_2026',
+  'title': 'Supergirl',
+  'date': '2026-07-28',
+  'writers': ['Ana Nogueira']},
+ {'slug': 'disclosure_day',
+  'title': 'Disclosure Day',
+  'date': '2026-07-21',
+  'writers': ['David Koepp']},
+ {'slug': 'backrooms', 'title': 'Backrooms', 'date': '2026-07-14', 'writers': ['Will Soodik']},
+ {'slug': 'project_hail_mary',
   'title': 'Project Hail Mary',
   'date': '2026-05-12',
   'writers': ['Drew Goddard']},
@@ -61,6 +73,10 @@ CANDIDATES = [{'slug': 'project_hail_mary',
   'date': '2025-12-16',
   'writers': ['Michael Bacall', 'Edgar Wright']},
  {'slug': 'bugonia', 'title': 'Bugonia', 'date': '2025-11-25', 'writers': ['Will Tracy']},
+ {'slug': 'lesbian_space_princess',
+  'title': 'Lesbian Space Princess',
+  'date': '2025-11-18',
+  'writers': ['Leela Varghese', 'Emma Hough Hobbs']},
  {'slug': 'frankenstein_2025',
   'title': 'Frankenstein',
   'date': '2025-11-07',
@@ -82,10 +98,18 @@ CANDIDATES = [{'slug': 'project_hail_mary',
   'title': 'The Life of Chuck',
   'date': '2025-07-29',
   'writers': ['Mike Flanagan']},
+ {'slug': 'predator_killer_of_killers',
+  'title': 'Predator: Killer of Killers',
+  'date': '2025-06-06',
+  'writers': ['Micho Rutare']},
  {'slug': 'companion_2025',
   'title': 'Companion',
   'date': '2025-02-18',
   'writers': ['Drew Hancock']},
+ {'slug': 'borderlands',
+  'title': 'Borderlands',
+  'date': '2024-08-30',
+  'writers': ['Eli Roth', 'Joe Crombie']},
  {'slug': 'godzilla_minus_one',
   'title': 'Godzilla Minus One',
   'date': '2024-06-01',
@@ -115,6 +139,19 @@ CANDIDATES = [{'slug': 'project_hail_mary',
   'title': 'Star Wars: The Last Jedi',
   'date': '2018-03-11',
   'writers': ['Rian Johnson']},
+ {'slug': 'alien_covenant',
+  'title': 'Alien: Covenant',
+  'date': '2017-07-10',
+  'writers': ['John Logan', 'Dante Harper']},
+ {'slug': 'the_hunger_games',
+  'title': 'The Hunger Games',
+  'date': '2016-09-09',
+  'writers': ['Gary Ross', 'Suzanne Collins', 'Billy Ray']},
+ {'slug': 'the_hunger_games_catching_fire',
+  'title': 'The Hunger Games: Catching Fire',
+  'date': '2016-08-26',
+  'writers': ['Simon Beaufoy', 'Michael Arndt']},
+ {'slug': 'signs', 'title': 'Signs', 'date': '2016-08-11', 'writers': ['M. Night Shyamalan']},
  {'slug': 'interstellar_2014',
   'title': 'Interstellar',
   'date': '2016-05-24',
@@ -127,7 +164,8 @@ CANDIDATES = [{'slug': 'project_hail_mary',
  {'slug': '1071806-independence_day',
   'title': 'Independence Day',
   'date': '2012-09-18',
-  'writers': ['Dean Devlin', 'Roland Emmerich']}]
+  'writers': ['Dean Devlin', 'Roland Emmerich']},
+ {'slug': 'onslaught', 'title': 'Onslaught', 'date': None, 'writers': ['Simon Barrett']}]
 
 
 def clean(text):
@@ -190,7 +228,10 @@ def unchanged(before, after, candidates):
     require(set(actual) == {m["slug"] for m in candidates}, "frozen at-home Sci-Fi candidate set differs from source contract")
     for movie in candidates:
         row = actual[movie["slug"]]
-        require(row["title"] == movie["title"] and dates(row.get("release_date_streaming")) == {movie["date"]}, "snapshot movie identity or streaming date differs from source contract")
+        require(row["title"] == movie["title"], "snapshot movie identity differs from source contract")
+        value = row.get("release_date_streaming")
+        require(not norm(value) if movie["date"] is None else dates(value) == {movie["date"]},
+                "snapshot streaming date differs from source contract")
         require(split_names(row.get("screenwriter") or "") == {name_key(x) for x in movie["writers"]}, "snapshot screenwriters differ from source contract")
 
 
@@ -218,6 +259,38 @@ def info_field(dom, label):
         elif active:
             values.append(text)
     return norm(" ".join(values))
+
+
+
+def missing_streaming_date_evidence(dom, title):
+    """Prove absence from a bounded Movie Info section, not an unloaded page."""
+    main = main_dom(dom)
+    if not heading(main, title):
+        return False
+    start = re.search(r'heading ["\']Movie Info["\']', main, re.I)
+    if not start:
+        return False
+    remaining = main[start.end():]
+    end = re.search(r"(?m)^\s*- heading ", remaining)
+    if not end:
+        return False
+    section = remaining[:end.start()]
+    # Empty/loading headings do not establish that a metadata section was read.
+    if sum(bool(info_field(dom, label)) for label in
+           ("Director", "Producer", "Screenwriter", "Genre", "Runtime", "Rating")) < 2:
+        return False
+    if "Release Date (Streaming)" not in section:
+        return True
+    # An explicit empty-value marker is another honest rendering of a null.
+    return norm(info_field(dom, "Release Date (Streaming)")).casefold() in {
+        "--", "—", "n/a", "not listed", "not provided", "not available", "未列出", "未提供"}
+
+
+def streaming_date_evidence(dom, movie):
+    if movie["date"] is None:
+        return missing_streaming_date_evidence(dom, movie["title"])
+    return (heading(main_dom(dom), movie["title"])
+            and dates(info_field(dom, "Release Date (Streaming)")) == {movie["date"]})
 
 
 def browse_scope(dom):
@@ -258,13 +331,15 @@ def comparison_ui(run, candidates):
         found = None
         for frame in run.frames:
             if frame.path == "/m/" + movie["slug"] and run.supports(frame,
-                    lambda d, m=movie: heading(main_dom(d), m["title"]) and dates(info_field(d, "Release Date (Streaming)")) == {m["date"]},
-                    f"The {movie['title']} Movie Info section visibly labels Release Date (Streaming) as {movie['date']}; it is not a theater date or the movie year."):
+                    lambda d, m=movie: streaming_date_evidence(d, m),
+                    (f"The complete {movie['title']} Movie Info section is visible through its ending and contains no Release Date (Streaming), or explicitly marks it as not listed. An unloaded or cropped section is insufficient."
+                     if movie["date"] is None else
+                     f"The {movie['title']} Movie Info section visibly labels Release Date (Streaming) as {movie['date']}; it is not a theater date or the movie year.")):
                 found = frame
                 break
             # A future legitimate browse layout may present labeled dates on
             # individual cards. Merely listing a year or ordering cards is not enough.
-            if frame in scope_frames and frame.dom is not None:
+            if movie["date"] is not None and frame in scope_frames and frame.dom is not None:
                 marker = re.search(r"/url:\s*/m/" + re.escape(movie["slug"]) + r"(?:\s|$)", main_dom(frame.dom))
                 if marker:
                     block = main_dom(frame.dom)[marker.end():]
@@ -272,10 +347,12 @@ def comparison_ui(run, candidates):
                     if "Release Date (Streaming)" in block and dates(block) == {movie["date"]}:
                         found = frame
                         break
-        require(found is not None, f"streaming date comparison missing for {movie['title']}")
-        record_evidence(run, found, "compared_streaming_date:" + movie["slug"])
-    latest = max(date.fromisoformat(m["date"]) for m in candidates)
-    winners = [m for m in candidates if date.fromisoformat(m["date"]) == latest]
+        require(found is not None, f"streaming date or explicit absence comparison missing for {movie['title']}")
+        record_evidence(run, found, ("streaming_date_absent:" if movie["date"] is None else "compared_streaming_date:") + movie["slug"])
+    dated = [m for m in candidates if m["date"] is not None]
+    require(dated, "no listed streaming date in the source candidate set")
+    latest = max(date.fromisoformat(m["date"]) for m in dated)
+    winners = [m for m in dated if date.fromisoformat(m["date"]) == latest]
     for movie in winners:
         run.prove("all_screenwriters:" + movie["slug"], {"/m/" + movie["slug"]}, 0,
             lambda d, m=movie: heading(main_dom(d), m["title"]) and split_names(info_field(d, "Screenwriter")) == {name_key(w) for w in m["writers"]},

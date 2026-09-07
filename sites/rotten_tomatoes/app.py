@@ -6,7 +6,8 @@ import math
 import json
 import unicodedata
 from datetime import datetime, timedelta
-from functools import wraps
+from functools import wraps, lru_cache
+from copy import deepcopy
 from types import SimpleNamespace
 from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
 
@@ -70,6 +71,12 @@ movie_genres = db.Table('movie_genres',
     db.Column('movie_id', db.Integer, db.ForeignKey('movies.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('genres.id'), primary_key=True)
 )
+
+
+class ContentSnapshot(db.Model):
+    __tablename__ = 'content_snapshots'
+    name = db.Column(db.String(32), primary_key=True)
+    document = db.Column(db.JSON, nullable=False)
 
 
 class Movie(db.Model):
@@ -280,7 +287,9 @@ def inject_globals():
     watchlist_ids = set()
     if current_user.is_authenticated:
         watchlist_ids = {w.movie_id for w in WatchlistItem.query.filter_by(user_id=current_user.id).all()}
-    return dict(all_genres=genres, user_watchlist_ids=watchlist_ids)
+    return dict(all_genres=genres, user_watchlist_ids=watchlist_ids,
+                header_links=_content_document('homepage').get('header_links', []),
+                trending=_content_document('homepage').get('trending', []))
 
 
 # ──────────────────────────────────────────────
@@ -401,23 +410,85 @@ def search_people(query, limit=20):
 # Routes
 # ──────────────────────────────────────────────
 
+def _content_document(name):
+    """Read the immutable source snapshot from this site's seed database."""
+    if name not in ('homepage', 'tv_catalog', 'feature_catalog'):
+        raise ValueError('Unknown content document')
+    snapshot = db.session.get(ContentSnapshot, name)
+    return snapshot.document if snapshot else {}
+
+
+def _home_view():
+    home = deepcopy(_content_document('homepage'))
+    movies = {movie.slug: movie for movie in Movie.query.all()}
+    for section in home.get('sections', []):
+        for item in section['items']:
+            movie = movies.get(item.get('movie_slug'))
+            if movie:
+                # Keep local cards/details consistent. Membership and rank come
+                # from the captured homepage, never a substitute score sort.
+                item.update(movie_id=movie.id, title=movie.title,
+                            tomatometer=movie.tomatometer,
+                            audience_score=movie.audience_score,
+                            certified_fresh=movie.certified_fresh)
+                if not item.get('image'):
+                    item['image'] = movie.poster_image
+    return home
+
+
 @app.route('/')
 def index():
-    """Homepage with movie sections."""
-    new_movies = Movie.query.order_by(Movie.year.desc(), Movie.id).limit(12).all()
-    streaming = Movie.query.filter_by(available_at_home=True).order_by(
-        Movie.audience_score.desc(), Movie.title
-    ).limit(12).all()
-    certified = Movie.query.filter_by(certified_fresh=True).order_by(Movie.tomatometer.desc()).limit(12).all()
-    # The captured gross is lifetime US gross, not a current weekly ranking.
-    top_box = []
-    popular = Movie.query.order_by(Movie.audience_score.desc()).limit(12).all()
-    return render_template('index.html',
-                           new_movies=new_movies,
-                           streaming_movies=streaming,
-                           certified_movies=certified,
-                           top_box_office=top_box,
-                           popular_movies=popular)
+    return render_template('index.html', home=_home_view())
+
+
+@app.route('/browse/home/<section_id>/')
+def curated_list(section_id):
+    home = _home_view()
+    section = next((row for row in home.get('sections', []) if row['id'] == section_id), None)
+    if section is None:
+        abort(404)
+    return render_template('content_list.html', section=section,
+                           captured_at=home.get('captured_at', ''))
+
+
+@app.route('/browse/tv/')
+def browse_tv():
+    rows = _content_document('tv_catalog').get('records', [])
+    section = {'title': 'TV Shows', 'kind': 'posters', 'description': '', 'items': rows}
+    return render_template('content_list.html', section=section, captured_at='')
+
+
+@app.route('/tv/<path:media_path>')
+def tv_detail(media_path):
+    path = '/tv/' + media_path.rstrip('/')
+    show = next((row for row in _content_document('tv_catalog').get('records', [])
+                 if row['path'].rstrip('/') == path), None)
+    if show is None:
+        abort(404)
+    return render_template('tv_detail.html', show=show)
+
+
+@app.route('/news/')
+def news():
+    section = {'title': 'News & Features', 'kind': 'promos', 'description': '',
+               'items': _content_document('feature_catalog').get('records', [])}
+    return render_template('content_list.html', section=section, captured_at='')
+
+
+@app.route('/news/<feature_id>')
+def feature_detail(feature_id):
+    feature = next((row for row in _content_document('feature_catalog').get('records', [])
+                    if row['id'] == feature_id), None)
+    if feature is None:
+        abort(404)
+    return render_template('feature_detail.html', feature=feature)
+
+
+@app.route('/about')
+@app.route('/help')
+@app.route('/scores')
+def site_information():
+    return render_template('site_information.html', page=request.path.strip('/'))
 
 
 @app.route('/search')
@@ -425,10 +496,12 @@ def search():
     """Search movies and people."""
     query = (request.args.get('q') or request.args.get('search') or '').strip()
     if not query:
-        return render_template('search_results.html', query='', movies=[], people=[])
+        return render_template('search_results.html', query='', movies=[], people=[], shows=[])
     movies = search_movies(query)
     people = search_people(query)
-    return render_template('search_results.html', query=query, movies=movies, people=people)
+    shows = [row for row in _content_document('tv_catalog').get('records', [])
+             if token_overlap_score(tokenize(query), tokenize(row['title'])) > 0]
+    return render_template('search_results.html', query=query, movies=movies, people=people, shows=shows)
 
 
 @app.route('/browse/movies_in_theaters/')
@@ -493,6 +566,17 @@ def _browse_movies(base_query, title, browse_type):
         base_query = base_query.order_by(Movie.audience_score.desc(), Movie.tomatometer.desc())
 
     movies = base_query.all()
+    # Homepage provider links refer to captured viewing offers, including rental
+    # services. The existing subscription-only platform filter stays distinct.
+    provider = request.args.get('provider', '')
+    provider_names = {'fandango': 'Fandango at Home', 'netflix': 'Netflix',
+                      'amazon-prime-video-us': 'Prime Video', 'hbo-max': 'HBO Max'}
+    if provider:
+        if provider not in provider_names:
+            abort(400)
+        movies = [movie for movie in movies
+                  if any(offer.get('icon') == provider for offer in movie.watch_options)]
+        title = title + ' — ' + provider_names[provider]
     genres = Genre.query.order_by(Genre.name).all()
     platforms = db.session.query(Movie.streaming_platform).filter(
         Movie.streaming_platform != ''
@@ -510,7 +594,8 @@ def _browse_movies(base_query, title, browse_type):
                            current_cf=cf,
                            current_rating=pg,
                            current_year=year,
-                           current_platform=platform)
+                           current_platform=platform,
+                           current_provider=provider)
 
 
 @app.route('/m/<slug>')
@@ -806,7 +891,7 @@ def init_db():
     """Create tables and seed data."""
     db.create_all()
     from seed_data import seed_all
-    seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview, User, UserRating, WatchlistItem)
+    seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview, User, UserRating, WatchlistItem, ContentSnapshot)
 
 
 with app.app_context():

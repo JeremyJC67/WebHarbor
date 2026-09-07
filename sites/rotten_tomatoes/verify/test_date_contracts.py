@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify_0 as r0
 PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/Y9sAAAAASUVORK5CYII=')
 ORIGIN = 'http://r0-fixture.localhost:40019'
-def table(title='Project Hail Mary', date='May 12, 2026', writers='Drew Goddard'):
+def table(title='Supergirl', date='Jul 28, 2026', writers='Ana Nogueira'):
     return f'| Movie | Release Date (Streaming) | Screenwriter(s) |\n|---|---|---|\n| {title} | {date} | {writers} |'
 
 ANSWER = table()
@@ -25,7 +25,8 @@ def listing():
 
 
 def detail(movie):
-    return f'- main:\n  - heading "{movie["title"]}" [level=1]\n  - heading "Movie Info" [level=3]\n  - generic: Screenwriter\n  - generic: {", ".join(movie["writers"])}\n  - generic: Release Date (Streaming)\n  - generic: {movie["date"]}\n  - generic: Runtime\n  - generic: 2h\n  - heading "Cast & Crew" [level=2]\n'
+    date_field = f'  - generic: Release Date (Streaming)\n  - generic: {movie["date"]}\n' if movie['date'] is not None else ''
+    return f'- main:\n  - heading "{movie["title"]}" [level=1]\n  - heading "Movie Info" [level=3]\n  - generic: Screenwriter\n  - generic: {", ".join(movie["writers"])}\n{date_field}  - generic: Runtime\n  - generic: 2h\n  - heading "Cast & Crew" [level=2]\n'
 
 
 def fixture(directory, visited=None, answer=ANSWER, reverse=False, bad_field=None, entry_method="click", has_scope=True):
@@ -82,12 +83,12 @@ class R0Tests(unittest.TestCase):
 
     def test_full_comparison_in_either_order_and_date_formats(self):
         self.run_fixture(True)
-        self.run_fixture(True,reverse=True,answer=table(date='12 May 2026'))
-        self.run_fixture(True,answer=table(date='2026年5月12日'))
-        self.run_fixture(True,answer=table(date='2026-05-12'))
-        value=[{'title':'Project Hail Mary','date':'May 12, 2026','screenwriters':['Drew Goddard']}]
+        self.run_fixture(True,reverse=True,answer=table(date='28 July 2026'))
+        self.run_fixture(True,answer=table(date='2026年7月28日'))
+        self.run_fixture(True,answer=table(date='2026-07-28'))
+        value=[{'title':'Supergirl','date':'Jul 28, 2026','screenwriters':['Ana Nogueira']}]
         self.run_fixture(True,answer=json.dumps(value))
-        self.run_fixture(True,answer='After reviewing all 30 Sci-Fi movies in Streaming at Home, this is the latest result.\n'+ANSWER+'\nI compared the calendar dates shown in Movie Info.')
+        self.run_fixture(True,answer='After reviewing all 41 Sci-Fi movies in Streaming at Home, this is the latest result.\n'+ANSWER+'\nI compared the calendar dates shown in Movie Info.')
         self.run_fixture(True,answer='After comparing the streaming dates, here is the result.\n```json\n'+json.dumps(value)+'\n```\nAll listed screenwriters are included.')
 
     def test_correct_answer_without_complete_comparison_fails(self):
@@ -96,7 +97,7 @@ class R0Tests(unittest.TestCase):
         self.run_fixture(False,visited=r0.CANDIDATES[:-1])
 
     def test_labeled_streaming_field_is_required(self):
-        self.run_fixture(False,bad_field=r0.CANDIDATES[-1]['slug'])
+        self.run_fixture(False,bad_field=next(m['slug'] for m in reversed(r0.CANDIDATES) if m['date'] is not None))
 
     def test_equivalent_same_origin_navigation_is_valid(self):
         # Earlier scoring incorrectly rejected these routes although the public
@@ -122,13 +123,13 @@ class R0Tests(unittest.TestCase):
 
     def test_wrong_dates_missing_and_extra_facts(self):
         for answer in [table(date='May 21, 2026'),
-                       table(writers=''), table(writers='Drew Goddard and Jane Doe'),
+                       table(writers=''), table(writers='Ana Nogueira and Jane Doe'),
                        ANSWER+'\nScreenwriter: Jane Doe.',
                        ANSWER+'\n| Touch Me | Apr 7, 2026 | Addison Heimann |',
                        ANSWER+'\n| Alien | May 12, 2026 | Dan O Bannon |',
                        table(title='Project Hail Mary and Alien'),
                        'Project Hail Mary and Alien — May 12, 2026 — Drew Goddard.',
-                       'Not Project Hail Mary.\n'+ANSWER,
+                       'Not Supergirl.\n'+ANSWER,
                        ANSWER+'\nIts date is June 1, 2026.']:
 
             with self.subTest(answer=answer):self.run_fixture(False,answer=answer)
@@ -144,7 +145,7 @@ class R0Tests(unittest.TestCase):
         good=[{'title':'One Film','date':'May 12, 2026','screenwriters':['Beta Writer','Alpha Writer']},{'title':'Second Film','date':'12 May 2026','screenwriters':['Gamma Writer']}]
         r0.check_records(good,tied)
         for join in [', ', ' and ', ' & ', '; ', ' / ', '、', '和', '<br>']:
-            answer=table(title='One Film',writers=join.join(['Beta Writer','Alpha Writer']))+'\n| Second Film | 12 May 2026 | Gamma Writer |'
+            answer=table(title='One Film',date='May 12, 2026',writers=join.join(['Beta Writer','Alpha Writer']))+'\n| Second Film | 12 May 2026 | Gamma Writer |'
             r0.check_answer(answer,tied,[m['title'] for m in tied])
         for wrong in [good[:1],good+[good[0]],[dict(good[0],screenwriters=['Alpha Writer']),good[1]],[dict(good[0],date='June 1, 2026'),good[1]],[dict(good[0],screenwriters=['Gamma Writer']),dict(good[1],screenwriters=['Alpha Writer','Beta Writer'])]]:
             with self.assertRaises(r0.VerificationError):r0.check_records(wrong,tied)

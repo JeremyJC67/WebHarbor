@@ -25,7 +25,7 @@ from verify_lib import Run, VerificationError
 from contracts import CONTRACTS
 
 ANSWER3 = 'Shared producers: Emma Thomas and Charles Roven.\nOppenheimer: November 21, 2023.\nThe Dark Knight: June 14, 2010.'
-ANSWER18 = 'Deadpool & Wolverine — audience score 94%; Release Date (Streaming): October 1, 2024.'
+ANSWER18 = 'Spider-Man: Brand New Day — audience score 97%; Release Date (Streaming): not listed.'
 HOME = '- main:\n  - heading "Rotten Tomatoes" [level=1]\n- contentinfo:\n'
 SEARCH = '- main:\n  - heading "Search Results for \\"Christopher Nolan\\"" [level=1]\n  - link "Christopher Nolan":\n    - /url: /celebrity/christopher_nolan\n- contentinfo:\n'
 PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jM1sAAAAASUVORK5CYII=')
@@ -35,13 +35,14 @@ def info_dom(movie, *, producer_role='Producer', producer_override=None, score_o
     score = movie.get('audience_score', 94) if score_override == 'default' else score_override
     producers = movie['producers'] if producer_override is None else producer_override
     display_date = date.fromisoformat(movie['date']).strftime('%b %d, %Y') if movie.get('date') else '--'
+    date_field = ('  - generic: Release Date (Streaming)\n  - generic: ' + display_date + '\n') if movie.get('date') else ''
     return ('- main:\n  - heading "' + movie['title'] + '" [level=1]\n'
             '  - generic: 77%\n  - generic: Tomatometer\n  - img "Audience score"\n'
             '  - generic: ' + ('--' if score is None else str(score) + '%') + '\n'
             '  - generic: Audience Score\n  - heading "Movie Info" [level=3]\n'
             '  - generic: ' + producer_role + '\n  - generic: ' + ', '.join(producers) + '\n'
             '  - generic: Screenwriter\n  - generic: Someone Else\n'
-            '  - generic: Release Date (Streaming)\n  - generic: ' + display_date + '\n'
+            + date_field +
             '  - heading "More Like This" [level=2]\n- contentinfo:\n')
 
 
@@ -224,13 +225,15 @@ class InformationContractTests(unittest.TestCase):
         self.assertEqual(result['evidence'][-1]['path'], 'all_eligible_comparison')
 
     def test_r18_answer_formats(self):
-        for answer in (ANSWER18, 'Deadpool and Wolverine: 94%; streaming 2024-10-01', 'Deadpool & Wolverine | 94/100 | 1 October 2024',
+        dated_facts = [{'slug':'deadpool_and_wolverine','title':'Deadpool & Wolverine', 'producers':['Kevin Feige'],'audience_score':94,'date':'2024-10-01'}]
+        old_answer = 'Deadpool & Wolverine — audience score 94%; Release Date (Streaming): October 1, 2024.'
+        for answer in (old_answer, 'Deadpool and Wolverine: 94%; streaming 2024-10-01', 'Deadpool & Wolverine | 94/100 | 1 October 2024',
                        'With 94% audience score, the highest movie is Deadpool & Wolverine. Streaming date: October 1, 2024.',
                        'Deadpool & Wolverine | 94 | 2024-10-01', '1. Deadpool & Wolverine | 94 | 2024-10-01'):
-            v18.check_answer(answer)
+            v18.check_answer(answer, dated_facts)
 
     def test_r18_wrong_score_date_and_extra_answer(self):
-        for answer in ('', ANSWER18.replace('94%', '77%'), ANSWER18.replace('2024', '2025'),
+        for answer in ('', ANSWER18.replace('97%', '77%'), ANSWER18.replace('not listed', 'October 1, 2025'),
                        ANSWER18 + '\nAvengers: Endgame — 90%; July 30, 2019.',
                        ANSWER18 + '\nImaginary Film — 94%; October 1, 2024.', ANSWER18 + '\nAlso Imaginary Film.'):
             self.assert_rejected(v18.check_answer, answer)
@@ -270,7 +273,7 @@ class InformationContractTests(unittest.TestCase):
             self.assertFalse(v18.evaluate(self.make_run(v18.TASK_ID, pages, ANSWER18), no_llm=True)['pass'])
 
     def test_r18_tied_maximum_and_unknown_scores(self):
-        facts = copy.deepcopy(v18.eligible_movies(v18.FACTS))
+        facts = copy.deepcopy(v18.eligible_movies(v18.FACTS)[:3])
         facts[0]['audience_score'] = None
         facts[1]['audience_score'] = 94
         facts[2]['audience_score'] = 94
@@ -299,7 +302,7 @@ class InformationContractTests(unittest.TestCase):
         self.assertFalse(v18.descending_dom(listing([low, high]), 'Audience Score', v18.FACTS))
 
     def test_r18_wrong_kevin_name_or_other_role_is_not_eligible(self):
-        facts = copy.deepcopy(v18.eligible_movies(v18.FACTS))
+        facts = copy.deepcopy(v18.eligible_movies(v18.FACTS)[:3])
         facts[0]['producers'] = ['Kevin Feige Jr.']
         facts[0]['audience_score'] = 100
         facts[1]['producers'] = ['Kevin Krikst']

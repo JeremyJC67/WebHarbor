@@ -1,110 +1,72 @@
 {% extends "base.html" %}
-{% import "score_icons.html" as scores %}
+{% import "home/_cards.html" as cards %}
 {% block title %}Rotten Tomatoes: Movies | TV Shows | Reviews{% endblock %}
+{% block body_class %}rt-home-page{% endblock %}
 {% block content %}
-{% if new_movies %}
-<section class="catalog-spotlight" aria-label="Featured movies">
-    {% for movie in new_movies[:3] %}
-    <a href="/m/{{ movie.slug }}" class="spotlight-card">
-        <img src="{{ movie.hero_image or movie.poster_image }}" alt="{{ movie.title }}">
-        <div class="spotlight-caption"><h2>{{ movie.title }}</h2><p>Movie information, cast &amp; reviews</p></div>
-    </a>
-    {% endfor %}
-</section>
-{% else %}<h1 class="catalog-heading">Movies</h1>{% endif %}
-
-{% macro movie_card(movie) %}
-<div class="movie-card-wrapper">
-    <a href="/m/{{ movie.slug }}" class="movie-card">
-        <div class="card-poster">
-            <img src="{{ movie.poster_image }}" alt="{{ movie.title }}" onerror="this.onerror=null;this.src='/static/icons/placeholder.png'">
+<div class="rt-home">
+    <h1 class="home-sr-only">Rotten Tomatoes: Movies, TV Shows, and Reviews</h1>
+    <section class="home-spotlights" aria-label="Featured stories">
+        <div class="home-carousel" data-home-carousel role="region" aria-roledescription="carousel" aria-label="Featured stories">
+            <div class="home-slides">
+                {% for item in home.hero.slides %}
+                <article class="home-slide" data-home-slide id="home-slide-{{ loop.index }}" role="group" aria-roledescription="slide" aria-label="{{ loop.index }} of {{ loop.length }}"{% if not loop.first %} hidden{% endif %}>
+                    <a href="{{ item.href }}" class="home-spotlight">
+                        <img src="{{ item.image }}" alt="" width="550" height="310"{% if loop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %}>
+                        <div class="home-spotlight-caption"><h2>{{ item.title }}</h2>{% if item.description %}<p>{{ item.description }}</p>{% endif %}</div>
+                    </a>
+                </article>
+                {% endfor %}
+            </div>
+            {% if home.hero.slides|length > 1 %}
+            <div class="home-carousel-controls" data-home-controls hidden>
+                <button type="button" class="home-arrow home-hero-prev" data-home-previous aria-label="Previous featured story"><span aria-hidden="true">‹</span></button>
+                <button type="button" class="home-arrow home-hero-next" data-home-next aria-label="Next featured story"><span aria-hidden="true">›</span></button>
+                <div class="home-carousel-dots" aria-label="Choose a featured story">
+                    {% for item in home.hero.slides %}<button type="button" data-home-dot="{{ loop.index0 }}" aria-label="Show featured story {{ loop.index }}: {{ item.title }}" aria-controls="home-slide-{{ loop.index }}"{% if loop.first %} aria-current="true"{% endif %}><span></span></button>{% endfor %}
+                </div>
+            </div>
+            <p class="home-sr-only" data-home-status aria-live="polite" aria-atomic="true"></p>
+            {% endif %}
         </div>
-        <div class="card-scores">
-            <span class="score tomatometer {{ movie.tomatometer_status }}">
-                {{ scores.tomato(movie) }}
-            </span>
-            <span class="score audience {{ movie.audience_status }}">
-                {{ scores.audience(movie) }}
-            </span>
-        </div>
-        <div class="card-title">{{ movie.title }}</div>
-    </a>
-    {% if current_user.is_authenticated %}
-        {% if movie.id in user_watchlist_ids %}
-        <span class="watchlist-badge added">✓ WATCHLIST</span>
-        {% else %}
-        <form action="/user/watchlist/add/{{ movie.id }}" method="POST" class="watchlist-inline-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="watchlist-badge">+ WATCHLIST</button>
-        </form>
-        {% endif %}
-    {% else %}
-    <a href="/login" class="watchlist-badge">+ WATCHLIST</a>
-    {% endif %}
-</div>
-{% endmacro %}
-
-<!-- New & Upcoming Movies -->
-{% if new_movies %}
-<section class="movie-section">
-    <div class="section-header">
-        <h2>New & Upcoming Movies</h2>
-        <a href="/browse/movies/?sort=newest" class="view-all">View All →</a>
-    </div>
-    <div class="movie-row">
-        {% for movie in new_movies %}
-        {{ movie_card(movie) }}
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-<!-- Popular Streaming -->
-{% if streaming_movies %}
-<section class="movie-section">
-    <div class="section-header">
-        <h2>Popular Streaming Movies</h2>
-        <a href="/browse/movies_at_home/" class="view-all">View All →</a>
-    </div>
-    <div class="movie-row">
-        {% for movie in streaming_movies %}
-        {{ movie_card(movie) }}
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-<!-- Certified Fresh -->
-{% if certified_movies %}
-<section class="movie-section">
-    <div class="section-header">
-        <h2>Certified Fresh</h2>
-        <a href="/browse/movies/?certified_fresh=true" class="view-all">View All →</a>
-    </div>
-    <div class="movie-row">
-        {% for movie in certified_movies %}
-        {{ movie_card(movie) }}
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-<!-- Top Box Office -->
-{% if top_box_office %}
-<section class="movie-section">
-    <div class="section-header">
-        <h2>Box Office</h2>
-    </div>
-    <div class="box-office-list">
-        {% for movie in top_box_office %}
-        <a href="/m/{{ movie.slug }}" class="box-office-item">
-            <span class="bo-rank">#{{ loop.index }}</span>
-            <span class="bo-title">{{ movie.title }}</span>
-            <span class="bo-gross">{{ movie.box_office }}</span>
+        {% for item in home.hero.sidecards %}
+        <a href="{{ item.href }}" class="home-spotlight home-sidecard">
+            <img src="{{ item.image }}" alt="" width="275" height="310">
+            <div class="home-spotlight-caption"><h2>{{ item.title }}</h2>{% if item.description %}<p>{{ item.description }}</p>{% endif %}</div>
         </a>
         {% endfor %}
-    </div>
-</section>
-{% endif %}
+    </section>
 
+    <div class="home-sections">
+    {% for section in home.sections %}
+        {% if section.kind == 'ranking' and (loop.first or loop.previtem.kind != 'ranking') %}<div class="home-rankings-group">{% endif %}
+        <section class="home-section home-section-{{ section.kind }}" id="{{ section.id }}" aria-labelledby="{{ section.id }}-title">
+            <div class="home-section-header">
+                <h2 id="{{ section.id }}-title">{{ section.title }}</h2>
+                {% if section.href|default('') %}<a href="{{ section.href }}" class="home-view-all">{{ section.view_all_label|default('View All') }}</a>{% endif %}
+            </div>
+            {% if section.description|default('') %}<p class="home-section-description">{{ section.description }}</p>{% endif %}
+            {% if section.links|default([]) %}<div class="home-section-links">{% for link in section.links %}<a href="{{ link.href }}">{{ link.title }}</a>{% endfor %}</div>{% endif %}
+            {% if section.kind == 'ranking' %}
+                <ol class="home-ranking-list">
+                    {% for item in section['items'] %}<li><a href="{{ item.href }}"><span class="home-ranking-title">{{ item.title }}</span>{{ cards.tomato(item) }}{% if item.gross|default('') %}<span class="home-ranking-gross">{{ item.gross }}</span>{% endif %}</a></li>{% endfor %}
+                </ol>
+            {% elif section.kind == 'videos' %}
+                <div class="home-video-grid">{% for item in section['items'] %}{{ cards.editorial(item, true) }}{% endfor %}</div>
+            {% else %}
+                <div class="home-shelf" data-home-shelf>
+                    <div class="home-shelf-track" id="{{ section.id }}-items" data-home-track tabindex="0" role="region" aria-label="{{ section.title }}">
+                        {% for item in section['items'] %}
+                            {% if section.kind == 'posters' %}{{ cards.poster(item, user_watchlist_ids, current_user, csrf_token) }}
+                            {% else %}{{ cards.editorial(item, section.kind == 'videos') }}{% endif %}
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="home-arrow home-shelf-prev" data-home-scroll="-1" aria-label="Scroll {{ section.title }} left" aria-controls="{{ section.id }}-items" hidden><span aria-hidden="true">‹</span></button>
+                    <button type="button" class="home-arrow home-shelf-next" data-home-scroll="1" aria-label="Scroll {{ section.title }} right" aria-controls="{{ section.id }}-items" hidden><span aria-hidden="true">›</span></button>
+                </div>
+            {% endif %}
+        </section>
+        {% if section.kind == 'ranking' and (loop.last or loop.nextitem.kind != 'ranking') %}</div>{% endif %}
+    {% endfor %}
+    </div>
+</div>
 {% endblock %}
