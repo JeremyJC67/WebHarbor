@@ -20,8 +20,9 @@ class EnvironmentQualityTests(unittest.TestCase):
   self.assertIn('target ted)',startup);self.assertIn("'target', 'ted'",control);self.assertIn('40000-40019',docker)
   rows=[json.loads(line) for line in (SITE_DIR/'tasks.jsonl').read_text().splitlines() if line.strip()];self.assertEqual(len(rows),20)
   for i,row in enumerate(rows):self.assertEqual(row['id'],f'TED--{i}');self.assertEqual(row['web'],'http://localhost:40019/');self.assertEqual(row['verifier_path'],f'sites/ted/verify/verify_{i}.py');self.assertNotIn('answer',row)
- def test_asset_override_points_to_live_ted_revision(self):
-  script=(ROOT/'scripts/fetch_assets.sh').read_text();self.assertIn('TED_ASSETS_REVISION="${TED_ASSETS_REVISION:-597623a2f32898afa12e3bbeda15520f559aa7c7}"',script);self.assertTrue(SEED.is_file())
+ def test_asset_pin_points_to_merged_ted_revision(self):
+  revision=next(line.split(':',1)[1].strip() for line in (ROOT/'.assets-revision').read_text().splitlines() if line.startswith('revision:'))
+  script=(ROOT/'scripts/fetch_assets.sh').read_text();self.assertEqual(revision,'480c892e976bada6c0ea3f5a66e2b9efda65525d');self.assertNotIn('TED_ASSETS_REVISION',script);self.assertTrue(SEED.is_file())
  def test_seed_ground_truth(self):
   con=sqlite3.connect(SEED)
   try:

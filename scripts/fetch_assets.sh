@@ -22,9 +22,6 @@ REPO=$(awk '/^repo:/ {print $2}' .assets-revision)
 REVISION="${ASSETS_REVISION:-$(awk '/^revision:/ {print $2}' .assets-revision)}"
 ONLY_SITE="${1:-}"
 CACHE_DIR="sites/.cache/tarballs"
-# TED's asset is currently in ChilleD/WebHarbor dataset PR #2 rather than the
-# pinned main revision. Keep this immutable per-site pin until that HF PR lands.
-TED_ASSETS_REVISION="${TED_ASSETS_REVISION:-597623a2f32898afa12e3bbeda15520f559aa7c7}"
 
 if ! command -v hf >/dev/null 2>&1; then
     echo "fetch_assets: 'hf' CLI not found. Install with: pip install -U \"huggingface_hub[cli]\"" >&2
@@ -36,20 +33,13 @@ echo "[fetch] huggingface.co/datasets/$REPO @ $REVISION -> sites/"
 
 if [[ -n "$ONLY_SITE" ]]; then
     INCLUDE="$ONLY_SITE.tar.gz"
-    DOWNLOAD_REVISION="$REVISION"
-    if [[ "$ONLY_SITE" == "ted" ]]; then
-        DOWNLOAD_REVISION="$TED_ASSETS_REVISION"
-    fi
-    echo "[fetch] scope: $ONLY_SITE only @ $DOWNLOAD_REVISION"
-    hf download "$REPO" --repo-type dataset --revision "$DOWNLOAD_REVISION" \
-        --include "$INCLUDE" --local-dir "$CACHE_DIR"
+    echo "[fetch] scope: $ONLY_SITE only"
 else
-    hf download "$REPO" --repo-type dataset --revision "$REVISION" \
-        --include "*.tar.gz" --local-dir "$CACHE_DIR"
-    echo "[fetch] TED asset override @ $TED_ASSETS_REVISION"
-    hf download "$REPO" --repo-type dataset --revision "$TED_ASSETS_REVISION" \
-        --include "ted.tar.gz" --local-dir "$CACHE_DIR"
+    INCLUDE="*.tar.gz"
 fi
+
+hf download "$REPO" --repo-type dataset --revision "$REVISION" \
+    --include "$INCLUDE" --local-dir "$CACHE_DIR"
 
 shopt -s nullglob
 extracted=0
