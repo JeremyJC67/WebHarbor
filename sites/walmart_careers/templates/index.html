@@ -63,7 +63,7 @@
           <img src="{{ url_for('static', filename='images/area-stores.jpg') }}" alt="An associate helping a customer in the grocery aisle">
         </div>
         <div class="tile tile-blue tile-sq tile-center">
-          <img class="tile-spark" src="{{ url_for('static', filename='icons/spark-yellow-card.svg') }}" alt="">
+          <img class="spark-card" src="{{ url_for('static', filename='icons/spark-yellow-card.svg') }}" alt="">
         </div>
         <div class="tile tile-photo tile-wide">
           <img src="{{ url_for('static', filename='images/supply-drone.jpg') }}" alt="A delivery drone in flight">
@@ -154,11 +154,10 @@
     <h2 class="tight">{{ content.ASSOCIATES_HEADING }}</h2>
     <p class="section-blurb">{{ content.ASSOCIATES_BLURB }}</p>
     <div class="video-strip">
-      {% for role, kicker, image in [('Store Coach', 'Day in the life', 'testimonial-1.jpg'),
-                                     ('Optician', 'Day in Life', 'home-carousel-1.jpg'),
-                                     ('Store Manager', 'Day in the life', 'home-milestone.jpg')] %}
+      {% for role, kicker in [('Store Coach', 'Day in the life'),
+                              ('Optician', 'Day in Life'),
+                              ('Store Manager', 'Day in the life')] %}
         <div class="video-tile{% if loop.index == 2 %} wide{% endif %}">
-          <img src="{{ url_for('static', filename='images/' ~ image) }}" alt="">
           <img class="v-spark" src="{{ url_for('static', filename='icons/spark-yellow.svg') }}" alt="">
           <div class="v-cap"><em>{{ kicker }}</em><b>{{ role }}</b>
             <span class="play" aria-hidden="true"></span></div>

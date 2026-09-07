@@ -151,12 +151,16 @@
         </ul>
       </div>
     </div>
+    {# The live footer draws each harvested (#151F29) glyph on a 44px white disc. #}
     <div class="social">
       {% for name, icon in content.FOOTER_SOCIAL %}
-        <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="{{ name }}" title="{{ name }}">
+        <span class="social-btn" title="{{ name }}">
+          <img src="{{ url_for('static', filename='icons/' ~ icon) }}" alt="{{ name }}">
+        </span>
       {% endfor %}
     </div>
-    <p class="legal-text">{{ content.FOOTER_EEO }}</p>
+    {% set rights = 'applicant rights under Federal Employment Laws.' %}
+    <p class="legal-text">{{ content.FOOTER_EEO.replace(rights, '') }}<a class="legal-link" href="{{ url_for('resources_terms') }}">{{ rights }}</a></p>
     <p class="legal-text">{{ content.FOOTER_BENEFITS_NOTE }}</p>
     <div class="footer-bottom">
       <span>{{ content.COPYRIGHT }}</span>

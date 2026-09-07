@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% from "_job_card.html" import job_card %}
+{% block body_class %}l1{% endblock %}
 {% block title %}How we hire | Walmart Careers{% endblock %}
 {% block content %}
-<section>
-  <div class="wrap">
-    <h1 style="font-size:44px;font-weight:400;margin:0 0 12px">{{ content.HIRING_HEADING }}</h1>
-    <p style="max-width:820px;font-size:18px">{{ content.HIRING_BLURB }}</p>
+<div class="area-hero">
+  <img src="{{ url_for('static', filename='images/' ~ content.HIRING_HERO_IMAGE) }}" alt="">
+  <div class="area-card">
+    <h1>{{ content.HIRING_HEADING }}</h1>
+    <p>{{ content.HIRING_BLURB }}</p>
+    <a class="btn" href="#explore">{{ content.HIRING_HERO_CTA }}</a>
   </div>
-</section>
-<section class="section-alt">
+</div>
+
+<section id="explore">
   <div class="wrap">
     <h2>Explore something new</h2>
     <div class="steps">
@@ -18,24 +22,48 @@
     </div>
   </div>
 </section>
+
+{% for heading, questions in content.HIRING_FAQ %}
+  {% set intro = content.HIRING_FAQ_INTROS[loop.index0] %}
+  <section class="faq-section">
+    <div class="wrap">
+      <div class="faq-layout">
+        <div class="faq-intro">
+          <img src="{{ url_for('static', filename='icons/' ~ intro[1]) }}" alt="">
+          <h2>{{ heading }}</h2>
+          <p>{{ intro[0] }}</p>
+        </div>
+        <div class="faq">
+          {% for question, answer in questions %}
+            <details>
+              <summary>{{ question }}</summary>
+              <p>{{ answer }}</p>
+            </details>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endfor %}
+
 <section>
-  <div class="wrap faq">
-    {% for heading, questions in content.HIRING_FAQ %}
-      <h2>{{ heading }}</h2>
-      {% for question, answer in questions %}
-        <details>
-          <summary>{{ question }}</summary>
-          <p>{{ answer }}</p>
-        </details>
-      {% endfor %}
-    {% endfor %}
+  <div class="wrap">
+    <div class="feature-row">
+      <img src="{{ url_for('static', filename='images/' ~ content.HIRING_SIMULATOR.photo) }}" alt="">
+      <div class="feature-text">
+        <h3>{{ content.HIRING_SIMULATOR.heading }}</h3>
+        <p>{{ content.HIRING_SIMULATOR.blurb }}</p>
+        <a class="btn" href="{{ url_for('results') }}">{{ content.HIRING_SIMULATOR.cta }}</a>
+      </div>
+    </div>
   </div>
 </section>
-<section class="section-alt">
+
+<section class="trending-section">
   <div class="wrap">
     <h2>Trending roles</h2>
-    <div class="job-grid">
-      {% for job in trending %}{{ job_card(job, saved_ids) }}{% endfor %}
+    <div class="job-grid three-col">
+      {% for job in trending %}{{ job_card(job, saved_ids, compact=True) }}{% endfor %}
     </div>
   </div>
 </section>

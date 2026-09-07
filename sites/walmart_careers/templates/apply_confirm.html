@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Review your application | Walmart Careers{% endblock %}
 {% block content %}
-<div class="wrap">
-  <div class="form-card form-wide">
+<div class="apply-page">
+  <div class="apply-band"></div>
+  <div class="apply-card">
     <h1>Review your application</h1>
-    <p class="form-note">Step 2 of 2 &mdash; check your details, then submit.</p>
+    <p class="apply-sub">Step 2 of 2 &mdash; check your details, then submit.</p>
     <ul class="review-list">
       <li><b>Role</b><span>{{ job.title }}</span></li>
       <li><b>Location</b><span>{{ job.store.banner }} #{{ job.store.store_number }}, {{ job.store.city }}, {{ job.store.state }}</span></li>
@@ -15,8 +16,10 @@
     </ul>
     <form method="post" action="{{ url_for('apply_confirm', job_id=job.job_id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn" type="submit">Submit application</button>
-      <a class="btn btn-secondary" href="{{ url_for('apply_contact', job_id=job.job_id) }}">Edit details</a>
+      <div class="apply-actions">
+        <a class="apply-back" href="{{ url_for('apply_contact', job_id=job.job_id) }}">Edit details</a>
+        <button class="btn" type="submit">Submit application</button>
+      </div>
     </form>
   </div>
 </div>

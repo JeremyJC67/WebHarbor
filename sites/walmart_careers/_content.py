@@ -93,15 +93,6 @@ JOB_BENEFIT_ROWS = [
 ]
 
 LIFE_AT_WALMART_HEADING = "Life at Walmart"
-LIFE_AT_WALMART = [
-    "At Walmart, you're welcome for who you are, no matter your background, experiences, or perspectives.",
-    "Our stores and services are for everyone, and so is our workplace. We believe different experiences "
-    "drive our ability to better serve our communities and deliver affordable products across the nation.",
-    "Here, your unique insights and ideas are encouraged, valued, and essential to creating a "
-    "forward-thinking company that thrives on fresh ideas and dedicated teamwork.",
-    "Since our founding, we've focused on bringing affordable essentials to families everywhere, and "
-    "today, Walmart is one of the most recognizable names in retail worldwide.",
-]
 LIFE_AT_WALMART_QUOTE = (
     "Join us, and help us continue our mission to bring everyday value and support to communities everywhere."
 )
@@ -567,3 +558,127 @@ AUTH_FOOTER_LINKS = [
     "Your Privacy Choices", "Customer Privacy Center", "Notice at Collection",
 ]
 AUTH_COPYRIGHT = "© 2026 Walmart. All Rights Reserved."
+
+
+# --------------------------------------------------------------------------- #
+# "Life at Walmart" on the detail pages: a lead sentence, the paragraphs beside
+# the photo, the paragraphs under it, the blue quote band and the closing lines.
+# Hourly postings use the field copy, salaried postings the home-office copy.
+# --------------------------------------------------------------------------- #
+LIFE_AT_WALMART_FIELD = {
+    "lead": "At Walmart, you're welcome for who you are, no matter your background, experiences, "
+            "or perspectives.",
+    "left": [
+        "Our stores and services are for everyone, and so is our workplace. We believe different "
+        "experiences drive our ability to better serve our communities and deliver affordable "
+        "products across the nation.",
+        "Here, your unique insights and ideas are encouraged, valued, and essential to creating a "
+        "forward-thinking company that thrives on fresh ideas and dedicated teamwork.",
+    ],
+    "right": [],
+    "band": "Since our founding, we've focused on bringing affordable essentials to families "
+            "everywhere, and today, Walmart is one of the most recognizable names in retail worldwide.",
+    "closing": LIFE_AT_WALMART_QUOTE,
+    "note": "We're driven by a commitment to make life better for millions of customers and support "
+            "our associates with opportunities to grow, learn, and advance.",
+    "photo": "jobhero-wm-4.jpg",
+}
+LIFE_AT_WALMART_CORP = {
+    "lead": "Imagine a workplace surrounded by innovation. At Walmart's new Home Office in "
+            "Bentonville, Arkansas, we're redefining what it means to work at a global leader.",
+    "left": [
+        "Set on 350 acres of thoughtfully revitalized land, our new campus seamlessly integrates "
+        "the charm of Northwest Arkansas with cutting edge design and technology. From biking "
+        "trails and outdoor courtyards to flexible, tech-enabled workspaces, every detail reflects "
+        "our commitment to sustainability, connection, and culture.",
+    ],
+    "right": [
+        "With amenities like on-site childcare at our Little Squiggles Children's Enrichment "
+        "Center, the Walton Family Whole Health & Fitness Center, and a vibrant food hall "
+        "featuring local and international favorites, we're creating a space where work-life "
+        "balance isn't just a goal - it's a reality.",
+        "Beyond the campus, Bentonville offers a dynamic lifestyle with world-class dining, art at "
+        "the Crystal Bridges Museum, and countless outdoor activities.",
+    ],
+    "band": "Whether you're exploring High South cuisine, enjoying live performances at our new "
+            "amphitheater, or cycling the Razorback Greenway, you'll experience the perfect blend "
+            "of small-town charm and big-city amenities.",
+    "closing": "Join us at Walmart and grow your career alongside a community that feels like home.",
+    "note": "This isn't just a workplace - it's a destination for leaders eager to make a difference.",
+    "photo": "life-home-office.jpg",
+}
+
+# Stores & Clubs L1: the "Meet Brandon" day-in-the-life block under the bento.
+MEET_STORE_COACH = {
+    "name": "Brandon",
+    "kicker": "Day in the life",
+    "role": "Walmart store coach",
+    "blurb": "As a store coach, Brandon leads with energy, empathy, and focus. In this video, he "
+             "shares what it takes to guide a team in one of Walmart's busiest stores - balancing "
+             "daily priorities, supporting associates, and helping people grow.",
+}
+
+# Military L1: the two feature rows and the three program tiles under the hero.
+MILITARY_FEATURES = [
+    (
+        "SkillBridge: Your Transition, Supported",
+        "Preparing to separate from active duty? Through the DoD SkillBridge program, you can build "
+        "career-ready skills with structured training and real-world experience while you're still "
+        "serving. Explore opportunities designed to help you translate your military strengths into "
+        "a long-term career at Walmart.",
+        "Explore opportunities now",
+        "area-military.jpg",
+    ),
+    (
+        "Military skills translator",
+        "Translate your military experience into civilian job skills. Use our tool to discover the "
+        "best career opportunities that align with your unique qualifications.",
+        "Explore now",
+        "jobhero-corp-3.jpg",
+    ),
+]
+MILITARY_PROGRAMS = [
+    (
+        "Discover Walmart: job simulations",
+        "Experience various roles at Walmart through our flexible job simulations. Choose modules, "
+        "upskill at your pace, and gain insights to succeed in the application process. Explore "
+        "multiple career paths at Walmart.",
+        "jobhero-corp-2.jpg",
+    ),
+    (
+        "Internships: kickstart your career",
+        "Our internship programs offer valuable opportunities for individuals at any stage of their "
+        "education or career. Gain experience in various fields, apply your unique skills, receive "
+        "mentorship, and get hands-on training that sets you apart in your chosen career path.",
+        "area-students.png",
+    ),
+    (
+        "Join our talent network",
+        "Sign up for our talent network, participate in one of our engaging hiring events or "
+        "military connected workshops designed to showcase diverse career paths and provide "
+        "opportunities to network with Walmart professionals.",
+        "area-corporate.jpg",
+    ),
+]
+
+# How-we-hire page: hero photo, the intro beside each FAQ group, the job simulator block.
+HIRING_HERO_IMAGE = "area-corporate-2.jpg"
+HIRING_HERO_CTA = "Explore something new"
+HIRING_FAQ_INTROS = [
+    ("We're here to help you put your best foot forward. Get tips and guidance to feel confident "
+     "as you take the first step toward a role that's right for you.", "benefit-wellbeing.svg"),
+    ("You've taken a big step and we're glad you did! Here's what to expect next, plus answers to "
+     "common questions to help you stay informed and encouraged along the way.", "benefit-pto.svg"),
+]
+HIRING_SIMULATOR = {
+    "heading": "Experience a day in the role",
+    "blurb": "Want to know what a role at Walmart and Sam's Club is really like? Our interactive job "
+             "simulations give you a chance to preview the role, showcase your skills, and see if "
+             "it's a good fit for you.",
+    "cta": "Job simulator",
+    "photo": "jobhero-corp-2.jpg",
+}
+
+# Apply flow: the first-party contact step's heading and hint.
+APPLY_HEADING = "Let us know how to contact you"
+APPLY_EMAIL_HINT = "Avoid using an email address you share with others"

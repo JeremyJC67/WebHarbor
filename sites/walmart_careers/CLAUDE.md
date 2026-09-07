@@ -11,7 +11,7 @@ alt-port test container maps it to **41019**.
 | `catalog_source.py` | the source catalog: areas, categories, 51 stores, 37 hourly + 29 salaried title families with explicit placements, hub copy, trending job ids |
 | `seed_data.py` | turns the catalog into SQLite; `build_seed_database()` is the freezer |
 | `_content.py` | static chrome strings only: headings, boilerplate prose, design constants, US/PR map outlines |
-| `templates/` | 20 Jinja2 templates (`base.html`, the stripped `base_auth.html` for sign-in/register) + `_job_card.html` macro |
+| `templates/` | 20 Jinja2 templates (`base.html`, the stripped `base_auth.html` for sign-in/register) + the `_job_card.html`, `_benefits.html` and `_life.html` macros shared by the detail, career-area and About pages |
 | `static/` | `css/`, `js/`, `icons/`, `fonts/` in git; `images/` HF-managed |
 | `scripts_dev/` | local-only helpers and build-time invariants; gitignored and dockerignored |
 
