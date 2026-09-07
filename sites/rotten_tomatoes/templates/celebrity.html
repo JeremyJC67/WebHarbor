@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% import "score_icons.html" as scores %}
 {% block title %}{{ person.name }} | Rotten Tomatoes{% endblock %}
 {% block content %}
 <div class="celebrity-detail">
     <div class="celeb-header">
         <div class="celeb-photo-col">
-            <img src="{{ person.photo if person.photo else '/static/icons/placeholder.png' }}" alt="{{ person.name }}" class="celeb-photo" onerror="this.onerror=null;this.src='/static/icons/placeholder.png'">
+            {% if person.photo %}<img src="{{ person.photo }}" alt="{{ person.name }}" class="celeb-photo" onerror="this.hidden=true">
+            {% else %}<div class="celeb-photo person-silhouette" aria-hidden="true"></div>{% endif %}
         </div>
         <div class="celeb-info-col">
             <h1>{{ person.name }}</h1>
@@ -51,8 +53,8 @@
             <a href="/m/{{ entry.movie.slug }}" class="filmography-item">
                 <div class="film-year">{{ entry.movie.year }}</div>
                 <div class="film-scores">
-                    <span class="score tomatometer {{ entry.movie.tomatometer_status }}">{{ entry.movie.tomatometer_icon }} {{ entry.movie.tomatometer }}%</span>
-                    <span class="score audience {{ entry.movie.audience_status }}">{{ entry.movie.audience_icon }} {{ entry.movie.audience_score }}%</span>
+                    <span class="score tomatometer {{ entry.movie.tomatometer_status }}">{{ scores.tomato(entry.movie) }}</span>
+                    <span class="score audience {{ entry.movie.audience_status }}">{{ scores.audience(entry.movie) }}</span>
                 </div>
                 <div class="film-info">
                     <div class="film-title">{{ entry.movie.title }}</div>

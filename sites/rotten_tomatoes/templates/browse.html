@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "score_icons.html" as scores %}
 {% block title %}{{ title }} | Rotten Tomatoes{% endblock %}
 {% block content %}
 <div class="browse-page">
@@ -7,8 +8,8 @@
     <div class="browse-filters">
         <form method="GET" class="filter-form">
             <div class="filter-group">
-                <label>Sort:</label>
-                <select name="sort" onchange="this.form.submit()">
+                <label for="sort-filter">Sort:</label>
+                <select id="sort-filter" name="sort" onchange="this.form.submit()">
                     <option value="popular" {% if current_sort == 'popular' %}selected{% endif %}>Popular</option>
                     <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
                     <option value="tomatometer" {% if current_sort == 'tomatometer' %}selected{% endif %}>Tomatometer</option>
@@ -18,8 +19,8 @@
             </div>
 
             <div class="filter-group">
-                <label>Genre:</label>
-                <select name="genre" onchange="this.form.submit()">
+                <label for="genre-filter">Genre:</label>
+                <select id="genre-filter" name="genre" onchange="this.form.submit()">
                     <option value="">All Genres</option>
                     {% for genre in genres %}
                     <option value="{{ genre.slug }}" {% if current_genre == genre.slug %}selected{% endif %}>{{ genre.name }}</option>
@@ -28,8 +29,8 @@
             </div>
 
             <div class="filter-group">
-                <label>Rating:</label>
-                <select name="rating" onchange="this.form.submit()">
+                <label for="rating-filter">Rating:</label>
+                <select id="rating-filter" name="rating" onchange="this.form.submit()">
                     <option value="">All Ratings</option>
                     <option value="G" {% if current_rating == 'G' %}selected{% endif %}>G</option>
                     <option value="PG" {% if current_rating == 'PG' %}selected{% endif %}>PG</option>
@@ -40,9 +41,9 @@
 
             {% if platforms %}
             <div class="filter-group">
-                <label>Platform:</label>
-                <select name="platform" onchange="this.form.submit()">
-                    <option value="">All Platforms</option>
+                <label for="platform-filter">Subscription Platform:</label>
+                <select id="platform-filter" name="platform" onchange="this.form.submit()">
+                    <option value="">All Subscription Platforms</option>
                     {% for p in platforms %}
                     <option value="{{ p }}" {% if current_platform == p %}selected{% endif %}>{{ p }}</option>
                     {% endfor %}
@@ -55,7 +56,7 @@
                     <input type="checkbox" name="certified_fresh" value="true"
                            {% if current_cf == 'true' %}checked{% endif %}
                            onchange="this.form.submit()">
-                    🏆 Certified Fresh Only
+                    Certified Fresh Only
                 </label>
             </div>
         </form>
@@ -70,6 +71,10 @@
                 <a href="/m/{{ movie.slug }}" class="movie-card">
                     <div class="card-poster">
                         <img src="{{ movie.poster_image }}" alt="{{ movie.title }}" onerror="this.onerror=null;this.src='/static/icons/placeholder.png'">
+                    </div>
+                    <div class="card-scores">
+                        <span class="score tomatometer {{ movie.tomatometer_status }}">{{ scores.tomato(movie) }}</span>
+                        <span class="score audience {{ movie.audience_status }}">{{ scores.audience(movie) }}</span>
                     </div>
                     <div class="card-info">
                         <div class="card-title">{{ movie.title }}</div>

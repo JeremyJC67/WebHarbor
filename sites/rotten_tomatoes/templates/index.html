@@ -1,10 +1,17 @@
 {% extends "base.html" %}
+{% import "score_icons.html" as scores %}
 {% block title %}Rotten Tomatoes: Movies | TV Shows | Reviews{% endblock %}
 {% block content %}
-<div class="hero-section">
-    <h1>Movies & TV Shows</h1>
-    <p>Reviews, ratings, and where to watch the best movies</p>
-</div>
+{% if new_movies %}
+<section class="catalog-spotlight" aria-label="Featured movies">
+    {% for movie in new_movies[:3] %}
+    <a href="/m/{{ movie.slug }}" class="spotlight-card">
+        <img src="{{ movie.hero_image or movie.poster_image }}" alt="{{ movie.title }}">
+        <div class="spotlight-caption"><h2>{{ movie.title }}</h2><p>Movie information, cast &amp; reviews</p></div>
+    </a>
+    {% endfor %}
+</section>
+{% else %}<h1 class="catalog-heading">Movies</h1>{% endif %}
 
 {% macro movie_card(movie) %}
 <div class="movie-card-wrapper">
@@ -14,10 +21,10 @@
         </div>
         <div class="card-scores">
             <span class="score tomatometer {{ movie.tomatometer_status }}">
-                {{ movie.tomatometer_icon }} {{ movie.tomatometer }}%
+                {{ scores.tomato(movie) }}
             </span>
             <span class="score audience {{ movie.audience_status }}">
-                {{ movie.audience_icon }} {{ movie.audience_score }}%
+                {{ scores.audience(movie) }}
             </span>
         </div>
         <div class="card-title">{{ movie.title }}</div>
@@ -41,8 +48,8 @@
 {% if new_movies %}
 <section class="movie-section">
     <div class="section-header">
-        <h2>🎬 New & Upcoming Movies</h2>
-        <a href="/browse/movies_in_theaters/" class="view-all">View All →</a>
+        <h2>New & Upcoming Movies</h2>
+        <a href="/browse/movies/?sort=newest" class="view-all">View All →</a>
     </div>
     <div class="movie-row">
         {% for movie in new_movies %}
@@ -56,7 +63,7 @@
 {% if streaming_movies %}
 <section class="movie-section">
     <div class="section-header">
-        <h2>📺 Popular Streaming Movies</h2>
+        <h2>Popular Streaming Movies</h2>
         <a href="/browse/movies_at_home/" class="view-all">View All →</a>
     </div>
     <div class="movie-row">
@@ -71,7 +78,7 @@
 {% if certified_movies %}
 <section class="movie-section">
     <div class="section-header">
-        <h2>🏆 Certified Fresh</h2>
+        <h2>Certified Fresh</h2>
         <a href="/browse/movies/?certified_fresh=true" class="view-all">View All →</a>
     </div>
     <div class="movie-row">
@@ -86,7 +93,7 @@
 {% if top_box_office %}
 <section class="movie-section">
     <div class="section-header">
-        <h2>💰 Top Box Office</h2>
+        <h2>Box Office</h2>
     </div>
     <div class="box-office-list">
         {% for movie in top_box_office %}

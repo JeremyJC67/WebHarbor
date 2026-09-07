@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "score_icons.html" as scores %}
 {% block title %}My Watchlist | Rotten Tomatoes{% endblock %}
 {% block content %}
 <div class="profile-page">
@@ -16,8 +17,8 @@
                     <img src="{{ movie.poster_image }}" alt="{{ movie.title }}" onerror="this.onerror=null;this.src='/static/icons/placeholder.png'">
                 </div>
                 <div class="card-scores">
-                    <span class="score tomatometer {{ movie.tomatometer_status }}">{{ movie.tomatometer_icon }} {{ movie.tomatometer }}%</span>
-                    <span class="score audience {{ movie.audience_status }}">{{ movie.audience_icon }} {{ movie.audience_score }}%</span>
+                    <span class="score tomatometer {{ movie.tomatometer_status }}">{{ scores.tomato(movie) }}</span>
+                    <span class="score audience {{ movie.audience_status }}">{{ scores.audience(movie) }}</span>
                 </div>
                 <div class="card-title">{{ movie.title }}</div>
             </a>

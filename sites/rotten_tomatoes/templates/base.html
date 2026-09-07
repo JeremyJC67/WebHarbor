@@ -7,55 +7,55 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">🍅 <span>Rotten Tomatoes</span></a>
-            <div class="nav-links">
-                <a href="/browse/movies_in_theaters/">In Theaters</a>
-                <a href="/browse/movies_at_home/">Streaming</a>
-                <a href="/browse/movies/">All Movies</a>
-            </div>
-            <div class="nav-right">
-                <form action="/search" method="GET" class="search-form">
-                    <input type="text" name="search" placeholder="Search movies & people..." value="{{ request.args.get('q') or request.args.get('search', '') }}">
-                    <button type="submit">🔍</button>
+    <a class="skip-link" href="#main-content">Skip to Main Content</a>
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main">
+            <div class="nav-container">
+                <details class="mobile-menu">
+                    <summary aria-label="Open navigation"><span aria-hidden="true">☰</span></summary>
+                    <div class="mobile-menu-panel">
+                        <a href="/browse/movies_in_theaters/">In Theaters</a><a href="/browse/movies_at_home/">Streaming</a><a href="/browse/movies/">All Movies</a>
+                        {% if current_user.is_authenticated %}
+                        <a href="/account" class="account-identity" title="{{ current_user.name }}">My Account: {{ current_user.name }}</a><a href="/user/watchlist">My Watchlist</a>
+                        <form action="/logout" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Logout</button></form>
+                        {% else %}<a href="/login">Sign In</a><a href="/register">Register</a>{% endif %}
+                    </div>
+                </details>
+                <a href="/" class="nav-logo"><img src="/static/external_cache/rt_brand/logo.png" alt="Rotten Tomatoes" width="156" height="47"></a>
+                <form action="/search" method="GET" class="search-form" role="search">
+                    <button type="submit" aria-label="Submit search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg></button>
+                    <input type="search" name="search" aria-label="Search movies and people" placeholder="Search" value="{{ request.args.get('q') or request.args.get('search', '') }}">
                 </form>
-                {% if current_user.is_authenticated %}
-                    <a href="/account" class="nav-user">My Account</a>
-                    <a href="/user/watchlist" class="nav-user">My Watchlist</a>
-                    <a href="/logout" class="nav-user">Logout</a>
-                    <span class="nav-user-name">{{ current_user.name }}</span>
-                {% else %}
-                    <a href="/login" class="nav-user">Sign In</a>
-                    <a href="/register" class="nav-user">Register</a>
-                {% endif %}
+                <div class="nav-account">
+                    {% if current_user.is_authenticated %}
+                    <a href="/account" class="account-identity" title="{{ current_user.name }}">My Account: {{ current_user.name }}</a>
+                    <a href="/user/watchlist">My Watchlist</a>
+                    <form action="/logout" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Logout</button></form>
+                    {% else %}
+                    <a href="/login">Sign In</a><a href="/register">Register</a>
+                    {% endif %}
+                </div>
+                <div class="nav-links">
+                    <a href="/browse/movies_in_theaters/">In Theaters</a>
+                    <a href="/browse/movies_at_home/">Streaming</a>
+                    <a href="/browse/movies/">All Movies</a>
+                </div>
             </div>
-        </div>
-    </nav>
-
+        </nav>
+        <div class="trending-bar"><strong>Trending on RT</strong><a href="/browse/movies/?certified_fresh=true">Certified Fresh Movies</a><a href="/browse/movies_at_home/">What to Watch at Home</a></div>
+    </header>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="flash-messages">
-        {% for category, message in messages %}
-        <div class="flash flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
+    <div class="flash-messages" role="status">
+        {% for category, message in messages %}<div class="flash flash-{{ category }}">{{ message }}</div>{% endfor %}
     </div>
     {% endif %}
     {% endwith %}
-
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
-
+    <main class="main-content" id="main-content">{% block content %}{% endblock %}</main>
     <footer class="footer">
         <div class="footer-container">
-            <div class="footer-links">
-                <a href="/">Home</a>
-                <a href="/browse/movies_in_theaters/">In Theaters</a>
-                <a href="/browse/movies_at_home/">Streaming</a>
-                <a href="/browse/movies/">All Movies</a>
-            </div>
-            <p class="footer-copy">© 2026 Rotten Tomatoes Mirror — WebHarbor Project</p>
+            <div class="footer-links"><a href="/">Home</a><a href="/browse/movies_in_theaters/">In Theaters</a><a href="/browse/movies_at_home/">Streaming</a><a href="/browse/movies/">All Movies</a></div>
+            <p class="footer-copy">Rotten Tomatoes Mirror — WebHarbor. A fixed movie catalog with local demo accounts.</p>
         </div>
     </footer>
 </body>

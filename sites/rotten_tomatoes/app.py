@@ -3,8 +3,12 @@
 import os
 import re
 import math
+import json
+import unicodedata
 from datetime import datetime, timedelta
 from functools import wraps
+from types import SimpleNamespace
+from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
 
 from flask import (Flask, render_template, request, redirect, url_for,
                    flash, jsonify, session, abort, g, make_response)
@@ -15,8 +19,9 @@ from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_bcrypt import Bcrypt
 from wtforms import StringField, PasswordField, TextAreaField, IntegerField, SelectField, FloatField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange, ValidationError
 from sqlalchemy import or_, func, and_
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -73,16 +78,19 @@ class Movie(db.Model):
     title = db.Column(db.String(200), nullable=False, index=True)
     slug = db.Column(db.String(200), unique=True, nullable=False, index=True)
     year = db.Column(db.Integer, nullable=False, index=True)
-    runtime_minutes = db.Column(db.Integer, default=0)
+    runtime_minutes = db.Column(db.Integer)
     synopsis = db.Column(db.Text, default='')
     poster_image = db.Column(db.String(300), default='')
-    tomatometer = db.Column(db.Integer, default=0)  # 0-100
-    audience_score = db.Column(db.Integer, default=0)  # 0-100
+    tomatometer = db.Column(db.Integer)  # 0-100
+    audience_score = db.Column(db.Integer)  # 0-100
     certified_fresh = db.Column(db.Boolean, default=False)
-    pg_rating = db.Column(db.String(10), default='PG-13')
+    pg_rating = db.Column(db.String(10))
     director_name = db.Column(db.String(120), default='')
     studio = db.Column(db.String(120), default='')
     streaming_platform = db.Column(db.String(100), default='')
+    watch_offers = db.Column(db.Text)
+    watch_description = db.Column(db.Text)
+    available_at_home = db.Column(db.Boolean, default=False)
     consensus = db.Column(db.Text, default='')  # critics consensus
     audience_consensus = db.Column(db.Text, default='')
     box_office = db.Column(db.String(50), default='')
@@ -112,23 +120,44 @@ class Movie(db.Model):
                                     cascade='all, delete-orphan')
 
     @property
+    def watch_options(self):
+        return json.loads(self.watch_offers) if self.watch_offers else []
+
+    @property
+    def subscription_platforms(self):
+        return [value.strip() for value in (self.streaming_platform or '').split(',') if value.strip()]
+
+    @property
+    def hero_image(self):
+        relative_path = f'images/hero/{self.slug}.jpg'
+        if os.path.isfile(os.path.join(BASE_DIR, 'static', relative_path)):
+            return f'/static/{relative_path}'
+        return None
+
+    @property
     def tomatometer_icon(self):
+        if self.tomatometer is None:
+            return ''
         if self.certified_fresh:
             return '🏆'
         return '🍅' if self.tomatometer >= 60 else '🟢'
 
     @property
     def audience_icon(self):
-        return '🍿'
+        return '🍿' if self.audience_score is not None else ''
 
     @property
     def tomatometer_status(self):
+        if self.tomatometer is None:
+            return 'empty'
         if self.certified_fresh:
             return 'certified-fresh'
         return 'fresh' if self.tomatometer >= 60 else 'rotten'
 
     @property
     def audience_status(self):
+        if self.audience_score is None:
+            return 'empty'
         return 'upright' if self.audience_score >= 60 else 'spilled'
 
 
@@ -146,19 +175,31 @@ class Person(db.Model):
 
     @property
     def filmography(self):
-        entries = sorted(self.cast_entries, key=lambda c: c.movie.year if c.movie else 0, reverse=True)
-        return entries
+        movies = {}
+        for credit in self.cast_entries:
+            if credit.movie is None:
+                continue
+            entry = movies.setdefault(credit.movie_id, {
+                'movie': credit.movie, 'characters': [], 'roles': []})
+            for key, value in (('characters', credit.character_name), ('roles', credit.role_type)):
+                if value and value not in entry[key]:
+                    entry[key].append(value)
+        return sorted((SimpleNamespace(movie=entry['movie'],
+                                       character_name=', '.join(entry['characters']),
+                                       role_type=', '.join(entry['roles']))
+                       for entry in movies.values()),
+                      key=lambda entry: (-entry.movie.year, entry.movie.title))
 
     @property
     def highest_rated_movie(self):
-        movies = [c.movie for c in self.cast_entries if c.movie]
+        movies = [c.movie for c in self.cast_entries if c.movie and c.movie.tomatometer is not None]
         if not movies:
             return None
         return max(movies, key=lambda m: m.tomatometer)
 
     @property
     def lowest_rated_movie(self):
-        movies = [c.movie for c in self.cast_entries if c.movie]
+        movies = [c.movie for c in self.cast_entries if c.movie and c.movie.tomatometer is not None]
         if not movies:
             return None
         return min(movies, key=lambda m: m.tomatometer)
@@ -194,6 +235,8 @@ class AudienceReview(db.Model):
     score = db.Column(db.Float, default=3.0)  # 0.5-5.0 stars
     text = db.Column(db.Text, default='')
     review_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint('movie_id', 'user_id', name='uq_user_movie_review'),)
 
 
 class UserRating(db.Model):
@@ -244,15 +287,20 @@ def inject_globals():
 # Forms
 # ──────────────────────────────────────────────
 
+def password_byte_limit(form, field):
+    if len(field.data.encode('utf-8')) > 72:
+        raise ValidationError('Password must be at most 72 UTF-8 bytes.')
+
+
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), password_byte_limit])
 
 
 class RegisterForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=2, max=120)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6), password_byte_limit])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
 
@@ -269,9 +317,32 @@ class RatingForm(FlaskForm):
 # Search helper — scored token overlap
 # ──────────────────────────────────────────────
 
+def local_redirect_target(target, fallback):
+    """Keep return navigation on this origin and return a path-only Location."""
+    if not target:
+        return fallback
+    decoded = unquote(target)
+    if ('\\' in decoded or any(ord(char) < 32 or ord(char) == 127 for char in decoded)
+            or decoded.strip().startswith('//')):
+        return fallback
+    try:
+        origin = urlsplit(request.host_url)
+        destination = urlsplit(urljoin(request.url, target.strip()))
+        if (destination.scheme not in ('http', 'https')
+                or destination.scheme != origin.scheme
+                or destination.netloc.lower() != origin.netloc.lower()
+                or unquote(destination.path).startswith('//')):
+            return fallback
+    except ValueError:
+        return fallback
+    return urlunsplit(('', '', destination.path or '/', destination.query, destination.fragment))
+
+
 def tokenize(text):
     """Split text into lowercase alphanumeric tokens."""
-    return re.findall(r'[a-z0-9]+', text.lower())
+    normalized = unicodedata.normalize('NFKD', text.casefold())
+    plain = ''.join(char for char in normalized if not unicodedata.combining(char))
+    return re.findall(r'[a-z0-9]+', plain)
 
 
 def token_overlap_score(query_tokens, target_tokens):
@@ -284,7 +355,7 @@ def token_overlap_score(query_tokens, target_tokens):
 
 
 def search_movies(query, limit=30):
-    """Search movies by scored token overlap on title, director, genre names."""
+    """Search the local title, genre and credited-person catalog."""
     if not query or not query.strip():
         return []
     query_tokens = tokenize(query)
@@ -295,7 +366,8 @@ def search_movies(query, limit=30):
     scored = []
     for m in movies:
         genre_text = ' '.join(g.name for g in m.genres)
-        target = f"{m.title} {m.director_name} {genre_text} {m.year}"
+        people_text = ' '.join(credit.person.name for credit in m.cast_members)
+        target = f"{m.title} {m.director_name or ''} {m.producer or ''} {m.screenwriter or ''} {people_text} {genre_text} {m.year}"
         target_tokens = tokenize(target)
         score = token_overlap_score(query_tokens, target_tokens)
         if score > 0:
@@ -332,11 +404,13 @@ def search_people(query, limit=20):
 @app.route('/')
 def index():
     """Homepage with movie sections."""
-    new_movies = Movie.query.filter_by(in_theaters=True).order_by(Movie.release_date.desc()).limit(12).all()
-    streaming = Movie.query.filter(Movie.streaming_platform != '').order_by(func.random()).limit(12).all()
+    new_movies = Movie.query.order_by(Movie.year.desc(), Movie.id).limit(12).all()
+    streaming = Movie.query.filter_by(available_at_home=True).order_by(
+        Movie.audience_score.desc(), Movie.title
+    ).limit(12).all()
     certified = Movie.query.filter_by(certified_fresh=True).order_by(Movie.tomatometer.desc()).limit(12).all()
-    # Top box office — movies in theaters sorted by box_office
-    top_box = Movie.query.filter_by(in_theaters=True).order_by(Movie.box_office.desc()).limit(10).all()
+    # The captured gross is lifetime US gross, not a current weekly ranking.
+    top_box = []
     popular = Movie.query.order_by(Movie.audience_score.desc()).limit(12).all()
     return render_template('index.html',
                            new_movies=new_movies,
@@ -366,7 +440,7 @@ def browse_in_theaters():
 @app.route('/browse/movies_at_home/')
 def browse_at_home():
     """Browse movies available for streaming."""
-    return _browse_movies(Movie.query.filter(Movie.streaming_platform != ''), 'Streaming at Home', 'movies_at_home')
+    return _browse_movies(Movie.query.filter_by(available_at_home=True), 'Streaming at Home', 'movies_at_home')
 
 
 @app.route('/browse/movies/')
@@ -402,7 +476,8 @@ def _browse_movies(base_query, title, browse_type):
     # Streaming platform filter
     platform = request.args.get('platform', '')
     if platform:
-        base_query = base_query.filter_by(streaming_platform=platform)
+        membership = ',' + func.replace(Movie.streaming_platform, ', ', ',') + ','
+        base_query = base_query.filter(func.instr(membership, ',' + platform + ',') > 0)
 
     # Sort
     sort = request.args.get('sort', 'popular')
@@ -422,7 +497,7 @@ def _browse_movies(base_query, title, browse_type):
     platforms = db.session.query(Movie.streaming_platform).filter(
         Movie.streaming_platform != ''
     ).distinct().order_by(Movie.streaming_platform).all()
-    platforms = [p[0] for p in platforms]
+    platforms = sorted({value.strip() for row in platforms for value in row[0].split(',') if value.strip()})
 
     return render_template('browse.html',
                            title=title,
@@ -442,6 +517,10 @@ def _browse_movies(base_query, title, browse_type):
 def movie_detail(slug):
     """Movie detail page."""
     movie = Movie.query.filter_by(slug=slug).first_or_404()
+    return _render_movie_detail(movie)
+
+
+def _render_movie_detail(movie, review_form=None, rating_form=None):
     critic_reviews = CriticReview.query.filter_by(movie_id=movie.id).order_by(CriticReview.review_date.desc()).all()
     audience_reviews = AudienceReview.query.filter_by(movie_id=movie.id).order_by(AudienceReview.review_date.desc()).all()
     cast = MovieCast.query.filter_by(movie_id=movie.id).order_by(MovieCast.billing_order).all()
@@ -468,8 +547,10 @@ def movie_detail(slug):
             movie_id=movie.id, user_id=current_user.id
         ).first() is not None
 
-    review_form = ReviewForm()
-    rating_form = RatingForm()
+    if review_form is None:
+        review_form = ReviewForm(formdata=None)
+    if rating_form is None:
+        rating_form = RatingForm(formdata=None)
 
     return render_template('movie_detail.html',
                            movie=movie,
@@ -489,25 +570,19 @@ def celebrity_detail(slug):
     """Celebrity detail page with filmography."""
     person = Person.query.filter_by(slug=slug).first_or_404()
 
-    # Get filmography sorted by year desc
-    filmography = []
-    for entry in person.cast_entries:
-        if entry.movie:
-            filmography.append(entry)
-    filmography.sort(key=lambda c: c.movie.year, reverse=True)
-
-    # Sort option
+    filmography = person.filmography
     sort = request.args.get('sort', 'newest')
     if sort == 'oldest':
-        filmography.sort(key=lambda c: c.movie.year)
-    elif sort == 'critics_highest':
-        filmography.sort(key=lambda c: c.movie.tomatometer, reverse=True)
-    elif sort == 'critics_lowest':
-        filmography.sort(key=lambda c: c.movie.tomatometer)
-    elif sort == 'audience_highest':
-        filmography.sort(key=lambda c: c.movie.audience_score, reverse=True)
-    elif sort == 'audience_lowest':
-        filmography.sort(key=lambda c: c.movie.audience_score)
+        filmography.sort(key=lambda entry: (entry.movie.year, entry.movie.title))
+    elif sort in ('critics_highest', 'critics_lowest', 'audience_highest', 'audience_lowest'):
+        field = 'tomatometer' if sort.startswith('critics') else 'audience_score'
+        descending = sort.endswith('highest')
+
+        def score_order(entry):
+            value = getattr(entry.movie, field)
+            return (value is None, -(value or 0) if descending else (value or 0), entry.movie.title)
+
+        filmography.sort(key=score_order)
 
     highest = person.highest_rated_movie
     lowest = person.lowest_rated_movie
@@ -533,7 +608,7 @@ def login():
             login_user(user)
             flash('Welcome back!', 'success')
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('index'))
+            return redirect(local_redirect_target(next_page, url_for('index')))
         flash('Invalid email or password.', 'danger')
     return render_template('login.html', form=form)
 
@@ -549,16 +624,20 @@ def register():
             flash('Email already registered.', 'danger')
         else:
             hashed = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            user = User(email=form.email.data.lower(), password_hash=hashed, name=form.name.data)
-            db.session.add(user)
+            result = db.session.execute(sqlite_insert(User).values(
+                email=form.email.data.lower(), password_hash=hashed, name=form.name.data
+            ).on_conflict_do_nothing(index_elements=['email']))
             db.session.commit()
-            login_user(user)
-            flash('Account created!', 'success')
-            return redirect(url_for('index'))
+            if result.rowcount:
+                user = User.query.filter_by(email=form.email.data.lower()).one()
+                login_user(user)
+                flash('Account created!', 'success')
+                return redirect(url_for('index'))
+            flash('Email already registered.', 'danger')
     return render_template('register.html', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
@@ -582,13 +661,13 @@ def account():
 def account_edit():
     if request.method == 'POST':
         new_name = request.form.get('name', '').strip()
-        if new_name and len(new_name) >= 2:
+        if 2 <= len(new_name) <= 120:
             current_user.name = new_name
             db.session.commit()
             flash('Profile updated.', 'success')
             return redirect(url_for('account'))
         else:
-            flash('Name must be at least 2 characters.', 'danger')
+            flash('Name must be between 2 and 120 characters.', 'danger')
     return render_template('account_edit.html')
 
 
@@ -622,16 +701,16 @@ def watchlist():
 @login_required
 def add_to_watchlist(movie_id):
     movie = Movie.query.get_or_404(movie_id)
-    existing = WatchlistItem.query.filter_by(movie_id=movie_id, user_id=current_user.id).first()
-    if not existing:
-        item = WatchlistItem(movie_id=movie_id, user_id=current_user.id)
-        db.session.add(item)
-        db.session.commit()
+    result = db.session.execute(sqlite_insert(WatchlistItem).values(
+        movie_id=movie_id, user_id=current_user.id
+    ).on_conflict_do_nothing(index_elements=['movie_id', 'user_id']))
+    db.session.commit()
+    if result.rowcount:
         flash(f'Added "{movie.title}" to your watchlist.', 'success')
     else:
         flash(f'"{movie.title}" is already in your watchlist.', 'info')
     next_url = request.form.get('next') or request.referrer or url_for('movie_detail', slug=movie.slug)
-    return redirect(next_url)
+    return redirect(local_redirect_target(next_url, url_for('movie_detail', slug=movie.slug)))
 
 
 @app.route('/user/watchlist/remove/<int:movie_id>', methods=['POST'])
@@ -657,15 +736,16 @@ def rate_movie(slug):
     movie = Movie.query.filter_by(slug=slug).first_or_404()
     form = RatingForm()
     if form.validate_on_submit():
-        existing = UserRating.query.filter_by(movie_id=movie.id, user_id=current_user.id).first()
-        if existing:
-            existing.score = form.score.data
-        else:
-            rating = UserRating(movie_id=movie.id, user_id=current_user.id, score=form.score.data)
-            db.session.add(rating)
+        statement = sqlite_insert(UserRating).values(
+            movie_id=movie.id, user_id=current_user.id, score=form.score.data
+        )
+        db.session.execute(statement.on_conflict_do_update(
+            index_elements=['movie_id', 'user_id'], set_={'score': statement.excluded.score}
+        ))
         db.session.commit()
         flash(f'Rated "{movie.title}" {form.score.data}/5 stars.', 'success')
-    return redirect(url_for('movie_detail', slug=slug))
+        return redirect(url_for('movie_detail', slug=slug))
+    return _render_movie_detail(movie, rating_form=form), 422
 
 
 @app.route('/m/<slug>/review', methods=['POST'])
@@ -674,21 +754,17 @@ def review_movie(slug):
     movie = Movie.query.filter_by(slug=slug).first_or_404()
     form = ReviewForm()
     if form.validate_on_submit():
-        # Check if user already reviewed
-        existing = AudienceReview.query.filter_by(movie_id=movie.id, user_id=current_user.id).first()
-        if existing:
-            flash('You have already reviewed this movie.', 'info')
-        else:
-            review = AudienceReview(
-                movie_id=movie.id,
-                user_id=current_user.id,
-                score=form.score.data,
-                text=form.text.data
-            )
-            db.session.add(review)
-            db.session.commit()
+        result = db.session.execute(sqlite_insert(AudienceReview).values(
+            movie_id=movie.id, user_id=current_user.id,
+            score=form.score.data, text=form.text.data
+        ).on_conflict_do_nothing(index_elements=['movie_id', 'user_id']))
+        db.session.commit()
+        if result.rowcount:
             flash('Review submitted!', 'success')
-    return redirect(url_for('movie_detail', slug=slug))
+        else:
+            flash('You have already reviewed this movie.', 'info')
+        return redirect(url_for('movie_detail', slug=slug))
+    return _render_movie_detail(movie, review_form=form), 422
 
 
 @app.route('/user/reviews/delete/<int:review_id>', methods=['POST'])

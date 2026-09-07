@@ -8,11 +8,13 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="you@example.com">
+                <input type="email" id="email" name="email" required placeholder="you@example.com" value="{{ form.email.data or '' }}">
+                {% for error in form.email.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
+                {% for error in form.password.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
             </div>
             <button type="submit" class="btn btn-primary btn-full">Sign In</button>
         </form>

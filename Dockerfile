@@ -14,6 +14,7 @@ RUN pip3 install --no-cache-dir \
     Flask-Login==0.6.3 \
     Flask-WTF==1.2.2 \
     Flask-Bcrypt==1.0.1 \
+    bcrypt==5.0.0 \
     Werkzeug==3.1.3 \
     Jinja2==3.1.4 \
     SQLAlchemy==2.0.36 \
