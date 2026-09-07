@@ -944,14 +944,10 @@ def career_area(slug: str):
         .order_by(Category.display_order)
         .all()
     )
-    counts = {
-        c.id: Job.query.filter_by(category_id=c.id).count() for c in categories
-    }
     return render_template(
         "area.html",
         area=area,
         categories=categories,
-        counts=counts,
         hubs=Store.query.filter_by(is_hub=True).order_by(Store.id).all(),
     )
 
@@ -959,8 +955,7 @@ def career_area(slug: str):
 @app.route("/resources/location")
 def resources_location():
     hubs = Store.query.filter_by(is_hub=True).order_by(Store.id).all()
-    counts = {s.id: Job.query.filter_by(store_id=s.id).count() for s in hubs}
-    return render_template("locations.html", hubs=hubs, counts=counts)
+    return render_template("locations.html", hubs=hubs)
 
 
 @app.route("/resources/hiring-process")
@@ -1026,9 +1021,12 @@ def register():
             errors.append("Enter your last name.")
         if not errors:
             display = f"{form['first_name']} {form['last_name']}".strip()
-            username = email.split("@")[0]
-            if User.query.filter_by(username=username).first():
-                username = f"{username}.{User.query.count() + 1}"
+            base_username = email.split("@")[0]
+            username = base_username
+            suffix = 2
+            while User.query.filter_by(username=username).first():
+                username = f"{base_username}.{suffix}"
+                suffix += 1
             user = User(
                 email=email,
                 username=username,
