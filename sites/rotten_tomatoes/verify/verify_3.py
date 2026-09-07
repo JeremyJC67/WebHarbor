@@ -243,22 +243,29 @@ def prose_producers(answer, movies):
     # Remove list markers before sentence splitting: "1. Emma Thomas" is one
     # list item, not the narrative sentence "1" followed by another clause.
     answer = re.sub(r'(?m)^[ \t]*(?:[-*]|\d+[.)])[ \t]+', '', answer)
-    clauses = re.split(r'[;；\n]|\.(?=\s+[A-Z]|\s*$)', answer)
+    clauses = re.split(r'[;；。\n]|\.(?=\s+[A-Z]|\s*$)', answer)
     for clause in clauses:
         clause = re.sub(r'^\s*(?:[-*]|\d+[.)])\s*', '', clause).strip().strip('*`')
         if not clause:
+            continue
+        # This is the other explicitly requested answer field, not a name-list
+        # item. Its heading closes a multiline producer list.
+        if key(clause).strip(' :：*`') == 'release date (streaming)':
+            pending_list = False
             continue
         if (any(key(movie['title']) in key(clause) for movie in movies) and dates(clause)
                 and not re.search(r'\bproducers?\b|制片人', clause, re.I)):
             pending_list = False
             continue
         has_required_name = any(name in key(clause) for name in SHARED)
-        if has_required_name and re.search(r'\b(?:are\s+not|is\s+not|aren.t|isn.t|neither)\b|不是|并非', clause, re.I):
+        if has_required_name and re.search(r'\b(?:are\s+not|is\s+not|aren.t|isn.t|neither)\b|不是|并非|(?:没有|并无|无|非)\s*(?:共同|共有)?制片人', clause, re.I):
             require(False, 'answer negates a required shared producer')
 
         # Match a labelled value or a subject/predicate assertion. Introductory
         # clauses are outside the name slot; there is no ordinary-word whitelist.
-        label = re.search(r'(?<!\w)(?:' + PRODUCER_LABEL + r')\s*(?:(?:also\s+)?(?:are|is|include|includes)\b|[:：—-]|是|为)\s*(.*)$', clause, re.I)
+        # Chinese narrative can directly precede 制片人; a Unicode word
+        # boundary would wrongly treat that narrative as part of a name slot.
+        label = re.search(r'(?<![A-Za-z0-9_])(?:' + PRODUCER_LABEL + r')\s*(?:(?:also\s+)?(?:are|is|include|includes)\b|[:：—-]|(?:也|还)?(?:是|为|包括|包含))\s*(.*)$', clause, re.I)
         if label:
             value = label.group(1)
         else:
@@ -266,6 +273,8 @@ def prose_producers(answer, movies):
                 r'(.+?)\s+(?:is|are|was|were)\s+(?:also\s+)?(?:(?:the|a|an|another)\s+)?(?:(?:shared|common|additional|extra)\s+)?producers?'
                 r'(?:\s+(?:(?:credited|listed|shown)\s+)?(?:on|in|for)\s+(?:both|the two|these two)\s+(?:pages|movies|films|Movie Info sections))?\.?',
                 clause, re.I)
+            if not subject:
+                subject = re.fullmatch(r'(.+?)\s*(?:也|还)?(?:是|为)\s*(?:共同|共有)?制片人', clause)
             if subject:
                 value = subject.group(1)
                 value = re.sub(r'^(?:after|before|when|while|having|from|based on|upon|according to)\b[^,]*,\s*', '', value, flags=re.I)
