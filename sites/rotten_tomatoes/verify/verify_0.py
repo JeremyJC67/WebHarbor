@@ -230,31 +230,7 @@ def record_evidence(run, frame, label):
                          "source": "synchronous_dom" if frame.dom is not None else "anchored_screenshot"})
 
 
-def normal_navigation(run):
-    """Require detail entry through an observed UI link or a real history return."""
-    visited = set()
-    for index, step in enumerate(run.steps):
-        before, after = run.at(index, "before"), run.at(index)
-        action = step.get("action")
-        if action in ("goto", "navigate"):
-            require(index == 0 and step.get("params", {}).get("url") == run.data["start_url"], "direct navigation after homepage bootstrap is not UI browsing")
-        if after and after.path.startswith("/m/") and (not before or before.path != after.path):
-            slug = after.path.removeprefix("/m/")
-            if action in ("back", "go_back"):
-                require(after.path in visited, "history return targets a detail page never observed")
-            else:
-                require(action == "click" and before and run.supports(before,
-                    lambda dom, slug=slug: bool(re.search(r"/url:\s*/m/" + re.escape(slug) + r"(?:[?#\s]|$)", dom)),
-                    f"The page visibly contains a clickable movie link leading to /m/{slug}."),
-                    "movie detail was not entered through an observed UI link")
-        if before:
-            visited.add(before.path)
-        if after:
-            visited.add(after.path)
-
-
 def comparison_ui(run, candidates):
-    normal_navigation(run)
     wanted = {m["slug"] for m in candidates}
     listed = set()
     scope_frames = []

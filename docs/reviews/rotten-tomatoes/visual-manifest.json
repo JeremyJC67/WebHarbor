@@ -1,0 +1,153 @@
+{
+  "candidate_code": "6cee8aa1ebba2d520319e4d688ba1cbbfa2282f1",
+  "original_code": "2290a792d09f689800abf8fdff7cb4324f9a3fd7",
+  "candidate_asset": "68798983027ceaf17df62f6167625baae38a160a",
+  "capture_date": "2026-09-07",
+  "human_approved_regression_baseline": false,
+  "files": [
+    {
+      "file": "images/home-desktop-upstream.jpg",
+      "role": "upstream",
+      "page": "home-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "f672f6b36eb192a4fb8b2cf62b601a3b423a4d6c662cf1b8548dfa7c9e69de70",
+      "bytes": 195955,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/home-desktop-before.jpg",
+      "role": "before",
+      "page": "home-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "64301578f3bd9e0ea9e820bace9077e4d6e636bb6e94640baab0de71ba6f1eb0",
+      "bytes": 159076,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/home-desktop-candidate.jpg",
+      "role": "candidate",
+      "page": "home-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "a3f7dd5234abdb0c7d87f538a84a56ccc7e1eb86d2a38db8a6f68dab2439f703",
+      "bytes": 184253,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/browse-desktop-upstream.jpg",
+      "role": "upstream",
+      "page": "browse-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "03d3ae855bd1d429d217d18a3edc06a9333e759ae3e5a31c1297bc6261ef898f",
+      "bytes": 168191,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/browse-desktop-before.jpg",
+      "role": "before",
+      "page": "browse-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "e3e47fc0324c51f30a2562b5d2e08a6d06025486f9081b1ce5407985673ab76c",
+      "bytes": 171526,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/browse-desktop-candidate.jpg",
+      "role": "candidate",
+      "page": "browse-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "68c517eed348d6b8ae6655df6c667c0b4266c7e84dbb01084f5de0f031a55d52",
+      "bytes": 195501,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/oppenheimer-desktop-upstream.jpg",
+      "role": "upstream",
+      "page": "oppenheimer-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "8f4cf68b476e07e5b59a7ecf14cd69198e7a7a2a4666370e339a1c8b0e58e823",
+      "bytes": 146804,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/oppenheimer-desktop-before.jpg",
+      "role": "before",
+      "page": "oppenheimer-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "a6e632a7e9cdfb4ba90fe3638adad12880f7ab411ed8a28f4891196ebacb8e7a",
+      "bytes": 73270,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/oppenheimer-desktop-candidate.jpg",
+      "role": "candidate",
+      "page": "oppenheimer-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "8bbd586722c0f057e1ae6ecde413a7937bd66ad5e2388a143ad96877efad6672",
+      "bytes": 105136,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/home-narrow-upstream.jpg",
+      "role": "upstream",
+      "page": "home-narrow",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "9d0656c41605ce80d5f7da960b52d477514085249964012afba233f12678674f",
+      "bytes": 66230,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/home-narrow-before.jpg",
+      "role": "before",
+      "page": "home-narrow",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "947d2e56ba5fdab9203f281bcc2e5d9ff87012e2873293ec8d113872c863c597",
+      "bytes": 59749,
+      "transformation": "none; byte-identical native screenshot copy"
+    },
+    {
+      "file": "images/home-narrow-candidate.jpg",
+      "role": "candidate",
+      "page": "home-narrow",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "af66f0f60e8975a9b305fc92dced438f69c3fd2eafb4b832d6eb75bf1182d339",
+      "bytes": 61377,
+      "transformation": "none; byte-identical native screenshot copy"
+    }
+  ]
+}
