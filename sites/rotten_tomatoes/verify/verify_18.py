@@ -1,4 +1,4 @@
-"""R18 informed verifier: eligible comparison OR global descending exclusion.
+"""R18 informed verifier: eligible details, producer filmography, or global exclusion.
 
 Ground truth is frozen inside this verifier, never supplied by the browsing agent.
 Source catalog SHA256 inputs (147 unchanged movies + 123 additions):
@@ -410,10 +410,7 @@ def detail_streaming_date(dom, movie):
     return detail_date(dom, movie['date'])
 
 
-def check_answer(answer, facts=FACTS):
-    require(key(answer), 'empty answer')
-    answer = normalized_answer(answer)
-    expected = {movie['slug']: movie for movie in winners(facts)}
+def answer_movie_matches(answer, facts):
     matches = []
     for movie in facts:
         for match in re.finditer(title_pattern(movie['title']), answer, re.I):
@@ -422,6 +419,58 @@ def check_answer(answer, facts=FACTS):
     matches = [match for match in matches if not any(other[0] <= match[0] and match[1] <= other[1]
                and (other[0], other[1]) != (match[0], match[1]) for other in matches)]
     matches.sort(key=lambda match: match[0])
+    return matches
+
+
+def without_comparison_rationale(answer, facts):
+    """Validate explicitly labelled lower-candidate facts apart from results.
+
+    The task permits an explanation of the comparison. Only a bounded sentence
+    introduced as other/remaining candidates is treated as such; an unlabelled
+    extra result still follows the strict result parser below.
+    """
+    marker = (r'\b(?:other|remaining|lower[- ]scoring)\s+(?:eligible\s+)?(?:candidates?|movies?|films?)'
+              r'\s*(?:(?:are|were|include)\s*)?[:：]|\b(?:for\s+)?comparison\s*[:：]|'
+              r'(?:其他|其余)(?:[一二三四五六七八九十\d]+)?(?:部|片)?(?:候选)?(?:电影|影片)?(?:为|包括|是)?[:：]')
+    maximum = winners(facts)[0]['audience_score']
+    lower = {movie['slug']: movie for movie in eligible_movies(facts)
+             if type(movie['audience_score']) is int and movie['audience_score'] < maximum}
+    matches = answer_movie_matches(answer, facts)
+    sections = []
+    for start in re.finditer(marker, answer, re.I):
+        boundary = re.search(r'[。！？!?]|\.(?=\s|$)|\n\s*\n', answer[start.end():])
+        end = start.end() + boundary.end() if boundary else len(answer)
+        members = [match for match in matches if start.end() <= match[0] < end]
+        require(members, 'comparison explanation contains no identified candidate')
+        prefix = answer[start.end():members[0][0]]
+        require(not prefix.strip(' \t\n-*,;，、'), 'comparison explanation starts with an unidentified candidate')
+        comparison = answer[start.end():end]
+        comparison = re.sub(r'\bnot\s+(?:(?:a|the)\s+)?(?:winner|highest|tied)\b|不是最高|并非赢家|不并列', '', comparison, flags=re.I)
+        require(not re.search(r'\b(?:winner|highest|tied|alongside)\b|并列|最高|获胜|赢家|获选', comparison, re.I),
+                'comparison explanation also asserts a winner')
+        for index, (_, title_end, movie) in enumerate(members):
+            require(movie['slug'] in lower, 'comparison explanation is not a lower-scoring eligible movie')
+            stop = members[index + 1][0] if index + 1 < len(members) else end
+            body = answer[title_end:stop]
+            require(score_values(body) == [movie['audience_score']],
+                    'comparison audience score is missing, incorrect or contradictory')
+            stated_dates = [value for _, _, value in dates(body)]
+            require(not stated_dates or (movie['date'] is not None and stated_dates == [movie['date']]),
+                    'comparison streaming date is incorrect or mismatched')
+            if re.search(r'release\s+date\s*\(\s*streaming\s*\)|\bstream(?:s|ing)?\b|流媒体.*日期', body, re.I):
+                require(missing_date_answer(body) if movie['date'] is None else stated_dates == [movie['date']],
+                        'comparison streaming date assertion is incomplete or incorrect')
+        sections.append((start.start(), end))
+    for start, end in reversed(sections):
+        answer = answer[:start] + ' ' + answer[end:]
+    return answer
+
+
+def check_answer(answer, facts=FACTS):
+    require(key(answer), 'empty answer')
+    answer = without_comparison_rationale(normalized_answer(answer), facts)
+    expected = {movie['slug']: movie for movie in winners(facts)}
+    matches = answer_movie_matches(answer, facts)
     found = set()
     for index, (start, end, movie) in enumerate(matches):
         next_start = matches[index + 1][0] if index + 1 < len(matches) else len(answer)
@@ -518,6 +567,83 @@ def eligible_comparison(run, facts):
     return 'all_eligible_comparison'
 
 
+def filmography_candidates(dom, facts):
+    """Bind each producer credit and audience score to its own filmography row."""
+    main = main_dom(dom)
+    require(re.search(r'heading ["\']Kevin Feige["\']\s*\[level=1\]', main),
+            'filmography does not identify exactly Kevin Feige')
+    heading_match = re.search(r'heading ["\']Filmography["\']\s*\[level=2\]', main)
+    require(heading_match, 'Filmography section was not observed')
+    section = re.split(r'(?m)^\s*- heading ', main[heading_match.end():], maxsplit=1)[0]
+    section = '- main:\n' + section
+    slugs = movie_links(section)
+    require(slugs and len(slugs) == len(set(slugs)), 'filmography rows are empty or duplicated')
+    by_slug = {movie['slug']: movie for movie in facts}
+    produced = set()
+    for slug in slugs:
+        require(slug in by_slug, 'filmography includes an unknown movie')
+        movie = by_slug[slug]
+        card = movie_card(section, slug)
+        leaves = leaf_texts(card)
+        titles = [value.strip().strip('"\'') for value in re.findall(r'(?m)^\s*- generic:\s*(.+)$', card)]
+        require(key(movie['title']) in {key(value) for value in titles},
+                'filmography movie title and slug do not match')
+        roles = [re.fullmatch(r'\(([^()]*)\)', value) for value in leaves]
+        roles = [match[1] for match in roles if match]
+        require(len(roles) == 1, 'filmography row does not have one explicit credit role')
+        if 'producer' not in {key(role) for role in roles[0].split(',')}:
+            continue
+        require('kevin feige' in {key(name) for name in movie['producers']},
+                'filmography producer is outside the eligible candidate set')
+        require(audience_value(card, card=True) == movie['audience_score'],
+                'filmography row audience score is unlabelled or incorrect')
+        produced.add(slug)
+    return produced
+
+
+def filmography_comparison(run, facts):
+    eligible = eligible_movies(facts)
+    wanted = {movie['slug'] for movie in eligible}
+    seen = set()
+    for frame in run.frames:
+        if frame.path != '/celebrity/kevin_feige':
+            continue
+        dom_candidates = set()
+        if frame.dom is not None:
+            try:
+                dom_candidates = filmography_candidates(frame.dom, facts)
+            except VerificationError:
+                # A contradictory synchronous observation is authoritative.
+                # It must never be retried against a more permissive vision result.
+                continue
+        produced = set()
+        for movie in eligible:
+            if movie['slug'] in seen:
+                continue
+            score = ('missing (--), not a numeric zero' if movie['audience_score'] is None
+                     else str(movie['audience_score']) + '%')
+            claim = ('Within Filmography on the person page whose visible heading is exactly "Kevin Feige", '
+                     'a row with the full movie title "' + movie['title'] + '" visibly shows the exact "producer" role '
+                     '(possibly alongside other roles) and its own labelled Audience Score as ' + score + '. '
+                     'The title, role and audience score must belong to the same row. A similar person name, '
+                     'title fragment, executive producer role, critic score or Highest/Lowest Rated summary does not count. '
+                     'All requested facts must be visible in this screenshot; do not infer offscreen content.')
+            if run.supports(frame, lambda dom, slug=movie['slug']: slug in dom_candidates, claim):
+                produced.add(movie['slug'])
+        if not produced:
+            continue
+        seen.update(produced)
+        run.evidence.append({'check': 'Kevin_Feige_producer_filmography', 'step': frame.position // 2,
+                             'path': frame.path, 'candidate_count': len(produced), 'candidate_slugs': sorted(produced),
+                             'source': 'synchronous_dom' if frame.dom is not None else 'anchored_screenshot'})
+    require(seen == wanted, 'complete producer filmography comparison was not observed')
+    # The public eligibility condition refers to Movie Info. The selected
+    # results still need their own Producer field, beyond the person-page role.
+    for movie in winners(facts):
+        prove_producers(run, movie)
+    return 'producer_filmography_comparison'
+
+
 def global_descending(run, facts):
     selected = winners(facts)
     maximum = selected[0]['audience_score']
@@ -565,7 +691,7 @@ def global_descending(run, facts):
 def check_ui(run, facts=FACTS):
     original = list(run.evidence)
     failures = []
-    for proof in (eligible_comparison, global_descending):
+    for proof in (eligible_comparison, filmography_comparison, global_descending):
         run.evidence[:] = original
         try:
             route = proof(run, facts)
@@ -574,7 +700,7 @@ def check_ui(run, facts=FACTS):
             failures.append(str(error))
     else:
         run.evidence[:] = original
-        raise VerificationError('Neither permitted comparison path is evidenced: ' + ' | '.join(failures))
+        raise VerificationError('No permitted comparison path is evidenced: ' + ' | '.join(failures))
     for movie in winners(facts):
         prove_audience(run, movie)
         run.prove('winner_streaming_date_' + movie['slug'], {'/m/' + movie['slug']}, 0,
