@@ -1,3 +1,5 @@
+> This historical first Sell follow-up is superseded by [the full Sell/regional reconstruction](sell-guides-review.md). Its captures and validation retain their original versions.
+
 # Sell navigation and landing-page follow-up
 
 Human inspection found a real omission: the top navigation and homepage Buy/Rent strip lacked **Sell**, and `/sell/` returned 404. The earlier seller-services scope note did not justify a missing primary entry.

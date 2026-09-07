@@ -1,3 +1,5 @@
+> This historical 25b8b33 report covers Concierge and the directory index. The later Sell and all24regional-landing implementation is documented in [sell-guides-review.md](sell-guides-review.md).
+
 # Concierge and neighborhood directory follow-up
 
 Original contribution: [#25](https://github.com/aiming-lab/WebHarbor/pull/25), **sarendis56 (Peichun Hua)**. Companion review: [#84](https://github.com/aiming-lab/WebHarbor/pull/84).

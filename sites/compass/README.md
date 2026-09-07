@@ -1,4 +1,4 @@
-> **Current landing-page follow-up:** [25b8b33 / HF b09ad95](docs/landing-review.md) adds Concierge and the 24-region directory. Human acceptance and the refreshed task17 independent verdict remain pending. Earlier evidence retains its recorded versions.
+> **Current UI follow-up:** [Sell and all 24 regional guide landings](docs/sell-guides-review.md). Human acceptance and the refreshed task17 independent verdict remain pending. Earlier evidence retains its recorded versions.
 
 # Compass
 
@@ -44,7 +44,7 @@ Tests cover invalid input without partial writes, object ownership, CSRF, local 
 
 The homepage hero, official typography, navigation, listing cards, responsive layout, photo wall, gallery, and filter controls follow the public site. Personalized recommendations are replaced with a stable catalog selection. Search cards do not add property years, MLS numbers, or agent identities; detail questions still require obtaining the relevant information.
 
-Sell is available from the desktop/mobile navigation and homepage strip at `/sell/`. Its source-referenced introduction and marketing overview link to the existing local agent directory. The original seller lead form, marketing carousels and complete seller-service workflow are not implemented; see the [Sell follow-up and screenshot comparisons](docs/sell-review.md).
+Sell at `/sell/` reproduces the source marketing sequence, both carousels and two local inquiry forms. All 24 directory entries lead to local regional guide landings, with 401 original community cards; individual articles and nearby searches remain explicit external links. See the [source/before/after comparison and scope](docs/sell-guides-review.md).
 
 The mirror provides a list view. Live maps, street view, mortgage preapproval, property-history feeds, and external messaging are not implemented. These are functional scope limits, not measures to prevent answer leakage. Unknown facts are identified rather than filled with plausible values. The displayed catalog is a snapshot and can include sold or rented homes.
 
