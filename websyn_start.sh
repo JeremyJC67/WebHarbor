@@ -5,8 +5,7 @@ set -e
 
 SITES=(allrecipes amazon apple arxiv bbc_news booking github
        google_flights google_map google_search huggingface wolfram_alpha
-       cambridge_dictionary coursera espn merriam_webster ikea phys_org target
-       rotten_tomatoes)
+       cambridge_dictionary coursera espn merriam_webster ikea phys_org target ted rotten_tomatoes)
 BASE_PORT=40000
 PID_DIR=/tmp/websyn_pids
 mkdir -p "$PID_DIR"
