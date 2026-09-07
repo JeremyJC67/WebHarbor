@@ -1,39 +1,6 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for OSU task Ohio State University--7.
-
-Undergraduate enrollment -> 46,820.
-
-Checks (deterministic first; the LLM screenshot check is an anchored confirmation
-that is fully skipped under --no_llm):
-  nav /about | answer (ground truth hardcoded here) | screenshot shows the fact
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer,
-                        last_shot, shot_after_url, contains_all, contains_any,
-                        contains_number, count_present, answer_equals,
-                        llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
+from verify_lib import Judge, check_common, check_read_only, final_answer, has_number, load_run, number_bound_in_comparison, parse_args, visited_path
+TASK_ID='Ohio State University--7'
 def main():
-    a = parse_args()
-    j = Judge("Ohio State University--7", a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    nav_ok = navigated_any(t, ["/about", "/academics"])
-    j.check("nav_about", nav_ok, f"urls_matched={nav_ok}")
-    j.check("answer_undergrad_46820", contains_number(fa, "46820"),
-            f"final={fa!r}")
-    if not a.no_llm:
-        s = shot_after_url(t, "/about") or last_shot(t)
-        if s:
-            ok, ev = llm_screenshot_shows(s,
-                "46,820 undergraduate students",
-                "How many undergraduate students are enrolled at Ohio State?")
-            j.check("screenshot_confirms", ok, ev, llm=True)
-        else:
-            j.check("screenshot_confirms", False, "no screenshots in run", llm=True)
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check('opened_about',visited_path(t,'/about'),'required=/about');j.check('undergraduate_bound',number_bound_in_comparison(answer,46820,('undergraduate','undergrads')),repr(answer));j.check('graduate_bound',number_bound_in_comparison(answer,14000,('graduate','graduate students')),repr(answer));j.check('exact_difference',has_number(answer,32820),repr(answer));check_read_only(j,a);j.emit()
+if __name__=='__main__':main()

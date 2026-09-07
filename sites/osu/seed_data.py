@@ -1,15 +1,44 @@
 #!/usr/bin/env python3
 """Seed all Ohio State University mirror data. Idempotent."""
 from datetime import datetime, timedelta
+import sys
+
+SEED_TIMESTAMP = datetime(2024, 10, 15, 12, 0, 0)
+# Stable bcrypt hash for the public benchmark password "test1234".
+BENCHMARK_PASSWORD_HASH = "$2b$12$nOIQFCC3iiGkjx3qLZY7e.z69INZu4oCSJbsu/HJvi6/F2zYQkoN."
+
+
+def _app_module():
+    module = sys.modules.get('app')
+    if module is not None:
+        return module
+    main = sys.modules.get('__main__')
+    if main is not None and hasattr(main, 'db') and hasattr(main, 'College'):
+        return main
+    import app as module
+    return module
 
 
 def seed():
-    """Seed all data. Gated on College.query.first() to be idempotent."""
-    from app import (db, College, Department, Program, NewsArticle, Event,
-                     ResearchCenter, Faculty, AthleticTeam, User, slugify)
+    """Seed all data once and reject partially initialized databases."""
+    module = _app_module()
+    db = module.db
+    College = module.College
+    Department = module.Department
+    Program = module.Program
+    NewsArticle = module.NewsArticle
+    Event = module.Event
+    ResearchCenter = module.ResearchCenter
+    Faculty = module.Faculty
+    AthleticTeam = module.AthleticTeam
+    User = module.User
+    slugify = module.slugify
 
-    if College.query.first():
+    counts = [model.query.count() for model in (College, Department, Program, NewsArticle, Event, ResearchCenter, Faculty, AthleticTeam, User)]
+    if all(counts):
         return
+    if any(counts):
+        raise RuntimeError(f'OSU database is partially seeded: {counts}')
 
     # ── Helper ────────────────────────────────────────────────────────────────
     def _slug(text, extra=''):
@@ -353,7 +382,6 @@ def seed():
     # ─────────────────────────────────────────────────────────────────────────
     # RESEARCH CENTERS
     # ─────────────────────────────────────────────────────────────────────────
-    base_year = datetime(2024, 1, 1)
     research_data = [
         ('Translational Data Analytics Institute', 'TDAI', 'Dr. Beth Plale',
          'Arts and Sciences', 2016,
@@ -1030,8 +1058,9 @@ def seed():
             ('carol', 'Carol Chen', 'carol@osu.edu', 'faculty'),
             ('dave', 'Dave Davis', 'dave@osu.edu', 'staff'),
         ]:
-            u = User(username=username, email=email, full_name=name, role=role)
-            u.set_password('test1234')
+            u = User(username=username, email=email, full_name=name, role=role,
+                     password_hash=BENCHMARK_PASSWORD_HASH,
+                     created_at=SEED_TIMESTAMP + timedelta(seconds=len(username)))
             db.session.add(u)
         db.session.flush()
 

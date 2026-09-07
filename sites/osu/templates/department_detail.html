@@ -7,7 +7,7 @@
   <span>{{ dept.name }}</span>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 280px;gap:30px">
+<div class="detail-layout">
   <div>
     <h1 style="font-size:32px;color:var(--scarlet);margin-bottom:10px">{{ dept.name }}</h1>
     {% if dept.college %}<p style="font-size:16px;color:var(--gray);font-family:sans-serif;margin-bottom:6px">{{ dept.college.name }}</p>{% endif %}

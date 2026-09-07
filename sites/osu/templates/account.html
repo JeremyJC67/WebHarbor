@@ -45,6 +45,7 @@
           <form method="post" action="{{ url_for('bookmark_remove') }}" style="margin-left:16px">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="bookmark_id" value="{{ detail.bookmark.id }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
             <button type="submit" class="btn btn-sm" style="background:none;border:1px solid #cc0000;color:#cc0000;cursor:pointer" onclick="return confirm('Remove this bookmark?')">Remove</button>
           </form>
         </div>

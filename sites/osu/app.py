@@ -2,33 +2,51 @@
 """Ohio State University mirror — Flask application."""
 import os
 import re
-from datetime import datetime
+import secrets
+from datetime import datetime, timezone
 from math import ceil
 
 from flask import (Flask, render_template, request, redirect, url_for,
-                   flash, jsonify, session, abort, g)
+                   flash, jsonify, session, abort)
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (LoginManager, UserMixin, login_user, logout_user,
                          login_required, current_user)
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
 from flask_bcrypt import Bcrypt
-from wtforms import StringField, PasswordField, TextAreaField, SelectField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional
+from sqlalchemy import event as sqlalchemy_event
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
+from wtforms import StringField, PasswordField
+from wtforms.validators import DataRequired, Email, Length, EqualTo
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SITE_PORT = 40020
+BENCHMARK_NOW = datetime(2024, 10, 15, 12, 0, 0)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'osu-mirror-secret-key-2024'
+app.config['SECRET_KEY'] = os.environ.get('OSU_SECRET_KEY') or secrets.token_hex(32)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'osu.db')}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['WTF_CSRF_TIME_LIMIT'] = None
+app.config['MAX_CONTENT_LENGTH'] = 64 * 1024
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 os.makedirs(os.path.join(BASE_DIR, 'instance'), exist_ok=True)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+
+@sqlalchemy_event.listens_for(Engine, 'connect')
+def enable_sqlite_foreign_keys(connection, _record):
+    cursor = connection.cursor()
+    cursor.execute('PRAGMA foreign_keys=ON')
+    cursor.close()
+
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please sign in to continue.'
@@ -39,12 +57,37 @@ PER_PAGE = 20
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 def slugify(text):
     if not text:
         return ''
     s = re.sub(r'[^a-zA-Z0-9\s-]', '', text)
     s = re.sub(r'[\s]+', '-', s.strip().lower())
     return s
+
+
+def safe_next(target, fallback):
+    if not target or '\\' in target or not target.startswith('/') or target.startswith('//'):
+        return fallback
+    return target
+
+
+def search_tokens(value):
+    return [token for token in re.split(r'[^a-z0-9]+', (value or '').casefold()) if len(token) > 1]
+
+
+def ranked_search(rows, fields, query, limit=10):
+    tokens = search_tokens(query)
+    ranked = []
+    for row in rows:
+        text = ' '.join(str(getattr(row, field, '') or '') for field in fields).casefold()
+        score = sum(1 for token in tokens if token in text)
+        if score:
+            ranked.append((score, row.id, row))
+    return [row for _score, _row_id, row in sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]]
 
 # ─── Models ───────────────────────────────────────────────────────────────────
 
@@ -57,7 +100,7 @@ class User(db.Model, UserMixin):
     full_name = db.Column(db.String(150), nullable=False, default='')
     role = db.Column(db.String(30), default='student')
     bio = db.Column(db.Text, default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     bookmarks = db.relationship('Bookmark', backref='user', lazy=True,
                                 cascade='all, delete-orphan')
@@ -125,7 +168,7 @@ class NewsArticle(db.Model):
     slug = db.Column(db.String(300), unique=True, nullable=False, index=True)
     category = db.Column(db.String(50), default='Campus Life')
     author = db.Column(db.String(150), default='OSU News Staff')
-    published_date = db.Column(db.DateTime, default=datetime.utcnow)
+    published_date = db.Column(db.DateTime, default=utcnow)
     content = db.Column(db.Text, default='')
     summary = db.Column(db.Text, default='')
     tags = db.Column(db.String(500), default='')
@@ -193,49 +236,53 @@ class AthleticTeam(db.Model):
 
 class Bookmark(db.Model):
     __tablename__ = 'bookmarks'
+    __table_args__ = (db.UniqueConstraint('user_id', 'item_type', 'item_id', name='uq_bookmark_user_item'),)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     item_type = db.Column(db.String(50), nullable=False)
     item_id = db.Column(db.Integer, nullable=False)
     note = db.Column(db.Text, default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+
+BOOKMARK_TARGETS = {
+    'program': Program,
+    'news': NewsArticle,
+    'event': Event,
+    'faculty': Faculty,
+    'research': ResearchCenter,
+    'athletics': AthleticTeam,
+}
 
 
 # ─── Forms ────────────────────────────────────────────────────────────────────
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(max=100)])
 
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(3, 80)])
     full_name = StringField('Full Name', validators=[DataRequired(), Length(2, 150)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', validators=[DataRequired(), Length(8, 100)])
     confirm = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-
-class ProfileForm(FlaskForm):
-    full_name = StringField('Full Name', validators=[DataRequired(), Length(2, 150)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    bio = TextAreaField('Bio', validators=[Optional(), Length(max=1000)])
-
-class BookmarkForm(FlaskForm):
-    item_type = StringField('Type', validators=[DataRequired()])
-    item_id = StringField('ID', validators=[DataRequired()])
-    note = TextAreaField('Note', validators=[Optional(), Length(max=500)])
 
 # ─── Login Manager ────────────────────────────────────────────────────────────
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        return None
 
 # ─── Context Processors ───────────────────────────────────────────────────────
 
 @app.context_processor
 def inject_globals():
     return {
-        'now': datetime.utcnow(),
+        'now': BENCHMARK_NOW,
         'colleges': College.query.order_by(College.name).all(),
     }
 
@@ -249,7 +296,7 @@ def index():
         featured_news = NewsArticle.query.order_by(
             NewsArticle.published_date.desc()).limit(6).all()
     upcoming_events = Event.query.filter(
-        Event.start_datetime >= datetime.utcnow()
+        Event.start_datetime >= BENCHMARK_NOW
     ).order_by(Event.start_datetime).limit(4).all()
     recent_research = ResearchCenter.query.limit(4).all()
     stats = {
@@ -278,7 +325,7 @@ def news():
     q = request.args.get('q', '').strip()
     category = request.args.get('category', '')
     featured = request.args.get('featured', '')
-    page = request.args.get('page', 1, type=int)
+    page = max(1, request.args.get('page', 1, type=int) or 1)
 
     query = NewsArticle.query
     if q:
@@ -315,8 +362,6 @@ def news():
 @app.route('/news/<slug>')
 def news_article(slug):
     article = NewsArticle.query.filter_by(slug=slug).first_or_404()
-    article.view_count = (article.view_count or 0) + 1
-    db.session.commit()
     related = NewsArticle.query.filter(
         NewsArticle.category == article.category,
         NewsArticle.id != article.id
@@ -341,7 +386,7 @@ def programs():
     college_slug = request.args.get('college', '')
     degree = request.args.get('degree', '')
     online = request.args.get('online', '')
-    page = request.args.get('page', 1, type=int)
+    page = max(1, request.args.get('page', 1, type=int) or 1)
 
     query = Program.query
     if q:
@@ -396,8 +441,8 @@ def events():
     category = request.args.get('category', '')
     campus = request.args.get('campus', '')
     date_filter = request.args.get('date', 'upcoming')
-    page = request.args.get('page', 1, type=int)
-    now = datetime.utcnow()
+    page = max(1, request.args.get('page', 1, type=int) or 1)
+    now = BENCHMARK_NOW
 
     query = Event.query
     if q:
@@ -431,7 +476,7 @@ def events():
     total_pages = ceil(total / PER_PAGE) if total else 1
 
     categories = ['Lecture', 'Sports', 'Arts', 'Career', 'Health', 'Social', 'Virtual']
-    campuses = ['Columbus', 'Lima', 'Marion', 'Mansfield', 'Newark', 'Wooster']
+    campuses = [row[0] for row in db.session.query(Event.campus).distinct().order_by(Event.campus).all()]
     return render_template('events.html',
                            events=evts,
                            total=total,
@@ -453,7 +498,7 @@ def event_detail(event_id):
     related = Event.query.filter(
         Event.category == event.category,
         Event.id != event.id,
-        Event.start_datetime >= datetime.utcnow()
+        Event.start_datetime >= BENCHMARK_NOW
     ).order_by(Event.start_datetime).limit(3).all()
     return render_template('event_detail.html', event=event, related=related)
 
@@ -542,40 +587,13 @@ def search():
                'research': [], 'athletics': []}
     total = 0
     if q:
-        results['programs'] = Program.query.filter(
-            db.or_(
-                Program.name.ilike(f'%{q}%'),
-                Program.description.ilike(f'%{q}%'),
-            )).limit(10).all()
-        results['news'] = NewsArticle.query.filter(
-            db.or_(
-                NewsArticle.title.ilike(f'%{q}%'),
-                NewsArticle.summary.ilike(f'%{q}%'),
-                NewsArticle.tags.ilike(f'%{q}%'),
-            )).order_by(NewsArticle.published_date.desc()).limit(10).all()
-        results['events'] = Event.query.filter(
-            db.or_(
-                Event.title.ilike(f'%{q}%'),
-                Event.description.ilike(f'%{q}%'),
-            )).limit(10).all()
-        results['faculty'] = Faculty.query.filter(
-            db.or_(
-                Faculty.name.ilike(f'%{q}%'),
-                Faculty.research_interests.ilike(f'%{q}%'),
-                Faculty.bio.ilike(f'%{q}%'),
-            )).limit(10).all()
-        results['research'] = ResearchCenter.query.filter(
-            db.or_(
-                ResearchCenter.name.ilike(f'%{q}%'),
-                ResearchCenter.description.ilike(f'%{q}%'),
-                ResearchCenter.focus_areas.ilike(f'%{q}%'),
-            )).limit(10).all()
-        results['athletics'] = AthleticTeam.query.filter(
-            db.or_(
-                AthleticTeam.name.ilike(f'%{q}%'),
-                AthleticTeam.sport.ilike(f'%{q}%'),
-            )).limit(10).all()
-        total = sum(len(v) for v in results.values())
+        results['programs'] = ranked_search(Program.query.all(), ('name', 'description'), q)
+        results['news'] = ranked_search(NewsArticle.query.all(), ('title', 'summary', 'content', 'tags'), q)
+        results['events'] = ranked_search(Event.query.all(), ('title', 'description', 'location', 'organizer'), q)
+        results['faculty'] = ranked_search(Faculty.query.all(), ('name', 'research_interests', 'bio', 'title'), q)
+        results['research'] = ranked_search(ResearchCenter.query.all(), ('name', 'description', 'focus_areas', 'director'), q)
+        results['athletics'] = ranked_search(AthleticTeam.query.all(), ('name', 'sport', 'coach', 'home_venue'), q)
+        total = sum(len(values) for values in results.values())
     return render_template('search.html', q=q, results=results, total=total)
 
 
@@ -583,7 +601,7 @@ def search():
 def faculty():
     q = request.args.get('q', '').strip()
     dept_slug = request.args.get('dept', '')
-    page = request.args.get('page', 1, type=int)
+    page = max(1, request.args.get('page', 1, type=int) or 1)
 
     query = Faculty.query
     if q:
@@ -657,10 +675,11 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.lower().strip()).first()
         if user and user.check_password(form.password.data):
+            session.clear()
             login_user(user)
-            next_page = request.args.get('next')
+            next_page = safe_next(request.args.get('next'), url_for('index'))
             flash('Welcome back, Buckeye!', 'success')
-            return redirect(next_page or url_for('index'))
+            return redirect(next_page)
         flash('Invalid email or password.', 'danger')
     return render_template('login.html', form=form)
 
@@ -671,26 +690,32 @@ def register():
         return redirect(url_for('index'))
     form = RegisterForm()
     if form.validate_on_submit():
-        if User.query.filter_by(email=form.email.data.lower().strip()).first():
-            flash('Email already registered.', 'danger')
-        elif User.query.filter_by(username=form.username.data.strip()).first():
-            flash('Username already taken.', 'danger')
+        email = form.email.data.lower().strip()
+        username = form.username.data.lower().strip()
+        if User.query.filter((User.email == email) | (db.func.lower(User.username) == username)).first():
+            flash('Unable to create an account with the supplied details.', 'danger')
         else:
             user = User(
-                email=form.email.data.lower().strip(),
-                username=form.username.data.strip(),
+                email=email,
+                username=username,
                 full_name=form.full_name.data.strip(),
             )
             user.set_password(form.password.data)
             db.session.add(user)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                flash('Unable to create an account with the supplied details.', 'danger')
+                return render_template('register.html', form=form), 400
+            session.clear()
             login_user(user)
             flash('Account created! Welcome to The Ohio State University.', 'success')
             return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 
-@app.route('/logout', methods=['GET', 'POST'])
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
@@ -742,30 +767,38 @@ def account():
                 detail['item'] = item
                 detail['title'] = item.name
                 detail['url'] = url_for('athletics_team', slug=item.slug)
-        bookmark_details.append(detail)
+        if detail['item'] is not None:
+            bookmark_details.append(detail)
     return render_template('account.html', bookmark_details=bookmark_details)
 
 
 @app.route('/bookmark/add', methods=['POST'])
 @login_required
 def bookmark_add():
-    item_type = request.form.get('item_type')
+    item_type = request.form.get('item_type', '').strip()
     item_id = request.form.get('item_id', type=int)
-    note = request.form.get('note', '')
-    if item_type and item_id:
-        existing = Bookmark.query.filter_by(
-            user_id=current_user.id, item_type=item_type, item_id=item_id
-        ).first()
-        if not existing:
-            bm = Bookmark(user_id=current_user.id, item_type=item_type,
-                          item_id=item_id, note=note)
-            db.session.add(bm)
+    model = BOOKMARK_TARGETS.get(item_type)
+    if model is None or not item_id:
+        abort(400)
+    if db.session.get(model, item_id) is None:
+        abort(404)
+    note = request.form.get('note', '').strip()[:500]
+    existing = Bookmark.query.filter_by(
+        user_id=current_user.id, item_type=item_type, item_id=item_id
+    ).first()
+    if not existing:
+        bookmark = Bookmark(user_id=current_user.id, item_type=item_type,
+                            item_id=item_id, note=note)
+        db.session.add(bookmark)
+        try:
             db.session.commit()
             flash('Saved to bookmarks.', 'success')
-        else:
+        except IntegrityError:
+            db.session.rollback()
             flash('Already bookmarked.', 'info')
-    next_url = request.form.get('next') or request.referrer or url_for('account')
-    return redirect(next_url)
+    else:
+        flash('Already bookmarked.', 'info')
+    return redirect(safe_next(request.form.get('next'), url_for('account')))
 
 
 @app.route('/bookmark/remove', methods=['POST'])
@@ -778,7 +811,7 @@ def bookmark_remove():
             db.session.delete(bm)
             db.session.commit()
             flash('Bookmark removed.', 'info')
-    return redirect(request.referrer or url_for('account'))
+    return redirect(safe_next(request.form.get('next'), url_for('account')))
 
 
 @app.route('/_health')
@@ -814,5 +847,5 @@ with app.app_context():
     seed()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 40016))
+    port = int(os.environ.get('PORT', SITE_PORT))
     app.run(host='0.0.0.0', port=port, debug=False)

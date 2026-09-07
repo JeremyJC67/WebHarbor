@@ -1,273 +1,372 @@
 #!/usr/bin/env python3
-"""verify_lib.py — shared deterministic + LLM utilities for Ohio State University
-task verification.
+"""Shared deterministic helpers for Ohio State University task verifiers."""
 
-Structurally mirrors sites/merriam_webster/verify/verify_lib.py (same Judge
-harness, same navigation anti-shortcut check, same anchored LLM utilities, same
-CLI + JSON output contract). Two osu-specific differences:
-  * SITE = "osu";
-  * a new contains_number() that ignores thousands separators, so a page that
-    renders 46820 and an agent that answers "46,820" still match.
-The merriam_webster-specific saved-word/user helpers are dropped (all 20 osu
-tasks are read-only look-ups); the generic SQLite helpers are kept so a future
-stateful osu task (register / bookmark) can query the after-state DB.
+from __future__ import annotations
 
-Philosophy: DETERMINISTIC FIRST.
-  1. Trajectory navigation check (anti knowledge-shortcut): the agent MUST have
-     opened the on-site page that renders the fact; a correct answer with no
-     matching navigation is a memory-recall shortcut = FAIL.
-  2. Answer check: token-containment / number / exact match against the frozen
-     ground truth HARDCODED in each verify_N.py (never in tasks.jsonl).
-  3. LLM utilities (text match, screenshot-contains) are used ONLY as an
-     ADDITIONAL confirmation and are ALWAYS anchored on ground truth: the model
-     verifies *presence* of given content, it never supplies knowledge. Each
-     verify_N.py gates the LLM block behind `not a.no_llm`, so a deterministic
-     (--no_llm) run makes ZERO LLM calls and is decided by checks 1-2 alone.
-
-Input signature (per task):
-  --run_dir DIR      agent trajectory dir: trajectory.json + screenshots/step_NNN.png
-  --initial_db PATH  initial-state SQLite DB (default: fetched instance_seed from container)
-  --after_db PATH    after-state  SQLite DB (default: fetched live instance DB from container)
-  --container NAME   docker container to fetch DBs from (default: $WH_CONTAINER or wh-review)
-  --no_llm           skip LLM-based checks (run deterministic-only)
-Output: JSON {task_id, pass, reason, evidence[]} to stdout; exit 0 on PASS, 1 on FAIL.
-"""
-import base64, json, os, re, sqlite3, subprocess, sys, tempfile, urllib.request
-from pathlib import Path
+import argparse
+import ipaddress
+import json
+import os
+import re
+import sqlite3
+import subprocess
+import tempfile
+import unicodedata
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Iterable, Sequence
+from urllib.parse import parse_qs, urlparse
 
 SITE = "osu"
+DEFAULT_CONTAINER = os.environ.get("WH_CONTAINER", "wh-review")
 
-# ---------------------------------------------------------------- trajectory
-def load_run(run_dir):
-    d = Path(run_dir)
-    traj = json.loads((d / "trajectory.json").read_text())
-    traj["_run_dir"] = d
-    shots_dir = d / "screenshots"
-    traj["_shots"] = {p.name: p for p in sorted(shots_dir.glob("step_*.png"))} \
-        if shots_dir.exists() else {}
-    return traj
+@dataclass(frozen=True)
+class VerifyArgs:
+    run_dir: str
+    initial_db: str | None
+    after_db: str | None
+    container: str
+    no_llm: bool
 
-def step_urls(traj):
-    return [s.get("url", "") for s in traj.get("steps", [])]
 
-def navigated_to(traj, substr, times=1):
-    """Deterministic: at least `times` trajectory steps have a URL containing substr."""
-    return sum(1 for u in step_urls(traj) if substr in u) >= times
+def _bool_value(value: str) -> bool:
+    return str(value).casefold() in {"1", "true", "yes", "on"}
 
-def navigated_any(traj, substrs):
-    return any(navigated_to(traj, s) for s in substrs)
 
-def final_answer(traj):
-    return (traj.get("final_answer") or "").strip()
+def parse_args() -> VerifyArgs:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run_dir", required=True)
+    parser.add_argument("--initial_db")
+    parser.add_argument("--after_db")
+    parser.add_argument("--container", default=DEFAULT_CONTAINER)
+    parser.add_argument("--no_llm", nargs="?", const=True, default=False, type=_bool_value)
+    args = parser.parse_args()
+    run_dir = Path(args.run_dir)
+    initial_snapshot = run_dir / "initial.db"
+    after_snapshot = run_dir / "after.db"
+    return VerifyArgs(
+        run_dir=args.run_dir,
+        initial_db=args.initial_db or (str(initial_snapshot) if initial_snapshot.is_file() else None),
+        after_db=args.after_db or (str(after_snapshot) if after_snapshot.is_file() else None),
+        container=args.container,
+        no_llm=bool(args.no_llm),
+    )
 
-def _shot(traj, name):
-    if not name:
-        return None
-    p = traj["_shots"].get(Path(name).name)
-    return p if (p and p.exists()) else None
 
-def shot_after_url(traj, substr):
-    """screenshot_after path of the first step whose URL contains substr."""
-    for s in traj.get("steps", []):
-        if substr in s.get("url", ""):
-            p = _shot(traj, s.get("screenshot_after"))
-            if p:
-                return p
-    return None
+def load_run(run_dir: str | os.PathLike[str]) -> dict[str, Any]:
+    trajectory = json.loads((Path(run_dir) / "trajectory.json").read_text(encoding="utf-8"))
+    if not isinstance(trajectory, dict):
+        raise ValueError("trajectory.json must contain a JSON object")
+    return trajectory
 
-def last_shot(traj):
-    for s in reversed(traj.get("steps", [])):
-        p = _shot(traj, s.get("screenshot_after")) or _shot(traj, s.get("screenshot_before"))
-        if p:
-            return p
-    shots = sorted(traj["_shots"].values())
-    return shots[-1] if shots else None
 
-# ---------------------------------------------------------------- deterministic answer match
-def norm(s):
-    return re.sub(r"\s+", " ", (s or "").strip()).casefold()
+def normalize_text(value: Any) -> str:
+    text = unicodedata.normalize("NFKC", str(value or ""))
+    text = text.replace("’", "'").replace("“", '"').replace("”", '"').replace("–", "-").replace("—", "-")
+    return re.sub(r"\s+", " ", text).strip().casefold()
 
-def answer_equals(final, expected):
-    return norm(final) == norm(expected)
 
-def contains_all(final, tokens):
-    f = norm(final)
-    return all(norm(t) in f for t in tokens)
+def final_answer(trajectory: dict[str, Any]) -> str:
+    return str(trajectory.get("final_answer") or "").strip()
 
-def contains_any(final, tokens):
-    f = norm(final)
-    return any(norm(t) in f for t in tokens)
 
-def _strip_thousands(s):
-    return re.sub(r"(?<=\d),(?=\d)", "", s or "")
+def trajectory_urls(trajectory: dict[str, Any]) -> list[str]:
+    urls: list[str] = []
+    if trajectory.get("start_url"):
+        urls.append(str(trajectory["start_url"]))
+    for step in trajectory.get("steps") or []:
+        if not isinstance(step, dict):
+            continue
+        for key in ("url_before", "url", "url_after"):
+            value = str(step.get(key) or "")
+            if value and (not urls or value != urls[-1]):
+                urls.append(value)
+    final_url = str(trajectory.get("final_url") or "")
+    if final_url and (not urls or final_url != urls[-1]):
+        urls.append(final_url)
+    return urls
 
-def contains_number(final, number):
-    """True if the integer `number` appears in `final` as a standalone number,
-    ignoring thousands separators (so "46,820" == "46820"). Digit boundaries are
-    enforced so 8 does not match inside 18 or 80, and 1870 does not match 18700."""
-    f = _strip_thousands(norm(final))
-    n = _strip_thousands(str(number).strip())
-    return re.search(rf"(?<!\d){re.escape(n)}(?!\d)", f) is not None
 
-def count_present(final, options):
-    """How many of `options` (list of token-lists OR strings) appear in final."""
-    f = norm(final)
-    hits = 0
-    for opt in options:
-        toks = opt if isinstance(opt, (list, tuple)) else [opt]
-        if all(norm(t) in f for t in toks):
-            hits += 1
-    return hits
+def _loopback(hostname: str) -> bool:
+    if hostname.casefold() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(hostname).is_loopback
+    except ValueError:
+        return False
 
-# ---------------------------------------------------------------- DB state (generic; unused by the current read-only tasks)
-def fetch_db(container, kind):
-    """kind: 'instance' (after-state) or 'instance_seed' (initial-state). docker cp -> temp file."""
-    src = f"{container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db"
-    fd, path = tempfile.mkstemp(suffix=".db")
-    os.close(fd)
-    r = subprocess.run(["docker", "cp", src, path], capture_output=True, text=True)
-    if r.returncode != 0:
-        try:
-            os.unlink(path)
-        except OSError:
-            pass
-        raise RuntimeError(f"docker cp {src} failed: {r.stderr.strip()}")
-    return path
 
-def resolve_db(arg, container, kind):
-    if arg:
-        return arg
+def is_site_url(url: str, trajectory: dict[str, Any]) -> bool:
+    parsed = urlparse(str(url or ""))
+    start = urlparse(str(trajectory.get("start_url") or ""))
+    return bool(
+        parsed.scheme in {"http", "https"}
+        and parsed.hostname
+        and start.hostname
+        and _loopback(parsed.hostname)
+        and _loopback(start.hostname)
+        and parsed.scheme == start.scheme
+        and parsed.port == start.port
+    )
+
+
+def normalized_path(url: str) -> str:
+    path = urlparse(str(url or "")).path or "/"
+    return path.rstrip("/") or "/"
+
+
+def query_matches(url: str, expected: dict[str, str]) -> bool:
+    params = parse_qs(urlparse(url).query)
+    return all(normalize_text((params.get(key) or [""])[0]) == normalize_text(value) for key, value in expected.items())
+
+
+def visited_path(trajectory: dict[str, Any], path: str) -> bool:
+    expected = normalized_path(path)
+    return any(is_site_url(url, trajectory) and normalized_path(url) == expected for url in trajectory_urls(trajectory))
+
+
+def visited_query(trajectory: dict[str, Any], path: str, expected: dict[str, str]) -> bool:
+    return any(
+        is_site_url(url, trajectory)
+        and normalized_path(url) == normalized_path(path)
+        and query_matches(url, expected)
+        for url in trajectory_urls(trajectory)
+    )
+
+
+def visited_in_order(trajectory: dict[str, Any], requirements: list[tuple[str, dict[str, str]]]) -> bool:
+    urls = trajectory_urls(trajectory)
+    cursor = 0
+    for path, query in requirements:
+        found = False
+        for index in range(cursor, len(urls)):
+            url = urls[index]
+            if is_site_url(url, trajectory) and normalized_path(url) == normalized_path(path) and query_matches(url, query):
+                cursor = index + 1
+                found = True
+                break
+        if not found:
+            return False
+    return True
+
+
+def transition_pairs(trajectory: dict[str, Any]):
+    steps = trajectory.get("steps") or []
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            continue
+        current = str(step.get("url") or step.get("url_before") or "")
+        if not is_site_url(current, trajectory):
+            continue
+        following = str(step.get("url_after") or "")
+        if not following and index + 1 < len(steps) and isinstance(steps[index + 1], dict):
+            following = str(steps[index + 1].get("url") or steps[index + 1].get("url_after") or "")
+        if following and is_site_url(following, trajectory):
+            yield normalize_text(step.get("action")), current, following
+
+
+def clicked_transition(trajectory: dict[str, Any], from_path: str, to_path: str) -> bool:
+    return any(
+        action == "click"
+        and normalized_path(current) == normalized_path(from_path)
+        and normalized_path(following) == normalized_path(to_path)
+        for action, current, following in transition_pairs(trajectory)
+    )
+
+
+def submitted_from_path(trajectory: dict[str, Any], path: str, destination: str | None = None) -> bool:
+    for action, current, following in transition_pairs(trajectory):
+        if action != "click" or normalized_path(current) != normalized_path(path):
+            continue
+        if destination is None or normalized_path(following) == normalized_path(destination):
+            return True
+    return False
+
+
+def input_values(trajectory: dict[str, Any], path: str | None = None) -> list[str]:
+    values: list[str] = []
+    for step in trajectory.get("steps") or []:
+        if not isinstance(step, dict) or normalize_text(step.get("action")) not in {"input", "fill", "type", "select"}:
+            continue
+        url = str(step.get("url") or step.get("url_before") or "")
+        if not is_site_url(url, trajectory) or (path and normalized_path(url) != normalized_path(path)):
+            continue
+        params = step.get("params") or {}
+        value = params.get("text", params.get("value", params.get("option", params.get("label")))) if isinstance(params, dict) else None
+        if value is not None:
+            values.append(str(value))
+    return values
+
+
+def entered_text(trajectory: dict[str, Any], expected: str, path: str | None = None) -> bool:
+    expected_value = normalize_text(expected)
+    return any(normalize_text(value) == expected_value for value in input_values(trajectory, path))
+
+
+def last_entered_email(trajectory: dict[str, Any], path: str = "/login") -> str:
+    emails = [normalize_text(value) for value in input_values(trajectory, path) if re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", value.strip())]
+    return emails[-1] if emails else ""
+
+
+def login_submitted_as(trajectory: dict[str, Any], email: str) -> bool:
+    return visited_path(trajectory, "/login") and last_entered_email(trajectory) == normalize_text(email) and submitted_from_path(trajectory, "/login")
+
+
+NEGATIONS = {"not", "no", "never", "without", "isn't", "isnt", "wasn't", "wasnt", "doesn't", "doesnt", "didn't", "didnt"}
+
+
+def _negated_before(text: str, start: int) -> bool:
+    clause = re.split(r"[.!?;:\n]+|\b(?:and|but|however|instead)\b", text[:start])[-1]
+    words = re.findall(r"[a-z0-9]+(?:'[a-z]+)?", clause)
+    return any(word in NEGATIONS for word in words)
+
+
+def _negated_after(text: str, end: int) -> bool:
+    suffix = re.sub(r"^\s*[-,:;!?]*\s*", "", text[end:])
+    return re.match(r"(?:(?:is|was|does|did|are|were)\s+)?(?:not|never|no)\b|(?:isn't|isnt|wasn't|wasnt|doesn't|doesnt|didn't|didnt|aren't|arent|weren't|werent)\b", suffix) is not None
+
+
+def affirmative_contains(text: Any, expected: Any) -> bool:
+    normalized = normalize_text(text)
+    needle = normalize_text(expected)
+    matches = list(re.finditer(re.escape(needle), normalized))
+    if not needle or not matches:
+        return False
+    match = matches[-1]
+    return not _negated_before(normalized, match.start()) and not _negated_after(normalized, match.end())
+
+
+def contains_all(text: Any, expected: Iterable[Any]) -> bool:
+    return all(affirmative_contains(text, value) for value in expected)
+
+
+def contains_any(text: Any, expected: Iterable[Any]) -> bool:
+    return any(affirmative_contains(text, value) for value in expected)
+
+
+def contains_word(text: Any, expected: str) -> bool:
+    normalized = normalize_text(text)
+    return re.search(rf"(?<![a-z0-9]){re.escape(normalize_text(expected))}(?![a-z0-9])", normalized) is not None
+
+
+def number_matches(text: Any, value: int | float, tolerance: float = 0.001) -> list[re.Match[str]]:
+    normalized = normalize_text(text)
+    matches = []
+    for match in re.finditer(r"(?<![a-z0-9])\d[\d,]*(?:\.\d+)?(?![a-z0-9])", normalized):
+        observed = float(match.group(0).replace(",", ""))
+        if abs(observed - float(value)) <= tolerance and not _negated_before(normalized, match.start()) and not _negated_after(normalized, match.end()):
+            matches.append(match)
+    return matches
+
+
+def has_number(text: Any, value: int | float) -> bool:
+    return bool(number_matches(text, value))
+
+
+def number_bound_to(text: Any, value: int | float, labels: Sequence[str], distance: int = 140) -> bool:
+    normalized = normalize_text(text)
+    for match in number_matches(normalized, value):
+        window = normalized[max(0, match.start() - distance):min(len(normalized), match.end() + distance)]
+        if any(normalize_text(label) in window for label in labels):
+            return True
+    return False
+
+
+def number_bound_in_comparison(text: Any, value: int | float, labels: Sequence[str]) -> bool:
+    normalized = normalize_text(text)
+    segments = re.split(r"\b(?:versus|vs\.?|while|compared (?:with|to))\b|[;\n]", normalized)
+    return any(has_number(segment, value) and any(normalize_text(label) in segment for label in labels) for segment in segments)
+
+
+def text_bound_in_comparison(text: Any, value: str, labels: Sequence[str]) -> bool:
+    normalized = normalize_text(text)
+    segments = re.split(r"\b(?:versus|vs\.?|while|compared (?:with|to))\b|[;\n]", normalized)
+    return any(normalize_text(value) in segment and any(normalize_text(label) in segment for label in labels) for segment in segments)
+
+
+def fetch_db(container: str, kind: str) -> str:
+    if kind not in {"instance", "instance_seed"}:
+        raise ValueError(f"unsupported database kind: {kind}")
+    handle, destination = tempfile.mkstemp(prefix=f"osu_{kind}_", suffix=".db")
+    os.close(handle)
+    source = f"{container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db"
+    result = subprocess.run(["docker", "cp", source, destination], capture_output=True, text=True, check=False)
+    if result.returncode:
+        Path(destination).unlink(missing_ok=True)
+        raise RuntimeError(result.stderr.strip() or f"could not copy {source}")
+    return destination
+
+
+def resolve_db(explicit: str | None, container: str, kind: str) -> str | None:
+    if explicit:
+        return explicit if Path(explicit).is_file() else None
     try:
         return fetch_db(container, kind)
-    except Exception:
-        return None  # caller treats None as "unavailable" and FAILs that check
+    except (OSError, RuntimeError):
+        return None
 
-def db_query(db_path, sql, params=()):
-    con = sqlite3.connect(db_path)
+
+def db_query(path: str, sql: str, params: Sequence[Any] = ()) -> list[sqlite3.Row]:
+    connection = sqlite3.connect(path)
+    connection.row_factory = sqlite3.Row
     try:
-        return con.execute(sql, params).fetchall()
+        return connection.execute(sql, params).fetchall()
     finally:
-        con.close()
-
-# ---------------------------------------------------------------- shared LLM utilities (anchored)
-# Unified LLM config, same env vars as agent.py / eval_judge.py:
-#   OPENAI_API_KEY, OPENAI_BASE_URL, JUDGE_MODEL
-import simpleArgParser as sap
-
-# When --no_llm is set (via Judge), the llm_* helpers short-circuit so verifiers
-# that call them directly still make ZERO LLM calls.
-_NO_LLM = False
+        connection.close()
 
 
-def _llm_config():
-    """Resolve (api_key, api_base, model) from env once per process."""
-    key = os.environ.get("OPENAI_API_KEY", "")
-    base = os.environ.get("OPENAI_BASE_URL", "")
-    model = os.environ.get("JUDGE_MODEL", "")
-    return key, base, model
+def row_dicts(path: str, sql: str, params: Sequence[Any] = ()) -> list[dict[str, Any]]:
+    return [dict(row) for row in db_query(path, sql, params)]
 
 
-def _chat(messages, max_tokens=1024):
-    """One LLM call against the configured OpenAI-compatible endpoint. Returns text or None."""
-    if _NO_LLM:
-        return None
-    key, base, model = _llm_config()
-    if not (key and base and model):
-        return None  # no LLM configured -> callers treat as non-PASS
-    payload = {"model": model, "messages": messages,
-               "max_tokens": max_tokens, "temperature": 1.0}
-    req = urllib.request.Request(base,
-                                 data=json.dumps(payload).encode(),
-                                 headers={"Content-Type": "application/json",
-                                          "Authorization": f"Bearer {key}"})
-    try:
-        data = json.loads(urllib.request.urlopen(req, timeout=180).read())
-    except Exception:
-        return None  # caller treats None as a non-PASS; never raises
-    try:
-        return data["choices"][0]["message"]["content"]
-    except Exception:
-        return None
+def database_tables(path: str) -> list[str]:
+    return [str(row["name"]) for row in db_query(path, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
 
-def _verdict(out):
-    """Normalize an LLM reply to (pass_bool, text). None/empty -> (False, '<no reply>')."""
-    if not out:
-        return False, "<no reply from LLM>"
-    s = out.strip()
-    return s.upper().startswith("PASS"), s
 
-def llm_text_match(agent_answer, ground_truth, question):
-    """One LLM call: does agent_answer correctly answer question AND stay consistent
-    with the frozen ground truth? The model is given the ground truth as an anchor
-    and is told NOT to use its own knowledge."""
-    if _NO_LLM:
-        return False, "[skipped: --no_llm]"
-    out = _chat([{"role": "user", "content":
-        f"You are a STRICT binary grader.\nQuestion: {question}\n"
-        f"Ground-truth answer (ANCHOR — judge against THIS, never use your own knowledge): {ground_truth}\n"
-        f"Agent's answer: {agent_answer}\n"
-        f"Decide PASS or FAIL ignoring case/punctuation/word order/surrounding prose. "
-        f"PASS only if the agent's answer is consistent with the ground truth AND actually answers the question. "
-        f"Line 1: PASS or FAIL. Line 2: one-sentence reason."}])
-    return _verdict(out)
+def table_snapshot(path: str, table: str) -> list[tuple[Any, ...]]:
+    return [tuple(row) for row in db_query(path, f'SELECT * FROM "{table}" ORDER BY rowid')]
 
-def llm_screenshot_shows(shot_path, must_show, question=""):
-    """One vision LLM call: does this screenshot visibly render text answering/containing
-    `must_show`? The model judges pixels only, anchored on the expected content."""
-    if _NO_LLM:
-        return False, "[skipped: --no_llm]"
-    b64 = base64.b64encode(Path(shot_path).read_bytes()).decode()
-    out = _chat([{"role": "user", "content": [
-        {"type": "text", "text":
-            f"You are a STRICT binary grader. Only what is VISIBLY rendered in this screenshot counts.\n"
-            f"Question the page should answer: {question}\n"
-            f"Expected content to verify PRESENCE of: {must_show}\n"
-            f"PASS only if the expected content (or a semantically equivalent on-screen answer) is visibly shown. "
-            f"Do NOT use prior knowledge — judge only the rendered pixels.\n"
-            f"Line 1: PASS or FAIL. Line 2: quote the visible evidence."},
-        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}}]}])
-    return _verdict(out)
 
-# ---------------------------------------------------------------- judge harness + CLI
+def changed_tables(initial_db: str, after_db: str) -> set[str]:
+    initial_tables = database_tables(initial_db)
+    if initial_tables != database_tables(after_db):
+        return {"<schema>"}
+    return {table for table in initial_tables if table_snapshot(initial_db, table) != table_snapshot(after_db, table)}
+
+
+def database_unchanged(initial_db: str | None, after_db: str | None) -> bool:
+    return bool(initial_db and after_db and not changed_tables(initial_db, after_db))
+
+
+def check_common(judge: "Judge", trajectory: dict[str, Any], task_id: str) -> None:
+    judge.check("task_id_matches", str(trajectory.get("task_id") or "") == task_id, f"observed={trajectory.get('task_id')!r}")
+    judge.check("final_answer_nonempty", bool(final_answer(trajectory)), repr(final_answer(trajectory)))
+    judge.check("start_url_is_site", is_site_url(str(trajectory.get("start_url") or ""), trajectory), f"start_url={trajectory.get('start_url')!r}")
+
+
+def check_read_only(judge: "Judge", args: VerifyArgs) -> tuple[str | None, str | None]:
+    initial = resolve_db(args.initial_db, args.container, "instance_seed")
+    after = resolve_db(args.after_db, args.container, "instance")
+    judge.check("databases_readable", bool(initial and after), f"initial={initial} after={after}")
+    judge.check("read_only_database_unchanged", database_unchanged(initial, after), "complete database comparison")
+    return initial, after
+
+
 class Judge:
-    def __init__(self, task_id, no_llm=False):
-        global _NO_LLM
-        _NO_LLM = bool(no_llm)   # gate the llm_* helpers at the source
+    def __init__(self, task_id: str, no_llm: bool = False):
         self.task_id = task_id
-        self.no_llm = no_llm
-        self.ok = True
+        self.passed = True
         self.reason = ""
-        self.evidence = []
+        self.evidence: list[str] = []
 
-    def check(self, name, cond, evidence="", llm=False):
-        if llm and self.no_llm:
-            self.evidence.append(f"[SKIP] {name} (--no-llm)")
-            return True
-        if cond:
-            self.evidence.append(f"[PASS] {name}: {evidence}")
-        else:
-            self.ok = False
+    def check(self, name: str, condition: bool, evidence: str = "", llm: bool = False) -> bool:
+        self.evidence.append(f"[{'PASS' if condition else 'FAIL'}] {name}: {evidence}")
+        if not condition:
+            self.passed = False
             if not self.reason:
-                self.reason = name   # record the FIRST failing check
-            self.evidence.append(f"[FAIL] {name}: {evidence}")
-        return bool(cond)
+                self.reason = name
+        return bool(condition)
 
-    def emit(self):
-        print(json.dumps({"task_id": self.task_id, "pass": self.ok,
-                          "reason": self.reason, "evidence": self.evidence}, indent=2))
-        sys.exit(0 if self.ok else 1)
-
-def parse_args():
-    @dataclass
-    class VerifyArgs:
-        run_dir: str = ""
-        initial_db: str = ""
-        after_db: str = ""
-        container: str = os.environ.get("WH_CONTAINER", "wh-review")
-        no_llm: bool = False
-
-        def post_process(self):
-            if not self.run_dir:
-                raise SystemExit("--run_dir is required")
-    return sap.parse_args(VerifyArgs)
+    def emit(self) -> None:
+        print(json.dumps({"task_id": self.task_id, "pass": self.passed, "reason": self.reason, "evidence": self.evidence}, ensure_ascii=False, indent=2))
+        raise SystemExit(0 if self.passed else 1)

@@ -1,39 +1,6 @@
 #!/usr/bin/env python3
-"""Deterministic verifier for OSU task Ohio State University--14.
-
-Football home stadium -> Ohio Stadium (the Horseshoe).
-
-Checks (deterministic first; the LLM screenshot check is an anchored confirmation
-that is fully skipped under --no_llm):
-  nav /athletics/ohio-state-buckeyes-football | answer (ground truth hardcoded here) | screenshot shows the fact
-Input/Output: see verify_lib.parse_args / Judge.emit.
-"""
-import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, navigated_any, final_answer,
-                        last_shot, shot_after_url, contains_all, contains_any,
-                        contains_number, count_present, answer_equals,
-                        llm_text_match, llm_screenshot_shows, Judge, parse_args)
-
+from verify_lib import Judge, check_common, check_read_only, clicked_transition, final_answer, load_run, parse_args, text_bound_in_comparison, visited_in_order
+TASK_ID='Ohio State University--14';F='/athletics/ohio-state-buckeyes-football';B='/athletics/ohio-state-buckeyes-mens-basketball'
 def main():
-    a = parse_args()
-    j = Judge("Ohio State University--14", a.no_llm)
-    t = load_run(a.run_dir)
-    fa = final_answer(t)
-    nav_ok = navigated_to(t, "/athletics/ohio-state-buckeyes-football")
-    j.check("nav_football", nav_ok, f"urls_matched={nav_ok}")
-    j.check("answer_ohio_stadium", contains_any(fa, ["Ohio Stadium", "Horseshoe"]),
-            f"final={fa!r}")
-    if not a.no_llm:
-        s = shot_after_url(t, "/athletics/ohio-state-buckeyes-football") or last_shot(t)
-        if s:
-            ok, ev = llm_screenshot_shows(s,
-                "Ohio Stadium (the Horseshoe)",
-                "What is the home stadium for Ohio State football?")
-            j.check("screenshot_confirms", ok, ev, llm=True)
-        else:
-            j.check("screenshot_confirms", False, "no screenshots in run", llm=True)
-    j.emit()
-
-if __name__ == "__main__":
-    main()
+ a=parse_args();t=load_run(a.run_dir);j=Judge(TASK_ID);answer=final_answer(t);check_common(j,t,TASK_ID);j.check('athletics_then_both_details',visited_in_order(t,[('/athletics',{}),(F,{})]) and visited_in_order(t,[('/athletics',{}),(B,{})]),'listing before details');j.check('clicked_both_teams',clicked_transition(t,'/athletics',F) and clicked_transition(t,'/athletics',B),'visible team links used');j.check('football_venue_bound',text_bound_in_comparison(answer,'Ohio Stadium',('football',)),repr(answer));j.check('basketball_venue_bound',text_bound_in_comparison(answer,'Value City Arena',('basketball',)),repr(answer));check_read_only(j,a);j.emit()
+if __name__=='__main__':main()

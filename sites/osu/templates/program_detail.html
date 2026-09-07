@@ -7,7 +7,7 @@
   <span>{{ program.name }}</span>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 280px;gap:30px">
+<div class="detail-layout">
   <div>
     <div style="margin-bottom:12px">
       <span class="badge badge-scarlet" style="font-size:14px;padding:5px 12px">{{ program.degree_type }}</span>
@@ -72,6 +72,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="item_type" value="program">
         <input type="hidden" name="item_id" value="{{ program.id }}">
+        <input type="hidden" name="next" value="{{ request.path }}">
         <button type="submit" class="btn btn-outline btn-sm" style="width:100%">&#9733; Save Program</button>
       </form>
       {% endif %}

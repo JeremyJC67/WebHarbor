@@ -10,6 +10,9 @@ TAG="${1:-webharbor:dev}"
 # Fast probe — if any site is missing instance_seed/, run fetch_assets.
 need_fetch=0
 for site in sites/*/; do
+    if [[ -f "${site}.build-generated-seed" ]]; then
+        continue
+    fi
     if [[ ! -d "${site}instance_seed" ]]; then
         need_fetch=1
         break

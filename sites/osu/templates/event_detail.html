@@ -7,7 +7,7 @@
   <span>{{ event.title[:50] }}{% if event.title|length > 50 %}...{% endif %}</span>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 280px;gap:30px">
+<div class="detail-layout">
   <div>
     <span class="badge badge-scarlet">{{ event.category }}</span>
     {% if event.registration_required %}<span class="badge badge-gray" style="margin-left:6px">Registration Required</span>{% endif %}
@@ -55,6 +55,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="item_type" value="event">
       <input type="hidden" name="item_id" value="{{ event.id }}">
+      <input type="hidden" name="next" value="{{ request.path }}">
       <button type="submit" class="btn btn-outline btn-sm">&#9733; Save Event</button>
     </form>
     {% endif %}
