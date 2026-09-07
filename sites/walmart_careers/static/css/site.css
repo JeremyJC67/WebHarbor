@@ -566,6 +566,7 @@ a.tile.tile-sky:hover, a.tile.tile-pale:hover { color: var(--ld-blue-160); }
 .detail-body ul { margin: 0 0 16px; padding-left: 20px; }
 .detail-body li { margin-bottom: 8px; }
 .hashtag { font-weight: 400; color: var(--ld-blue-100); }
+.detail-body .sub-heading { font-weight: 700; margin: 22px 0 6px; }
 .legal { font-size: 13px; color: var(--ld-text-subtle); margin-top: 20px; }
 
 .benefit-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -720,9 +721,22 @@ table.data th { font-size: 14px; text-transform: uppercase; letter-spacing: .04e
 .footer-cols ul { list-style: none; margin: 0; padding: 0; }
 .footer-cols li { margin-bottom: 9px; font-size: 14px; }
 .social { display: flex; gap: 16px; margin-bottom: 28px; }
-.social img { width: 26px; height: 26px; }
+/* the harvested glyphs are dark (#151F29); the footer is navy, so invert them */
+.social img { width: 26px; height: 26px; filter: brightness(0) invert(1); }
 .legal-text { font-size: 12px; color: #cfd9ea; margin-bottom: 16px; }
 .footer-bottom { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12px; padding-top: 10px; }
+
+/* Header: below 1024px the five nav items plus the search pill no longer fit on one
+   row (the header used to force the viewport wider than 768px), so the header wraps
+   and the search pill takes a full second row. */
+@media (max-width: 1024px) {
+  .site-header .wrap { flex-wrap: wrap; gap: 8px 12px; padding: 8px 16px; }
+  .main-nav { flex: 1 1 auto; gap: 2px; min-width: 0; overflow-x: auto; }
+  .main-nav .nav-link, .nav-menu > summary { font-size: 14px; padding: 8px 8px; }
+  .header-search { flex: 1 0 100%; order: 10; }
+  .header-search form { max-width: none; }
+  .header-spacer { display: none; }
+}
 
 @media (max-width: 1200px) {
   :root { --gutter: 32px; }

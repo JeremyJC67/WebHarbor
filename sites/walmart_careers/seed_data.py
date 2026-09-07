@@ -295,7 +295,15 @@ def _build_jobs(areas, categories, stores) -> list[Job]:
                 "yp": yp,
             }
             paragraphs = [p.format(**fmt) for p in family["do"]]
-            paragraphs.append("About Team: " + family["about_team"].format(**fmt))
+            clause = extras.get("qual_clause")
+
+            def qualification(template: str) -> str:
+                text = template.format(**fmt)
+                if clause:
+                    text = text.rstrip(".") + ", " + clause + "."
+                return text
+
+            bring = [b.format(**fmt) for b in source.SALARIED_BRING[family["category"]]]
             job = Job(
                 job_id=job_id,
                 population="salaried",
@@ -314,7 +322,8 @@ def _build_jobs(areas, categories, stores) -> list[Job]:
                 is_trending=job_id in trending,
                 summary=family["summary"].format(**fmt),
                 description="\n\n".join(paragraphs),
-                additional_description_json=None,
+                about_team=family["about_team"].format(**fmt),
+                additional_description_json=dumps_json(bring),
                 hashtag=None,
                 shift_time=None,
                 positions_available=None,
@@ -323,8 +332,8 @@ def _build_jobs(areas, categories, stores) -> list[Job]:
                 job_posting_id=f"JOB_POSTING-3-{posting_seq}",
                 min_qualifications_json=dumps_json(
                     [
-                        family["min_qual_option1"].format(**fmt),
-                        family["min_qual_option2"].format(**fmt),
+                        qualification(family["min_qual_option1"]),
+                        qualification(family["min_qual_option2"]),
                     ]
                 ),
                 preferred_qualifications=family["preferred"].format(**fmt),

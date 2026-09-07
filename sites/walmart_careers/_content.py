@@ -129,6 +129,68 @@ PREF_QUAL_PREAMBLE = (
     "there are no preferred qualifications."
 )
 
+# Salaried detail pages: the boilerplate blocks that follow "What you'll bring"
+# on the live corporate postings. Static chrome, keyed by career-area slug for
+# the "About ..." paragraph; everything per-posting lives on Job.
+SALARIED_ABOUT_AREA = {
+    "technology": (
+        "About Walmart Global Tech",
+        "Imagine working in an environment where one line of code can make life easier for hundreds of "
+        "millions of people. That's what we do at Walmart Global Tech. We're a team of software engineers, "
+        "data scientists, cybersecurity experts and service professionals within the world's leading "
+        "retailer who make an epic impact and are at the forefront of the next retail disruption. People "
+        "are why we innovate, and people power our innovations. We are people-led and tech-empowered. We "
+        "train our team in the skillsets of the future and bring in experts like you to help us grow.",
+    ),
+    "corporate": (
+        "About Walmart",
+        "Our home office and corporate teams set the direction for the world's largest retailer: the "
+        "strategy, the finances, the merchandise, the marketing and the people practices behind more "
+        "than 10,000 stores and clubs and the associates who run them. The work you do here shows up on "
+        "shelves and in carts within weeks, not years.",
+    ),
+    "students": (
+        "About our internships",
+        "Our internships are paid, project-based and designed to end with a real deliverable. Interns "
+        "join a team, own a piece of work for the term, present it to leadership and leave with a "
+        "network across the business. Many of our leaders started as interns.",
+    ),
+}
+SALARIED_ABOUT_DEFAULT = (
+    "About Walmart",
+    "Walmart Inc. is the world's largest retailer, serving more than 250 million customers every week "
+    "through stores, clubs and eCommerce sites in nineteen countries.",
+)
+SALARIED_HYBRID_NOTE = (
+    "We use a hybrid way of working that is primarily in office coupled with virtual when not onsite. "
+    "Our campuses serve as a hub for collaboration, bring us together for purpose, and deliver on business "
+    "needs. This approach helps us make quicker decisions, remove location barriers across our global "
+    "team, and be more flexible in our personal lives."
+)
+SALARIED_BENEFITS_NOTE = (
+    "Beyond our great compensation package, you can receive incentive awards for your performance. Other "
+    "great perks include 401(k) match, stock purchase plan, paid maternity and parental leave, PTO, "
+    "multiple health plans, and much more."
+)
+SALARIED_PAY_NOTE = (
+    "At Walmart, we offer competitive pay as well as performance-based bonus awards and other great "
+    "benefits for a happier mind, body, and wallet. Health benefits include medical, vision and dental "
+    "coverage. Financial benefits include 401(k), stock purchase and company-paid life insurance. Paid "
+    "time off benefits include PTO (including sick leave), parental leave, family care leave, "
+    "bereavement, jury duty, and voting. Other benefits include short-term and long-term disability, "
+    "company discounts, Military Leave Pay, adoption and surrogacy expense reimbursement, and more."
+)
+SALARIED_EEO_NOTE = (
+    "Walmart, Inc. is an Equal Opportunity Employer - By Choice. We believe we are best equipped to help "
+    "our associates, customers and the communities we serve live better when we really know them."
+)
+SALARIED_SCOPE_NOTE = (
+    "The above information has been designed to indicate the general nature and level of work performed "
+    "in the role. It is not designed to contain or be interpreted as a comprehensive inventory of all "
+    "responsibilities and qualifications required of employees assigned to this job. The full Job "
+    "Description can be made available as part of the hiring process."
+)
+
 # --------------------------------------------------------------------------- #
 # Resources pages
 # --------------------------------------------------------------------------- #

@@ -78,7 +78,12 @@
     <nav class="detail-nav" aria-label="On this page">
       <ul>
         <li><a href="#role-details">Role Details</a></li>
-        {% if not salaried %}
+        {% if salaried %}
+          <li class="sub"><a href="#role-summary">Position summary</a></li>
+          <li class="sub"><a href="#what-youll-do">What you'll do</a></li>
+          <li class="sub"><a href="#what-youll-bring">What you'll bring</a></li>
+          <li class="sub"><a href="#minimum-qualifications">Qualifications</a></li>
+        {% else %}
           <li class="sub"><a href="#role-summary">Role summary</a></li>
           <li class="sub"><a href="#what-youll-do">What you'll do</a></li>
           <li class="sub"><a href="#what-youll-bring">What you'll bring</a></li>
@@ -162,6 +167,31 @@
           <p>{{ job.summary }}</p>
           <h2 id="what-youll-do">What you'll do...</h2>
           {% for paragraph in job.description.split('\n\n') %}<p>{{ paragraph }}</p>{% endfor %}
+          {% if job.about_team %}
+            <p class="sub-heading">About the team:</p>
+            <p>{{ job.about_team }}</p>
+          {% endif %}
+          {% if job.additional_description %}
+            <p class="sub-heading" id="what-youll-bring">What you'll bring:</p>
+            <ul>
+              {% for bullet in job.additional_description %}<li>{{ bullet }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+          {% set about = content.SALARIED_ABOUT_AREA.get(job.area.slug, content.SALARIED_ABOUT_DEFAULT) %}
+          <p class="sub-heading">{{ about[0] }}</p>
+          <p>{{ about[1] }}</p>
+          {% if job.store.is_office %}
+            <p class="sub-heading">Flexible, hybrid work:</p>
+            <p>{{ content.SALARIED_HYBRID_NOTE }}</p>
+          {% endif %}
+          <p class="sub-heading">Benefits:</p>
+          <p>{{ content.SALARIED_BENEFITS_NOTE }}</p>
+          <p class="sub-heading">Equal Opportunity Employer:</p>
+          <p>{{ content.SALARIED_EEO_NOTE }}</p>
+          <p>{{ content.SALARIED_SCOPE_NOTE }}</p>
+          <p>{{ content.SALARIED_PAY_NOTE }}
+             The annual salary range for this position is {{ job.pay_range }}.
+             Additional compensation includes annual or quarterly performance bonuses.</p>
           <h2 id="minimum-qualifications">Minimum Qualifications...</h2>
           <p>{{ content.MIN_QUAL_PREAMBLE }}</p>
           <ul>

@@ -283,7 +283,7 @@ HOURLY_FAMILIES = [
             "Complies with company policies, procedures, and standards of ethics and integrity.",
         ],
         "placements": [
-            ("9046", "Part time", "SN", 21.35, 24.85, 2, {"job_id": "CP-9046-11101", "shift_time": "Shift may start between 6:00pm - 2:30am"}),
+            ("9046", "Part time", "SN", 21.35, 24.85, 2, {"job_id": "CP-9046-11274", "shift_time": "Shift may start between 6:00pm - 2:30am"}),
             ("9054", "Part time", "WN", 20.60, 24.10, 1, None),
             ("9281", "Part time", "SD,WN", 19.20, 22.70, 3, None),
             ("7133", "Full time", "WD", 18.80, 22.30, 4, None),
@@ -604,7 +604,7 @@ HOURLY_FAMILIES = [
             ("2110", "Full time", "WD,WE", 15.50, 26.00, 3, None),
             ("2050", "Part time", "WE,SE", 17.50, 28.00, 2, None),
             ("471", "Full time", "WD,SD", 15.00, 25.00, 4, None),
-            ("1236", "Part time", "WN,SN", 16.00, 26.00, 2, {"job_id": "CP-1236-10888"}),
+            ("1236", "Part time", "WN,SN", 16.00, 26.00, 2, {"job_id": "CP-1236-10741"}),
             ("5388", "Full time", "WN", 16.50, 27.00, 2, None),
             ("5133", "Full time", "WE,SN", 16.00, 26.50, 2, None),
         ],
@@ -1217,9 +1217,14 @@ HOURLY_FAMILIES = [
 # placement tuple: (store_number, employment_type, min_pay, max_pay,
 #                   worker_type, qual_slots, extras)
 # `qual_slots` = (degree_field, option1_years, option2_years, preferred_slot)
-# `extras` is an optional dict: {"job_id": ...}
+# `extras` is an optional dict: {"job_id": ..., "qual_clause": ...}
 # Minimum-qualification text is built from the family's template with those
-# slots, so every posting's Option 1 / Option 2 text is unique.
+# slots, so every posting's Option 1 / Option 2 text is unique. A `qual_clause`
+# is appended to both options ("..., including <clause>.") so that posting's
+# qualification text is specific to this mirror.
+#
+# Pinned job_ids are synthetic: none of them is a requisition ID that exists on
+# careers.walmart.com.
 # --------------------------------------------------------------------------- #
 SALARIED_FAMILIES = [
     {
@@ -1251,8 +1256,9 @@ SALARIED_FAMILIES = [
                      "Guidelines (WCAG) 2.2 AA standards.",
         "placements": [
             ("11807", "Full time", 143000, 286000, "Regular/Permanent",
-             ("computer science, computer engineering, computer information systems, software engineering, or related area", 4, 6, 2),
-             {"job_id": "R-2463275"}),
+             ("computer science, computer engineering, computer information systems, software engineering, or related area", 5, 7, 2),
+             {"job_id": "R-2468347",
+              "qual_clause": "including experience operating search or ML-serving systems in production"}),
             ("10101", "Full time", 132000, 264000, "Regular/Permanent",
              ("computer science, computer engineering, or related area", 5, 8, 3), None),
             ("12200", "Full time", 128000, 246000, "Regular/Permanent",
@@ -1281,7 +1287,8 @@ SALARIED_FAMILIES = [
                      "systems in production.",
         "placements": [
             ("11003", "Full time", 110000, 220000, "Regular/Permanent",
-             ("computer science, computer information systems, or related area", 3, 5, 1), None),
+             ("computer science, computer information systems, or related area", 4, 7, 1),
+             {"qual_clause": "including experience building high-volume checkout or payments services"}),
             ("11807", "Full time", 117000, 234000, "Regular/Permanent",
              ("computer engineering, software engineering, or related area", 4, 7, 2), None),
             ("10101", "Full time", 96000, 192000, "Regular/Permanent",
@@ -1311,7 +1318,7 @@ SALARIED_FAMILIES = [
                      "software at scale.",
         "placements": [
             ("12200", "Full time", 90000, 180000, "Regular/Permanent",
-             ("computer science or related area", 2, 4, 3), {"job_id": "R-2413636"}),
+             ("computer science or related area", 2, 4, 3), {"job_id": "R-2417063"}),
         ],
     },
     {
@@ -1334,7 +1341,7 @@ SALARIED_FAMILIES = [
                      "product teams.",
         "placements": [
             ("10101", "Full time", 110000, 220000, "Regular/Permanent",
-             ("business, analytics, engineering, or related area", 5, 7, 2), {"job_id": "R-2414279"}),
+             ("business, analytics, engineering, or related area", 5, 7, 2), {"job_id": "R-2418512"}),
             ("11807", "Full time", 132000, 264000, "Regular/Permanent",
              ("computer science, business, or related area", 6, 9, 3), None),
             ("11003", "Full time", 90000, 180000, "Regular/Permanent",
@@ -1838,10 +1845,12 @@ SALARIED_FAMILIES = [
                      "transportation operations.",
         "placements": [
             ("10101", "Full time", 110000, 220000, "Regular/Permanent",
-             ("supply chain management, operations, or related area", 5, 7, 3),
-             {"job_id": "R-2451180"}),
+             ("supply chain management, operations, or related area", 6, 9, 3),
+             {"job_id": "R-2456729",
+              "qual_clause": "including experience running a last mile delivery or courier network"}),
             ("11003", "Full time", 117000, 234000, "Regular/Permanent",
-             ("industrial engineering, logistics, or related area", 3, 5, 2), None),
+             ("industrial engineering, logistics, or related area", 4, 6, 2),
+             {"qual_clause": "including experience with driver dispatch or arrival-time modeling"}),
         ],
     },
     {
@@ -2043,7 +2052,96 @@ HUB_COPY = {
 # catalog edit cannot silently point this list at a different posting.
 # --------------------------------------------------------------------------- #
 TRENDING_JOB_IDS = [
-    "R-2414279",
-    "R-2413636",
-    "CP-1236-10888",
+    "R-2418512",
+    "R-2417063",
+    "CP-1236-10741",
 ]
+
+
+# --------------------------------------------------------------------------- #
+# "What you'll bring" bullets for salaried postings, one template list per
+# category. Slot fills are location only ({city}, {state}, {location_name}); the
+# bullets deliberately never mention a degree or a number of years, which live
+# solely in the Minimum Qualifications block.
+# --------------------------------------------------------------------------- #
+SALARIED_BRING = {
+    "Software Engineering and Architecture": [
+        "A track record of designing, building and operating production services that hold up at retail traffic.",
+        "Fluency in at least one modern backend language and its ecosystem, plus comfort reading code in others.",
+        "Hands-on experience with distributed data stores, message queues and cloud infrastructure.",
+        "A test-driven approach to development and a strong commitment to code quality and documentation.",
+        "Clear written and spoken communication with engineers, product managers and partners across {city}.",
+    ],
+    "Product Management": [
+        "Experience owning a product area end to end, from discovery through launch and iteration.",
+        "The ability to turn ambiguous customer problems into a crisp roadmap and measurable outcomes.",
+        "Comfort working daily with engineering, design and data science partners in {city}.",
+        "Strong written communication, including product specs and executive updates.",
+    ],
+    "Data Science and Analytics": [
+        "Hands-on experience building and shipping statistical or machine learning models in production.",
+        "Fluency in Python or R and SQL, and comfort working with very large datasets.",
+        "The judgment to know when a simple model beats a complex one.",
+        "Experience explaining findings to non-technical partners across the {city} office.",
+    ],
+    "Information Security": [
+        "Deep familiarity with threat modeling, secure design review and incident response.",
+        "Experience with identity, access management and cloud security controls at scale.",
+        "The ability to translate risk into priorities that engineering teams can act on.",
+        "Calm, clear communication during live incidents.",
+    ],
+    "Creative Design and UX": [
+        "A portfolio that shows end-to-end design work, from research through shipped experience.",
+        "Fluency in modern design and prototyping tools and a working knowledge of front-end constraints.",
+        "Experience planning and running user research and turning it into design decisions.",
+        "The ability to present and defend design decisions to partners in {city}.",
+    ],
+    "Technical Program Management": [
+        "Experience running large cross-functional programs with many engineering teams.",
+        "Enough technical depth to challenge estimates and spot dependencies early.",
+        "A bias for clear plans, visible risks and honest status.",
+        "Strong facilitation skills across the {city} office and remote partners.",
+    ],
+    "Information Technology": [
+        "Experience supporting enterprise endpoints, identity systems and collaboration tools.",
+        "Scripting skills for automating repetitive support and provisioning tasks.",
+        "A customer-first approach to troubleshooting and a habit of documenting fixes.",
+        "Comfort supporting associates on site in {city} and remotely.",
+    ],
+    "Accounting and Finance": [
+        "Experience owning forecasts, budgets or close processes for a large business unit.",
+        "Advanced spreadsheet and financial modeling skills, plus comfort with planning systems.",
+        "The ability to explain variances to operators and executives in plain language.",
+        "Attention to detail and a strong sense of ownership over the numbers.",
+    ],
+    "Human Resources": [
+        "Experience partnering with leaders on talent, organization design and associate relations.",
+        "Working knowledge of employment practices and the judgment to apply them fairly.",
+        "Strong coaching and facilitation skills.",
+        "Comfort supporting teams across the {city} office and the field.",
+    ],
+    "Marketing and Advertising": [
+        "Experience planning and running integrated campaigns across digital and in-store channels.",
+        "Fluency in campaign measurement and the ability to act on what the data says.",
+        "Strong creative judgment and clear briefing skills for agency and in-house partners.",
+        "Comfort presenting plans and results to senior leaders in {city}.",
+    ],
+    "Merchandising": [
+        "Experience owning assortment, pricing or replenishment decisions for a category.",
+        "Strong analytical skills and comfort working in large planning and forecasting systems.",
+        "The ability to negotiate with suppliers and build long-term partnerships.",
+        "A customer-first mindset and a habit of walking the stores.",
+    ],
+    "Business Operations": [
+        "Experience owning operational metrics and the processes behind them.",
+        "Strong analytical skills, including the ability to build and interpret operational dashboards.",
+        "Comfort working across product, data science and field operations partners.",
+        "A habit of spending time where the work happens, not only in the model.",
+    ],
+    "Internship": [
+        "Current enrollment in a degree program with an expected graduation date after the internship term.",
+        "Curiosity about how a large retailer runs and a willingness to ask questions.",
+        "Comfort working in a team and presenting your project to leaders in {city}.",
+        "Availability for the full internship term.",
+    ],
+}

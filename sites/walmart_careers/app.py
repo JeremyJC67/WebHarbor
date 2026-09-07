@@ -168,6 +168,7 @@ class Job(db.Model):
     is_trending = db.Column(db.Boolean, nullable=False, default=False)
     summary = db.Column(db.Text, nullable=False, default="")
     description = db.Column(db.Text, nullable=False, default="")
+    about_team = db.Column(db.Text, nullable=True)  # salaried only
     additional_description_json = db.Column(db.Text, nullable=True)
     hashtag = db.Column(db.String(48), nullable=True)
     shift_time = db.Column(db.String(120), nullable=True)
