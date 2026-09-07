@@ -1,4 +1,4 @@
-> **Current homepage/navigation follow-up:** see [the latest report](docs/homepage-review.md). Application `9741284`, HF `e063074`; human acceptance and refreshed independent review pending. Earlier evidence below retains its recorded version.
+> **Current landing-page follow-up:** [25b8b33 / HF b09ad95](docs/landing-review.md) adds Concierge and the 24-region directory. Human acceptance and the refreshed task17 independent verdict remain pending. Earlier evidence retains its recorded versions.
 
 # Compass
 
@@ -10,7 +10,7 @@ An offline Compass mirror contributed in [WebHarbor #25](https://github.com/aimi
 - `source_data.json` contains 312 public Compass detail snapshots checked on September 6, 2026. Of these, 295 have local galleries and appear in the environment. Each record includes its original listing ID, source URL, retrieval time, and HTML SHA-256.
 - Detail facts are accepted only when the public page's listing ID matches the original transaction. A URL that now resolves to a different sale or rental is not used to enrich the old record. Unmatched records retain only the contributor's basic snapshot; unknown property details and agent information stay absent.
 - Property type, year, MLS number, amenities, agent contact information, and availability are never generated. A missing amenity is unknown, rather than false. Historical rentals retain monthly price formatting. Missing prices are displayed as “Price upon request.”
-- `gallery_sources.json` records the additional original-source gallery images. `visual_sources.json` records the official home/Sell hero images and font assets. Local files are distributed through the pinned Hugging Face asset archive, not downloaded by the running site.
+- `gallery_sources.json` records the additional original-source gallery images. `visual_sources.json` records the official homepage, Sell, Concierge and directory media/font assets. Local files are distributed through the pinned Hugging Face asset archive, not downloaded by the running site.
 - Only benchmark accounts, their preferences, saved homes, collections, searches, and tour requests are synthetic. Forms save state locally; they do not contact real agents.
 
 The contributor's generation of property years, MLS numbers, amenities, and agent sales statistics has been removed. Published listing details take precedence over assessor records when those sources disagree; they are not silently combined.

@@ -1,3 +1,5 @@
+> Subsequent [Concierge/directory follow-up](landing-review.md) uses application `25b8b33` and a newer asset pin. Homepage evidence below retains its named historical versions.
+
 # Homepage and navigation reconstruction
 
 Current application commit `82b591593ab739465b9bf8a0216dd2d174105599` adds a source-measured tablet correction to the reconstruction below. Asset revision is now `5b66b757121ab34ee8199824a0b5a856e0612336`. This follow-up corrects the 768–1023px layout and shared neighborhood image shading/captions. The original 390px task 17 execution stays frozen at `9741284`; current UI checks and reuse scope are separately recorded below.

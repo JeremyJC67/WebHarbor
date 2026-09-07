@@ -1,0 +1,1142 @@
+{
+  "application_commit": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+  "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+  "asset_archive": {
+    "archive_sha256": "ced1411f5d86992ee07a55b98c3b8660ec548f204e0602c1a90d0fe0436f4b98",
+    "archive_bytes": 192209798,
+    "asset_base_revision": "5b66b757121ab34ee8199824a0b5a856e0612336",
+    "unchanged_prior_files": 2430,
+    "added_files": 38,
+    "preserved_compressed_prefix_bytes": 184310277,
+    "seed_sha256": "caa262ea5752016618c56e9bf01842257523cf8dae3ea25c57f719d61d7ce40f"
+  },
+  "runtime": {
+    "source_commit": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+    "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+    "base_image": "sha256:ed41f1ac4d0ad42374eb25e3363a5ff5b1c7057c0d0a10a4cb1fda97fa0b281f",
+    "image_tag": "wh-review025:25b8b33",
+    "files": {
+      "app.py": "408f39b909160312bc6c931d5dd8c3e1796b4933cb0eb9037558a62055d63d9d",
+      "templates/base.html": "a1b7539dad37982890af517cc3d8a6917ad3dd02485428afee39c24291621898",
+      "templates/concierge.html": "cebc6c030c7e16077712ddbc3d45536039976121253d98a6e91999d54a2812e2",
+      "templates/neighborhoods.html": "52360c6d755f70caef11df6963992f4cb4ca02f2908b5897a2d5b426ea14a78c",
+      "static/css/concierge.css": "183fbd6718789f21e4809c9b96479f98eeab1fb7fa71a5e498def52207005cd0",
+      "static/css/neighborhoods.css": "2753e5dc2e3d6bb24802186c318f58b3fb4120517c38f2c0d9271175ecc1f2b0",
+      "static/js/concierge.js": "3b2fe7e8cb4376f35afd6b3947701e98f05af35c06f6e1bf2f7766392285e0e1",
+      "neighborhood_regions.json": "8b5e8f4842153af355d268d15f3d99de05f3e2920eb87e1ce770225caed7fb78",
+      "visual_sources.json": "d16309be83d18071bb50543d4387a4388e14848d9392fc689f28abb71ca6ccaf",
+      "static/external_cache/concierge-living-room---before.jpg": "21c68a9b84d2530205fe69a96149a08fd201faa782b7ecd0895b68b90e1fabcb",
+      "static/external_cache/concierge-living-room---after.jpg": "ef15c23b25e5f8dfbaafcd055203fc211335c30890047153c9776023d3373462",
+      "static/external_cache/concierge-d85-2822-edit.jpg": "9fa1baca03f264f07659c25baeeb29e9dc59136c3eb4730963d01c008cf37016",
+      "static/external_cache/concierge-after-1.jpg": "bb82dd7e331a4c5c540bf7cb30e05cfc882c611f5a471d77845491fe253a2b6b",
+      "static/external_cache/concierge-before-1.jpg": "1c97cfa7f48fcc373d22a6d76b004fe2a90412e3e6367fa99fd30deb6ed52b70",
+      "static/external_cache/concierge-scott-before.jpg": "89aae7f20a32186a0b29f2e80f7f41432a9ff8043f7ee83f468bc4646e53f89c",
+      "static/external_cache/concierge-scott-after.jpg": "353f6c6a500119c082beead61e6a24bd2881c6b66561d68ecded0dfff9c27988",
+      "static/external_cache/concierge-sarah-before.jpg": "d1846a05e52ce0b9be838a1a4d2eccc8a012c30b2698803c9e6e1b76cac634d6",
+      "static/external_cache/concierge-copy-of-17---kelly-resnick.jpg": "b88f844f98ae129898842fb73558664a5739c0f019b3ec293d7b72bd3e792af5",
+      "static/external_cache/concierge-fpoconcierge-1.jpg": "69ef7cca7e11a506a3a41bfda7e064424faa0e49eecb1e5ff37900d09c4324c3",
+      "static/external_cache/concierge-concierge-thumb-new.jpg": "012c43b951659f83400edadfa0719489d4ad8909bc257a871a3f2e5191571716",
+      "static/external_cache/concierge-concierge-hero.mp4": "fa5c240da390be941ac677125dca5c5920124a59667d68b2f27c4e2bd522f0af",
+      "static/external_cache/guide-nyc-geo.webp": "9af5ab01d21de10e4361777f92a5e15af4b590bb1d1b0e35b368383d60d29387",
+      "static/external_cache/guide-boston-geo.webp": "9dc00470f1fa1dd5204d4892d8ed5cc2e65800883937ce8a6370ae3f38834acc",
+      "static/external_cache/guide-miami-geo.webp": "8499d68cb8dcb013c94a0794a320d4a3a143934be24c3ea8c5e7360a922a67ba",
+      "static/external_cache/guide-aspen-geo.webp": "c27615db24d623a0f961f541e5015aed9a053f45e7638e5493faca08150dd60c",
+      "static/external_cache/guide-dc-geo.webp": "14f6baa084c34a63e250988f414d29481057bd8551a8b42efb529e6874b79a70",
+      "static/external_cache/guide-santabarbara-geo.webp": "ee9db1661e869408d97536ecb80b22763eb20645cb4a2f65c9e7fb65e211e2b7",
+      "static/external_cache/guide-hamptons-geo.webp": "6f1201d68a7884a6f35302d885ae4a3ba21eaa22a9c0f7074867b0e177689c3a",
+      "static/external_cache/guide-la-geo.webp": "8401351e795b342dd2520cbeda2ea7fca25025f1d65580bc751191439358229d",
+      "static/external_cache/guide-sf---geo--1-.webp": "e74af27dd27e610abe2eb4b73c69f698a3fed49ddc27b37b2e663e5fc0642a68",
+      "static/external_cache/guide-westchester-market-mosaic-tile.webp": "197d2f64b266da9a1ba00c978ba8b1c6bfaa1f4a9c086ff57cc07c8c2255d334",
+      "static/external_cache/guide-naplesneighborhoodguidebanner.webp": "2dc1c514d16c07d066e8f07195b4717a28a8e6a439dbff4a14f094d659a2b767",
+      "static/external_cache/guide-chicago-thumbnail.webp": "4c48eb693b4601ed9f589eda0d3480549d72b8d30597ca191784ecdacbe00cd9",
+      "static/external_cache/guide-greenwich-thumbnail-geo.webp": "302aee42e79a99143e4c70775d1812d0ef13b2349e5e5237842f4472fa5a7f26",
+      "static/external_cache/guide-philadelphia-geo-mosaic.webp": "bc72a29c2b4fba6134de86d339bf03739002c99990764b4484d3c2a2237c7548",
+      "static/external_cache/guide-ca---san-diego---la-jolla---112.webp": "1b2b84695358526d2d7cd15186b1a87876f42ac98166d4977d8072c534b01f26",
+      "static/external_cache/guide-austion-geo-tile.webp": "32bb540ad31850faba6b3da966ffe4eced4979957481cb9ebd7eaf8f5c6ba27b",
+      "static/external_cache/guide-atlanta-geo-tile.webp": "1b48d130b01787d1261877e8def272306a616394e561b79a578a56be19761d39",
+      "static/external_cache/guide-seattle-geomosaic-tile.webp": "3414b0a399daf631a3b7d09312847442ebe321c95919c1f20f1e69724c7f5f89",
+      "static/external_cache/guide-houston-geo-mosaic.webp": "ad336283a4805bec1d1b247a48ca9df4a20e49f8c766948bea8d240e03566c92",
+      "static/external_cache/guide-dallas-market-module--mosaic-grid-markets-.webp": "6968682946fcef860da5d01c3ed44a4d49e527f0f0a7312307e526cbe69c0f9c",
+      "static/external_cache/guide-nc---charlotte---marketing-imagery---6.webp": "5ed4dd3e4ea2d9f76fc9ffe0ac49cd15ee80aa1d92da09b111fdcdd5cf114285",
+      "static/external_cache/guide-nc---raleigh---marketing-image---14.webp": "426a27509d4492eaff8ec037934f51857bd79b8df46f55c37cfd32651ba0ea0f",
+      "static/external_cache/guide-compass-web-3.webp": "6590f6f14c71b4e050538e8b5338b5a94adc2f8dbed550514fb994f911ca0dee",
+      "static/external_cache/guide-in---indianapolis---marketing-image---4.webp": "b05c5473056d9c129437b47bd05c95a84a20daa02bfcf32b0bea524b721224d5",
+      "static/external_cache/guide-cityscape.svg": "16d0a9154def1c0e29334f1dbb5a0346bdc40204e23c1d3b45cb79545f616679",
+      "static/external_cache/CompassSerif-SemiBold.woff2": "679d2332d6adf0eea88f09b2dfbc63bf6534497da03a9292f1031ebb652d9217"
+    },
+    "image_id": "sha256:00e81abe6ab152954199d338ca65b42b60c8457a2e866b3941b2a1bef63712aa",
+    "at": "2026-09-07T04:21:35.276093+00:00",
+    "container": "wh-review025-landing-built",
+    "runtime_files_match": true,
+    "homepage_http": {
+      "40000": 200,
+      "40001": 200,
+      "40002": 200,
+      "40003": 200,
+      "40004": 200,
+      "40005": 200,
+      "40006": 200,
+      "40007": 200,
+      "40008": 200,
+      "40009": 200,
+      "40010": 200,
+      "40011": 200,
+      "40012": 200,
+      "40013": 200,
+      "40014": 200,
+      "40015": 200,
+      "40016": 200,
+      "40017": 200,
+      "40018": 200,
+      "40019": 200
+    },
+    "local_HTTP": [
+      {
+        "path": "/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/about",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/about",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/agents",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/agents",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/coming-soon/listings/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/coming-soon/listings/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/concierge/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/concierge/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/help",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/help",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/homes-for-rent",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/homes-for-rent",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/homes-for-sale",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/homes-for-sale",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/login",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/login",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/luxury",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/luxury",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/boston/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/boston/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/dc/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/dc/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/hamptons/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/hamptons/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/la/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/la/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/miami/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/miami/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/neighborhood-guides/nyc/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/neighborhood-guides/nyc/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/private-exclusives/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/private-exclusives/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/register",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/register",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/search?compass_exclusive=1",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/search?compass_exclusive=1",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/search?status=sold",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/search?status=sold",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/sell/",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/sell/",
+        "content_type": "text/html; charset=utf-8"
+      },
+      {
+        "path": "/static/css/compass.css",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/css/compass.css",
+        "content_type": "text/css; charset=utf-8"
+      },
+      {
+        "path": "/static/css/concierge.css",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/css/concierge.css",
+        "content_type": "text/css; charset=utf-8"
+      },
+      {
+        "path": "/static/css/navigation.css",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/css/navigation.css",
+        "content_type": "text/css; charset=utf-8"
+      },
+      {
+        "path": "/static/css/neighborhoods.css",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/css/neighborhoods.css",
+        "content_type": "text/css; charset=utf-8"
+      },
+      {
+        "path": "/static/external_cache/CompassSerif-SemiBold.woff2",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/CompassSerif-SemiBold.woff2",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/concierge-after-1.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-after-1.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-before-1.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-before-1.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-concierge-hero.mp4",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-concierge-hero.mp4",
+        "content_type": "video/mp4"
+      },
+      {
+        "path": "/static/external_cache/concierge-concierge-thumb-new.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-concierge-thumb-new.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-copy-of-17---kelly-resnick.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-copy-of-17---kelly-resnick.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-d85-2822-edit.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-d85-2822-edit.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-fpoconcierge-1.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-fpoconcierge-1.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-living-room---after.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-living-room---after.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-living-room---before.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-living-room---before.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-sarah-before.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-sarah-before.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-scott-after.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-scott-after.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/concierge-scott-before.jpg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/concierge-scott-before.jpg",
+        "content_type": "image/jpeg"
+      },
+      {
+        "path": "/static/external_cache/guide-aspen-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-aspen-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-atlanta-geo-tile.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-atlanta-geo-tile.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-austion-geo-tile.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-austion-geo-tile.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-boston-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-boston-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-ca---san-diego---la-jolla---112.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-ca---san-diego---la-jolla---112.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-chicago-thumbnail.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-chicago-thumbnail.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-cityscape.svg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-cityscape.svg",
+        "content_type": "image/svg+xml; charset=utf-8"
+      },
+      {
+        "path": "/static/external_cache/guide-compass-web-3.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-compass-web-3.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-dallas-market-module--mosaic-grid-markets-.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-dallas-market-module--mosaic-grid-markets-.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-dc-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-dc-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-greenwich-thumbnail-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-greenwich-thumbnail-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-hamptons-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-hamptons-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-houston-geo-mosaic.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-houston-geo-mosaic.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-in---indianapolis---marketing-image---4.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-in---indianapolis---marketing-image---4.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-la-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-la-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-miami-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-miami-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-naplesneighborhoodguidebanner.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-naplesneighborhoodguidebanner.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-nc---charlotte---marketing-imagery---6.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-nc---charlotte---marketing-imagery---6.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-nc---raleigh---marketing-image---14.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-nc---raleigh---marketing-image---14.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-nyc-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-nyc-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-philadelphia-geo-mosaic.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-philadelphia-geo-mosaic.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-santabarbara-geo.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-santabarbara-geo.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-seattle-geomosaic-tile.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-seattle-geomosaic-tile.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-sf---geo--1-.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-sf---geo--1-.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/guide-westchester-market-mosaic-tile.webp",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/guide-westchester-market-mosaic-tile.webp",
+        "content_type": "application/octet-stream"
+      },
+      {
+        "path": "/static/external_cache/home-appstore.png",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/home-appstore.png",
+        "content_type": "image/png"
+      },
+      {
+        "path": "/static/external_cache/home-playstore.png",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/external_cache/home-playstore.png",
+        "content_type": "image/png"
+      },
+      {
+        "path": "/static/icons/compass_logo.svg",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/icons/compass_logo.svg",
+        "content_type": "image/svg+xml; charset=utf-8"
+      },
+      {
+        "path": "/static/js/compass.js",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/js/compass.js",
+        "content_type": "text/javascript; charset=utf-8"
+      },
+      {
+        "path": "/static/js/concierge.js",
+        "status": 200,
+        "resolved_url": "http://127.0.0.1:44019/static/js/concierge.js",
+        "content_type": "text/javascript; charset=utf-8"
+      }
+    ],
+    "compass_reset_seconds": 0.7217642920004437,
+    "reset": {
+      "pid": 339,
+      "ready": true,
+      "site": "compass"
+    },
+    "seed_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+    "seed_byte_equal": true,
+    "build_type": "Incremental on verified 82b5915; fresh final-image container. No repeated full clean asset fetch or reset-all."
+  },
+  "browser_checks": {
+    "application": "25b8b33",
+    "runtime": "wh-review025-landing-built",
+    "at": "2026-09-07T04:23:56.926Z",
+    "viewports": [
+      1440,
+      815,
+      390
+    ],
+    "desktopCarousel": [
+      {
+        "label": "Success story 1 of 8",
+        "name": "Julia, Seller | Oakland",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 2 of 8",
+        "name": "Jo Ann, Seller | San Francisco Bay Area",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 3 of 8",
+        "name": "Bill & Jill, Sellers | New York City",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 4 of 8",
+        "name": "Kristen Jock & Khashif Khan, Agents | Brooklyn",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 5 of 8",
+        "name": "Koji, Seller | San Francisco Bay Area",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 6 of 8",
+        "name": "Christina, Seller | San Francisco Bay Area",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 7 of 8",
+        "name": "Scott Perret, Agent | Seattle",
+        "overflow": false,
+        "visible": 1
+      },
+      {
+        "label": "Success story 8 of 8",
+        "name": "Sarah, Seller | Oakland",
+        "overflow": false,
+        "visible": 1
+      }
+    ],
+    "mobileCarousel": {
+      "next": "Jo Ann, Seller | San Francisco Bay Area",
+      "visible": 1,
+      "overflow": false,
+      "previousClicked": true
+    },
+    "externalServiceSubmissions": 0,
+    "kind": "UI QA, not benchmark trajectories",
+    "desktop_wrap_return": "Julia, Seller | Oakland",
+    "local_agent_CTA": {
+      "destination": "/agents",
+      "heading": "Find an Agent"
+    }
+  },
+  "regression_tests": {
+    "at": "2026-09-07T04:09:50.115629+00:00",
+    "command": "python -m pytest sites/compass/tests sites/compass/verify/test_verifiers.py -q",
+    "passed": 168,
+    "warnings": 172,
+    "seconds": 44.81,
+    "scope": "Application/source regressions and verifier adversarial tests. Subsequent CSS/font/template presentation changes are checked in the browser separately."
+  },
+  "reuse": {
+    "from_application_commit": "82b591593ab739465b9bf8a0216dd2d174105599",
+    "current_application_commit": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+    "unchanged_paths": {
+      "sites/compass/tasks.jsonl": "e0c2d0b758eb3d1bed09fa2beb0821bb5d0163ceea059017b5bfdf6adcc29cdf",
+      "sites/compass/static/js/compass.js": "ab736909c1fc6cff1ead1b3c5759a02c041a924d809d3ef9c1e5b3511fef435d",
+      "sites/compass/static/css/compass.css": "df6b876250eb10908a2eead8df21ded0d1d3427298084907019be0881d6ba499",
+      "sites/compass/static/css/home.css": "5278aa5b3239962d6c7c93ed69f38534cd46f31f07360d63ad736cf8bd746200",
+      "sites/compass/static/css/navigation.css": "cfd5ae69c323e2a7c538f226dfd1557114c63463b18e99e7a941373bf630dee2",
+      "sites/compass/templates/index.html": "5cb30362f336b4cca3cee62fd1682f012adb876b2f50555cb12bbf44d6860761",
+      "sites/compass/templates/_footer.html": "1fad5c09187442ccec2dbef355da40b3e753ab3769849ea751b9db7373667a10",
+      "sites/compass/verify/verify_10.py": "56e5921d51cafd8ae8a3f2ee7df911ed4120cac7ac6d2e404119882df28bec1a",
+      "sites/compass/verify/verify_14.py": "ad6142516d21c51d5eb3bb2a588341bd4195b25b28c38d101c1f3d4111d78eaa",
+      "sites/compass/verify/verify_15.py": "1801ed6b1c535c28cf40d266de8d48e9413d03f1856c534dbfcd926a8eb87467",
+      "sites/compass/verify/verify_11.py": "73c9ae435a92e89f8e95f0ccc272c61361ecd34219b4322eb432b77753aea5b1",
+      "sites/compass/verify/verify_0.py": "e15845424af0b4818b34574083c8429069a11e8f17d955f238995524ed04f027",
+      "sites/compass/verify/verify_4.py": "0384175f158ab24aeeda7a777ebc9008c63244c789356b54acb806c9a034a361",
+      "sites/compass/verify/verify_5.py": "3846905f0d4e78681d15a2c4691d09ba90bf5dec8d41a6f4aa3360748db7b322",
+      "sites/compass/verify/verify_1.py": "06267ab38617d947c17962b31a139b8c7405e96dbf4ce72810021b98b2bddcc4",
+      "sites/compass/verify/README.md": "f845da9a1289392b4cee72fc2d425883d2a07b568ec404aecb707086ab4a8115",
+      "sites/compass/verify/verify_6.py": "95530e261faee14dbc60b494a640f1dd1c001dc66f523c04356376b22deb1d20",
+      "sites/compass/verify/verify_2.py": "d32d791ba62e92869a8bf532cd55fd727a7419f4b3bda083f1074b428f11bf0f",
+      "sites/compass/verify/verify_lib.py": "78b0afaf0df5620fd7b0ae5f3c900fe845b1a24e005787a8ed4bb3f58c452476",
+      "sites/compass/verify/test_verifiers.py": "8e66ad3d6c4aedcef32d5fd0408e0c5e92f460d98e276ce8e06704d0ac753284",
+      "sites/compass/verify/verify_3.py": "55a58ab16602b8f1a018d8d1af4d1f66afae4f7b40e42859d4152e1347ce5aa7",
+      "sites/compass/verify/verify_7.py": "174ae34dd129855688ead1ea7d7d07c3380c423edbde48d22957ae6b2df71910",
+      "sites/compass/verify/facts.json": "01ef9bb18373cd7009325b37175430f302270f85eedeb24a63609cf3912092b7",
+      "sites/compass/verify/verify_16.py": "2686433661b7daa4085cc042643242ffd49e1202b187a10ea9ad72f7dbab7045",
+      "sites/compass/verify/verify_12.py": "9290820050be2e9270b77c6eb2032c95df2d1295787523b0b154dd1c1c7c6b55",
+      "sites/compass/verify/verify_13.py": "c2da8396b73dc62d97a32ff3d834f396310f0fd1bd07e2de29dee4df7686be9c",
+      "sites/compass/verify/verify_17.py": "a4fe40522a34be33dbb9d2d939f86ac1b98657e5ae8537e3414237dd7433408f",
+      "sites/compass/templates/saved_searches.html": "ed635830b21278c447821ce2fb6ba2e617002e8992b7f2acc620d76b59059e0e",
+      "sites/compass/templates/new_listings.html": "46d13812b192bfef01a5384e15842404fb92d327acbf0916e893fe5f1a2eccfb",
+      "sites/compass/templates/sell.html": "c52249ea03712f4fe45939f6d2f9ffbcd268648a4df89d8a76ffe213af764c3c",
+      "sites/compass/templates/preferences.html": "f97d3874a65ce2a344392ad76a55dbe7a1b31f338c15ac072403ad667d83da2c",
+      "sites/compass/templates/_filters.html": "8d373c1ad74a806e19917495361a361fa4a1b2f50911c87d4b25f3ffbeb730a9",
+      "sites/compass/templates/help.html": "208839f85d0249182098d1381ff1ab10d65b6abe8fb5481fcde42f7ad6cf5e45",
+      "sites/compass/templates/luxury.html": "495603b0fd7f1a07317c573da44375d95b002d480c20650f475c3f58a232645c",
+      "sites/compass/templates/about.html": "8d6722e5c5d0620f9100025f53e92e04613196095b3827f1495c7af136d833c6",
+      "sites/compass/templates/collection_new.html": "5229da313876a9de59a245974a7937b786e733c88a26ba70bfd67e577ad5a9c9",
+      "sites/compass/templates/_navigation.html": "63c8ddfb653fb9837a94f4baecfd2bda0f0a6018d747d06e9a5c9ab07acc0923",
+      "sites/compass/templates/register.html": "17ec70ef8ab1c4e3891e73755b2b6e5de6ab5eeb3969583e0ab5f371dba16940",
+      "sites/compass/templates/500.html": "9291a793706ace8c95ed82ae0abfadcb073a2b8b645b07eb5b46b5afd0f034e3",
+      "sites/compass/templates/404.html": "e07690541b7aa266b462b8ce5a1ccf5b7196fd2a6600e4547cad86ac4b75b2ca",
+      "sites/compass/templates/login.html": "9b7f6ce50877e7297f41250f93c630b9d01bee88977fd54f91c1c74b1977d8e6",
+      "sites/compass/templates/collection_share.html": "3d91f33cd30b2f3daa54de2be39fc1ffadb299c65e5af3f8e2b0434411b4232c",
+      "sites/compass/templates/inquiry_send.html": "331307a8065db0e731bb2bcaa1307c90d82d3bbef9ac8a658f3732230584725e",
+      "sites/compass/templates/open_houses.html": "91ece406f0cb5dcc99239af7b32348b18737a62e4a8c5604dedff1fe03d3d3f7",
+      "sites/compass/templates/account.html": "df1ff7bec4d1e4e6d27f58aa4db9999dc4b7f487a86696a2082d7cb16e493ef3",
+      "sites/compass/templates/inquiries.html": "6c3a0b9813a7cbff20a7a1a5c19b82c057b24022d49a6a286566953aea4a18d0",
+      "sites/compass/templates/listing_detail.html": "89cee61d75487fa9ed8c9225a2bc0339082a16d796bc709c2c06b27a5b84eedb",
+      "sites/compass/templates/agents.html": "db188b0fe18337423334f5f76155ce72a4ce00e556b227b67f706a3501eaab37",
+      "sites/compass/templates/agent_detail.html": "3a37d7c836ccca4bd8340fa8dfb287437fb68cdbfe96d39891047e67bb9fdfc9",
+      "sites/compass/templates/saved.html": "34c22814d9a6e4c12745c7157706b65bf727a58a53c4d22e0ff503fca24b79a3",
+      "sites/compass/templates/_card.html": "9870e0ab1be4e9ed215367395da93cf5bde75eca571cd59e707c2279a5e80c1d",
+      "sites/compass/templates/change_password.html": "c6d608044f24a36c32f147f9c27224c81cf0a036af4ea626e2881c045bd4b2b9",
+      "sites/compass/templates/listing_collection.html": "58ad7305d69432be4ca58c11a75d98bc3207bd020752669e0996107ad2fbfbc1",
+      "sites/compass/templates/city.html": "1f75da786fc70115c842fa7a5d92a0fc612716f5de06d5f37030cdc920f346e8",
+      "sites/compass/templates/homes_for_sale.html": "c036c85a4418cb2b4ffd22803e6870ddd15865bd66ecac220b6a78b7beec0a6b",
+      "sites/compass/templates/search.html": "c39a0260431cff58614ec48ae6fe245cd53f7e742c770e3abb321ddf21ced1ba",
+      "sites/compass/templates/tour_request.html": "28e5e1b6a57271942d98743f0235f97db8175c0ae996b75b162941429e94d9b4",
+      "sites/compass/templates/collections.html": "273c69f7bd33a6e04daf0b71ff4a198e0a7be4f515b068aeb5c281fe2729f301",
+      "sites/compass/templates/collection_detail.html": "c0aeae49e443153aeb4086d59b07fcbe88a38f521981dd663c2ba03c56e9ca7a",
+      "sites/compass/templates/account_edit.html": "d923e6b266fed181c8cb25e15ac3a89c9ae1e95b3c8258abe4d84d829d3cc51a",
+      "sites/compass/templates/tours.html": "09dec1c0c4bf3aa86b3501734530c120876359efcf0cf71b130049599a2faa5c",
+      "sites/compass/templates/_home_card.html": "a6da374c43e170d8be158c5839f687ff220b8a2d115c113b655118e7580afd81",
+      "sites/compass/templates/_account_nav.html": "b562f84a9ac7bac270a1914c37058ab810cfa7afed2131e8a5a23e3a563ede12"
+    },
+    "changed_app_definitions": [
+      "neighborhoods"
+    ],
+    "base_template_change": "Only Concierge/neighborhood page CSS/JS includes and hiding the search box on these two endpoints. Existing task endpoints retain their rendered controls.",
+    "data": "Existing 2430 asset files and seed byte-identical; 38 new public media/font/SVG files.",
+    "evidence_scope": "Original16 frozen runs and the 9741284 task17 packet retain their old code/assets. This landing-page delta changes no task routes, requested facts or grading. UI QA is separate from trajectories; no old run is relabeled as this candidate."
+  },
+  "screenshots": [
+    {
+      "at": "2026-09-07T04:28:49.607Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/source-screen-concierge-top-1440.jpg",
+      "kind": "source",
+      "sha256": "813e76586027caca17f56ce56c75e06db0498535f3e77242a2583e785c32a8a7",
+      "bytes": 121055,
+      "code_sha": null,
+      "asset_revision": null,
+      "post_scrollY": 0
+    },
+    {
+      "at": "2026-09-07T03:58:54.911Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:40019/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/before-concierge-top-1440.jpg",
+      "kind": "before",
+      "sha256": "42ec907c8f1c20062bf44dc35178d1c1792aab648bd9d89f9ed485dfff29a803",
+      "bytes": 117150,
+      "code_sha": "82b591593ab739465b9bf8a0216dd2d174105599",
+      "asset_revision": "5b66b757121ab34ee8199824a0b5a856e0612336"
+    },
+    {
+      "at": "2026-09-07T04:21:44.241Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:44019/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/verified-concierge-top-1440.jpg",
+      "kind": "after",
+      "sha256": "137cfaaf726c45d42d2b30d6dce1a7f900d42cda1530a02b9981f3319fd7f292",
+      "bytes": 130175,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "fresh final image"
+    },
+    {
+      "at": "2026-09-07T04:29:23.759Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 815
+      },
+      "file": "visual-review/landing/source-screen-concierge-top-815.jpg",
+      "kind": "source",
+      "sha256": "89aff26d6549bcd646f20837c74935a038a490ab4f7cb96258351333cfba40c1",
+      "bytes": 72573,
+      "code_sha": null,
+      "asset_revision": null,
+      "post_scrollY": 0,
+      "capture_method": "screenshot between matching DOM measurements; no DOM snapshot export"
+    },
+    {
+      "at": "2026-09-07T04:03:00.142Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:40019/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 815
+      },
+      "file": "visual-review/landing/before-concierge-top-815.jpg",
+      "kind": "before",
+      "sha256": "0efef1699e9812087afaa486316f82524759c5d566481f9b4d7c19f70509f6d8",
+      "bytes": 89654,
+      "code_sha": "82b591593ab739465b9bf8a0216dd2d174105599",
+      "asset_revision": "5b66b757121ab34ee8199824a0b5a856e0612336"
+    },
+    {
+      "at": "2026-09-07T04:22:29.763Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:44019/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 815
+      },
+      "file": "visual-review/landing/verified-concierge-top-815.jpg",
+      "kind": "after",
+      "sha256": "631ea242e77db11bb9c3d3f61ee5cd4b8d1de51ee94d4414e3e65fc4ace97fc0",
+      "bytes": 81682,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "fresh final image"
+    },
+    {
+      "at": "2026-09-07T04:29:44.303Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "file": "visual-review/landing/source-screen-concierge-top-390.jpg",
+      "kind": "source",
+      "sha256": "e2228698069c82fad4d92f6688fde71864a6c5b6b35b1fe1cb49eec58157854b",
+      "bytes": 46928,
+      "code_sha": null,
+      "asset_revision": null,
+      "post_scrollY": 0,
+      "capture_method": "screenshot between matching DOM measurements; no DOM snapshot export"
+    },
+    {
+      "at": "2026-09-07T04:02:26.425Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:40019/concierge/",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "file": "visual-review/landing/before-concierge-top-390.jpg",
+      "kind": "before",
+      "sha256": "5988f8cd11843000eb56034adadf23f5e3daa210d3b24971030cfdfe6446f032",
+      "bytes": 52915,
+      "code_sha": "82b591593ab739465b9bf8a0216dd2d174105599",
+      "asset_revision": "5b66b757121ab34ee8199824a0b5a856e0612336"
+    },
+    {
+      "at": "2026-09-07T04:23:17.767Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:44019/concierge/",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "file": "visual-review/landing/verified-concierge-top-390.jpg",
+      "kind": "after",
+      "sha256": "7eb32ac58f6de05eeb0771b452eec3f15ec7a3232e35c5322cc6f3d8c7d2e7b4",
+      "bytes": 48154,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "fresh final image"
+    },
+    {
+      "at": "2026-09-07T04:20:16.182Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "https://www.compass.com/neighborhood-guides/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/source-verified-guides-top-1440.jpg",
+      "kind": "source",
+      "sha256": "e0d6c1c4fe788e38e2e5e6a0fc4a4f62df3ca0bed566bda0f710c99252a580a8",
+      "bytes": 125069,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T03:59:29.072Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:40019/neighborhood-guides/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/before-guides-top-1440.jpg",
+      "kind": "before",
+      "sha256": "6f8be5dbcd6568c2c258877a6d0254a93c16bf100244c945a38ca4ab2451699d",
+      "bytes": 205672,
+      "code_sha": "82b591593ab739465b9bf8a0216dd2d174105599",
+      "asset_revision": "5b66b757121ab34ee8199824a0b5a856e0612336"
+    },
+    {
+      "at": "2026-09-07T04:21:44.909Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:44019/neighborhood-guides/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/verified-guides-top-1440.jpg",
+      "kind": "after",
+      "sha256": "63be78c10d9bae10fbf1d273e7f0c01dbc661509e3d6630d49bb68f4cc032e27",
+      "bytes": 126548,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "fresh final image"
+    },
+    {
+      "at": "2026-09-07T04:20:14.507Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "https://www.compass.com/neighborhood-guides/",
+      "viewport": {
+        "height": 900,
+        "width": 815
+      },
+      "file": "visual-review/landing/source-verified-guides-top-815.jpg",
+      "kind": "source",
+      "sha256": "01d0f922b678ab47d2e78aa5d7fbd6f0b7169a7107601e237b01e2ed4c79e076",
+      "bytes": 74267,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T04:03:33.047Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:40019/neighborhood-guides/",
+      "viewport": {
+        "height": 900,
+        "width": 815
+      },
+      "file": "visual-review/landing/before-guides-top-815.jpg",
+      "kind": "before",
+      "sha256": "c6287d87ae0b826c2019cecc9b8c51e0916dee537f9da90ab28898f1316cbc65",
+      "bytes": 152323,
+      "code_sha": "82b591593ab739465b9bf8a0216dd2d174105599",
+      "asset_revision": "5b66b757121ab34ee8199824a0b5a856e0612336"
+    },
+    {
+      "at": "2026-09-07T04:22:30.369Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:44019/neighborhood-guides/",
+      "viewport": {
+        "height": 900,
+        "width": 815
+      },
+      "file": "visual-review/landing/verified-guides-top-815.jpg",
+      "kind": "after",
+      "sha256": "f35c236cb2fe7b47c0044eb73a9044bc6ae8447bb2005ea76caa658de65ea35a",
+      "bytes": 74728,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "fresh final image"
+    },
+    {
+      "at": "2026-09-07T04:20:45.158Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "https://www.compass.com/neighborhood-guides/",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "file": "visual-review/landing/source-verified-guides-top-390.jpg",
+      "kind": "source",
+      "sha256": "a1fb66bcfe54d83476c2acfb761a43b2e7577b26109ff8529a02227d12924bd4",
+      "bytes": 40723,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T04:01:27.786Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:40019/neighborhood-guides/",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "file": "visual-review/landing/before-guides-top-390.jpg",
+      "kind": "before",
+      "sha256": "db97804b4f1be326ed3c0406836baf7a6703ff301c51f4daca6590a6a4b18394",
+      "bytes": 70720,
+      "code_sha": "82b591593ab739465b9bf8a0216dd2d174105599",
+      "asset_revision": "5b66b757121ab34ee8199824a0b5a856e0612336"
+    },
+    {
+      "at": "2026-09-07T04:23:18.990Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 0,
+      "url": "http://localhost:44019/neighborhood-guides/",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "file": "visual-review/landing/verified-guides-top-390.jpg",
+      "kind": "after",
+      "sha256": "58128346aa1fc227634723c62f85607ee4d2c205413ebd961dc3faeae1276620",
+      "bytes": 40819,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "fresh final image"
+    },
+    {
+      "at": "2026-09-07T04:15:15.978Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 1780,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/source-final-concierge-stories-1440.jpg",
+      "kind": "source",
+      "sha256": "46ac1d36e0970c79ca77c1a06c3e6c749ed10389b7f35e080186e464b8cf5f8f",
+      "bytes": 126618,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T04:18:19.856Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 1780,
+      "url": "http://localhost:44019/concierge/#stories",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/verified-concierge-stories-1440.jpg",
+      "kind": "after",
+      "sha256": "4f2a4329430c6032b57d269d413ed5759e9ca33889feb738867451bae8c1366f",
+      "bytes": 123981,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "preview overlay; 47 file hashes independently matched to final image"
+    },
+    {
+      "at": "2026-09-07T04:16:00.234Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 2578,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/source-final-concierge-services-1440.jpg",
+      "kind": "source",
+      "sha256": "a36f130b3c1c56e8d9f6f693e92c21ea7d6b0786f44419d47b0c9c1ae485d699",
+      "bytes": 68693,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T04:18:40.857Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 2578,
+      "url": "http://localhost:44019/concierge/#improvements",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/verified-concierge-services-1440.jpg",
+      "kind": "after",
+      "sha256": "05425809106c3cdfa7f5e6d38bd8259f1d32addd319fc4986be3f2168f9e3621",
+      "bytes": 88302,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "preview overlay; 47 file hashes independently matched to final image"
+    },
+    {
+      "at": "2026-09-07T04:17:56.478Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 4490.5,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/source-final-concierge-video-1440.jpg",
+      "kind": "source",
+      "sha256": "178bcac45a445b341682a3714bdf8cc95ae0c3e600157bb1b2fda673dba5292e",
+      "bytes": 99058,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T04:19:30.953Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 4491,
+      "url": "http://localhost:44019/concierge/#video",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/verified-concierge-video-1440.jpg",
+      "kind": "after",
+      "sha256": "a6f4cfe059fc929f2b676bd37df715730c80da50520243202aaafac1c21f8195",
+      "bytes": 97767,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "preview overlay; 47 file hashes independently matched to final image"
+    },
+    {
+      "at": "2026-09-07T04:16:11.051Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 5664.5,
+      "url": "https://www.compass.com/concierge/",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/source-final-concierge-faq-1440.jpg",
+      "kind": "source",
+      "sha256": "c3fb6b86293b20c6a44e7b98f85ad7ad1e7305e3c9d6bdeac7c2daf0d4c964c8",
+      "bytes": 167849,
+      "code_sha": null,
+      "asset_revision": null
+    },
+    {
+      "at": "2026-09-07T04:19:16.654Z",
+      "fonts": "loaded",
+      "overflow": false,
+      "scrollY": 5665,
+      "url": "http://localhost:44019/concierge/#faq",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "file": "visual-review/landing/verified-concierge-faq-1440.jpg",
+      "kind": "after",
+      "sha256": "a2cfa22ef61317091d76f94e402bb5837673c6d8f2936ddfb94f53c4becc6f43",
+      "bytes": 156080,
+      "code_sha": "25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf",
+      "asset_revision": "b09ad95ac9428d5f98e1dc6206f1fa5f87aec671",
+      "runtime": "preview overlay; 47 file hashes independently matched to final image"
+    }
+  ],
+  "limitations": [
+    "No human acceptance yet.",
+    "First/third/fifth story YouTube embeds and the film open YouTube explicitly; no external iframe or fabricated local playback.",
+    "Concierge contact/application opens Compass; local CTA opens the existing agent directory.",
+    "Only the 24-region index is reproduced. Six existing regional routes retain local listing snapshots; other regional guides open Compass.",
+    "Current Sell and other previously disclosed service limits remain.",
+    "No new benchmark trajectory or independent verdict was created for this UI delta."
+  ]
+}

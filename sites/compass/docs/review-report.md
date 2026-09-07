@@ -1,8 +1,8 @@
-> **Homepage and navigation reconstruction:** see [the latest report](homepage-review.md). Application `9741284`, HF `e063074`; human acceptance and refreshed independent review pending. Earlier evidence below retains its recorded version.
+> **Current landing-page follow-up:** [25b8b33 / HF b09ad95](landing-review.md) adds Concierge and the 24-region directory. Human acceptance and the refreshed task17 independent verdict remain pending. Earlier evidence retains its recorded versions.
 
 # Compass contribution review
 
-Reviewer takeover of [original PR #25](https://github.com/aiming-lab/WebHarbor/pull/25), contributed by **sarendis56 (Peichun Hua)**. The original commits remain in this branch. This Draft contains source/UI fixes and reviewer-authored grading contracts. Independent execution review is complete and reconciled; **human experience remains pending**, so it is not Ready for merge.
+Reviewer takeover of [original PR #25](https://github.com/aiming-lab/WebHarbor/pull/25), contributed by **sarendis56 (Peichun Hua)**. The original commits remain in this branch. This Draft contains source/UI fixes and reviewer-authored grading contracts. The original 16-run independent review is complete and reconciled; the later task17 independent verdict and **human experience remain pending**, so it is not Ready for merge.
 
 ## Sell follow-up after human inspection
 
@@ -12,8 +12,10 @@ The missing Sell navigation/homepage entry and `/sell/` 404 are fixed in applica
 
 - Current integration baseline: upstream `90afddb6d4af382935ded9a385f2eead604188cf` (Target added during validation).
 - Baseline integration checkpoint: `3cdc0b66d72b8a789b89583176c668081de36852`; current Sell application checkpoint: `a5e25af42b804bc56aeb49d5eb1c48c0a3a4b32c`; **20 sites**, Target `40018`, Compass **`40019`**, control plane `8101`.
-- [Companion HF PR #53](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/53), immutable current candidate `421ca6a529b88bdd214ecf6308d124798ab1e20b` (frozen task runs used `47232eba972567d138bbac478a6f4af9775a1d90`).
-- Current Compass archive: 182,836,773 bytes; SHA-256 `2dce9cab8bb53cf27a100ca8e67b39743a7d8875384cc4993fb52b5e29460141`. The Sell image is the only change from the prior Compass archive; all 2,412 prior files, including the seed, remain byte-identical. The other 19 archives equal the current upstream asset pin. Only Compass content is new relative to current main.
+- [Companion HF PR #53](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/53), immutable current candidate `b09ad95ac9428d5f98e1dc6206f1fa5f87aec671` (frozen task runs used `47232eba972567d138bbac478a6f4af9775a1d90`).
+- Current Compass archive: 192,209,798 bytes; SHA-256 `ced1411f5d86992ee07a55b98c3b8660ec548f204e0602c1a90d0fe0436f4b98`. The latest 38 source-media additions preserve all 2,430 preceding files and the seed byte-for-byte. See [current landing validation](landing-validation.json); original task-run assets retain their historical version. The other 19 archives are unchanged.
+- Current landing application checkpoint: `25b8b3375aeb5a3b2c5823f8ed6d52a05eddeccf`.
+
 
 The retained 16 complete UI runs were newly executed on **40019** after a host reboot removed the earlier temporary raw bundles. Their checkout was `b84eaf60bf02a30a45da643b62c92b343e70f426`, using the retained `3cdc0b6` image. The final parser-only verifier fix runs offline against the frozen snapshots; app/UI/data files were byte-identical at that reconciliation point. The later Sell application/UI delta is documented separately above. The standalone dependency list now includes `email-validator==2.2.0`, already installed by the Dockerfile. Historical summaries are retained as history, not substituted for missing originals.
 
