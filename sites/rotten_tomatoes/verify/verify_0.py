@@ -1,9 +1,11 @@
-"""R0: source-frozen Sci-Fi at-home streaming-date comparison.
+"""R0: source-frozen Netflix Sci-Fi at-home streaming-date comparison.
 
 Facts below derive from the unchanged 147-movie source catalog plus the 123
 homepage additions captured on 2026-09-07. Input catalog SHA256 values:
 aa04c6ac5acbaf76da631f120e82fad4d8f97eb7fa2e6b238b88c939f8f822e8
 76e9ee372f85d08812cc0561e454c69e39e2fc803881adc7c98a78b2492160ca
+The public task selects the Netflix Subscription Platform. Its eight source
+records all have streaming dates; the generic missing-date rule remains in force.
 A missing streaming date remains None and is excluded from the calendar maximum.
 Only frozen harness snapshots and screenshot-bound UI observations are read.
 No live database, catalog loading, search API, or runner answer is a fact source.
@@ -26,123 +28,27 @@ from verify_lib import Run, Snapshot, VerificationError, heading, main_dom, movi
 
 
 TASK_ID = "RottenTomatoes--0"
-CANDIDATES = [{'slug': 'supergirl_2026',
-  'title': 'Supergirl',
-  'date': '2026-07-28',
-  'writers': ['Ana Nogueira']},
- {'slug': 'disclosure_day',
-  'title': 'Disclosure Day',
-  'date': '2026-07-21',
-  'writers': ['David Koepp']},
- {'slug': 'backrooms', 'title': 'Backrooms', 'date': '2026-07-14', 'writers': ['Will Soodik']},
- {'slug': 'project_hail_mary',
-  'title': 'Project Hail Mary',
-  'date': '2026-05-12',
-  'writers': ['Drew Goddard']},
- {'slug': 'touch_me_2025',
-  'title': 'Touch Me',
-  'date': '2026-04-07',
-  'writers': ['Addison Heimann']},
- {'slug': 'avatar_fire_and_ash',
-  'title': 'Avatar: Fire and Ash',
-  'date': '2026-03-31',
-  'writers': ['James Cameron', 'Rick Jaffa', 'Amanda Silver']},
- {'slug': 'mike_and_nick_and_nick_and_alice',
-  'title': 'Mike & Nick & Nick & Alice',
-  'date': '2026-03-27',
-  'writers': ['BenDavid Grabinski']},
- {'slug': 'good_luck_have_fun_dont_die',
-  'title': "Good Luck, Have Fun, Don't Die",
-  'date': '2026-03-10',
-  'writers': ['Matthew Robinson']},
- {'slug': 'war_machine',
+CANDIDATES = [{'slug': 'war_machine',
   'title': 'War Machine',
   'date': '2026-03-06',
   'writers': ['Patrick Hughes', 'James Beaufort']},
- {'slug': 'cold_storage_2026',
-  'title': 'Cold Storage',
-  'date': '2026-03-06',
-  'writers': ['David Koepp']},
- {'slug': 'mercy_2026', 'title': 'Mercy', 'date': '2026-02-17', 'writers': ['Marco van Belle']},
- {'slug': 'predator_badlands',
-  'title': 'Predator: Badlands',
-  'date': '2026-01-06',
-  'writers': ['Patrick Aison']},
- {'slug': 'the_running_man_2025',
-  'title': 'The Running Man',
-  'date': '2025-12-16',
-  'writers': ['Michael Bacall', 'Edgar Wright']},
  {'slug': 'bugonia', 'title': 'Bugonia', 'date': '2025-11-25', 'writers': ['Will Tracy']},
- {'slug': 'lesbian_space_princess',
-  'title': 'Lesbian Space Princess',
-  'date': '2025-11-18',
-  'writers': ['Leela Varghese', 'Emma Hough Hobbs']},
  {'slug': 'frankenstein_2025',
   'title': 'Frankenstein',
   'date': '2025-11-07',
   'writers': ['Guillermo del Toro']},
- {'slug': 'the_fantastic_four_first_steps',
-  'title': 'The Fantastic Four: First Steps',
-  'date': '2025-09-23',
-  'writers': ['Peter Cameron']},
- {'slug': 'together_2025',
-  'title': 'Together',
-  'date': '2025-08-26',
-  'writers': ['Michael Shanks']},
- {'slug': 'superman_2025', 'title': 'Superman', 'date': '2025-08-15', 'writers': ['James Gunn']},
  {'slug': 'jurassic_world_rebirth',
   'title': 'Jurassic World Rebirth',
   'date': '2025-08-05',
   'writers': ['David Koepp']},
- {'slug': 'the_life_of_chuck',
-  'title': 'The Life of Chuck',
-  'date': '2025-07-29',
-  'writers': ['Mike Flanagan']},
- {'slug': 'predator_killer_of_killers',
-  'title': 'Predator: Killer of Killers',
-  'date': '2025-06-06',
-  'writers': ['Micho Rutare']},
- {'slug': 'companion_2025',
-  'title': 'Companion',
-  'date': '2025-02-18',
-  'writers': ['Drew Hancock']},
- {'slug': 'borderlands',
-  'title': 'Borderlands',
-  'date': '2024-08-30',
-  'writers': ['Eli Roth', 'Joe Crombie']},
  {'slug': 'godzilla_minus_one',
   'title': 'Godzilla Minus One',
   'date': '2024-06-01',
   'writers': ['Takashi Yamazaki']},
- {'slug': 'godzilla_x_kong_the_new_empire',
-  'title': 'Godzilla x Kong: The New Empire',
-  'date': '2024-05-14',
-  'writers': ['Terry Rossio', 'Simon Barrett', 'Jeremy Slater']},
- {'slug': 'dune_part_two',
-  'title': 'Dune: Part Two',
-  'date': '2024-04-16',
-  'writers': ['Denis Villeneuve', 'Jon Spaihts']},
  {'slug': 'the_hunger_games_the_ballad_of_songbirds_and_snakes',
   'title': 'The Hunger Games: The Ballad of Songbirds & Snakes',
   'date': '2023-12-19',
   'writers': ['Michael Arndt', 'Michael Lesslie']},
- {'slug': 'everything_everywhere_all_at_once',
-  'title': 'Everything Everywhere All at Once',
-  'date': '2022-06-07',
-  'writers': ['Daniel Kwan', 'Daniel Scheinert']},
- {'slug': 'greenland', 'title': 'Greenland', 'date': '2021-01-26', 'writers': ['Chris Sparling']},
- {'slug': 'star_wars_the_rise_of_skywalker',
-  'title': 'Star Wars: The Rise of Skywalker',
-  'date': '2019-12-20',
-  'writers': ['Chris Terrio', 'J.J. Abrams']},
- {'slug': 'star_wars_the_last_jedi',
-  'title': 'Star Wars: The Last Jedi',
-  'date': '2018-03-11',
-  'writers': ['Rian Johnson']},
- {'slug': 'alien_covenant',
-  'title': 'Alien: Covenant',
-  'date': '2017-07-10',
-  'writers': ['John Logan', 'Dante Harper']},
  {'slug': 'the_hunger_games',
   'title': 'The Hunger Games',
   'date': '2016-09-09',
@@ -150,22 +56,7 @@ CANDIDATES = [{'slug': 'supergirl_2026',
  {'slug': 'the_hunger_games_catching_fire',
   'title': 'The Hunger Games: Catching Fire',
   'date': '2016-08-26',
-  'writers': ['Simon Beaufoy', 'Michael Arndt']},
- {'slug': 'signs', 'title': 'Signs', 'date': '2016-08-11', 'writers': ['M. Night Shyamalan']},
- {'slug': 'interstellar_2014',
-  'title': 'Interstellar',
-  'date': '2016-05-24',
-  'writers': ['Jonathan Nolan']},
- {'slug': 'the_martian', 'title': 'The Martian', 'date': '2015-12-22', 'writers': []},
- {'slug': 'star_wars_episode_iii_revenge_of_the_sith',
-  'title': 'Star Wars: Episode III - Revenge of the Sith',
-  'date': '2015-04-10',
-  'writers': []},
- {'slug': '1071806-independence_day',
-  'title': 'Independence Day',
-  'date': '2012-09-18',
-  'writers': ['Dean Devlin', 'Roland Emmerich']},
- {'slug': 'onslaught', 'title': 'Onslaught', 'date': None, 'writers': ['Simon Barrett']}]
+  'writers': ['Simon Beaufoy', 'Michael Arndt']}]
 
 
 def clean(text):
@@ -224,8 +115,9 @@ def unchanged(before, after, candidates):
         require(before.bag(table) == after.bag(table), f"information task changed {table}")
     genre = before.one("genres", name="Sci-Fi")
     genre_ids = {r["movie_id"] for r in before.select("movie_genres", genre_id=genre["id"])}
-    actual = {m["slug"]: m for m in before.rows["movies"] if m["id"] in genre_ids and m.get("available_at_home") == 1}
-    require(set(actual) == {m["slug"] for m in candidates}, "frozen at-home Sci-Fi candidate set differs from source contract")
+    actual = {m["slug"]: m for m in before.rows["movies"] if m["id"] in genre_ids and m.get("available_at_home") == 1
+              and "Netflix" in [value.strip() for value in (m.get("streaming_platform") or "").split(",")]}
+    require(set(actual) == {m["slug"] for m in candidates}, "frozen Netflix at-home Sci-Fi candidate set differs from source contract")
     for movie in candidates:
         row = actual[movie["slug"]]
         require(row["title"] == movie["title"], "snapshot movie identity differs from source contract")
@@ -295,7 +187,9 @@ def streaming_date_evidence(dom, movie):
 
 def browse_scope(dom):
     main = main_dom(dom)
-    return heading(main, "Streaming at Home") and bool(re.search(r'option ["\']Sci-Fi["\']\s*\[selected\]', main))
+    return (heading(main, "Streaming at Home")
+            and bool(re.search(r'option ["\']Sci-Fi["\']\s*\[selected\]', main))
+            and bool(re.search(r'option ["\']Netflix["\']\s*\[selected\]', main)))
 
 
 def record_evidence(run, frame, label):
@@ -311,21 +205,22 @@ def comparison_ui(run, candidates):
         if frame.path != "/browse/movies_at_home":
             continue
         query = parse_qs(urlsplit(frame.url).query)
-        if query.get("genre") != ["sci-fi"] or any(query.get(k, [""])[0] for k in ("rating", "platform", "certified_fresh")):
+        if (query.get("genre") != ["sci-fi"] or query.get("platform") != ["Netflix"]
+                or any(query.get(k, [""])[0] for k in ("rating", "certified_fresh"))):
             continue
-        if not run.supports(frame, browse_scope, "The Streaming at Home browse page has Sci-Fi selected and no additional rating, subscription platform or Certified Fresh restriction."):
+        if not run.supports(frame, browse_scope, "The Streaming at Home browse page has Sci-Fi and the Netflix Subscription Platform selected, with no additional rating or Certified Fresh restriction."):
             continue
         scope_frames.append(frame)
         if frame.dom is not None:
             cards = set(movie_links(frame.dom))
-            require(not cards - wanted, "Sci-Fi at-home browse evidence contains an unexpected movie")
+            require(not cards - wanted, "Netflix Sci-Fi at-home browse evidence contains an unexpected movie")
             listed.update(cards)
         else:
             for movie in candidates:
-                if run.supports(frame, lambda d: False, f"The Sci-Fi Streaming at Home results visibly show a movie card titled {movie['title']}."):
+                if run.supports(frame, lambda d: False, f"The Netflix Sci-Fi Streaming at Home results visibly show a movie card titled {movie['title']}."):
                     listed.add(movie["slug"])
-    require(scope_frames and listed == wanted, "complete at-home Sci-Fi candidate collection was not observed")
-    record_evidence(run, scope_frames[0], "at_home_sci_fi_scope")
+    require(scope_frames and listed == wanted, "complete Netflix at-home Sci-Fi candidate collection was not observed")
+    record_evidence(run, scope_frames[0], "at_home_sci_fi_netflix_scope")
     run.evidence.append({"check": "candidate_collection", "count": len(listed)})
     for movie in candidates:
         found = None

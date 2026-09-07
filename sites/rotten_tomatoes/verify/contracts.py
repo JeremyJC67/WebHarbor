@@ -1,25 +1,9 @@
 """Task identity and publicly specified inputs. Answers belong in per-task verifiers."""
 
 CONTRACTS = {'RottenTomatoes--0': {'task_id': 'RottenTomatoes--0',
-                       'prompt': 'Browse the Sci-Fi movies in Streaming at Home. Among movies whose Movie '
-                                 'Info section has a Release Date (Streaming), identify the movie with the '
-                                 'latest such date. Report its title, that date, and all names listed under '
-                                 'Screenwriter. If several movies share the latest date, report each of '
-                                 'them. Ignore movies without this date. Return the results as a table with '
-                                 'columns Movie, Release Date (Streaming), and Screenwriter(s), one row per '
-                                 'movie. JSON records with equivalent fields are also acceptable.',
+                       'prompt': 'Browse the Sci-Fi movies in Streaming at Home with Subscription Platform set to Netflix. Among movies whose Movie Info section has a Release Date (Streaming), identify the movie with the latest such date. Report its title, that date, and all names listed under Screenwriter. If several movies share the latest date, report each of them. Ignore movies without this date. Return the results as a table with columns Movie, Release Date (Streaming), and Screenwriter(s), one row per movie. JSON records with equivalent fields are also acceptable.',
                        'kind': 'information',
-                       'judge_rubric': 'Use the actual Streaming at Home and Sci-Fi candidate set. Compare '
-                                       'the displayed streaming-release dates as calendar dates, not movie '
-                                       'years or alphabetical date strings. Report every movie tied for the '
-                                       'maximum date, with its correctly paired date and all displayed '
-                                       'screenwriter names. Evidence must establish the comparison and the '
-                                       'selected movie facts through normal UI browsing. A guessed answer or '
-                                       'relying only on a Newest/year sort fails; no extra fixed route or '
-                                       'unrelated detail visits are required. Return one complete record per '
-                                       'movie in the requested three-column table or equivalent JSON. '
-                                       'Introductory or concluding prose is allowed; it must not contradict '
-                                       'or add to the reported result set.'},
+                       'judge_rubric': "Use the actual Streaming at Home and Sci-Fi candidate set with Subscription Platform set to Netflix. The requested date is Movie Info's Release Date (Streaming), not a date when the movie was added to Netflix. Compare the displayed streaming-release dates as calendar dates, not movie years or alphabetical date strings. Report every movie tied for the maximum date, with its correctly paired date and all displayed screenwriter names. Evidence must establish the comparison and the selected movie facts through normal UI browsing. A guessed answer or relying only on a Newest/year sort fails; no extra fixed route or unrelated detail visits are required. Return one complete record per movie in the requested three-column table or equivalent JSON. Introductory or concluding prose is allowed; it must not contradict or add to the reported result set."},
  'RottenTomatoes--3': {'task_id': 'RottenTomatoes--3',
                        'prompt': 'Search for Christopher Nolan and compare the Movie Info sections of '
                                  'Oppenheimer and The Dark Knight. List every producer credited on both '

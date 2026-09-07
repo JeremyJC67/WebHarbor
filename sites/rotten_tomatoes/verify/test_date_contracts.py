@@ -14,14 +14,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify_0 as r0
 PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/Y9sAAAAASUVORK5CYII=')
 ORIGIN = 'http://r0-fixture.localhost:40019'
-def table(title='Supergirl', date='Jul 28, 2026', writers='Ana Nogueira'):
+def table(title='War Machine', date='Mar 6, 2026', writers='Patrick Hughes and James Beaufort'):
     return f'| Movie | Release Date (Streaming) | Screenwriter(s) |\n|---|---|---|\n| {title} | {date} | {writers} |'
 
 ANSWER = table()
 
 
 def listing():
-    return '- main:\n  - heading "Streaming at Home" [level=1]\n  - combobox "Genre:":\n    - option "Sci-Fi" [selected]\n' + ''.join(f'  - link "{m["title"]}":\n    - /url: /m/{m["slug"]}\n' for m in r0.CANDIDATES)
+    return '- main:\n  - heading "Streaming at Home" [level=1]\n  - combobox "Genre:":\n    - option "Sci-Fi" [selected]\n  - combobox "Subscription Platform:":\n    - option "Netflix" [selected]\n' + ''.join(f'  - link "{m["title"]}":\n    - /url: /m/{m["slug"]}\n' for m in r0.CANDIDATES)
 
 
 def detail(movie):
@@ -34,9 +34,9 @@ def fixture(directory, visited=None, answer=ANSWER, reverse=False, bad_field=Non
     (directory / 'screenshots').mkdir()
     (directory / 'observations').mkdir()
     with sqlite3.connect(directory / 'before.db') as db:
-        db.executescript('CREATE TABLE movies(id INTEGER PRIMARY KEY,slug TEXT,title TEXT,release_date_streaming TEXT,screenwriter TEXT,available_at_home BOOLEAN); CREATE TABLE genres(id INTEGER PRIMARY KEY,name TEXT); CREATE TABLE movie_genres(movie_id INTEGER,genre_id INTEGER); CREATE TABLE users(id INTEGER PRIMARY KEY,name TEXT); INSERT INTO genres VALUES(1,"Sci-Fi"); INSERT INTO users VALUES(1,"unchanged fixture user");')
+        db.executescript('CREATE TABLE movies(id INTEGER PRIMARY KEY,slug TEXT,title TEXT,release_date_streaming TEXT,screenwriter TEXT,available_at_home BOOLEAN,streaming_platform TEXT); CREATE TABLE genres(id INTEGER PRIMARY KEY,name TEXT); CREATE TABLE movie_genres(movie_id INTEGER,genre_id INTEGER); CREATE TABLE users(id INTEGER PRIMARY KEY,name TEXT); INSERT INTO genres VALUES(1,"Sci-Fi"); INSERT INTO users VALUES(1,"unchanged fixture user");')
         for i, m in enumerate(r0.CANDIDATES, 1):
-            db.execute('INSERT INTO movies VALUES(?,?,?,?,?,?)', (i,m['slug'],m['title'],m['date'],', '.join(m['writers']),1))
+            db.execute('INSERT INTO movies VALUES(?,?,?,?,?,?,?)', (i,m['slug'],m['title'],m['date'],', '.join(m['writers']),1,'Netflix'))
             db.execute('INSERT INTO movie_genres VALUES(?,1)', (i,))
     shutil.copy2(directory / 'before.db', directory / 'after.db')
     home = '- main:\n  - heading "Rotten Tomatoes" [level=1]\n  - link "Streaming at Home":\n    - /url: /browse/movies_at_home/\n'
@@ -53,7 +53,7 @@ def fixture(directory, visited=None, answer=ANSWER, reverse=False, bad_field=Non
             (directory/'observations'/f'{name}.txt').write_text(item[1])
         steps.append(row);current=destination
     step('goto',{'url':ORIGIN+'/'},current)
-    browse=(ORIGIN+'/browse/movies_at_home/?genre=sci-fi',listing()) if has_scope else (
+    browse=(ORIGIN+'/browse/movies_at_home/?genre=sci-fi&platform=Netflix',listing()) if has_scope else (
         ORIGIN+'/browse/movies/',listing().replace('Streaming at Home','All Movies').replace('[selected]',''))
     step('click',{'label':'Streaming at Home' if has_scope else 'All Movies'},(ORIGIN+'/browse/movies_at_home/' if has_scope else ORIGIN+'/browse/movies/',listing().replace('[selected]','').replace('Streaming at Home','Streaming at Home' if has_scope else 'All Movies')))
     step('select',{'label':'Genre','value':'sci-fi'},browse)
@@ -83,12 +83,12 @@ class R0Tests(unittest.TestCase):
 
     def test_full_comparison_in_either_order_and_date_formats(self):
         self.run_fixture(True)
-        self.run_fixture(True,reverse=True,answer=table(date='28 July 2026'))
-        self.run_fixture(True,answer=table(date='2026年7月28日'))
-        self.run_fixture(True,answer=table(date='2026-07-28'))
-        value=[{'title':'Supergirl','date':'Jul 28, 2026','screenwriters':['Ana Nogueira']}]
+        self.run_fixture(True,reverse=True,answer=table(date='6 March 2026'))
+        self.run_fixture(True,answer=table(date='2026年3月6日'))
+        self.run_fixture(True,answer=table(date='2026-03-06'))
+        value=[{'title':'War Machine','date':'Mar 6, 2026','screenwriters':['James Beaufort','Patrick Hughes']}]
         self.run_fixture(True,answer=json.dumps(value))
-        self.run_fixture(True,answer='After reviewing all 41 Sci-Fi movies in Streaming at Home, this is the latest result.\n'+ANSWER+'\nI compared the calendar dates shown in Movie Info.')
+        self.run_fixture(True,answer='After reviewing all 8 Netflix Sci-Fi movies in Streaming at Home, this is the latest result.\n'+ANSWER+'\nI compared the calendar dates shown in Movie Info.')
         self.run_fixture(True,answer='After comparing the streaming dates, here is the result.\n```json\n'+json.dumps(value)+'\n```\nAll listed screenwriters are included.')
 
     def test_correct_answer_without_complete_comparison_fails(self):
@@ -123,13 +123,13 @@ class R0Tests(unittest.TestCase):
 
     def test_wrong_dates_missing_and_extra_facts(self):
         for answer in [table(date='May 21, 2026'),
-                       table(writers=''), table(writers='Ana Nogueira and Jane Doe'),
+                       table(writers=''), table(writers='Patrick Hughes and Jane Doe'),
                        ANSWER+'\nScreenwriter: Jane Doe.',
                        ANSWER+'\n| Touch Me | Apr 7, 2026 | Addison Heimann |',
                        ANSWER+'\n| Alien | May 12, 2026 | Dan O Bannon |',
                        table(title='Project Hail Mary and Alien'),
                        'Project Hail Mary and Alien — May 12, 2026 — Drew Goddard.',
-                       'Not Supergirl.\n'+ANSWER,
+                       'Not War Machine.\n'+ANSWER,
                        ANSWER+'\nIts date is June 1, 2026.']:
 
             with self.subTest(answer=answer):self.run_fixture(False,answer=answer)

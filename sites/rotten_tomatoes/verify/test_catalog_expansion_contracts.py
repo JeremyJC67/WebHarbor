@@ -13,7 +13,7 @@ from contracts import CONTRACTS
 import test_date_contracts as dates_fixture
 import test_info_contracts as info_fixture
 
-NEW_R0 = '| Movie | Release Date (Streaming) | Screenwriter(s) |\n|---|---|---|\n| Supergirl | Jul 28, 2026 | Ana Nogueira |'
+NEW_R0 = '| Movie | Release Date (Streaming) | Screenwriter(s) |\n|---|---|---|\n| War Machine | Mar 6, 2026 | Patrick Hughes and James Beaufort |'
 NEW_R18 = 'Spider-Man: Brand New Day — Audience score: 97%; Release Date (Streaming): not listed.'
 
 
@@ -24,15 +24,13 @@ class CatalogExpansionContracts(unittest.TestCase):
             return r0.evaluate(d, no_llm=True)
 
     def test_r0_complete_source_membership_and_new_maximum(self):
-        self.assertEqual(len(r0.CANDIDATES), 41)
-        missing=[m['slug'] for m in r0.CANDIDATES if m['date'] is None]
-        self.assertEqual(missing, ['onslaught'])
-        numeric=[m for m in r0.CANDIDATES if m['date'] is not None]
-        winner=max(numeric, key=lambda m:m['date'])
-        self.assertEqual((winner['slug'],winner['date'],winner['writers']),('supergirl_2026','2026-07-28',['Ana Nogueira']))
+        self.assertEqual(len(r0.CANDIDATES), 8)
+        self.assertEqual([m['slug'] for m in r0.CANDIDATES if m['date'] is None], [])
+        winner=max(r0.CANDIDATES, key=lambda m:m['date'])
+        self.assertEqual((winner['slug'],winner['date'],winner['writers']),('war_machine','2026-03-06',['Patrick Hughes','James Beaufort']))
         result=self.r0_run()
         self.assertTrue(result['pass'],result)
-        self.assertTrue(any(e['check']=='streaming_date_absent:onslaught' for e in result['evidence']))
+        self.assertTrue(any(e['check']=='candidate_collection' and e['count']==8 for e in result['evidence']))
 
     def test_r0_missing_date_requires_complete_movie_info(self):
         movie={'slug':'onslaught','title':'Onslaught','date':None,'writers':['Simon Barrett']}
@@ -46,21 +44,22 @@ class CatalogExpansionContracts(unittest.TestCase):
         self.assertFalse(r0.streaming_date_evidence(complete.replace('Onslaught','Another Movie'),movie))
 
     def test_r0_missing_candidate_and_missing_date_observation_fail(self):
-        without=[m for m in r0.CANDIDATES if m['slug']!='onslaught']
-        self.assertEqual(len(without),40)
+        omitted=r0.CANDIDATES[-1]
+        without=[m for m in r0.CANDIDATES if m['slug']!=omitted['slug']]
+        self.assertEqual(len(without),7)
         self.assertFalse(self.r0_run(visited=without)['pass'])
         with tempfile.TemporaryDirectory(prefix='expanded-r0-list-fixture-') as d:
             dates_fixture.fixture(d,answer=NEW_R0)
             for p in (Path(d)/'observations').glob('*.txt'):
                 text=p.read_text()
                 if 'heading "Streaming at Home"' in text:
-                    text=text.replace('  - link "Onslaught":\n    - /url: /m/onslaught\n','')
+                    text=text.replace(f'  - link "{omitted["title"]}":\n    - /url: /m/{omitted["slug"]}\n','')
                     p.write_text(text)
             result=r0.evaluate(d,no_llm=True)
             self.assertFalse(result['pass'],result)
             self.assertIn('candidate collection',result['reason'])
 
-    def test_r0_old_winner_and_fabricated_missing_snapshot_date_fail(self):
+    def test_r0_old_winner_and_fabricated_snapshot_date_fail(self):
         with tempfile.TemporaryDirectory(prefix='expanded-r0-old-fixture-') as d:
             old='| Movie | Release Date (Streaming) | Screenwriter(s) |\n|---|---|---|\n| Project Hail Mary | May 12, 2026 | Drew Goddard |'
             dates_fixture.fixture(d,answer=old)
@@ -69,7 +68,7 @@ class CatalogExpansionContracts(unittest.TestCase):
             dates_fixture.fixture(d,answer=NEW_R0)
             for dbname in ['before.db','after.db']:
                 with sqlite3.connect(Path(d)/dbname) as db:
-                    db.execute("UPDATE movies SET release_date_streaming='2026-01-01' WHERE slug='onslaught'")
+                    db.execute("UPDATE movies SET release_date_streaming='2026-01-01' WHERE slug='war_machine'")
             self.assertFalse(r0.evaluate(d,no_llm=True)['pass'])
 
     def test_r18_source_universe_and_winner_with_unlisted_date(self):
