@@ -21,7 +21,7 @@ cd "$(dirname "$0")/.."
 REPO=$(awk '/^repo:/ {print $2}' .assets-revision)
 REVISION="${ASSETS_REVISION:-$(awk '/^revision:/ {print $2}' .assets-revision)}"
 ONLY_SITE="${1:-}"
-CACHE_DIR="sites/.cache/tarballs"
+CACHE_DIR="sites/.cache/tarballs/$REVISION"
 
 if ! command -v hf >/dev/null 2>&1; then
     echo "fetch_assets: 'hf' CLI not found. Install with: pip install -U \"huggingface_hub[cli]\"" >&2
@@ -42,8 +42,23 @@ hf download "$REPO" --repo-type dataset --revision "$REVISION" \
     --include "$INCLUDE" --local-dir "$CACHE_DIR"
 
 shopt -s nullglob
+TARBALLS=("$CACHE_DIR"/*.tar.gz)
+if [[ -n "$ONLY_SITE" && ${#TARBALLS[@]} -ne 1 ]]; then
+    echo "fetch_assets: expected one archive for $ONLY_SITE, found ${#TARBALLS[@]}" >&2
+    exit 1
+fi
+if [[ -z "$ONLY_SITE" ]]; then
+    expected=0
+    for site_dir in sites/*/; do
+        [[ -d "$site_dir" ]] && expected=$((expected + 1))
+    done
+    if [[ ${#TARBALLS[@]} -ne $expected ]]; then
+        echo "fetch_assets: expected $expected site archives at revision $REVISION, found ${#TARBALLS[@]}" >&2
+        exit 1
+    fi
+fi
 extracted=0
-for tarball in "$CACHE_DIR"/*.tar.gz; do
+for tarball in "${TARBALLS[@]}"; do
     site=$(basename "$tarball" .tar.gz)
     if [[ -n "$ONLY_SITE" && "$site" != "$ONLY_SITE" ]]; then continue; fi
     echo "[fetch] extracting $site"
@@ -61,4 +76,8 @@ for tarball in "$CACHE_DIR"/*.tar.gz; do
     extracted=$((extracted + 1))
 done
 
+if [[ -n "$ONLY_SITE" && $extracted -ne 1 ]]; then
+    echo "fetch_assets: did not extract requested site $ONLY_SITE" >&2
+    exit 1
+fi
 echo "[fetch] done — $extracted site(s) extracted into sites/"

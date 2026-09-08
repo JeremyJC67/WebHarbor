@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 21 Flask mirror sites + control plane on :8101.
+# 22 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm
 
@@ -14,6 +14,7 @@ RUN pip3 install --no-cache-dir \
     Flask-Login==0.6.3 \
     Flask-WTF==1.2.2 \
     Flask-Bcrypt==1.0.1 \
+    bcrypt==5.0.0 \
     Werkzeug==3.1.3 \
     Jinja2==3.1.4 \
     SQLAlchemy==2.0.36 \
@@ -51,6 +52,17 @@ os.makedirs('instance_seed', exist_ok=True); \
 shutil.copy2('instance/osu.db', 'instance_seed/osu.db'); \
 print('osu seed DB generated at build time.')" && rm -rf /opt/WebSyn/osu/instance
 
-EXPOSE 8101 40000-40020
+# Rotten Tomatoes keeps source-backed media in the asset bundle and rebuilds
+# its deterministic SQLite seed from tracked, validated source documents.
+RUN test -n "$(ls -A /opt/WebSyn/rotten_tomatoes/static/images)" && \
+    test -n "$(ls -A /opt/WebSyn/rotten_tomatoes/static/external_cache)"
+RUN cd /opt/WebSyn/rotten_tomatoes && rm -rf instance instance_seed && python3 -c "\
+import app; \
+import os, shutil; \
+os.makedirs('instance_seed', exist_ok=True); \
+shutil.copy2('instance/rotten_tomatoes.db', 'instance_seed/rotten_tomatoes.db'); \
+print('Rotten Tomatoes seed DB generated at build time.')" && rm -rf /opt/WebSyn/rotten_tomatoes/instance
+
+EXPOSE 8101 40000-40021
 
 CMD ["/opt/websyn_start.sh"]
