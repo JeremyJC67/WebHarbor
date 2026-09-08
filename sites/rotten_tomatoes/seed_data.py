@@ -6,10 +6,15 @@ Existing databases are never changed at application startup. Refresh an existing
 seed only with the explicit offline refresh_seed.py command.
 """
 import json
+import re
+from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / 'data' / 'source_catalog.json'
+SEED_TIMESTAMP = datetime(2026, 9, 7, 12, 0, 0)
+BENCHMARK_PASSWORD_HASH = '$2b$12$2XW3KYd47TD4DhWHKKkUguM5rA2cSvXj02XysRtVbdZwmIIE1BNTu'
 
 
 def load_catalog(path=CATALOG_PATH):
@@ -20,6 +25,30 @@ def load_catalog(path=CATALOG_PATH):
     slugs = [movie['slug'] for movie in catalog['movies']]
     if len(set(ids)) != len(ids) or len(set(slugs)) != len(slugs):
         raise ValueError('Duplicate movie identity in source catalog')
+    for movie in catalog['movies']:
+        if movie['source']['url'] != 'https://www.rottentomatoes.com/m/' + movie['slug']:
+            raise ValueError('Invalid official movie source URL')
+        if movie['cast_source']['url'] != movie['source']['url'] + '/cast-and-crew':
+            raise ValueError('Invalid official cast-and-crew source URL')
+        for source in (movie['source'], movie['cast_source']):
+            if not re.fullmatch(r'[0-9a-f]{64}', source.get('sha256', '')):
+                raise ValueError('Invalid captured source hash')
+        for field in ('tomatometer', 'audience_score'):
+            value = movie[field]
+            if value is not None and (not isinstance(value, int) or not 0 <= value <= 100):
+                raise ValueError(f'Invalid movie score: {movie["slug"]}.{field}')
+        if not isinstance(movie['year'], int) or not 1880 <= movie['year'] <= 2100:
+            raise ValueError('Invalid movie year')
+        if movie['release_date_streaming']:
+            datetime.strptime(movie['release_date_streaming'], '%b %d, %Y')
+        for field in ('directors', 'producers', 'screenwriters', 'genres', 'subscription_platforms'):
+            values = movie[field]
+            if values is not None and (not isinstance(values, list) or any(
+                    not isinstance(value, str) or not value.strip() for value in values)):
+                raise ValueError(f'Invalid movie list field: {movie["slug"]}.{field}')
+        for url_field, hash_field in (('poster_url', 'poster_sha256'), ('banner_url', 'banner_sha256')):
+            if movie[url_field] and not re.fullmatch(r'[0-9a-f]{64}', movie.get(hash_field, '')):
+                raise ValueError(f'Invalid image hash: {movie["slug"]}.{hash_field}')
     person_slugs = [person['slug'] for person in catalog['persons']]
     if len(set(person_slugs)) != len(person_slugs):
         raise ValueError('Duplicate person identity in source catalog')
@@ -39,8 +68,55 @@ def load_catalog(path=CATALOG_PATH):
 CONTENT_NAMES = ('homepage', 'tv_catalog', 'feature_catalog')
 
 
+def _validate_local_path(value, label):
+    if not isinstance(value, str) or not value.startswith('/') or value.startswith('//') or '\\' in value:
+        raise ValueError(f'Invalid local path for {label}: {value!r}')
+
+
+def _validate_no_undefined_urls(value, path='root'):
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in {'source_url', 'url', 'final_url', 'canonical_url'} and isinstance(item, str):
+                parsed = urlparse(item)
+                if parsed.scheme not in {'http', 'https'} or not parsed.netloc or '/undefined' in parsed.path:
+                    raise ValueError(f'Invalid source URL at {path}.{key}: {item!r}')
+            _validate_no_undefined_urls(item, f'{path}.{key}')
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            _validate_no_undefined_urls(item, f'{path}[{index}]')
+
+
+def validate_content_documents(documents):
+    if set(documents) != set(CONTENT_NAMES):
+        raise ValueError('Content snapshots must contain exactly the supported documents')
+    homepage = documents['homepage']
+    sections = homepage.get('sections')
+    if homepage.get('schema_version') != 1 or not isinstance(sections, list) or not sections:
+        raise ValueError('Invalid homepage schema')
+    section_ids = [section.get('id') for section in sections]
+    if any(not isinstance(section.get('items'), list) for section in sections) or len(section_ids) != len(set(section_ids)):
+        raise ValueError('Invalid or duplicate homepage sections')
+    for name in ('tv_catalog', 'feature_catalog'):
+        document = documents[name]
+        if document.get('schema_version') != 1 or not isinstance(document.get('records'), list):
+            raise ValueError(f'Invalid {name} schema')
+    tv_paths = [record.get('path') for record in documents['tv_catalog']['records']]
+    if len(tv_paths) != len(set(tv_paths)):
+        raise ValueError('Duplicate TV paths')
+    for path in tv_paths:
+        _validate_local_path(path, 'TV record')
+        if not path.startswith('/tv/'):
+            raise ValueError(f'Invalid TV route: {path!r}')
+    feature_ids = [record.get('id') for record in documents['feature_catalog']['records']]
+    if any(not value for value in feature_ids) or len(feature_ids) != len(set(feature_ids)):
+        raise ValueError('Invalid or duplicate feature IDs')
+    for name, document in documents.items():
+        _validate_no_undefined_urls(document, name)
+    return documents
+
+
 def load_content_documents(directory=BASE_DIR / 'data'):
-    """Build-time inputs only; HTTP handlers use ContentSnapshot in SQLite."""
+    """Load and strictly validate build-time snapshots used to seed SQLite."""
     documents = {}
     for name in CONTENT_NAMES:
         path = Path(directory) / (name + '.json')
@@ -48,7 +124,7 @@ def load_content_documents(directory=BASE_DIR / 'data'):
         if not isinstance(document, dict):
             raise ValueError('Content snapshot must be an object: ' + name)
         documents[name] = document
-    return documents
+    return validate_content_documents(documents)
 
 
 def runtime_display(minutes):
@@ -109,14 +185,55 @@ def catalog_rows(catalog):
             'movie_genres': movie_genres, 'movie_cast': movie_cast}
 
 
+def validate_populated_seed(db, Genre, Movie, Person, MovieCast, AudienceReview, User,
+                            ContentSnapshot):
+    """Fail closed when immutable source-backed state is incomplete or mismatched."""
+    rows = catalog_rows(load_catalog())
+    expected_movies = {row['id']: row for row in rows['movies']}
+    actual_movies = {movie.id: movie for movie in Movie.query.order_by(Movie.id).all()}
+    if set(actual_movies) != set(expected_movies):
+        raise ValueError('Populated database movie identities do not match the source catalog')
+    for movie_id, expected in expected_movies.items():
+        actual = actual_movies[movie_id]
+        for key, value in expected.items():
+            if key != 'created_at' and getattr(actual, key) != value:
+                raise ValueError(f'Populated database movie fact mismatch: {movie_id}.{key}')
+    expected_genres = [(row['id'], row['name'], row['slug']) for row in rows['genres']]
+    actual_genres = [(row.id, row.name, row.slug) for row in Genre.query.order_by(Genre.id).all()]
+    if actual_genres != expected_genres:
+        raise ValueError('Populated database genres do not match the source catalog')
+    expected_people = [(row['id'], row['slug'], row['name'], row['photo']) for row in rows['persons']]
+    actual_people = [(row.id, row.slug, row.name, row.photo) for row in Person.query.order_by(Person.id).all()]
+    if actual_people != expected_people:
+        raise ValueError('Populated database people do not match the source catalog')
+    expected_cast = [(row['id'], row['movie_id'], row['person_id'], row['character_name'],
+                      row['role_type'], row['billing_order']) for row in rows['movie_cast']]
+    actual_cast = [(row.id, row.movie_id, row.person_id, row.character_name,
+                    row.role_type, row.billing_order) for row in MovieCast.query.order_by(MovieCast.id).all()]
+    if actual_cast != expected_cast:
+        raise ValueError('Populated database credits do not match the source catalog')
+    if ContentSnapshot is not None:
+        documents = load_content_documents()
+        actual_documents = {row.name: row.document for row in ContentSnapshot.query.all()}
+        if actual_documents != documents:
+            raise ValueError('Populated database content snapshots do not match tracked source documents')
+    required_emails = {row['email'] for row in USERS}
+    if not required_emails.issubset({row.email for row in User.query.all()}):
+        raise ValueError('Populated database is missing a benchmark user')
+    expected_review_ids = {row['id'] for row in AUDIENCE_REVIEWS}
+    if not expected_review_ids.issubset({row.id for row in AudienceReview.query.all()}):
+        raise ValueError('Populated database is missing a seeded public review')
+
+
 def seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview,
              User, UserRating, WatchlistItem, ContentSnapshot=None):
-    """Create only an empty database; a populated database is a read-only no-op."""
+    """Create an empty database or validate immutable state in a populated database."""
     if Movie.query.first() is not None:
+        validate_populated_seed(db, Genre, Movie, Person, MovieCast, AudienceReview, User,
+                                ContentSnapshot)
         return
     if any(model.query.first() is not None for model in (Genre, Person, User)):
         raise ValueError('Partial database: use the explicit offline migration command')
-    from flask_bcrypt import Bcrypt
     from sqlalchemy import null
 
     rows = catalog_rows(load_catalog())
@@ -127,35 +244,40 @@ def seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview,
         for row in rows[table]:
             # SQLAlchemy Python-side defaults would otherwise turn explicit None
             # scores into zero. SQL NULL preserves the captured unknown value.
-            instance = model(**{key: null() if value is None else value for key, value in row.items()})
+            values = {key: null() if value is None else value for key, value in row.items()}
+            if table == 'movies':
+                values['created_at'] = SEED_TIMESTAMP + timedelta(microseconds=row['id'])
+            instance = model(**values)
             db.session.add(instance)
             created.append(instance)
         db.session.flush()
         objects[table] = created
     movie_map = {movie.slug: movie for movie in objects['movies']}
-    genre_map = {genre.id: genre for genre in objects['genres']}
-    movies_by_id = {movie.id: movie for movie in objects['movies']}
-    for relation in rows['movie_genres']:
-        movies_by_id[relation['movie_id']].genres.append(genre_map[relation['genre_id']])
+    association_table = Movie.genres.property.secondary
+    db.session.execute(association_table.insert(), sorted(
+        rows['movie_genres'], key=lambda row: (row['movie_id'], row['genre_id'])))
 
-    bcrypt = Bcrypt()
     user_map = {}
     for index, user in enumerate(USERS, 1):
         instance = User(id=index, email=user['email'], name=user['username'],
-                        password_hash=bcrypt.generate_password_hash(user['password']).decode('utf-8'))
+                        password_hash=BENCHMARK_PASSWORD_HASH,
+                        created_at=SEED_TIMESTAMP + timedelta(seconds=index))
         db.session.add(instance)
         user_map[user['username']] = instance
     db.session.flush()
     for review in AUDIENCE_REVIEWS:
         db.session.add(AudienceReview(id=review['id'], movie_id=movie_map[review['movie_slug']].id,
                                       user_id=user_map['alice_jones'].id,
-                                      score=review['rating'], text=review['text']))
+                                      score=review['rating'], text=review['text'],
+                                      review_date=SEED_TIMESTAMP + timedelta(seconds=review['id'])))
     for index, rating in enumerate(USER_RATINGS, 1):
         db.session.add(UserRating(id=index, user_id=user_map[rating['username']].id,
-                                  movie_id=movie_map[rating['movie_slug']].id, score=rating['score']))
+                                  movie_id=movie_map[rating['movie_slug']].id, score=rating['score'],
+                                  created_at=SEED_TIMESTAMP + timedelta(minutes=1, seconds=index)))
     for index, item in enumerate(WATCHLIST_ITEMS, 1):
         db.session.add(WatchlistItem(id=index, user_id=user_map[item['username']].id,
-                                     movie_id=movie_map[item['movie_slug']].id))
+                                     movie_id=movie_map[item['movie_slug']].id,
+                                     added_at=SEED_TIMESTAMP + timedelta(minutes=2, seconds=index)))
     if ContentSnapshot is not None:
         for name, document in load_content_documents().items():
             db.session.add(ContentSnapshot(name=name, document=document))

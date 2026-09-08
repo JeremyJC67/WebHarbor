@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Explicit offline refresh into a NEW database; the source is never modified."""
 import argparse
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -12,6 +13,16 @@ from seed_data import CATALOG_PATH, catalog_rows, load_catalog, load_content_doc
 
 STATE_TABLES = ('users', 'watchlist_items', 'user_ratings')
 EXTRA_COLUMNS = {'watch_offers': 'TEXT', 'watch_description': 'TEXT', 'available_at_home': 'BOOLEAN'}
+
+
+@contextmanager
+def sqlite_connection(*args, **kwargs):
+    connection = sqlite3.connect(*args, **kwargs)
+    try:
+        with connection:
+            yield connection
+    finally:
+        connection.close()
 
 
 def sha256(path):
@@ -126,24 +137,30 @@ def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False, a
     content_hashes = ({name: sha256(Path(content_dir) / (name + '.json')) for name in CONTENT_NAMES}
                       if documents is not None else {})
     receipt_path = output.with_name(output.name + '.migration.json')
+    pending_path = output.with_name(output.name + '.migration.pending.json')
     if output.exists():
-        if not receipt_path.exists():
+        evidence_path = receipt_path if receipt_path.exists() else pending_path
+        if not evidence_path.exists():
             raise ValueError('Refusing to overwrite an existing output without a receipt')
-        receipt = json.loads(receipt_path.read_text())
+        receipt = json.loads(evidence_path.read_text())
         if (receipt['source_sha256'] != source_hash or receipt['catalog_sha256'] != catalog_hash
                 or receipt['output_sha256'] != sha256(output)
                 or receipt['deduplicate_benchmark_reviews'] != deduplicate
                 or receipt.get('allow_catalog_additions', False) != allow_additions
                 or receipt.get('content_sha256', {}) != content_hashes):
             raise ValueError('Existing output does not match source, catalog, and migration receipt')
+        if evidence_path == pending_path:
+            os.replace(pending_path, receipt_path)
         return {**receipt, 'status': 'already_migrated'}
     if receipt_path.exists():
         raise ValueError('Receipt exists without its output; inspect before retrying')
+    if pending_path.exists():
+        pending_path.unlink()
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='rotten-catalog-', dir=output.parent) as directory:
         candidate = Path(directory) / 'rotten_tomatoes.db'
-        with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as original:
-            with sqlite3.connect(candidate) as connection:
+        with sqlite_connection(source.as_uri() + '?mode=ro', uri=True) as original:
+            with sqlite_connection(candidate) as connection:
                 original.backup(connection)
                 connection.execute('PRAGMA foreign_keys = ON')
                 connection.execute('BEGIN IMMEDIATE')
@@ -164,11 +181,15 @@ def migrate_copy(source, output, catalog_path=CATALOG_PATH, deduplicate=False, a
                    'output_sha256': sha256(candidate), 'deduplicate_benchmark_reviews': deduplicate,
                    'allow_catalog_additions': allow_additions, 'content_sha256': content_hashes,
                    'status': 'migrated', **result}
-        # No overwrite, including accidental reuse of an evidence path.
-        os.link(candidate, output)
-        with receipt_path.open('x') as handle:
+        # Stage and fsync the receipt before publishing the no-overwrite output
+        # link. A crash between the two final operations is recovered above.
+        with pending_path.open('x') as handle:
             json.dump(receipt, handle, indent=2)
             handle.write('\n')
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.link(candidate, output)
+        os.replace(pending_path, receipt_path)
         return receipt
 
 

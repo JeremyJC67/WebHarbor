@@ -29,7 +29,7 @@
 
     {% if shows %}
     <section class="search-section">
-        <h2>TV Shows</h2>
+        <h2>TV Shows ({{ shows|length }})</h2>
         <div class="movie-grid">
         {% for show in shows %}<a href="{{ show.href }}" class="movie-card"><div class="card-poster"><img src="{{ show.image }}" alt="{{ show.title }}"></div><div class="card-info"><div class="card-title">{{ show.title }}</div></div></a>{% endfor %}
         </div>

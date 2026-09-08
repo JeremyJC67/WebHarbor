@@ -105,7 +105,8 @@ img { max-width: 100%; height: auto; }
 .movie-hero-copy { max-width: 560px; }
 .movie-title-large { font-size: 30px; line-height: 1.15; margin-bottom: 8px; }
 .movie-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; font-size: 14px; }
-.hero-watchlist { display: inline-block; border: 1px solid white; border-radius: 24px; padding: 6px 16px; color: white; font-size: 14px; text-transform: uppercase; }
+.hero-watchlist-form { display: inline; }
+.hero-watchlist { display: inline-block; border: 1px solid white; border-radius: 24px; padding: 6px 16px; background: transparent; color: white; font: inherit; font-size: 14px; text-transform: uppercase; cursor: pointer; }
 .detail-columns { display: grid; grid-template-columns: minmax(0, 728px) minmax(230px, 300px); gap: 36px; }
 .detail-main { min-width: 0; }
 .movie-header { display: flex; align-items: stretch; gap: 20px; margin: 0 0 24px; }

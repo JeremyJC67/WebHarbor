@@ -1,41 +1,60 @@
 #!/usr/bin/env python3
 """Rotten Tomatoes mirror — Flask app for WebHarbor."""
+import json
 import os
 import re
-import math
-import json
+import secrets
 import unicodedata
-from datetime import datetime, timedelta
-from functools import wraps, lru_cache
+from datetime import datetime, timezone
 from copy import deepcopy
 from types import SimpleNamespace
 from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
 
 from flask import (Flask, render_template, request, redirect, url_for,
-                   flash, jsonify, session, abort, g, make_response)
+                   flash, jsonify, session, abort)
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (LoginManager, UserMixin, login_user, logout_user,
                          login_required, current_user)
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_bcrypt import Bcrypt
-from wtforms import StringField, PasswordField, TextAreaField, IntegerField, SelectField, FloatField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange, ValidationError
-from sqlalchemy import or_, func, and_
+from wtforms import FloatField, PasswordField, StringField, TextAreaField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, ValidationError
+from sqlalchemy import event as sqlalchemy_event, func, text
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.engine import Engine
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BENCHMARK_NOW = datetime(2026, 9, 7, 12, 0, 0)
+SEEDED_REVIEW_NAMES = {
+    2: 'Angel G', 3: 'Patrick V', 5: 'Patricia P', 7: 'Ricardo', 9: 'Jesus',
+    10: 'Luie', 12: 'Brandon', 13: 'Lysah', 14: 'Joseph', 15: 'Sergio Z',
+    16: 'Carlos', 17: 'Ryan M', 18: 'Lexie B', 19: 'Morgan P', 20: 'kassandra',
+    21: 'Tyler', 22: 'Alanna T', 23: 'Chad W', 24: 'Timothy W', 25: 'Chris P',
+    26: 'Del', 27: 'Marie', 28: 'Hunter',
+}
+SEEDED_REVIEW_IDS = frozenset(SEEDED_REVIEW_NAMES)
 
 app = Flask(__name__, instance_path=os.path.join(BASE_DIR, "instance"))
-app.config['SECRET_KEY'] = 'rotten-tomatoes-mirror-secret-key-change-in-prod'
+app.config['SECRET_KEY'] = os.environ.get('ROTTEN_TOMATOES_SECRET_KEY') or secrets.token_hex(32)
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'rotten_tomatoes.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['WTF_CSRF_TIME_LIMIT'] = None
+app.config['MAX_CONTENT_LENGTH'] = 64 * 1024
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 os.makedirs(os.path.join(BASE_DIR, 'instance'), exist_ok=True)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+
+@sqlalchemy_event.listens_for(Engine, 'connect')
+def enable_sqlite_foreign_keys(connection, _record):
+    cursor = connection.cursor()
+    cursor.execute('PRAGMA foreign_keys=ON')
+    cursor.close()
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please sign in to access this page.'
@@ -47,13 +66,18 @@ csrf = CSRFProtect(app)
 # Models
 # ──────────────────────────────────────────────
 
+
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     watchlist_items = db.relationship('WatchlistItem', backref='user', lazy=True, cascade='all, delete-orphan')
     ratings = db.relationship('UserRating', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -82,9 +106,9 @@ class ContentSnapshot(db.Model):
 class Movie(db.Model):
     __tablename__ = 'movies'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False, index=True)
-    slug = db.Column(db.String(200), unique=True, nullable=False, index=True)
-    year = db.Column(db.Integer, nullable=False, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(200), unique=True, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
     runtime_minutes = db.Column(db.Integer)
     synopsis = db.Column(db.Text, default='')
     poster_image = db.Column(db.String(300), default='')
@@ -110,7 +134,7 @@ class Movie(db.Model):
     original_language = db.Column(db.String(50), default='')
     release_date_streaming = db.Column(db.String(50), default='')
     runtime_display = db.Column(db.String(20), default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     genres = db.relationship('Genre', secondary=movie_genres, lazy='subquery',
                              backref=db.backref('movies', lazy=True))
@@ -171,8 +195,8 @@ class Movie(db.Model):
 class Person(db.Model):
     __tablename__ = 'persons'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False, index=True)
-    slug = db.Column(db.String(150), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(150), nullable=False)
+    slug = db.Column(db.String(150), unique=True, nullable=False)
     bio = db.Column(db.Text, default='')
     photo = db.Column(db.String(300), default='')
     birthplace = db.Column(db.String(200), default='')
@@ -241,7 +265,7 @@ class AudienceReview(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     score = db.Column(db.Float, default=3.0)  # 0.5-5.0 stars
     text = db.Column(db.Text, default='')
-    review_date = db.Column(db.DateTime, default=datetime.utcnow)
+    review_date = db.Column(db.DateTime, default=utcnow)
 
     __table_args__ = (db.UniqueConstraint('movie_id', 'user_id', name='uq_user_movie_review'),)
 
@@ -252,7 +276,7 @@ class UserRating(db.Model):
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     score = db.Column(db.Float, default=3.0)  # 0.5-5.0
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     __table_args__ = (db.UniqueConstraint('movie_id', 'user_id', name='uq_user_movie_rating'),)
 
@@ -262,7 +286,7 @@ class WatchlistItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+    added_at = db.Column(db.DateTime, default=utcnow)
 
     __table_args__ = (db.UniqueConstraint('movie_id', 'user_id', name='uq_user_movie_watchlist'),)
 
@@ -273,7 +297,10 @@ class WatchlistItem(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        return None
 
 
 @app.context_processor
@@ -289,7 +316,8 @@ def inject_globals():
         watchlist_ids = {w.movie_id for w in WatchlistItem.query.filter_by(user_id=current_user.id).all()}
     return dict(all_genres=genres, user_watchlist_ids=watchlist_ids,
                 header_links=_content_document('homepage').get('header_links', []),
-                trending=_content_document('homepage').get('trending', []))
+                trending=_content_document('homepage').get('trending', []),
+                audience_review_name=lambda review: SEEDED_REVIEW_NAMES.get(review.id, review.user.name))
 
 
 # ──────────────────────────────────────────────
@@ -302,13 +330,13 @@ def password_byte_limit(form, field):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', validators=[DataRequired(), password_byte_limit])
 
 
 class RegisterForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=2, max=120)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6), password_byte_limit])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
@@ -325,6 +353,16 @@ class RatingForm(FlaskForm):
 # ──────────────────────────────────────────────
 # Search helper — scored token overlap
 # ──────────────────────────────────────────────
+
+def request_arg(name, default='', max_length=200):
+    values = request.args.getlist(name)
+    if len(values) > 1:
+        abort(400)
+    value = values[0] if values else default
+    if not isinstance(value, str) or len(value) > max_length:
+        abort(400)
+    return value
+
 
 def local_redirect_target(target, fallback):
     """Keep return navigation on this origin and return a path-only Location."""
@@ -494,7 +532,7 @@ def site_information():
 @app.route('/search')
 def search():
     """Search movies and people."""
-    query = (request.args.get('q') or request.args.get('search') or '').strip()
+    query = (request_arg('q') or request_arg('search')).strip()
     if not query:
         return render_template('search_results.html', query='', movies=[], people=[], shows=[])
     movies = search_movies(query)
@@ -525,50 +563,65 @@ def browse_all():
 def _browse_movies(base_query, title, browse_type):
     """Common browse logic with filters."""
     # Genre filter
-    genre_slug = request.args.get('genre', '')
+    genre_slug = request_arg('genre', max_length=50)
     if genre_slug:
         genre = Genre.query.filter_by(slug=genre_slug).first()
-        if genre:
-            base_query = base_query.filter(Movie.genres.any(Genre.id == genre.id))
+        if genre is None:
+            abort(400)
+        base_query = base_query.filter(Movie.genres.any(Genre.id == genre.id))
 
     # Certified fresh filter
-    cf = request.args.get('certified_fresh', '')
+    cf = request_arg('certified_fresh', max_length=5)
+    if cf not in ('', 'true'):
+        abort(400)
     if cf == 'true':
         base_query = base_query.filter_by(certified_fresh=True)
 
     # Rating filter
-    pg = request.args.get('rating', '')
-    if pg in ('G', 'PG', 'PG-13', 'R'):
+    pg = request_arg('rating', max_length=5)
+    if pg not in ('', 'G', 'PG', 'PG-13', 'R'):
+        abort(400)
+    if pg:
         base_query = base_query.filter_by(pg_rating=pg)
 
     # Year filter
-    year = request.args.get('year', '')
-    if year and year.isdigit():
+    year = request_arg('year', max_length=4)
+    if year and (not year.isdigit() or not 1880 <= int(year) <= 2100):
+        abort(400)
+    if year:
         base_query = base_query.filter_by(year=int(year))
 
     # Streaming platform filter
-    platform = request.args.get('platform', '')
+    platform = request_arg('platform', max_length=100)
+    known_platforms = sorted({value.strip() for row in db.session.query(Movie.streaming_platform).filter(
+        Movie.streaming_platform != ''
+    ).distinct().all() for value in row[0].split(',') if value.strip()})
+    if platform and platform not in known_platforms:
+        abort(400)
     if platform:
         membership = ',' + func.replace(Movie.streaming_platform, ', ', ',') + ','
         base_query = base_query.filter(func.instr(membership, ',' + platform + ',') > 0)
 
     # Sort
-    sort = request.args.get('sort', 'popular')
+    sort = request_arg('sort', 'popular', max_length=20)
+    if sort not in ('popular', 'newest', 'tomatometer', 'audience', 'a_z'):
+        abort(400)
     if sort == 'newest':
-        base_query = base_query.order_by(Movie.year.desc(), Movie.title)
+        base_query = base_query.order_by(Movie.year.desc(), Movie.title, Movie.id)
     elif sort == 'tomatometer':
-        base_query = base_query.order_by(Movie.tomatometer.desc(), Movie.title)
+        base_query = base_query.order_by(Movie.tomatometer.is_(None), Movie.tomatometer.desc(), Movie.title, Movie.id)
     elif sort == 'audience':
-        base_query = base_query.order_by(Movie.audience_score.desc(), Movie.title)
+        base_query = base_query.order_by(Movie.audience_score.is_(None), Movie.audience_score.desc(), Movie.title, Movie.id)
     elif sort == 'a_z':
-        base_query = base_query.order_by(Movie.title)
+        base_query = base_query.order_by(Movie.title, Movie.id)
     else:  # popular
-        base_query = base_query.order_by(Movie.audience_score.desc(), Movie.tomatometer.desc())
+        base_query = base_query.order_by(Movie.audience_score.is_(None), Movie.audience_score.desc(),
+                                         Movie.tomatometer.is_(None), Movie.tomatometer.desc(), Movie.title, Movie.id)
 
     movies = base_query.all()
     # Homepage provider links refer to captured viewing offers, including rental
     # services. The existing subscription-only platform filter stays distinct.
-    provider = request.args.get('provider', '')
+    provider = request_arg('provider', max_length=40)
     provider_names = {'fandango': 'Fandango at Home', 'netflix': 'Netflix',
                       'amazon-prime-video-us': 'Prime Video', 'hbo-max': 'HBO Max'}
     if provider:
@@ -578,10 +631,7 @@ def _browse_movies(base_query, title, browse_type):
                   if any(offer.get('icon') == provider for offer in movie.watch_options)]
         title = title + ' — ' + provider_names[provider]
     genres = Genre.query.order_by(Genre.name).all()
-    platforms = db.session.query(Movie.streaming_platform).filter(
-        Movie.streaming_platform != ''
-    ).distinct().order_by(Movie.streaming_platform).all()
-    platforms = sorted({value.strip() for row in platforms for value in row[0].split(',') if value.strip()})
+    platforms = known_platforms
 
     return render_template('browse.html',
                            title=title,
@@ -656,7 +706,9 @@ def celebrity_detail(slug):
     person = Person.query.filter_by(slug=slug).first_or_404()
 
     filmography = person.filmography
-    sort = request.args.get('sort', 'newest')
+    sort = request_arg('sort', 'newest', max_length=20)
+    if sort not in ('newest', 'oldest', 'critics_highest', 'critics_lowest', 'audience_highest', 'audience_lowest'):
+        abort(400)
     if sort == 'oldest':
         filmography.sort(key=lambda entry: (entry.movie.year, entry.movie.title))
     elif sort in ('critics_highest', 'critics_lowest', 'audience_highest', 'audience_lowest'):
@@ -688,11 +740,13 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        email = form.email.data.lower().strip()
+        user = User.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
+            session.clear()
             login_user(user)
             flash('Welcome back!', 'success')
-            next_page = request.args.get('next')
+            next_page = request_arg('next', max_length=500)
             return redirect(local_redirect_target(next_page, url_for('index')))
         flash('Invalid email or password.', 'danger')
     return render_template('login.html', form=form)
@@ -704,25 +758,29 @@ def register():
         return redirect(url_for('index'))
     form = RegisterForm()
     if form.validate_on_submit():
-        existing = User.query.filter_by(email=form.email.data.lower()).first()
+        email = form.email.data.lower().strip()
+        name = form.name.data.strip()
+        existing = User.query.filter_by(email=email).first()
         if existing:
-            flash('Email already registered.', 'danger')
+            flash('Unable to create an account with the supplied details.', 'danger')
         else:
             hashed = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
             result = db.session.execute(sqlite_insert(User).values(
-                email=form.email.data.lower(), password_hash=hashed, name=form.name.data
+                email=email, password_hash=hashed, name=name
             ).on_conflict_do_nothing(index_elements=['email']))
             db.session.commit()
             if result.rowcount:
-                user = User.query.filter_by(email=form.email.data.lower()).one()
+                user = User.query.filter_by(email=email).one()
+                session.clear()
                 login_user(user)
                 flash('Account created!', 'success')
                 return redirect(url_for('index'))
-            flash('Email already registered.', 'danger')
+            flash('Unable to create an account with the supplied details.', 'danger')
     return render_template('register.html', form=form)
 
 
 @app.route('/logout', methods=['POST'])
+@login_required
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
@@ -735,7 +793,8 @@ def logout():
 @login_required
 def account():
     rating_count = UserRating.query.filter_by(user_id=current_user.id).count()
-    review_count = AudienceReview.query.filter_by(user_id=current_user.id).count()
+    review_count = AudienceReview.query.filter_by(user_id=current_user.id).filter(
+        AudienceReview.id.not_in(SEEDED_REVIEW_IDS)).count()
     watchlist_count = WatchlistItem.query.filter_by(user_id=current_user.id).count()
     return render_template('account.html', rating_count=rating_count,
                            review_count=review_count, watchlist_count=watchlist_count)
@@ -767,8 +826,8 @@ def user_ratings():
 @app.route('/user/reviews')
 @login_required
 def user_reviews():
-    reviews = AudienceReview.query.filter_by(user_id=current_user.id)\
-        .order_by(AudienceReview.review_date.desc()).all()
+    reviews = AudienceReview.query.filter_by(user_id=current_user.id).filter(
+        AudienceReview.id.not_in(SEEDED_REVIEW_IDS)).order_by(AudienceReview.review_date.desc()).all()
     return render_template('user_reviews.html', reviews=reviews)
 
 
@@ -807,10 +866,8 @@ def remove_from_watchlist(movie_id):
         db.session.delete(item)
         db.session.commit()
         flash(f'Removed "{movie.title}" from your watchlist.', 'success')
-    referrer = request.referrer
-    if referrer and '/user/watchlist' in referrer:
-        return redirect(url_for('watchlist'))
-    return redirect(url_for('movie_detail', slug=movie.slug))
+    fallback = url_for('movie_detail', slug=movie.slug)
+    return redirect(local_redirect_target(request.form.get('next'), fallback))
 
 
 # ── Rating & Review routes ──
@@ -856,7 +913,7 @@ def review_movie(slug):
 @login_required
 def delete_review(review_id):
     review = AudienceReview.query.get_or_404(review_id)
-    if review.user_id != current_user.id:
+    if review.id in SEEDED_REVIEW_IDS or review.user_id != current_user.id:
         flash('You can only delete your own reviews.', 'danger')
         return redirect(url_for('user_reviews'))
     movie_title = review.movie.title
@@ -890,6 +947,13 @@ def health():
 def init_db():
     """Create tables and seed data."""
     db.create_all()
+    for statement in (
+        'CREATE INDEX IF NOT EXISTS ix_movies_title ON movies(title)',
+        'CREATE INDEX IF NOT EXISTS ix_movies_year ON movies(year)',
+        'CREATE INDEX IF NOT EXISTS ix_persons_name ON persons(name)',
+    ):
+        db.session.execute(text(statement))
+    db.session.commit()
     from seed_data import seed_all
     seed_all(db, Genre, Movie, Person, MovieCast, CriticReview, AudienceReview, User, UserRating, WatchlistItem, ContentSnapshot)
 

@@ -1,148 +1,48 @@
-"""Carol's private rated-minus-watchlisted set, from frozen read-only evidence."""
-import argparse
-import json
-from pathlib import Path
-import re
-import sqlite3
-import sys
+#!/usr/bin/env python3
 
-from contracts import CONTRACTS
-from verify_lib import (Run, Snapshot, VerificationError, auth_step, authenticated,
-                        check_state, heading, main_dom, movie_card, movie_links,
-                        norm, require)
+from verify_lib import (Judge, check_common, check_read_only, clicked_transition,
+                        entered_sequence, final_answer, has_number, load_run,
+                        normalize_text, parse_args, resolve_db, row_dicts,
+                        visited_path)
 
-TASK_ID = "RottenTomatoes--14"
-# Benchmark fixture invariants, deliberately kept out of task/rubric inputs.
-EXPECTED_RATINGS = {"the_substance": 4, "nosferatu_2024": 4, "oddity": 5}
-EXPECTED_WATCHLIST = {"barbie", "everything_everywhere_all_at_once", "the_substance", "nosferatu_2024"}
-NUMBER_START = r"(?:(?<![\w.])|(?<=[\u3400-\u9fff]))"
+TASK_ID = 'RottenTomatoes--14'
+EMAIL = 'carol.d@test.com'
+PASSWORD = 'TestPass123!'
 
 
-def scores(text):
-    text = text.casefold().replace("−", "-")
-    for word,value in {"zero":0,"one":1,"two":2,"three":3,"four":4,"five":5}.items():
-        text = re.sub(r"\b" + word + r"\b",str(value),text)
-    for word,value in {"零":0,"一":1,"二":2,"两":2,"三":3,"四":4,"五":5}.items():
-        text = re.sub(word+r"(?=(?:颗)?星|分)",str(value),text)
-    text = re.sub(r"(?<=\d)(?=[分星颗])"," ",text)
-    found=[]
-    def fraction(match):
-        value,denominator = float(match[1]),float(match[2])
-        require(denominator == 5 and 0 <= value <= 5,"final score uses the wrong scale")
-        found.append(value)
-        return " " * len(match[0])
-    text = re.sub(NUMBER_START+r"([+-]?\d+(?:\.\d+)?)\s*(?:/|out\s+of)\s*(\d+(?:\.\d+)?)",fraction,text)
-    for match in re.finditer(NUMBER_START+r"([+-]?\d+(?:\.\d+)?)(?!\w|\.\d)",text):
-        value = float(match[1])
-        if 1900 <= value <= 2100 and value.is_integer():
-            continue
-        require(0 <= value <= 5,"final personal score is outside the five-star scale")
-        found.append(value)
-    return found
+def pair_line(answer, title, score):
+    return any(normalize_text(title) in normalize_text(line) and has_number(line, score)
+               for line in answer.splitlines())
 
 
-def answer_pairs(answer, all_movies, expected):
-    # Newlines are useful list boundaries, so preserve them for the parser.
-    raw = str(answer)
-    claims = re.split(r"[\n;；,，]|(?<!\d)[.!?。](?=\s|$)",raw)
-    titles = sorted({m["title"] for m in all_movies},key=len,reverse=True)
-    result={}
-    pending=None
-    for claim in claims:
-        lower=claim.casefold()
-        if not norm(claim):
-            continue
-        if pending:
-            denied = re.search(
-                r"(?:不是|并非|非)\s*(?:carol|她|个人)\s*(?:的)?\s*(?:评分|分数)"
-                r"|(?:她|carol)\s*(?:没有|未|不曾)\s*(?:给)?(?:该片|它|这部电影)?\s*(?:评分|打分)", lower)
-            attribution = re.fullmatch(
-                r"\s*这是\s*(.+?)\s*(?:给的|的)(?:评分|分数)[。.!?\s]*", lower)
-            require(not denied and (not attribution or attribution[1].strip() in ("carol", "她")),
-                    "final personal-score attribution is contradictory")
-        excluded = re.search(r"(?:already|also)\s+(?:in|on)\s+(?:(?:her|the|my)\s+)?watchlist|in\s+both|not\s+(?:missing|absent|the answer)|已在.*(?:收藏|watchlist)|两(?:个|张).*都有",lower)
-        matches=[]
-        for title in titles:
-            for match in re.finditer(r"(?<!\w)"+re.escape(title)+r"(?!\w)",claim,re.I):
-                if not any(a < match.end() and match.start() < b for a,b,_ in matches):
-                    matches.append((match.start(),match.end(),title))
-        matches.sort()
-        if excluded:
-            continue
-        if not matches:
-            values=scores(claim)
-            if values:
-                title_reference = re.search(r"\b(?:it|its|this film|that movie)\b|它|该片",lower)
-                personal_prefix = re.match(
-                    r"^\s*(?:她(?:给)?的(?:个人)?评分|个人评分)\s*(?:是|为|[:：])\s*",lower)
-                personal_score_clause = False
-                if personal_prefix:
-                    # Consume a complete numeric rating, not just a label before
-                    # an unrelated person's score or an aggregate metric.
-                    body = lower[personal_prefix.end():].strip(" \t\r\n:*`_，,。.!?；;()（）").replace("−", "-")
-                    numeral = r"(?:[+-]?\d+(?:\.\d+)?|zero|one|two|three|four|five|[零一二两三四五])"
-                    rating = numeral + r"(?:\s*(?:/|out\s+of)\s*" + numeral + r")?(?:\s*(?:stars?|(?:颗)?星|分))?"
-                    personal_score_clause = re.fullmatch(rating, body)
-                if pending and (personal_score_clause if personal_prefix else title_reference):
-                    result.setdefault(pending,[]).extend(values)
-                else:
-                    require(False,"a score is not paired with a recognized result movie")
-            continue
-        for i,(start,end,title) in enumerate(matches):
-            require(title in expected,"final answer includes an extra movie in the difference set")
-            segment=claim[end:matches[i+1][0] if i+1<len(matches) else len(claim)]
-            require(not re.search(r"\b(?:is not|isn't|was not)\s+(?:rated|missing|the answer)\b|并非答案|不是答案",segment,re.I),"final answer negates a required result")
-            result.setdefault(title,[]).extend(scores(segment))
-            pending=title
-    require(set(result) == set(expected),"final rated-minus-watchlisted title set is missing or incorrect")
-    for title,score in expected.items():
-        require(result[title] and set(result[title]) == {float(score)},"final movie and personal-score pairing is missing, wrong, or contradictory")
-    return {title:score for title,score in expected.items()}
+def main():
+    args = parse_args()
+    trajectory = load_run(args.run_dir)
+    judge = Judge(TASK_ID)
+    answer = final_answer(trajectory)
+    check_common(judge, trajectory, TASK_ID)
+    initial = resolve_db(args.initial_db, args.container, 'instance_seed')
+    ratings = row_dicts(initial, """SELECT m.slug,m.title,r.score FROM user_ratings r
+        JOIN users u ON u.id=r.user_id JOIN movies m ON m.id=r.movie_id
+        WHERE u.email=? ORDER BY m.slug""", (EMAIL,)) if initial else []
+    watchlist = {row['slug'] for row in row_dicts(initial, """SELECT m.slug FROM watchlist_items w
+        JOIN users u ON u.id=w.user_id JOIN movies m ON m.id=w.movie_id WHERE u.email=?""", (EMAIL,))} if initial else set()
+    expected = [row for row in ratings if row['slug'] not in watchlist]
+    judge.check('ground_truth_readable', bool(initial) and len(expected) == 1, f'expected={expected}')
+    judge.check('login_fields_submitted', entered_sequence(trajectory, (EMAIL, PASSWORD), '/login'), EMAIL)
+    judge.check('login_redirected', clicked_transition(trajectory, '/login', '/'), 'login to home')
+    judge.check('opened_both_private_lists', visited_path(trajectory, '/user/ratings') and
+                visited_path(trajectory, '/user/watchlist'), 'ratings and watchlist')
+    judge.check('used_account_navigation', clicked_transition(trajectory, '/', '/account') and
+                clicked_transition(trajectory, '/account', '/user/ratings') and
+                clicked_transition(trajectory, '/user/ratings', '/user/watchlist'), 'account tabs')
+    for row in expected:
+        judge.check('answer_pair_' + row['slug'], pair_line(answer, row['title'], row['score']), repr(answer))
+    extras = [row['title'] for row in ratings if row not in expected and normalize_text(row['title']) in normalize_text(answer)]
+    judge.check('no_extra_rated_movies', not extras, f'extras={extras}')
+    check_read_only(judge, args)
+    judge.emit()
 
 
-def evaluate(task_id,run_dir,initial_db=None,after_db=None,no_llm=False):
-    evidence=[]
-    try:
-        require(task_id == TASK_ID,"wrong information-task entrypoint")
-        spec=CONTRACTS[TASK_ID]
-        run=Run(run_dir,spec,no_llm=no_llm)
-        directory=Path(run_dir)
-        before_path=initial_db or (directory/"before.db" if (directory/"before.db").is_file() else directory/"initial.db")
-        before=Snapshot(before_path)
-        after=Snapshot(after_db or directory/"after.db")
-        state=check_state(spec,before,after)
-        evidence.append({"check":"read_only_snapshot_equality","snapshots":[Path(before_path).name,after.path.name]})
-        user=state["user"]
-        movies={m["id"]:m for m in before.rows["movies"]}
-        ratings={movies[r["movie_id"]]["slug"]:r["score"] for r in before.select("user_ratings",user_id=user["id"])}
-        watchlist={movies[r["movie_id"]]["slug"] for r in before.select("watchlist_items",user_id=user["id"])}
-        require(ratings == EXPECTED_RATINGS and watchlist == EXPECTED_WATCHLIST,"initial private benchmark collections do not match the task contract")
-        auth=auth_step(run,state)
-        name=user["name"]
-        run.prove("my_ratings_private_collection",{"/user/ratings"},auth,
-            lambda d: authenticated(d,name) and heading(main_dom(d),"My Ratings")
-            and set(movie_links(d)) == set(ratings)
-            and all(re.search(r"(?<!\d)"+re.escape(f"{score:g}")+r"(?:\.0)?\s*/\s*5",movie_card(d,slug)) for slug,score in ratings.items()),
-            "The signed-in My Ratings page shows these movie/personal-score pairs: "+json.dumps({next(m["title"]for m in movies.values()if m["slug"]==slug):score for slug,score in ratings.items()})+". Read the personal ratings, not public audience percentages.")
-        run.prove("my_watchlist_private_collection",{"/user/watchlist"},auth,
-            lambda d: authenticated(d,name) and heading(main_dom(d),"My Watchlist") and set(movie_links(d)) == watchlist,
-            "The signed-in My Watchlist page shows these four movies: "+json.dumps([m["title"]for m in movies.values()if m["slug"]in watchlist])+".")
-        expected={m["title"]:ratings[m["slug"]] for m in movies.values()if m["slug"] in ratings and m["slug"] not in watchlist}
-        pairs=answer_pairs(run.data["final_answer"],before.rows["movies"],expected)
-        evidence.extend(run.evidence)
-        evidence.append({"check":"private_set_difference_and_score_pairing","result_count":len(pairs)})
-        return {"task_id":TASK_ID,"pass":True,"reason":"Read-only private collections, authenticated UI comparison and final title/score pairs are evidenced.","evidence":evidence}
-    except (VerificationError,OSError,ValueError,KeyError,TypeError,AttributeError,IndexError,sqlite3.Error) as exc:
-        return {"task_id":TASK_ID,"pass":False,"reason":str(exc),"evidence":evidence}
-
-
-if __name__ == "__main__":
-    parser=argparse.ArgumentParser()
-    parser.add_argument("--run_dir",required=True)
-    parser.add_argument("--initial_db")
-    parser.add_argument("--after_db")
-    parser.add_argument("--no_llm",nargs="?",const="true",default="false",choices=("true","false","True","False"))
-    args=parser.parse_args()
-    result=evaluate(TASK_ID,args.run_dir,args.initial_db,args.after_db,args.no_llm.lower()=="true")
-    print(json.dumps(result,ensure_ascii=False))
-    sys.exit(0 if result["pass"] else 1)
+if __name__ == '__main__':
+    main()

@@ -3,6 +3,7 @@
 Run: python -m unittest discover -s sites/rotten_tomatoes/tests -p test_source_catalog.py -v
 ROTTEN_TOMATOES_SOURCE may point to a candidate site directory.
 """
+from contextlib import contextmanager
 import importlib.util
 import json
 import os
@@ -14,6 +15,16 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+
+
+@contextmanager
+def sqlite_connection(*args, **kwargs):
+    connection = sqlite3.connect(*args, **kwargs)
+    try:
+        with connection:
+            yield connection
+    finally:
+        connection.close()
 
 
 def load_module(name, path):
@@ -61,14 +72,14 @@ class SourceCatalogTests(unittest.TestCase):
 
     def clone_cold(self, name='legacy.db'):
         target = self.directory / name
-        with sqlite3.connect(self.cold_db.as_uri() + '?mode=ro', uri=True) as source:
-            with sqlite3.connect(target) as output:
+        with sqlite_connection(self.cold_db.as_uri() + '?mode=ro', uri=True) as source:
+            with sqlite_connection(target) as output:
                 source.backup(output)
         return target
 
     def assert_catalog_projection(self, path):
         rows = self.seed.catalog_rows(self.catalog)
-        with sqlite3.connect(path) as connection:
+        with sqlite_connection(path) as connection:
             for table, expected in rows.items():
                 columns = list(expected[0])
                 actual = connection.execute(f'SELECT {",".join(columns)} FROM {table}').fetchall()
@@ -79,7 +90,7 @@ class SourceCatalogTests(unittest.TestCase):
 
     def test_cold_seed_is_exact_catalog_projection(self):
         self.assert_catalog_projection(self.cold_db)
-        with sqlite3.connect(self.cold_db) as connection:
+        with sqlite_connection(self.cold_db) as connection:
             missing = sum(movie['audience_score'] is None for movie in self.catalog['movies'])
             self.assertGreater(missing, 0)
             self.assertEqual(connection.execute('SELECT count(*) FROM movies WHERE audience_score IS NULL').fetchone()[0], missing)
@@ -108,25 +119,40 @@ class SourceCatalogTests(unittest.TestCase):
             self.assertFalse(actors & forbidden)
         self.assertEqual(movies['cold_storage_2026']['subscription_platforms'], [])
         self.assertTrue(movies['cold_storage_2026']['watch_offers'])
-        with sqlite3.connect(self.cold_db) as connection:
+        with sqlite_connection(self.cold_db) as connection:
             self.assertEqual(connection.execute("SELECT streaming_platform, available_at_home FROM movies WHERE slug='cold_storage_2026'").fetchone(), ('', 1))
             self.assertEqual(connection.execute("SELECT COUNT(*) FROM persons WHERE bio<>'' OR birthplace<>'' OR birth_date<>''").fetchone()[0], 0)
 
-    def test_existing_database_seed_returns_without_loading_catalog_or_commit(self):
+    def test_existing_database_seed_validates_without_commit(self):
         before = self.migration.sha256(self.cold_db)
         with self.site.app.app_context():
-            with patch.object(self.seed, 'load_catalog', side_effect=AssertionError('Loaded catalog on populated DB')):
-                with patch.object(self.site.db.session, 'commit', side_effect=AssertionError('Committed on populated DB')):
-                    self.seed.seed_all(self.site.db, self.site.Genre, self.site.Movie, self.site.Person,
-                                       self.site.MovieCast, self.site.CriticReview, self.site.AudienceReview,
-                                       self.site.User, self.site.UserRating, self.site.WatchlistItem)
+            with patch.object(self.site.db.session, 'commit', side_effect=AssertionError('Committed on populated DB')):
+                self.seed.seed_all(self.site.db, self.site.Genre, self.site.Movie, self.site.Person,
+                                   self.site.MovieCast, self.site.CriticReview, self.site.AudienceReview,
+                                   self.site.User, self.site.UserRating, self.site.WatchlistItem,
+                                   self.site.ContentSnapshot)
             self.site.db.session.remove()
             self.site.db.engine.dispose()
         self.assertEqual(before, self.migration.sha256(self.cold_db))
 
+    def test_existing_database_rejects_immutable_fact_corruption(self):
+        with self.site.app.app_context():
+            movie = self.site.Movie.query.filter_by(slug='war_machine').one()
+            original = movie.screenwriter
+            movie.screenwriter = 'Invented Writer'
+            self.site.db.session.flush()
+            with self.assertRaisesRegex(ValueError, 'movie fact mismatch'):
+                self.seed.seed_all(self.site.db, self.site.Genre, self.site.Movie, self.site.Person,
+                                   self.site.MovieCast, self.site.CriticReview, self.site.AudienceReview,
+                                   self.site.User, self.site.UserRating, self.site.WatchlistItem,
+                                   self.site.ContentSnapshot)
+            self.site.db.session.rollback()
+            movie.screenwriter = original
+            self.site.db.session.rollback()
+
     def test_migration_preserves_state_and_rebuilds_the_same_facts(self):
         source = self.clone_cold()
-        with sqlite3.connect(source) as connection:
+        with sqlite_connection(source) as connection:
             connection.execute("UPDATE movies SET runtime_minutes=7, runtime_display='9h', synopsis='Invented placeholder', streaming_platform='Unverified Provider'")
             review = connection.execute('SELECT movie_id,user_id,score,text FROM audience_reviews WHERE id=2').fetchone()
             # Simulate the legacy schema, which allowed duplicate synthetic reviews.
@@ -156,7 +182,7 @@ class SourceCatalogTests(unittest.TestCase):
         invalid.write_text(json.dumps(catalog))
         before = self.migration.sha256(source)
         output = self.directory / 'rejected.db'
-        with self.assertRaisesRegex(ValueError, 'every existing movie ID and slug'):
+        with self.assertRaisesRegex(ValueError, 'every existing movie ID and slug|official movie source URL'):
             self.migration.migrate_copy(source, output, invalid)
         self.assertFalse(output.exists())
         self.assertEqual(before, self.migration.sha256(source))
@@ -174,7 +200,9 @@ class SourceCatalogTests(unittest.TestCase):
         movie.update(
             id=max(movie['id'] for movie in catalog['movies']) + 1,
             slug='synthetic-incremental-movie', title='Synthetic Incremental Movie',
-            source_url=None, poster_url=None,
+            source={'url': 'https://www.rottentomatoes.com/m/synthetic-incremental-movie', 'sha256': '0' * 64},
+            cast_source={'url': 'https://www.rottentomatoes.com/m/synthetic-incremental-movie/cast-and-crew', 'sha256': '1' * 64},
+            poster_url=None, poster_sha256=None, banner_url=None, banner_sha256=None,
             synopsis='Synthetic migration fixture; not a captured movie fact.',
             runtime_minutes=91, tomatometer=None, audience_score=71,
             certified_fresh=False, genres=['Synthetic Fixture Genre'],
@@ -207,7 +235,7 @@ class SourceCatalogTests(unittest.TestCase):
     def test_explicit_addition_preserves_all_personal_rows_and_inserts_joinable_facts(self):
         source = self.clone_cold()
         # Deliberately differ from benchmark defaults to detect accidental reseeding.
-        with sqlite3.connect(source) as connection:
+        with sqlite_connection(source) as connection:
             connection.execute("UPDATE users SET name='Synthetic Preserved User' WHERE id=2")
             connection.execute("UPDATE watchlist_items SET added_at='2001-02-03 04:05:06' WHERE id=1")
             connection.execute("UPDATE user_ratings SET score=3.5, created_at='2002-03-04 05:06:07' WHERE id=1")
@@ -225,7 +253,7 @@ class SourceCatalogTests(unittest.TestCase):
         self.assertTrue(receipt['allow_catalog_additions'])
         self.assertEqual(receipt['added_movie_ids'], [added_movie['id']])
         self.assertEqual(receipt['state_hashes_before'], receipt['state_hashes_after'])
-        with sqlite3.connect(output) as connection:
+        with sqlite_connection(output) as connection:
             for table in tables:
                 self.assertEqual(connection.execute(f'SELECT * FROM {table} ORDER BY id').fetchall(),
                                  state_before[table], table)
@@ -260,7 +288,7 @@ class SourceCatalogTests(unittest.TestCase):
                     first, second = catalog['movies'][:2]
                     first['id'], second['id'] = second['id'], first['id']
                 output = self.directory / (mutation + '.db')
-                with self.assertRaisesRegex(ValueError, 'every existing movie ID and slug'):
+                with self.assertRaisesRegex(ValueError, 'every existing movie ID and slug|official movie source URL'):
                     self.migration.migrate_copy(source, output, self.write_fixture_catalog(catalog),
                                                allow_additions=True)
                 self.assertEqual(self.migration.sha256(source), source_hash)
@@ -282,6 +310,18 @@ class SourceCatalogTests(unittest.TestCase):
             self.migration.migrate_copy(source, output, catalog_path)
         self.assertEqual(self.migration.sha256(output), output_hash)
         self.assertEqual(self.migration.sha256(receipt_path), receipt_hash)
+
+    def test_interrupted_receipt_publish_is_recovered(self):
+        source = self.clone_cold()
+        output = self.directory / 'recoverable.db'
+        receipt = self.migration.migrate_copy(source, output, self.catalog_path)
+        receipt_path = output.with_name(output.name + '.migration.json')
+        pending_path = output.with_name(output.name + '.migration.pending.json')
+        receipt_path.rename(pending_path)
+        recovered = self.migration.migrate_copy(source, output, self.catalog_path)
+        self.assertEqual(recovered, {**receipt, 'status': 'already_migrated'})
+        self.assertTrue(receipt_path.is_file())
+        self.assertFalse(pending_path.exists())
 
     def test_receipt_records_opt_in_even_when_the_catalog_has_no_additions(self):
         source = self.clone_cold()
@@ -322,7 +362,7 @@ class SourceCatalogTests(unittest.TestCase):
     def test_cold_seed_content_is_queryable_without_runtime_json_files(self):
         documents = {name: json.loads((self.root / 'data' / (name + '.json')).read_text())
                      for name in self.seed.CONTENT_NAMES}
-        with sqlite3.connect(self.cold_db) as connection:
+        with sqlite_connection(self.cold_db) as connection:
             stored = {name: json.loads(document) for name, document in connection.execute(
                 'SELECT name,document FROM content_snapshots')}
         self.assertEqual(stored, documents)
@@ -345,7 +385,7 @@ class SourceCatalogTests(unittest.TestCase):
             for path, hidden in hidden_paths:
                 hidden.rename(path)
 
-    def test_repeated_startup_keeps_seed_bytes_and_does_not_read_source_documents(self):
+    def test_repeated_startup_validates_sources_and_keeps_seed_bytes(self):
         with self.site.app.app_context():
             self.site.db.session.remove()
             self.site.db.engine.dispose()
@@ -354,12 +394,10 @@ class SourceCatalogTests(unittest.TestCase):
         previous_seed = sys.modules.get('seed_data')
         sys.modules['seed_data'] = self.seed
         try:
-            with patch.object(self.seed, 'load_catalog', side_effect=AssertionError('Read movie JSON on restart')):
-                with patch.object(self.seed, 'load_content_documents', side_effect=AssertionError('Read content JSON on restart')):
-                    with self.site.app.app_context():
-                        self.site.init_db()
-                        self.site.db.session.remove()
-                        self.site.db.engine.dispose()
+            with self.site.app.app_context():
+                self.site.init_db()
+                self.site.db.session.remove()
+                self.site.db.engine.dispose()
         finally:
             if previous_seed is None:
                 sys.modules.pop('seed_data', None)
@@ -380,7 +418,7 @@ class SourceCatalogTests(unittest.TestCase):
         receipt = self.migration.migrate_copy(source, output, self.catalog_path, content_dir=content)
         self.assertEqual(receipt['content_sha256'], {
             name: self.migration.sha256(content / (name + '.json')) for name in self.seed.CONTENT_NAMES})
-        with sqlite3.connect(output) as connection:
+        with sqlite_connection(output) as connection:
             documents = {name: json.loads(document) for name, document in connection.execute(
                 'SELECT name,document FROM content_snapshots')}
         self.assertEqual(documents['homepage'], homepage)

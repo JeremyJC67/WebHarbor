@@ -52,6 +52,17 @@ os.makedirs('instance_seed', exist_ok=True); \
 shutil.copy2('instance/osu.db', 'instance_seed/osu.db'); \
 print('osu seed DB generated at build time.')" && rm -rf /opt/WebSyn/osu/instance
 
+# Rotten Tomatoes keeps source-backed media in the asset bundle and rebuilds
+# its deterministic SQLite seed from tracked, validated source documents.
+RUN test -n "$(ls -A /opt/WebSyn/rotten_tomatoes/static/images)" && \
+    test -n "$(ls -A /opt/WebSyn/rotten_tomatoes/static/external_cache)"
+RUN cd /opt/WebSyn/rotten_tomatoes && rm -rf instance instance_seed && python3 -c "\
+import app; \
+import os, shutil; \
+os.makedirs('instance_seed', exist_ok=True); \
+shutil.copy2('instance/rotten_tomatoes.db', 'instance_seed/rotten_tomatoes.db'); \
+print('Rotten Tomatoes seed DB generated at build time.')" && rm -rf /opt/WebSyn/rotten_tomatoes/instance
+
 EXPOSE 8101 40000-40021
 
 CMD ["/opt/websyn_start.sh"]

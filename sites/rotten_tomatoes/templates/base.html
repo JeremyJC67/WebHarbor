@@ -17,7 +17,7 @@
         <nav class="navbar" aria-label="Main">
             <div class="nav-container">
                 <details class="mobile-menu" data-nav-menu>
-                    <summary aria-label="Open navigation"><span aria-hidden="true">☰</span></summary>
+                    <summary><span aria-hidden="true">☰</span><span class="home-sr-only">Navigation menu</span></summary>
                     <div class="mobile-menu-panel">
                         <div class="mobile-nav-group"><strong>Movies</strong><a href="/browse/movies_in_theaters/">In Theaters</a><a href="/browse/movies_at_home/">Streaming</a><a href="/browse/movies/">All Movies</a></div>
                         <div class="mobile-nav-group"><a href="/browse/tv/">TV Shows</a><a href="/news/">News</a>{% for link in extra_links %}<a href="{{ link.href }}">{{ link.title }}</a>{% endfor %}<a href="/about">About Rotten Tomatoes</a><a href="/scores">About the Scores</a><a href="/help">Help</a></div>
@@ -32,7 +32,7 @@
                 <a href="/" class="nav-logo"><img src="/static/external_cache/rt_brand/logo.png" alt="Rotten Tomatoes" width="156" height="47"></a>
                 <form action="/search" method="GET" class="search-form" role="search">
                     <button type="submit" aria-label="Submit search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg></button>
-                    <input type="search" name="search" aria-label="Search movies and people" placeholder="Search" value="{{ request.args.get('q') or request.args.get('search', '') }}">
+                    <input type="search" name="search" aria-label="Search movies and people" placeholder="Search" value="{{ request.args.get('search', '') }}">
                 </form>
                 <div class="nav-account">
                     {% if current_user.is_authenticated %}

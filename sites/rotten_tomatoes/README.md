@@ -1,15 +1,27 @@
 # Rotten Tomatoes mirror
 
-A frozen catalog of **270 movies and 3,852 people**, with 23 TV records, 19 feature records, and synthetic demo accounts, watchlists, ratings and reviews. Original contribution: [derenlei, PR #26](https://github.com/aiming-lab/WebHarbor/pull/26). The original 147 movie identities are preserved.
+Rotten Tomatoes is the 22nd WebHarbor site and runs on container port `40021`. The site contains 270 source-backed movie records, 3,852 credited people, 23 TV records, 19 feature records, local images, and four synthetic benchmark accounts.
 
-The homepage includes all 14 captured main sections in source order, with rankings, hero controls, content links and responsive navigation. TV pages preserve their own metadata; feature pages contain short source summaries. Full articles, remote video playback and commercial services are available through original-source links.
+## Source and runtime model
 
-The current 21-site registry uses port **40020**. The integrated 21-site image passed HTTP/health, restart and reset engineering checks. Its frozen R0 predates the Netflix revision; later external task and verifier inputs are separately hash-bound while unchanged application and seed inputs reuse those checks. The final combined verifier suite passed 116 fixture methods at code `80b9c1c14f04ea71f69ac6235b00f7c736a126dc`. This candidate remains **Draft**: the [HF PR #55](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/55) upload is independently verified and the repository pins `61f62d1275121975cae704acc10504d42def6c39`. Owner visual approval and accepted task evaluations remain pending. R0, R3 and R18 have real captures and official primary PASS, using an independent decision agent + informed controller. Accepted task runs remain **0**; login/state tasks 8, 9, 11 and 14 remain incomplete, auxiliary LLM judgments are not run, and the Claude Code blind-review package is not frozen. See the [review report](../../docs/reviews/rotten-tomatoes/README.md) for versioned evidence and outstanding acceptance work.
+- `data/source_catalog.json` records the official Rotten Tomatoes movie/detail and cast-and-crew source URLs, capture timestamps, capture hashes, normalized movie facts, credits, and expected image hashes.
+- `data/homepage.json`, `data/tv_catalog.json`, and `data/feature_catalog.json` are validated source snapshots.
+- HTTP requests read SQLite and local assets. They do not read the source JSON or fetch remote content at runtime.
+- The Docker build generates `instance_seed/rotten_tomatoes.db` deterministically from tracked source documents. Populated databases validate immutable catalog and content state before serving.
+- `static/images` and `static/external_cache` are required from the Hugging Face revision in `.assets-revision`.
+- `download_source_images.py` downloads only exact catalog image URLs, enforces origin/type/size restrictions, normalizes with pinned Pillow settings, and checks generated SHA-256 values against the catalog.
 
-`data/source_catalog.json`, `homepage.json`, `tv_catalog.json` and `feature_catalog.json` are offline build inputs with source provenance. Runtime requests read SQLite through SQLAlchemy, including three content snapshots, and serve local images. `refresh_seed.py --help` documents explicit rebuilding into a separate database, catalog-addition authorization and content-input binding. Populated databases are not silently migrated. Unknown source facts remain unknown; demo account data is synthetic benchmark state.
+The four local account identities, credentials, ratings, watchlists, and reviews are explicitly synthetic benchmark state. Seeded public review display names are not treated as Alice's private reviews or deletable account content.
 
-Seven tasks are defined in `tasks.jsonl`, with entry points under `verify/`. The date task now compares the 8 Sci-Fi/at-home titles selected by Subscription Platform = Netflix, while retaining the rule to ignore missing dates; the Kevin Feige task retains the highest-score movie even when its streaming date is unlisted. Verifiers require native `trajectory.json`, PNG screenshots and frozen `before.db` (or `initial.db`) plus `after.db` captured before reset. Synchronous DOM sidecars are supported; otherwise the configured vision judge validates screenshot-anchored claims. Agent statements cannot replace UI or state evidence. Invoke `agent_demo/eval_judge.py` with an absolute `--run_dir` and `--verifier True`.
+## Tasks and verification
 
-The recorded earlier full image passed three rounds of 20-site HTTP/health checks, controlled dirty-state recovery through reset/reset-all, and an official RT restart. All 44 application tests passed in an isolated fixture; the prior 77-method verifier suite is preserved as historical evidence. The Netflix scope revision passed 88 methods and a separate informed scope review (27 relevant tests and 24 independent samples). Subsequent R18 repairs passed 100 and then 106 methods; the final combined suite with ten R3 Chinese-prose methods passed 116. Their separate logs remain available. Fixtures are not real agent runs, and six mocked screenshot-dispatch checks do not evaluate actual vision accuracy. Original R3/R18 primary failures and unchanged-run reevaluation results are retained. Real browser smoke checks cover responsive navigation, carousel/rail controls, TV/features and account/watchlist interaction; they do not establish accepted task success or owner visual approval.
+Seven tasks are defined in `tasks.jsonl`: four read-only comparison tasks and three state-changing account tasks. Production verifiers derive expected facts and state transitions from the supplied initial SQLite database. They enforce task identity, completed execution, same-origin navigation, required filters/searches, click transitions, final-answer binding, schema integrity, complete read-only database equality, and exact bounded changes for stateful tasks.
 
-The 21-site engineering receipt preserves dirty RT state through restart and restores seed bytes through reset/reset-all. Previous 44 application tests are reused by identical input hashes, not claimed rerun. Official HF LFS/HEAD identities and downloaded manifest bytes are now verified; a full remote archive extraction and clean remote-only rebuild remain unverified.
+Run tests from the repository root:
+
+```bash
+uv run --with-requirements sites/rotten_tomatoes/requirements.txt python -m unittest discover -s sites/rotten_tomatoes/tests -v
+cd agent_demo && uv run python -B -m unittest discover -s ../sites/rotten_tomatoes/verify -p 'test_*.py' -v
+```
+
+Build and run through the repository-level `scripts/build.sh` and `websyn_start.sh` workflow. Use `/reset/rotten_tomatoes` on the control service before each independent task attempt.

@@ -717,6 +717,59 @@ class FunctionalContractTests(unittest.TestCase):
                     self.assertEqual(items[0].attrs['href'], self.MOVIE_PATH)
                 self.assertEqual(self.state(), before)
 
+    def test_invalid_and_ambiguous_query_values_fail_closed(self):
+        client = self.app.test_client()
+        paths = (
+            '/search?search=a&search=b',
+            '/browse/movies/?genre=missing',
+            '/browse/movies/?certified_fresh=false',
+            '/browse/movies/?rating=NC-17',
+            '/browse/movies/?year=abcd',
+            '/browse/movies/?year=9999',
+            '/browse/movies/?platform=Missing',
+            '/browse/movies/?sort=unsupported',
+            '/browse/movies/?provider=unsupported',
+            '/celebrity/missing?sort=unsupported',
+        )
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertIn(client.get(path).status_code, (400, 404))
+
+    def test_security_and_request_limits_are_explicit(self):
+        self.assertNotEqual(self.app.config['SECRET_KEY'], 'rotten-tomatoes-mirror-secret-key-change-in-prod')
+        self.assertEqual(self.app.config['MAX_CONTENT_LENGTH'], 64 * 1024)
+        self.assertTrue(self.app.config['SESSION_COOKIE_HTTPONLY'])
+        self.assertEqual(self.app.config['SESSION_COOKIE_SAMESITE'], 'Lax')
+        client = self.app.test_client()
+        token = self.csrf_token(client)
+        self.assertEqual(client.post('/logout', data={'csrf_token': token}).status_code, 302)
+        self.assertEqual(client.post('/register', data=b'x' * (65 * 1024),
+                                     content_type='application/x-www-form-urlencoded').status_code, 413)
+
+    def test_seeded_public_review_has_display_identity_without_account_ownership(self):
+        with self.app.app_context():
+            self.db.session.add(self.site.AudienceReview(
+                id=2, movie_id=1, user_id=1, score=5, text='A seeded public review fixture.'))
+            self.db.session.commit()
+        public = self.app.test_client().get(self.MOVIE_PATH).get_data(as_text=True)
+        self.assertIn('Angel G', public)
+        client = self.signed_in()
+        private = client.get('/user/reviews').get_data(as_text=True)
+        self.assertNotIn('A seeded public review fixture.', private)
+        response = self.post(client, '/user/reviews/delete/2')
+        self.assertEqual(response.status_code, 302)
+        with self.app.app_context():
+            self.assertIsNotNone(self.db.session.get(self.site.AudienceReview, 2))
+
+    def test_authenticated_hero_watchlist_control_posts_to_target_movie(self):
+        client = self.signed_in()
+        document = Document(client.get(self.MOVIE_PATH).get_data(as_text=True))
+        forms = [node for node in document.root.descendants('form')
+                 if node.attrs.get('class') == 'hero-watchlist-form']
+        self.assertEqual(len(forms), 1)
+        self.assertEqual(forms[0].attrs.get('action'), self.ADD_PATH)
+        self.assertEqual(forms[0].attrs.get('method'), 'POST')
+
 
 if __name__ == '__main__':
     unittest.main()
