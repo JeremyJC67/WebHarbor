@@ -248,6 +248,12 @@
     "R18 lower-scoring producer roles are supported by complete Filmography labels, not visits to every lower-scoring Movie Info page.",
     "Old T8 after capture was delayed and the secondary preparer made no model call for that open execution.",
     "No complete current 22-site Dockerfile build or full remote-only dataset redownload performed.",
-    "Owner visual acceptance remains pending; Draft and accepted counts unchanged."
-  ]
+    "The owner subsequently accepted the shown repaired homepage; the full current Dockerfile build is still pending, so Draft and accepted counts remain unchanged."
+  ],
+  "subsequent_owner_feedback": {
+    "date": "2026-09-08",
+    "status": "ACCEPTED_SHOWN_REPAIRED_HOMEPAGE",
+    "scope": "Human acceptance of the previously presented repaired homepage; not a claim of manual checking of every viewport/detail/task or overall Ready.",
+    "original_blind_judgment_unchanged": true
+  }
 }
