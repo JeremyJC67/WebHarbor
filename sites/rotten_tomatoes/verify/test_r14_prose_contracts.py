@@ -47,6 +47,27 @@ class PersonalScoreProseContracts(unittest.TestCase):
             with self.subTest(answer=answer):
                 self.rejects(answer)
 
+    def test_signed_personal_scores_retain_their_sign(self):
+        for value in ('-5/5', '−5/5', '-5', '−5'):
+            with self.subTest(value=value):
+                self.rejects('Oddity；她给的评分是 ' + value)
+        for value in ('+5/5', '+5', '+5.0/5'):
+            with self.subTest(value=value):
+                self.accepts('Oddity；她给的评分是 ' + value)
+
+    def test_personal_clause_cannot_reassign_or_deny_the_rating(self):
+        for answer in (
+            'Oddity；她的评分是 Bob 的 5/5',
+            'Oddity；个人评分：5/5；这是 Bob 给的分数，不是 Carol 的评分。',
+            'Oddity；她的评分是 5/5（全站平均，非个人评分）',
+            'Oddity；她给的评分是 5/5；她没有给该片评分。',
+            'Oddity；个人评分：5/5；不是 Carol 的评分。',
+            'Oddity；她的评分是该片的全站平均分5/5',
+        ):
+            with self.subTest(answer=answer):
+                self.rejects(answer)
+        self.accepts('Oddity；个人评分：5/5；这是 Carol 给的分数。')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -19,7 +19,7 @@ NUMBER_START = r"(?:(?<![\w.])|(?<=[\u3400-\u9fff]))"
 
 
 def scores(text):
-    text = text.casefold()
+    text = text.casefold().replace("−", "-")
     for word,value in {"zero":0,"one":1,"two":2,"three":3,"four":4,"five":5}.items():
         text = re.sub(r"\b" + word + r"\b",str(value),text)
     for word,value in {"零":0,"一":1,"二":2,"两":2,"三":3,"四":4,"五":5}.items():
@@ -31,8 +31,8 @@ def scores(text):
         require(denominator == 5 and 0 <= value <= 5,"final score uses the wrong scale")
         found.append(value)
         return " " * len(match[0])
-    text = re.sub(NUMBER_START+r"(\d+(?:\.\d+)?)\s*(?:/|out\s+of)\s*(\d+(?:\.\d+)?)",fraction,text)
-    for match in re.finditer(NUMBER_START+r"(\d+(?:\.\d+)?)(?!\w|\.\d)",text):
+    text = re.sub(NUMBER_START+r"([+-]?\d+(?:\.\d+)?)\s*(?:/|out\s+of)\s*(\d+(?:\.\d+)?)",fraction,text)
+    for match in re.finditer(NUMBER_START+r"([+-]?\d+(?:\.\d+)?)(?!\w|\.\d)",text):
         value = float(match[1])
         if 1900 <= value <= 2100 and value.is_integer():
             continue
@@ -52,6 +52,14 @@ def answer_pairs(answer, all_movies, expected):
         lower=claim.casefold()
         if not norm(claim):
             continue
+        if pending:
+            denied = re.search(
+                r"(?:不是|并非|非)\s*(?:carol|她|个人)\s*(?:的)?\s*(?:评分|分数)"
+                r"|(?:她|carol)\s*(?:没有|未|不曾)\s*(?:给)?(?:该片|它|这部电影)?\s*(?:评分|打分)", lower)
+            attribution = re.fullmatch(
+                r"\s*这是\s*(.+?)\s*(?:给的|的)(?:评分|分数)[。.!?\s]*", lower)
+            require(not denied and (not attribution or attribution[1].strip() in ("carol", "她")),
+                    "final personal-score attribution is contradictory")
         excluded = re.search(r"(?:already|also)\s+(?:in|on)\s+(?:(?:her|the|my)\s+)?watchlist|in\s+both|not\s+(?:missing|absent|the answer)|已在.*(?:收藏|watchlist)|两(?:个|张).*都有",lower)
         matches=[]
         for title in titles:
@@ -65,9 +73,17 @@ def answer_pairs(answer, all_movies, expected):
             values=scores(claim)
             if values:
                 title_reference = re.search(r"\b(?:it|its|this film|that movie)\b|它|该片",lower)
-                personal_score_clause = re.match(
+                personal_prefix = re.match(
                     r"^\s*(?:她(?:给)?的(?:个人)?评分|个人评分)\s*(?:是|为|[:：])\s*",lower)
-                if pending and (title_reference or personal_score_clause):
+                personal_score_clause = False
+                if personal_prefix:
+                    # Consume a complete numeric rating, not just a label before
+                    # an unrelated person's score or an aggregate metric.
+                    body = lower[personal_prefix.end():].strip(" \t\r\n:*`_，,。.!?；;()（）").replace("−", "-")
+                    numeral = r"(?:[+-]?\d+(?:\.\d+)?|zero|one|two|three|four|five|[零一二两三四五])"
+                    rating = numeral + r"(?:\s*(?:/|out\s+of)\s*" + numeral + r")?(?:\s*(?:stars?|(?:颗)?星|分))?"
+                    personal_score_clause = re.fullmatch(rating, body)
+                if pending and (personal_score_clause if personal_prefix else title_reference):
                     result.setdefault(pending,[]).extend(values)
                 else:
                     require(False,"a score is not paired with a recognized result movie")
