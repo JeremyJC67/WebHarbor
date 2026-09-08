@@ -15,6 +15,7 @@ TASK_ID = "RottenTomatoes--14"
 # Benchmark fixture invariants, deliberately kept out of task/rubric inputs.
 EXPECTED_RATINGS = {"the_substance": 4, "nosferatu_2024": 4, "oddity": 5}
 EXPECTED_WATCHLIST = {"barbie", "everything_everywhere_all_at_once", "the_substance", "nosferatu_2024"}
+NUMBER_START = r"(?:(?<![\w.])|(?<=[\u3400-\u9fff]))"
 
 
 def scores(text):
@@ -30,8 +31,8 @@ def scores(text):
         require(denominator == 5 and 0 <= value <= 5,"final score uses the wrong scale")
         found.append(value)
         return " " * len(match[0])
-    text = re.sub(r"(?<![\w.])(\d+(?:\.\d+)?)\s*(?:/|out\s+of)\s*(\d+(?:\.\d+)?)",fraction,text)
-    for match in re.finditer(r"(?<![\w.])(\d+(?:\.\d+)?)(?!\w|\.\d)",text):
+    text = re.sub(NUMBER_START+r"(\d+(?:\.\d+)?)\s*(?:/|out\s+of)\s*(\d+(?:\.\d+)?)",fraction,text)
+    for match in re.finditer(NUMBER_START+r"(\d+(?:\.\d+)?)(?!\w|\.\d)",text):
         value = float(match[1])
         if 1900 <= value <= 2100 and value.is_integer():
             continue
@@ -63,7 +64,10 @@ def answer_pairs(answer, all_movies, expected):
         if not matches:
             values=scores(claim)
             if values:
-                if pending and re.search(r"\b(?:it|its|this film|that movie)\b|它|该片",lower):
+                title_reference = re.search(r"\b(?:it|its|this film|that movie)\b|它|该片",lower)
+                personal_score_clause = re.match(
+                    r"^\s*(?:她(?:给)?的(?:个人)?评分|个人评分)\s*(?:是|为|[:：])\s*",lower)
+                if pending and (title_reference or personal_score_clause):
                     result.setdefault(pending,[]).extend(values)
                 else:
                     require(False,"a score is not paired with a recognized result movie")
