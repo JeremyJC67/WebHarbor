@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "kind": "SANITIZED_PUBLIC_EXECUTION_JUDGMENT_AND_INFORMED_RECONCILIATION_SUMMARY",
+  "recorded_at": "2026-09-08T06:07:05.670419+00:00",
+  "code_sha": "201324a59be7803d916a3570dee2f539d406ff98",
+  "review_head_at_freeze": "876e26151a799b3f36b95b50ed2a59e3cf87419b",
+  "asset_revision": "2ec8b226ce8c8cdcdd531812b9738811264eb0ce",
+  "input_manifest_sha256": "b567ee039fab832b2637a79ea58aaafede12fa5f536619263d58296c099a2761",
+  "original_result_sha256": "649ca541bcab8ea3bf4dd3baed7caecb20487f0ef2dee21749cf98e31510b923",
+  "input_integrity": {
+    "enumerated_files": 664,
+    "rehash_verified": 664
+  },
+  "judge_model_reported": "Claude Fable 5.1 (claude-fable-5-1)",
+  "exact_deployment_alias_independently_verified": false,
+  "first_result_frozen_before_score_comparison": true,
+  "public_comment": "https://github.com/aiming-lab/WebHarbor/pull/87#issuecomment-5578519612",
+  "task_count": 7,
+  "attempt_count": 9,
+  "candidate_pass": 7,
+  "historical_incomplete_fail": 2,
+  "accepted_tasks": 0,
+  "attempts": [
+    {
+      "attempt": "run-01",
+      "task_id": "RottenTomatoes--0",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "All eight Netflix Sci-Fi candidates were visited; their synchronized Movie Info dates establish War Machine as the unique latest streaming date and both screenwriters were reported."
+    },
+    {
+      "attempt": "run-02",
+      "task_id": "RottenTomatoes--3",
+      "designated_candidate": false,
+      "verdict": "FAIL",
+      "evidence_summary": "Historical attempt stopped after two search actions with failed after-observation and no answer."
+    },
+    {
+      "attempt": "run-03",
+      "task_id": "RottenTomatoes--3",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "Two movie observations establish the complete shared Producer set and the correctly paired streaming dates."
+    },
+    {
+      "attempt": "run-04",
+      "task_id": "RottenTomatoes--8",
+      "designated_candidate": false,
+      "verdict": "FAIL",
+      "evidence_summary": "Historical attempt stopped after name/email entry, before password entry or registration submit; no completed answer or persisted new account."
+    },
+    {
+      "attempt": "run-05",
+      "task_id": "RottenTomatoes--8",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "UI registration and account identity observed; exactly one requested synthetic user added, other state unchanged."
+    },
+    {
+      "attempt": "run-06",
+      "task_id": "RottenTomatoes--9",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "Account editing, save and reload observed; only the requested display name changed."
+    },
+    {
+      "attempt": "run-07",
+      "task_id": "RottenTomatoes--11",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "Watchlist removal and reload observed; only the requested item removed and three remained."
+    },
+    {
+      "attempt": "run-08",
+      "task_id": "RottenTomatoes--14",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "Personal Ratings and Watchlist observations establish Oddity alone at 5.0/5; before/after bytes unchanged."
+    },
+    {
+      "attempt": "run-09",
+      "task_id": "RottenTomatoes--18",
+      "designated_candidate": true,
+      "verdict": "PASS",
+      "evidence_summary": "Complete Producer Filmography establishes the unique 97% maximum; winner Movie Info confirms Kevin Feige credit and the absence of a streaming-date row."
+    }
+  ],
+  "reconciliation": {
+    "basis": "Original task requirements and synchronized UI/state evidence; not majority voting.",
+    "R0_and_R18": "Complete earlier comparison observations were absent from the auxiliary last-four-image inputs. Full-evidence execution PASS is supported; original auxiliary FAILs are retained as calibration samples.",
+    "T14": "Original valid Chinese personal-rating answer, both observed collections and unchanged state agree; prior bounded parser fix and its closed regression evidence remain valid. No new scorer change.",
+    "shared_pass_spot_checks": [
+      "RottenTomatoes--3",
+      "RottenTomatoes--9",
+      "RottenTomatoes--14"
+    ],
+    "non_blocking_judgment_correction": {
+      "task_id": "RottenTomatoes--3",
+      "issue": "The original rationale incorrectly describes Christopher Nolan as The Dark Knight screenwriter.",
+      "recorded_fact": "The frozen mirror Movie Info lists Screenwriter Jonathan Nolan and Director Christopher Nolan.",
+      "effect": "Requested Producer intersection and streaming dates remain correct; PASS unchanged. Original judgment preserved."
+    },
+    "primary_evidence_reuse": [
+      {
+        "sample_id": "R0-current",
+        "run_hash": "bf67d6e790bb77a2a3e27a346878b87c6e5fe03802fdab2c73f53aa0f0482b25",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "57f7337e2da8fa826693629fd6cc677fbba846bbb4fbfab96a392dcdebb8e2af",
+        "source_version": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_0.py": "2b4f5262949fdcb34338d614a321fb22b51251b096274c547b524816041171fd",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "R3-current",
+        "run_hash": "6ee8e2576100a9c950329600fa67befa9ada1b5fcf685c2077b9226473a6eedb",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "d9ad3032510007088c89ee3a735e0cddcae5f7c2cdbeedd4eca735ab16bbb026",
+        "source_version": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_3.py": "89132f786d3a999eaaab3612f2de80863f5ad78a0ef31694d02b1bfe32e01310",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "T8-current",
+        "run_hash": "d216d78389391a916fd7fd8c4d040f3fc6e6c37905895c05c5372e3be68a02bb",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "8b0a3ad1909b25cfd940ae267531937a48c32bb81eeee154981c3ae869fc4d06",
+        "source_version": "b5e8a5533d8af5ff84ff212bdc1f4a346296aa5e",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "T9-current",
+        "run_hash": "484185d55b8afa7c21ed63970af25c6eb213449df205406094bf102cff655beb",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "70d60a80cedcb1e1b999297992c48a385e3161ef2d3aa4c63b1219a68e03e079",
+        "source_version": "b5e8a5533d8af5ff84ff212bdc1f4a346296aa5e",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_9.py": "ca86b3728962974567fbae6e698502107bf91bea8d50e054901ce6f8287ce53f",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "T11-current",
+        "run_hash": "c97aaefbc5bb4664b8f0a6be328f1f040c08c845dece85f49efc1fa97f9313d2",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "b696b369a95e7883f498ea2bfb9ca2b9d0e1a3fe1ea1cb991508c0b3144cd176",
+        "source_version": "b5e8a5533d8af5ff84ff212bdc1f4a346296aa5e",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_11.py": "25d60d2b6142dde5dd3816d2808d9d1dc473851d4aaa07984b7d4a15e3254b91",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "T14-current",
+        "run_hash": "c4656a7caf6f90b3975994894ca932f91dc27cc00d88a1c1a1b8daeedbfd701b",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "72715c2955a9123f4c8888825872144feda244f19831a16dada7c803283d3982",
+        "source_version": "ca36e5bd87707e16aa6c1a636571b0c4641b8aa2",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_14.py": "c38bb70ec8136c4b985438c1d814d714d2df53e60eae926ada2b133a9f3a8d20",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "R18-current",
+        "run_hash": "032a071062f9253307042cb0920da09640fef5e014de579553e814881d57fd88",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "PASS",
+        "result_sha256": "b0463c029217cf3305cbf3ae48854c04f9f24f66745ecd4047f5b27f8d325f89",
+        "source_version": "80b9c1c14f04ea71f69ac6235b00f7c736a126dc",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_18.py": "cd233681eefd988185c99da7cd8fb75f6a397e4edfd113f9f225b1c7386f7911",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "R3-interrupted-v4",
+        "run_hash": "adf1416519bae45b1edb688d62cca1ddb8f40b06a1409a10c8dd6ce6224a909b",
+        "method": "OFFLINE_REEVALUATED_EXPECTED_FAIL",
+        "verdict": "FAIL",
+        "result_sha256": "210005c365840a7c27625182660425f019ace2ff2946192519f7e13ece25c43e",
+        "source_version": "876e26151a799b3f36b95b50ed2a59e3cf87419b",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_3.py": "89132f786d3a999eaaab3612f2de80863f5ad78a0ef31694d02b1bfe32e01310",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      },
+      {
+        "sample_id": "T8-interrupted-v4",
+        "run_hash": "ea1dfde4925a978c5b8e6cbed89c178d18a286725ce7c498b709bd16ded4ac64",
+        "method": "REUSE_EXACT_SCORER_HASHES",
+        "verdict": "FAIL",
+        "result_sha256": "4c9d65c985296f589d44549b4ae7d2188be252f1620c8a9b52596400d7e284b9",
+        "source_version": "b5e8a5533d8af5ff84ff212bdc1f4a346296aa5e",
+        "effective_scorer_sha256": {
+          "agent_demo/eval_judge.py": "81b9986dd5da177a84a97d9e0a81257c3f6eb717b983a6ef26f23d465f9d9589",
+          "sites/rotten_tomatoes/verify/verify_8.py": "63cc27ed120f37c0f32111a8241bcb87bfc3489ada6ad3dd71408b9db296f161",
+          "sites/rotten_tomatoes/verify/verify_lib.py": "0f8bf0f4d12fce56388a08b45fc569a98b131e344909783ea1dbd1c20d30aae9",
+          "sites/rotten_tomatoes/verify/contracts.py": "98d5bee4c86137e88176be76e2df374ce5220aea17f4f3dd1bc20a452a16dc55"
+        }
+      }
+    ],
+    "new_ui_runs": 0,
+    "new_model_calls_during_reconciliation": 0,
+    "new_full_suite_runs": 0,
+    "changed_app_task_rubric_verifier_assets": false,
+    "historical_negative_recheck": {
+      "task": "RottenTomatoes--3",
+      "reason": "trajectory does not end with done",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "frozen_files_unchanged": 58
+    },
+    "future_retest_rule": "If scorer, judge model, rubric or input selection changes, reevaluate applicable preserved positive, negative and disagreement samples against task/evidence-derived expectations. Unchanged inputs may be reused with version/hash evidence."
+  },
+  "limitations": [
+    "Execution review only; no source-fidelity, application-code or verifier-code certification.",
+    "Historical runtime/code/asset identities remain separate from the final candidate; no new UI execution occurred.",
+    "R0 nonwinning dates and R3 Movie Info facts are evidenced by synchronized full DOM, with those sections below the screenshot viewport.",
+    "R18 lower-scoring producer roles are supported by complete Filmography labels, not visits to every lower-scoring Movie Info page.",
+    "Old T8 after capture was delayed and the secondary preparer made no model call for that open execution.",
+    "No complete current 22-site Dockerfile build or full remote-only dataset redownload performed.",
+    "Owner visual acceptance remains pending; Draft and accepted counts unchanged."
+  ]
+}
