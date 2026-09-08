@@ -24,6 +24,9 @@ LISTINGS = {int(k): v for k, v in FACTS["listings"].items()}
 STATEFUL = {4, 5, 6, 7, 10, 14, 15}
 TABLES = {"agents", "cities", "listings", "users", "saved_homes",
           "saved_searches", "collections", "tours", "inquiries"}
+# Older frozen runs predate these surfaces. Every table present in either
+# snapshot is still protected; accepting historical snapshots cannot hide writes.
+ADDED_TABLES = {"neighborhood_guides", "seller_inquiries"}
 
 
 def norm(value):
@@ -177,11 +180,12 @@ def snapshot(path):
     with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True) as connection:
         connection.row_factory = sqlite3.Row
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
-        if tables != TABLES:
+        if not TABLES <= tables or not tables <= TABLES | ADDED_TABLES:
             raise ValueError("Unexpected or incomplete Compass database schema")
         if list(connection.execute("PRAGMA foreign_key_check")):
             raise ValueError("Foreign-key integrity failed")
-        return {table: {row["id"]: dict(row) for row in connection.execute('SELECT * FROM "' + table + '"')}
+        return {table: {row["slug" if table == "neighborhood_guides" else "id"]: dict(row)
+                        for row in connection.execute('SELECT * FROM "' + table + '"')}
                 for table in sorted(tables)}
 
 
@@ -250,7 +254,10 @@ def state_checks(judge, trajectory, before, after):
     allowed = {4: {"users", "saved_homes"}, 5: {"users"}, 6: {"tours"},
                7: {"collections", "saved_homes"}, 10: {"saved_searches"},
                14: {"collections", "saved_homes"}, 15: {"inquiries"}}.get(task, set())
-    for table in TABLES:
+    judge.check("same_table_set", before.keys() == after.keys())
+    for table in before.keys() | after.keys():
+        if table not in before or table not in after:
+            continue  # Reported by same_table_set, including empty added tables.
         if table not in allowed:
             judge.check("unchanged_" + table, before[table] == after[table])
         else:
@@ -385,8 +392,12 @@ def grade(task, run_dir, initial_db, after_db):
         trajectory = json.loads((Path(run_dir) / "trajectory.json").read_text())
         package_checks(judge, trajectory, run_dir)
         before, after = snapshot(initial_db), snapshot(after_db)
-        state_checks(judge, trajectory, before, after)
-        answer_checks(judge, trajectory)
+        if task in {18, 19, 20}:
+            from verify_expansion import check
+            check(judge, trajectory, before, after)
+        else:
+            state_checks(judge, trajectory, before, after)
+            answer_checks(judge, trajectory)
     except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError, sqlite3.Error) as error:
         judge.check("valid_inputs", False, f"{type(error).__name__}: {error}")
     return judge.result()

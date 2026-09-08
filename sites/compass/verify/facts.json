@@ -337,6 +337,25 @@
       "agent_name": "Jessie Lee",
       "agent_email": "jessie.lee@compass.com",
       "agent_slug": "jessie-lee-1eae1909"
+    },
+    "92": {
+      "id": 92,
+      "address": "170 Northwest 44th Street",
+      "unit": "",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33127",
+      "slug": "170-northwest-44th-street-miami-fl-16681681",
+      "price": 2749000,
+      "sqft": null,
+      "beds": 4,
+      "year_built": 2026,
+      "mls_number": "",
+      "property_type": "Single Family",
+      "agent_id": 42,
+      "agent_name": "Tristan Alexander",
+      "agent_email": "tristan.alexander@compass.com",
+      "agent_slug": "tristan-alexander-39f089f0"
     }
   }
 }

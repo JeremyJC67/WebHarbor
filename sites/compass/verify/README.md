@@ -5,6 +5,17 @@ Each task has one `verify_N.py` entry point and a non-answer-bearing rubric in
 only by these graders. Task IDs 8 and 9 were retired because their original
 agent-performance and open-house facts could not be supported by sources.
 
+There are 19 tasks: IDs 0–7 and 10–20. Tasks 18–20 cover cancelling an
+existing tour, removing a selected member from an existing collection, and
+submitting a local Sell inquiry using contact information read from an account.
+The confirmation reference is checked against the newly created row, never a
+fixed token. Other rows, collection identity and share links are protected.
+
+Snapshot loading supports historical nine-table runs and the added
+`neighborhood_guides` (keyed by `slug`) and `seller_inquiries` tables. Every
+present table is checked, including for old tasks. Adding or dropping a table
+between before/after snapshots fails; unknown tables are rejected.
+
 ```sh
 python sites/compass/verify/verify_0.py \
   --run_dir /path/to/run \
@@ -41,5 +52,5 @@ have its own line as requested by the task. Rejecting ambiguous or inconsistent
 numeric claims is intentional; no hidden LLM call repairs an answer.
 
 Run the synthetic regression suite with `python -m pytest
-sites/compass/verify/test_verifiers.py`. These fixtures are not browser runs
+sites/compass/verify`. These fixtures are not browser runs
 and cannot establish that a task is solvable through the UI.

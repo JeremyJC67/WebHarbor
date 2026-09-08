@@ -50,4 +50,4 @@ The mirror provides a list view. Live maps, street view, mortgage preapproval, p
 
 In this fixed snapshot, the **For sale** filter includes Pending / Contract Signed listings in the sale category; their published status remains in property details. It is not an active-only filter. A named search area includes records whose address city or catalog market matches that area, so New York can include Brooklyn and Manhattan addresses.
 
-The revised task set preserves the original IDs and omits `Compass--8` and `Compass--9`, which depended on generated agent sales volumes or unsupported open-house schedules. Remaining tasks use source-backed detail facts or explicit local account changes.
+The revised set contains **19 tasks**, preserving the original IDs and omitting `Compass--8` and `Compass--9`, which depended on generated agent sales volumes or unsupported open-house schedules. Tasks 18–20 add cancellation of an existing tour, selective removal from an existing collection, and a local Sell inquiry using account contact details. Tasks use source-backed detail facts or explicit local account changes.
