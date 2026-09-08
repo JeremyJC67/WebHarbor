@@ -1,4 +1,4 @@
-> **Current candidate:** [Sell and all24regional-guide reconstruction, versions and validation](sell-guides-review.md). The historical task runs and independent verdict below retain their original identities. Human acceptance is recorded; the [maintainer handoff](maintainer-handoff.md) records the Ready request and outstanding refreshed task17 verdict.
+> **Current candidate:** [22-site integration, current versions and checks](integration-review.md). Compass is on40021; UI/grading semantics are unchanged. The [maintainer handoff](maintainer-handoff.md) records public Ready and the outstanding refreshed task17 verdict. Historical runs and screenshots below retain their original identities.
 
 # Compass contribution review
 
