@@ -47,12 +47,7 @@ RUN chmod +x /opt/websyn_start.sh
 # OSU's real-site image bundle is required, while its database is generated
 # deterministically from tracked source data.
 RUN test -n "$(ls -A /opt/WebSyn/osu/static/images)"
-RUN cd /opt/WebSyn/osu && python3 -c "\
-import app; \
-import os, shutil; \
-os.makedirs('instance_seed', exist_ok=True); \
-shutil.copy2('instance/osu.db', 'instance_seed/osu.db'); \
-print('osu seed DB generated at build time.')" && rm -rf /opt/WebSyn/osu/instance
+RUN cd /opt/WebSyn/osu && python3 migrate_seed.py && rm -rf instance
 
 EXPOSE 8101 40000-40021
 
