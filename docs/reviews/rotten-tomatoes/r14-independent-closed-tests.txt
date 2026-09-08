@@ -1,0 +1,15 @@
+test_equivalent_personal_rating_clauses (test_r14_prose_contracts.PersonalScoreProseContracts.test_equivalent_personal_rating_clauses) ... ok
+test_existing_title_references_and_inline_score (test_r14_prose_contracts.PersonalScoreProseContracts.test_existing_title_references_and_inline_score) ... ok
+test_extra_result_and_partial_movie_names (test_r14_prose_contracts.PersonalScoreProseContracts.test_extra_result_and_partial_movie_names) ... ok
+test_personal_clause_cannot_reassign_or_deny_the_rating (test_r14_prose_contracts.PersonalScoreProseContracts.test_personal_clause_cannot_reassign_or_deny_the_rating) ... ok
+test_recorded_chinese_answer (test_r14_prose_contracts.PersonalScoreProseContracts.test_recorded_chinese_answer) ... ok
+test_signed_personal_scores_retain_their_sign (test_r14_prose_contracts.PersonalScoreProseContracts.test_signed_personal_scores_retain_their_sign) ... ok
+test_unpaired_or_unrelated_metrics (test_r14_prose_contracts.PersonalScoreProseContracts.test_unpaired_or_unrelated_metrics) ... ok
+test_wrong_contradictory_and_wrong_scale_scores (test_r14_prose_contracts.PersonalScoreProseContracts.test_wrong_contradictory_and_wrong_scale_scores) ... ok
+test_r14_fixed_positive_and_negative_matrix (test_state_contracts.StateContracts.test_r14_fixed_positive_and_negative_matrix) ... ok
+test_r14_pair_parser_accepts_equivalence_and_rejects_extra_claims (test_state_contracts.StateContracts.test_r14_pair_parser_accepts_equivalence_and_rejects_extra_claims) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 3.620s
+
+OK

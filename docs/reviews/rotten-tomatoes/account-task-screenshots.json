@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "purpose": "Five byte-identical selected account-task screenshots; not complete task evidence or owner visual approval.",
+  "screenshots": [
+    {
+      "path": "images/task-t8-account.png",
+      "task_id": "RottenTomatoes--8",
+      "run_hash": "d216d78389391a916fd7fd8c4d040f3fc6e6c37905895c05c5372e3be68a02bb",
+      "original_screenshot_basename": "step_016.png",
+      "sha256": "1405a6259b8bed7c0a63275ecda51c7957cab59f5d7d94a035ed104185b5da71",
+      "bytes": 163701,
+      "format": "PNG",
+      "width": 1280,
+      "height": 720,
+      "unchanged_from_frozen_run": true,
+      "caption": "New synthetic account identity on the authenticated account page",
+      "privacy_review": "Manually viewed: synthetic benchmark account names/emails and movie UI only; no password, token, secret, browser chrome or image text metadata."
+    },
+    {
+      "path": "images/task-t9-account-refreshed.png",
+      "task_id": "RottenTomatoes--9",
+      "run_hash": "484185d55b8afa7c21ed63970af25c6eb213449df205406094bf102cff655beb",
+      "original_screenshot_basename": "step_020.png",
+      "sha256": "d917f93a05a9bef6c1e75cefd1c68db3d50443f1a7aa39b0cf9624fd7b8fe43c",
+      "bytes": 160772,
+      "format": "PNG",
+      "width": 1280,
+      "height": 720,
+      "unchanged_from_frozen_run": true,
+      "caption": "Requested display name persists after saving and reloading",
+      "privacy_review": "Manually viewed: synthetic benchmark account names/emails and movie UI only; no password, token, secret, browser chrome or image text metadata."
+    },
+    {
+      "path": "images/task-t11-watchlist-refreshed.png",
+      "task_id": "RottenTomatoes--11",
+      "run_hash": "c97aaefbc5bb4664b8f0a6be328f1f040c08c845dece85f49efc1fa97f9313d2",
+      "original_screenshot_basename": "step_016.png",
+      "sha256": "096b9f2c844b922ccb3de72492612e7c8bdfa5ada1ed68870158f174dd49a323",
+      "bytes": 367272,
+      "format": "PNG",
+      "width": 1280,
+      "height": 720,
+      "unchanged_from_frozen_run": true,
+      "caption": "Three remaining watchlist titles after the requested deletion and reload",
+      "privacy_review": "Manually viewed: synthetic benchmark account names/emails and movie UI only; no password, token, secret, browser chrome or image text metadata."
+    },
+    {
+      "path": "images/task-t14-ratings.png",
+      "task_id": "RottenTomatoes--14",
+      "run_hash": "c4656a7caf6f90b3975994894ca932f91dc27cc00d88a1c1a1b8daeedbfd701b",
+      "original_screenshot_basename": "step_013.png",
+      "sha256": "3304c224158c04182fdc8ee130c47681e06d5b656102ad7dcc73ee4ea22d2a46",
+      "bytes": 256424,
+      "format": "PNG",
+      "width": 1280,
+      "height": 720,
+      "unchanged_from_frozen_run": true,
+      "caption": "The synthetic account personal ratings before switching to its watchlist",
+      "privacy_review": "Manually viewed: synthetic benchmark account names/emails and movie UI only; no password, token, secret, browser chrome or image text metadata."
+    },
+    {
+      "path": "images/task-t14-watchlist.png",
+      "task_id": "RottenTomatoes--14",
+      "run_hash": "c4656a7caf6f90b3975994894ca932f91dc27cc00d88a1c1a1b8daeedbfd701b",
+      "original_screenshot_basename": "step_016.png",
+      "sha256": "db351cc0f85cc9cbd525a3e516e3363c1a68560fbacd9b07a62e8e187ce46847",
+      "bytes": 391129,
+      "format": "PNG",
+      "width": 1280,
+      "height": 720,
+      "unchanged_from_frozen_run": true,
+      "caption": "The same synthetic account complete four-title watchlist",
+      "privacy_review": "Manually viewed: synthetic benchmark account names/emails and movie UI only; no password, token, secret, browser chrome or image text metadata."
+    }
+  ]
+}

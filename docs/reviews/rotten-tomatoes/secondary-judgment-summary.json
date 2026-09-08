@@ -1,0 +1,193 @@
+{
+  "schema": 1,
+  "purpose": "Distinct secondary rubric judgments, not primary verification or independent Claude review.",
+  "cli_version": "codex-cli 0.147.0",
+  "model_selection": "CLI default; no override",
+  "actual_model_alias": null,
+  "model_identity_limit": "The CLI JSON event stream did not report a deployment/model alias.",
+  "transport": "Existing authenticated CLI in new ephemeral read-only sessions; upstream grader system/rubric text passed through stdin user prompt, not native eval_judge.py API mode.",
+  "input_policy": "Exact upstream grader text and full untruncated trajectory_text, with the last four ordered PNGs; no separate DOM dumps, databases, verifier code/results or prior judgments.",
+  "ambient_context_limit": "The CLI supplies its own standard instructions and capability catalog; this is not the later independent blind-review process.",
+  "input_coverage_limit": "trajectory_text does not automatically include separate observation/DOM files; the last four images can omit earlier comparison pages.",
+  "judgments": [
+    {
+      "task_id": "RottenTomatoes--0",
+      "sample": "current frozen run",
+      "verdict": "FAIL",
+      "confidence": 0.99,
+      "reason_summary": "Selected title facts were supported, but last-four screenshots and trajectory text did not expose the full candidate-date comparison.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "1b0a1a3c87555cf5ec2601a9f665b0cca193eabe0049234d8411d97c0c8f1ab5",
+      "trajectory_sha256": "586c33d5ec4d3662c7c31fa0a59899dcf2cc9a87101420cf08eee4724ae5579b",
+      "input_image_sha256": [
+        "1c3d58c526f6796f7acfc311935b759f318a21d197858aedbf4fd0ebd721cdec",
+        "2bcd6cd8a99cad9fc982ed1931082b67b29be3a5633325c75e17fc99f5ffcacd",
+        "2bcd6cd8a99cad9fc982ed1931082b67b29be3a5633325c75e17fc99f5ffcacd",
+        "2bcd6cd8a99cad9fc982ed1931082b67b29be3a5633325c75e17fc99f5ffcacd"
+      ],
+      "unmodified_response_sha256": "29bd375689c826c6ae9b991d3cdd929370d0354489d1f09a9d420b1f0c162740",
+      "started_at_utc": "20260908T014121Z",
+      "interpretation": "Secondary evidence-coverage disagreement; not a task-failure adjudication. Full original evidence awaits independent review."
+    },
+    {
+      "task_id": "RottenTomatoes--18",
+      "sample": "current frozen run",
+      "verdict": "FAIL",
+      "confidence": 0.97,
+      "reason_summary": "Winner facts were supported, but last-four screenshots and trajectory text did not expose the complete Producer Filmography score comparison.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "d936b8008ce47579f6519a82f9b073030716060d553bf1cb8a66af60c0966cf0",
+      "trajectory_sha256": "1633bb579689bd0a92b8000e680f69c5f313669ebde8071f50513ec3af586578",
+      "input_image_sha256": [
+        "847154c4526e0c7d7126b64f30067873145d39d0c26c599ae40b0153ea64e0c3",
+        "52431f28c662af7c07eed1813c5a6d5cab41678f1fc37dc4390567977feffe25",
+        "52431f28c662af7c07eed1813c5a6d5cab41678f1fc37dc4390567977feffe25",
+        "52431f28c662af7c07eed1813c5a6d5cab41678f1fc37dc4390567977feffe25"
+      ],
+      "unmodified_response_sha256": "72787bacb4da13a57c7e51800b645845ac3b28360059bd1f0b09c248bc7f111b",
+      "started_at_utc": "20260908T014151Z",
+      "interpretation": "Secondary evidence-coverage disagreement; not a task-failure adjudication. Full original evidence awaits independent review."
+    },
+    {
+      "task_id": "RottenTomatoes--3",
+      "sample": "current frozen run",
+      "verdict": "PASS",
+      "confidence": 0.99,
+      "reason_summary": "The model accepted the two requested movie pages and original Chinese comparison answer.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "e4ca66b2de811687a2059f545ed0b69c01e269a1ee83356a4153cb15f4c18489",
+      "trajectory_sha256": "fb9b5bf9b7d411776e6b051d6df548947d2c45903209f4a11e185258da463822",
+      "input_image_sha256": [
+        "044a0f579e5f82f3f91ad0cdf8e7011a9000b5785b83d0f62347db21637055d3",
+        "7cf7aeb5f584e41601682fb9f5f8109c1e9a838c6cf5a2ae792d1e4edd2e87ee",
+        "7cf7aeb5f584e41601682fb9f5f8109c1e9a838c6cf5a2ae792d1e4edd2e87ee",
+        "7cf7aeb5f584e41601682fb9f5f8109c1e9a838c6cf5a2ae792d1e4edd2e87ee"
+      ],
+      "unmodified_response_sha256": "abfc4b2b3d4e13a88fe967ad1b77486e6e1ddfb6181e53c094d07c5317e73509",
+      "started_at_utc": "20260908T014139Z",
+      "interpretation": "Auxiliary result only; not final accepted-task status."
+    },
+    {
+      "task_id": "RottenTomatoes--3",
+      "sample": "historical interrupted R3",
+      "verdict": "FAIL",
+      "confidence": 1.0,
+      "reason_summary": "The earlier interrupted execution had no final answer or completed comparison.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "62a4c8df7c17cfe9f99e7bfaf9916a640d9a4a300a633237301141da8ff150ae",
+      "trajectory_sha256": "217d3c5bab7fef347fd199c20e9a67582dd83684f4beedd2f139ba8bf0db1386",
+      "input_image_sha256": [
+        "41523aec7aa39b0bbcb601333d4c8f84089db189a7dffc7724ea3ba9b20157b4",
+        "3232c27db329dbfa198818fabdbda3b41f5d1dc56fd7319d826ca655f04d6fe6",
+        "2e510d4c9983c7b26f6975e324938f39dc66d850c196e26d50470ee9b851f287",
+        "2e510d4c9983c7b26f6975e324938f39dc66d850c196e26d50470ee9b851f287"
+      ],
+      "unmodified_response_sha256": "42c574879728fc87d9f050bb2914e5c7236af66309548cec02b94195e8624b32",
+      "started_at_utc": "20260908T013808Z",
+      "interpretation": "Auxiliary result only; not final accepted-task status."
+    },
+    {
+      "task_id": "RottenTomatoes--11",
+      "sample": "current frozen run",
+      "verdict": "PASS",
+      "confidence": 0.99,
+      "reason_summary": "The deletion, reloaded list and reported remaining count were visible.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "5b1cec3c55a1d91044b882480f0aee9dfdd73ac2c407a6a9f8ac6f2decf251a0",
+      "trajectory_sha256": "5c7adf0dec230702f513b660ba4f4f0f17c0a79647b4f3655166f940d848cde2",
+      "input_image_sha256": [
+        "db796ba9686c3cec31a4a8815cf962e2c8a2ec4f985ff9ec1286339b68c6c37b",
+        "096b9f2c844b922ccb3de72492612e7c8bdfa5ada1ed68870158f174dd49a323",
+        "096b9f2c844b922ccb3de72492612e7c8bdfa5ada1ed68870158f174dd49a323",
+        "096b9f2c844b922ccb3de72492612e7c8bdfa5ada1ed68870158f174dd49a323"
+      ],
+      "unmodified_response_sha256": "551d615d4a9e3bde0efa69e6a243b27a1ce0a5df69683b015cbce94d076f2235",
+      "started_at_utc": "20260908T015143Z",
+      "interpretation": "Auxiliary result only; not final accepted-task status."
+    },
+    {
+      "task_id": "RottenTomatoes--14",
+      "sample": "current frozen run",
+      "verdict": "PASS",
+      "confidence": 0.99,
+      "reason_summary": "The personal Ratings and Watchlist pages supported the reported set difference and score.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "74b18c07edeb9b5a031fa7a9de574c98319df71e8218514a99e68868f6a7bd24",
+      "trajectory_sha256": "8df64919783e561f86a670d4c27d5eaffd3083685a66c763cf5627385f952231",
+      "input_image_sha256": [
+        "3304c224158c04182fdc8ee130c47681e06d5b656102ad7dcc73ee4ea22d2a46",
+        "1f9b5d6cd5a15ec98e6a2f985ec1b1410840088e74fcc40ef2e902794bb4210c",
+        "db351cc0f85cc9cbd525a3e516e3363c1a68560fbacd9b07a62e8e187ce46847",
+        "db351cc0f85cc9cbd525a3e516e3363c1a68560fbacd9b07a62e8e187ce46847"
+      ],
+      "unmodified_response_sha256": "3dd6b0c543340fc2efe21659ec112959cd80b07962d73c898537d1f602170bea",
+      "started_at_utc": "20260908T015920Z",
+      "interpretation": "Auxiliary result only; not final accepted-task status."
+    },
+    {
+      "task_id": "RottenTomatoes--8",
+      "sample": "current frozen run",
+      "verdict": "PASS",
+      "confidence": 0.99,
+      "reason_summary": "The visible registration success and authenticated account identity supported completion.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "1fbb116fe9e4ef934127d0d074827f2c633a5a45ceaf3c81c8449e04d45258e1",
+      "trajectory_sha256": "122563d63caf70133881399709c5f58d428c102871d997028ecbae1e0639d977",
+      "input_image_sha256": [
+        "37570e6785a671ef94d18b3b602cba9dd86fe42583ed5cfb03980a78a9f64d89",
+        "1405a6259b8bed7c0a63275ecda51c7957cab59f5d7d94a035ed104185b5da71",
+        "1405a6259b8bed7c0a63275ecda51c7957cab59f5d7d94a035ed104185b5da71",
+        "1405a6259b8bed7c0a63275ecda51c7957cab59f5d7d94a035ed104185b5da71"
+      ],
+      "unmodified_response_sha256": "39e9eedfa872bd06f57c3c666e22ab285971569adc8943d83e6f04eacd6b88bb",
+      "started_at_utc": "20260908T014821Z",
+      "interpretation": "Auxiliary result only; not final accepted-task status."
+    },
+    {
+      "task_id": "RottenTomatoes--9",
+      "sample": "current frozen run",
+      "verdict": "PASS",
+      "confidence": 0.99,
+      "reason_summary": "The saved display name remained visible after reload.",
+      "cli_exit_code": 0,
+      "response_schema_valid": true,
+      "model_tool_calls": 0,
+      "input_hashes_unchanged": true,
+      "prompt_sha256": "a896cd69567d8fc738a24c9e14dff11576ac47765cddb97de8bd888f244d5273",
+      "trajectory_sha256": "f8d094ab452aeb2793c9e38e48119e7e7e225569d427fcd55fe32508ecbe459b",
+      "input_image_sha256": [
+        "a01da8ce683ddf02030a7953ffb61c5d1ede157e6492566665e658270a5fdfb8",
+        "d917f93a05a9bef6c1e75cefd1c68db3d50443f1a7aa39b0cf9624fd7b8fe43c",
+        "d917f93a05a9bef6c1e75cefd1c68db3d50443f1a7aa39b0cf9624fd7b8fe43c",
+        "d917f93a05a9bef6c1e75cefd1c68db3d50443f1a7aa39b0cf9624fd7b8fe43c"
+      ],
+      "unmodified_response_sha256": "658f5da17fddf95978923d442e108c9e0a40b1bcc50969ff915badb00389bd49",
+      "started_at_utc": "20260908T014833Z",
+      "interpretation": "Auxiliary result only; not final accepted-task status."
+    }
+  ],
+  "interrupted_t8": "NOT_VERIFIED: unchanged input preparer rejected terminated=false before model invocation.",
+  "pending": "Owner visual approval and independent Claude adjudication remain outstanding; accepted_task_runs=0.",
+  "state_evidence_limit": "Model UI judgments do not establish the full absence of unrelated database mutations; primary and separate all-table snapshot checks are retained."
+}
