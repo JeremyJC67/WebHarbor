@@ -1,4 +1,6 @@
-> **Current UI follow-up:** [Sell and all 24 regional guide landings](docs/sell-guides-review.md). Human experience and disclosed scope are accepted; [maintainer handoff and remaining work](docs/maintainer-handoff.md) record the Ready request and outstanding refreshed task17 verdict. Earlier evidence retains its recorded versions.
+> **Task expansion:** [19 tasks; three new recorded account workflows](docs/task-expansion-review.md).
+
+> **Current UI follow-up:** [Sell and all 24 regional guide landings](docs/sell-guides-review.md). Human experience and disclosed scope are accepted; [maintainer handoff and remaining work](docs/maintainer-handoff.md) record the Ready request and outstanding task17–20 independent verdicts. Earlier evidence retains its recorded versions.
 
 # Compass
 

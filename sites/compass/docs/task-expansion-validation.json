@@ -1,0 +1,324 @@
+{
+  "date": "2026-09-08",
+  "task_and_scorer_commit": "4542b35076b07c91ca7b8d96c5d868a185dbf970",
+  "application_checkpoint": "4574f245573b0fa9c70497661984065b9db819c9",
+  "asset_revision": "8ade6b3a80d376c801f88e2409b72e8909444927",
+  "archive_sha256": "077cfb2334cb40bf191b2e557c0becd6e28a1901e7ea80183216c1e9db1544aa",
+  "accepted_tasks": 19,
+  "verifiers": 19,
+  "preserved_task_contracts": 16,
+  "new_tasks": [
+    18,
+    19,
+    20
+  ],
+  "retired_tasks": [
+    8,
+    9
+  ],
+  "tests": {
+    "total_pass": 222,
+    "app_and_source": 54,
+    "verifier": 168,
+    "new_regressions": 44
+  },
+  "new_runs": [
+    {
+      "task_id": "Compass--18",
+      "run_id": "guided-008-expansion",
+      "steps": 11,
+      "screenshots": 22,
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "before_sha256": "3180c49546acb487370e9cad212544b32be35f9b61b7a7869cfe9c1abc199087",
+      "after_sha256": "9eb88d6ba817b2252dfeb310932afc179e1fee94188115d0edcc4019f6196260",
+      "trajectory_sha256": "a20094283f8437221ec0f5d741fe11e037dc85e5625f9736d778f8c176e51977"
+    },
+    {
+      "task_id": "Compass--19",
+      "run_id": "guided-008-expansion",
+      "steps": 12,
+      "screenshots": 24,
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "before_sha256": "3180c49546acb487370e9cad212544b32be35f9b61b7a7869cfe9c1abc199087",
+      "after_sha256": "bb9d1365818cacb65f1236c0e65b7aa2cbf1e8128e721aba1645f1048ac01488",
+      "trajectory_sha256": "6c697b5a40f3b6186cf94cb2e5dea57a92b680b9617df4045dc839a7d44a3668"
+    },
+    {
+      "task_id": "Compass--20",
+      "run_id": "guided-008-expansion",
+      "steps": 13,
+      "screenshots": 26,
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "before_sha256": "3180c49546acb487370e9cad212544b32be35f9b61b7a7869cfe9c1abc199087",
+      "after_sha256": "6c66a325b2d647230a4187b0bc82ce19f8e7602f875d1bd11df212700724c518",
+      "trajectory_sha256": "acc0a6a88e02a54ca47637cac1eed8d619d78ca8f447675a72de4aa31ccadfc7"
+    }
+  ],
+  "historical_rescores": [
+    {
+      "task_id": "Compass--0",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "5ebd3470c9ce9069129cce326aa2d524311abfff122029622f1aac88e6e2ec36",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--1",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "5b2cedd4d6ca1cadccd751f38ecda81fc56ab651748790f6efb06d6f30821b89",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--2",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "dd8cb5ddd108046def69f4a5ef92bbf834b08a263081420e3f0620c7b67e626a",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--3",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "b2814aedcca97c1faea699bdf0cb8d0274ecbfd17e1d7af76457a264f71e2629",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--4",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "1d548bbbd11034bba2053f7afd6d7d236530c4fab89aaadd1b557a75106524e3",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "0e2d3ef29b068514552fb8ec62a4ec857c937276f80d427421373bbc6cba6b3b"
+    },
+    {
+      "task_id": "Compass--5",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "745c6477f95464de587d37bc90b6be5f70c3c2aab72fe45624ac44e256579226",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "ed00770d1b51f679e616a58277eb5a463ce7c2480a04d37b848e3ef28ef65f04"
+    },
+    {
+      "task_id": "Compass--6",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "faacf75e12e7510a06f5b34bb9fe670645fc98668b5cac73fe1208c1b26b55b7",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "c969b955ee2bebc121d6db52c206530c805635104d82be6ab0402dde9bc38715"
+    },
+    {
+      "task_id": "Compass--7",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "47dbd549a7e410be80d0539912612fed5e6bdcfdd18b2a64a8dae858ce0c965d",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "5a0695b1bdd4609785fca040ab13c1f917690ea18f93704948a0565c712f6947"
+    },
+    {
+      "task_id": "Compass--10",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "86519eb1878f6208ae845e2fc714cfe078d8437975306e1db774cb544dd354e8",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "f41c2babde5f0948e50b01f2204682373f0fea45847c71f422fd0011a68dda09"
+    },
+    {
+      "task_id": "Compass--11",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "dadbd2288db31885db7c754262f02b8fd63a67ae6cf8ca37b9fbc42e41df9e75",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--12",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "44e0911d0a9d22e1f8359521138c6248a2a1bda3bf361e4f2f33517ea764627e",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--13",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "3b075f04a0eac0c5912ffb01bfb2d5e31c98cc818928db59dbe71125c449c68a",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--14",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "3271b687dea4fa8dd5d1b211efba1fa873ad79b6cc77e8fdb4a1192d06d258a5",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "975ca3b34de19dda26be3a138d83a7b70f9d0bab3462918b6ca08a36201faf2d"
+    },
+    {
+      "task_id": "Compass--15",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "6cbfad93b8e738ff21130914bce20747dbcafca93d6143b5b4ed3a5f81315918",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "866025b5ff1ca0dda1cb79aa7822abbdedec2d0eaae0c65a7e3947c34a5c0fdf"
+    },
+    {
+      "task_id": "Compass--16",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "90b8c4a19853fc15d1788c9cea7d562547f06995783070d61792a33aaaccd675",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    },
+    {
+      "task_id": "Compass--17",
+      "original_run_id": "guided-003-durable",
+      "scoring_input": "previously frozen native export; semantic action mapping unchanged",
+      "pass": true,
+      "reason": "All applicable checks passed",
+      "trajectory_sha256": "54e7ec30d97275b928cd552eb9bdc791f82f2a006bbed45f904fb286b971a0b7",
+      "before_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979",
+      "after_sha256": "4fbb93f60edd007e3d2af660aec58fa4863672d96c6484e097c0eafb1d767979"
+    }
+  ],
+  "old_files_rehashed": 932,
+  "old_followup_inputs_rehashed": 39,
+  "followup17_rescore": {
+    "pass": true,
+    "reason": "All applicable checks passed",
+    "trajectory_sha256": "bb0dba03a7fc568c5604114fe49e90c67ba874e0c99070e65657b50967e3d568"
+  },
+  "current_11_table_compatibility": {
+    "purpose": "offline fixture using old read-only UI and current same-fact seed",
+    "pass": true,
+    "tables": 11
+  },
+  "runtime": {
+    "type": "native Flask, documented local startup",
+    "test_port": 57021,
+    "standard_port": 40021,
+    "isolated_seed_sha256": "3180c49546acb487370e9cad212544b32be35f9b61b7a7869cfe9c1abc199087",
+    "matched_prior_runtime_files": 454,
+    "pinned_static_assets_verified": 2909,
+    "reset": "Independent process stopped; exact retained seed restored before and after each run",
+    "docker_limitation": "New container creation blocked by host read-only filesystem. No new Docker execution or clean all-site build claimed. Previous integration evidence retains its own version.",
+    "scope": "No application/template/CSS or HF asset bytes changed. Browser default1280x720. Guided/source-aware; no independent exploration difficulty claim.",
+    "http_issue": "One browser favicon.ico404; no failed page, submitted form or requested media in completed runs."
+  },
+  "blind_review": {
+    "tasks": [
+      "Compass--17",
+      "Compass--18",
+      "Compass--19",
+      "Compass--20"
+    ],
+    "manifest_sha256": "02a89fbb0442ca1abd93d9c305e014eeea299d2a5f2475e7a448bb691d8b94f8",
+    "files": 273,
+    "screenshots": 88,
+    "status": "PENDING; original16-task verdict unchanged and not extended to new tasks"
+  },
+  "public_images": [
+    {
+      "task_id": "Compass--18",
+      "step": 6,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-18-property-details.jpg",
+      "sha256": "5612d3d6f7765217bfc043c0e76493471e137fdf10de3d2c3b74031b2e7b652e",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--18",
+      "step": 9,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-18-cancelled-tour.jpg",
+      "sha256": "3ea378b59f2326a3b88f8023d60e75c4885045ac5fbb276b686b7713b47a3dca",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--19",
+      "step": 6,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-19-ratio-comparison.jpg",
+      "sha256": "9ab0ff0167ac327557ff0c5eb2184d828b8c9e9e32df73be893b4605cdf813fa",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--19",
+      "step": 8,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-19-property-details.jpg",
+      "sha256": "d7b341bac81c03d788a52d1802707fdc95a5e9c10409eebca418c36cf60d9e15",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--19",
+      "step": 10,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-19-remaining-members.jpg",
+      "sha256": "4475100be45e91a76e6e2f82f73dbf16f1f788d46ef73492c5a21b50a3f6b5f8",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--20",
+      "step": 3,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-20-account-contact.jpg",
+      "sha256": "1915b62d09dfe53735937cbb7c0f85968e46711ac8bcaea3d6e638625e8f4671",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--20",
+      "step": 9,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-20-filled-form.jpg",
+      "sha256": "b15819914c6ac5e6010aecc405a53be34afa98fe4265846c07e2d8cd69906593",
+      "original_browser_capture": true
+    },
+    {
+      "task_id": "Compass--20",
+      "step": 11,
+      "phase": "after",
+      "path": "visual-review/task-expansion/task-20-confirmation.jpg",
+      "sha256": "8fd4d8d28cd7936aa8eaf680293591e94e9d39772ce70862ad0e4a4375bf70a9",
+      "original_browser_capture": true
+    }
+  ]
+}

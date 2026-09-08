@@ -2,11 +2,12 @@
 
 [Review PR #84](https://github.com/aiming-lab/WebHarbor/pull/84) remains **Ready for maintainer review**, as requested by Zexu Jin after accepting the Compass experience and disclosed scope on September7,2026. Original contribution: [#25](https://github.com/aiming-lab/WebHarbor/pull/25), **sarendis56 (Peichun Hua)**; original commits and attribution are retained.
 
-The September8 update resolves conflicts with the newly merged TED/OSU environments. It changes shared integration, Compass task entry ports and bounded TED/OSU compatibility checks. Compass UI and grading semantics remain unchanged. **The refreshed task17 independent verdict is still outstanding and is not counted as PASS.**
+The latest September8 update adds three account workflows, bringing the set to **19 tasks**, and fixes grading of the current11-table seed. The original16 contracts are unchanged. **Independent review of tasks17–20 remains outstanding**; a new frozen packet combines the prior task17 execution and three new guided runs. See [task expansion, actual captures and validation](task-expansion-review.md). The preceding TED/OSU integration retains its own dated evidence.
 
 | Item | Current candidate |
 |---|---|
 | Application checkpoint | `4574f245573b0fa9c70497661984065b9db819c9` |
+| Task/scorer checkpoint | `4542b35076b07c91ca7b8d96c5d868a185dbf970` |
 | Test-only follow-up | `208863df54f615dd88851fe5b91803c208d3d8d5` |
 | Integrated upstream main | `7269134e9db9d10b1a6ac321797be51c72bb1a36` |
 | Registry |22 sites; TED40019, OSU40020, Compass40021; control8101 |
@@ -15,13 +16,15 @@ The September8 update resolves conflicts with the newly merged TED/OSU environme
 | Compass archive |210,301,426 bytes; SHA256 `077cfb2334cb40bf191b2e557c0becd6e28a1901e7ea80183216c1e9db1544aa`, unchanged |
 | Rebuilt Compass runtime seed |`3180c49546acb487370e9cad212544b32be35f9b61b7a7869cfe9c1abc199087`; all11 tables equal the accepted asset seed |
 | Prepared image |`sha256:1b679ef882490eb40fffc4c15b7288f2b4aca7d679fab045b92b24f148a7d0f4`; incremental build |
-| Mechanical checks |230 tests pass;22 homepages and470 Compass URLs200;1123 runtime files match build manifest |
-| Real UI and reset |1 synthetic inquiry, refresh without duplicate; Compass reset0.74s; reset-all3.57s;26/26 seed files equal |
+| Prior integration checks |230 tests pass;22 homepages and470 Compass URLs200;1123 runtime files match build manifest |
+| Prior integration UI/reset |1 synthetic inquiry, refresh without duplicate; Compass reset0.74s; reset-all3.57s;26/26 seed files equal |
 | Owner runtime |Compass40021;23 data files from the previous20 sites preserved byte-for-byte |
 
 [Current integration report](integration-review.md) and [machine-readable validation](integration-validation.json) explain all changes, failed checks repaired, image reuse and exact evidence boundaries. A new clean all-site build is not claimed. [September7 Ready-transition checks](maintainer-validation.json) remain a historical record.
 
 ## Review evidence and scope
+
+- [Three new tasks:36 steps/72 screenshots,222 Compass tests and19 deterministic outcomes](task-expansion-review.md); original16 outcomes are offline rescores, new3 are actual native-Flask executions. Docker creation was blocked by a host read-only filesystem.
 
 - [Environment/source,16-task quality matrix, verifier negative cases and independent reconciliation](review-report.md).
 - [Sell and24 regional guides:36 source/before/after and interaction captures](sell-guides-review.md), with [validation and hashes](sell-guides-validation.json).
@@ -33,7 +36,7 @@ Human acceptance covers the Compass experience and disclosed scope, not individu
 
 ## Remaining maintainer actions
 
-1. Receive and reconcile the refreshed task17 independent result, or explicitly decide how to accept that outstanding coverage. It stays separate from the completed original16-task review.
+1. Receive and reconcile the four-task17–20 independent result from the new frozen packet, or explicitly decide how to accept that outstanding coverage. The prior task17 packet remains unchanged; avoid counting duplicate reviews as new executions. This remains separate from the completed original16-task review.
 2. Review and merge/resolve HF #53. If the selected revision changes, update `.assets-revision` and verify all archive hashes against the tested candidate. Different asset bytes require affected validation.
 3. Confirm current GitHub base/head and asset pin, perform final build/integration and code review, then merge #84 and coordinate closure/supersession of original #25.
 
