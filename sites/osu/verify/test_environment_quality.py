@@ -35,6 +35,16 @@ class EnvironmentTests(unittest.TestCase):
     d=Path(tmp)/str(n);d.mkdir();shutil.copy2(SITE/'app.py',d/'app.py');shutil.copy2(SITE/'seed_data.py',d/'seed_data.py');shutil.copy2(SITE/'image_sources.json',d/'image_sources.json');shutil.copy2(SITE/'migrate_seed.py',d/'migrate_seed.py')
     subprocess.run([sys.executable,'migrate_seed.py'],cwd=d,check=True,capture_output=True,text=True);database=d/'instance_seed/osu.db';hashes.append(hashlib.sha256(database.read_bytes()).hexdigest())
   self.assertEqual(hashes[0],hashes[1])
+ def test_build_seed_preserves_existing_runtime(self):
+  with tempfile.TemporaryDirectory(prefix='osu-live-preserve-') as tmp:
+   d=Path(tmp)
+   for name in ('app.py','seed_data.py','image_sources.json','migrate_seed.py'):shutil.copy2(SITE/name,d/name)
+   (d/'instance').mkdir();runtime=d/'instance/osu.db';shutil.copy2(SEED,runtime)
+   with sqlite3.connect(runtime) as connection:connection.execute("UPDATE users SET full_name='Preserved local user' WHERE id=1")
+   before=hashlib.sha256(runtime.read_bytes()).hexdigest()
+   subprocess.run([sys.executable,'migrate_seed.py'],cwd=d,check=True,capture_output=True,text=True)
+   self.assertEqual(hashlib.sha256(runtime.read_bytes()).hexdigest(),before)
+   self.assertTrue((d/'instance_seed/osu.db').is_file())
  def test_post_forms_have_csrf(self):
   missing=[]
   for p in (SITE/'templates').glob('*.html'):
