@@ -67,7 +67,7 @@ If neither snapshot can be obtained the verifier fails closed
    (`trajectory_task_matches`, `final_answer_nonempty`).
 2. **Navigation gates** — every URL the task mandates appears in
    `trajectory_urls` (start_url plus each step's url), on a loopback host with
-   **any** port (runs hit 41019 while tasks say 40019). Detail-page gates are
+   **any** port (runs hit 41022 while tasks say 40022). Detail-page gates are
    exact `/jobs/<id>` paths, never `/jobs/<id>/apply`; results gates parse the
    query string (`q`/`searchQuery`/`loc` as substrings, facets as exact
    `getlist` values). Sign-in is `/login` visited plus the last typed email.
@@ -95,7 +95,7 @@ If neither snapshot can be obtained the verifier fails closed
 
 Produced by `scripts_dev/run_signature.py` (Playwright run-signature writer in the
 `agent.py` format) and graded through `eval_judge.py --verifier True` against the
-container `wh-review` (`-p 8201:8101 -p 41019:40019`). No LLM call anywhere.
+container `wh-review` (`-p 8201:8101 -p 41022:40022`). No LLM call anywhere.
 
 | run kind | tasks | expected | result |
 |---|---|---|---|

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 VERIFY_DIR = Path(__file__).resolve().parents[1]
-BASE = "http://localhost:41019"
+BASE = "http://localhost:41022"
 PASSWORD = "TestPass123!"
 
 SCHEMA = """

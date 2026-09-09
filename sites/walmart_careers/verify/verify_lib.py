@@ -115,7 +115,7 @@ def normalized_url_path(url: str) -> str:
 def is_walmart_careers_site_url(url: str) -> bool:
     """Accept HTTP(S) URLs on a loopback host while allowing any port.
 
-    Runs hit the alt-port container (41019) while tasks.jsonl says 40019, so
+    Runs hit the alt-port container (41022) while tasks.jsonl says 40022, so
     the port is deliberately not checked.
     """
     parsed = urlparse(str(url or ""))

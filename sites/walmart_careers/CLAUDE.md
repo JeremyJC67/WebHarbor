@@ -1,7 +1,7 @@
 # walmart_careers — site notes
 
-Mirror of https://careers.walmart.com. Port **40019** (index 19 in `websyn_start.sh`, the 20th and last site);
-alt-port test container maps it to **41019**.
+Mirror of https://careers.walmart.com. Port **40022** (index 22 in `websyn_start.sh`, the 23rd and last site);
+alt-port test container maps it to **41022**.
 
 ## Layout
 

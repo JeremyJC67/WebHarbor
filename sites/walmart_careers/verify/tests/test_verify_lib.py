@@ -41,8 +41,8 @@ def traj(*urls: str) -> dict:
 class UrlGateTests(unittest.TestCase):
     def test_loopback_origins_on_any_port(self) -> None:
         for url in (
-            "http://localhost:40019/jobs/CP-1-1",
-            "http://127.0.0.1:41019/jobs/CP-1-1?x=1",
+            "http://localhost:40022/jobs/CP-1-1",
+            "http://127.0.0.1:41022/jobs/CP-1-1?x=1",
             "http://[::1]:5017/jobs/CP-1-1",
         ):
             with self.subTest(url=url):
@@ -56,22 +56,22 @@ class UrlGateTests(unittest.TestCase):
                 self.assertFalse(navigated_to_path(traj(url), "/jobs/CP-1-1"))
 
     def test_job_detail_is_exact(self) -> None:
-        self.assertTrue(job_detail_visited(traj("http://localhost:41019/jobs/CP-5991-12522/"), "CP-5991-12522"))
-        self.assertFalse(job_detail_visited(traj("http://localhost:41019/jobs/CP-5991-12522/apply"), "CP-5991-12522"))
-        self.assertFalse(job_detail_visited(traj("http://localhost:41019/jobs/CP-5991-11940"), "CP-5991-12522"))
+        self.assertTrue(job_detail_visited(traj("http://localhost:41022/jobs/CP-5991-12522/"), "CP-5991-12522"))
+        self.assertFalse(job_detail_visited(traj("http://localhost:41022/jobs/CP-5991-12522/apply"), "CP-5991-12522"))
+        self.assertFalse(job_detail_visited(traj("http://localhost:41022/jobs/CP-5991-11940"), "CP-5991-12522"))
 
     def test_start_url_counts(self) -> None:
-        self.assertTrue(navigated_to_path({"start_url": "http://localhost:40019/", "steps": []}, "/"))
+        self.assertTrue(navigated_to_path({"start_url": "http://localhost:40022/", "steps": []}, "/"))
 
     def test_results_text_params(self) -> None:
-        t = traj("http://localhost:41019/results?q=Yard+Driver+roles")
+        t = traj("http://localhost:41022/results?q=Yard+Driver+roles")
         self.assertTrue(results_visited(t, q="yard"))
-        self.assertTrue(results_visited(traj("http://localhost:41019/results?searchQuery=yard"), q="yard"))
+        self.assertTrue(results_visited(traj("http://localhost:41022/results?searchQuery=yard"), q="yard"))
         self.assertFalse(results_visited(t, q="optician"))
-        self.assertFalse(results_visited(traj("http://localhost:41019/?q=yard"), q="yard"))
+        self.assertFalse(results_visited(traj("http://localhost:41022/?q=yard"), q="yard"))
 
     def test_results_facets_are_exact(self) -> None:
-        t = traj("http://localhost:41019/results?brand=Sam%27s+Club&type=Part+time&shift=Weekend+Overnight&loc=Plano%2C+TX&radius=25")
+        t = traj("http://localhost:41022/results?brand=Sam%27s+Club&type=Part+time&shift=Weekend+Overnight&loc=Plano%2C+TX&radius=25")
         self.assertTrue(results_visited(t, shift="Weekend Overnight", type="Part time", brand="Sam's Club"))
         self.assertTrue(results_visited(t, loc="plano"))
         self.assertFalse(results_visited(t, shift="Weekend"))
@@ -79,9 +79,9 @@ class UrlGateTests(unittest.TestCase):
 
     def test_results_alternatives_and_regex(self) -> None:
         alternatives = ("puerto rico", re.compile(r"\bpr\b"))
-        self.assertTrue(results_visited(traj("http://localhost:41019/results?loc=Bayamon%2C+PR"), loc=alternatives))
-        self.assertTrue(results_visited(traj("http://localhost:41019/results?loc=puerto+rico"), loc=alternatives))
-        self.assertFalse(results_visited(traj("http://localhost:41019/results?loc=Springfield"), loc=alternatives))
+        self.assertTrue(results_visited(traj("http://localhost:41022/results?loc=Bayamon%2C+PR"), loc=alternatives))
+        self.assertTrue(results_visited(traj("http://localhost:41022/results?loc=puerto+rico"), loc=alternatives))
+        self.assertFalse(results_visited(traj("http://localhost:41022/results?loc=Springfield"), loc=alternatives))
 
     def test_last_email_input(self) -> None:
         t = {"steps": [
