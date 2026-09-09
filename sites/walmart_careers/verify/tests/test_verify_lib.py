@@ -127,6 +127,15 @@ class MatcherTests(unittest.TestCase):
         self.assertTrue(contains_count("Option 2 requires 9 years", 9))
         self.assertFalse(contains_count("3rd shift", 3))
 
+    def test_counts_survive_sentence_punctuation(self) -> None:
+        # Real nano runs on tasks 3 and 4 wrote the count right before a period.
+        self.assertTrue(contains_count("Hashtag: #pharmacytechjobs. Open positions: 2.", 2))
+        self.assertTrue(contains_count("Requisition ID: CP-4750-11130; Open positions: 3.", 3))
+        self.assertTrue(contains_count("Open positions: 2, hashtag #x", 2))
+        self.assertFalse(contains_count("2.5 open positions", 2))
+        self.assertFalse(contains_count("about 2,000 roles", 2))
+        self.assertFalse(contains_count("12.", 2))
+
     def test_store_numbers(self) -> None:
         self.assertTrue(mentions_store_number("Store #1230 has more", 1230))
         self.assertTrue(mentions_store_number("store 1230", 1230))

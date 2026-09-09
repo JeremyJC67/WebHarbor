@@ -350,8 +350,12 @@ def _mask(text: str, patterns: Iterable[str]) -> str:
 
 
 def _standalone_integer(text: str, number: int, allow_hash: bool = False) -> bool:
+    """``number`` as a whole integer: not part of a longer digit run, a decimal
+    (``2.5``), a thousands group (``2,000``) or an ordinal (``2nd``). A period
+    or comma that merely ends the sentence (``Open positions: 2.``) is fine —
+    real agents write the count that way (nano runs on tasks 3 and 4)."""
     forbidden = r"[\d.,]" if allow_hash else r"[\d.,#]"
-    pattern = rf"(?<!{forbidden}){number}(?![\d.,]|\s*(?:st|nd|rd|th)\b)"
+    pattern = rf"(?<!{forbidden}){number}(?!\d|[.,]\d|\s*(?:st|nd|rd|th)\b)"
     return bool(re.search(pattern, text))
 
 
