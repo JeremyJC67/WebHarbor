@@ -42,12 +42,14 @@ hf download "$REPO" --repo-type dataset --revision "$REVISION" \
     --include "$INCLUDE" --local-dir "$CACHE_DIR"
 
 shopt -s nullglob
-TARBALLS=("$CACHE_DIR"/*.tar.gz)
-if [[ -n "$ONLY_SITE" && ${#TARBALLS[@]} -ne 1 ]]; then
-    echo "fetch_assets: expected one archive for $ONLY_SITE, found ${#TARBALLS[@]}" >&2
-    exit 1
-fi
-if [[ -z "$ONLY_SITE" ]]; then
+if [[ -n "$ONLY_SITE" ]]; then
+    TARBALLS=("$CACHE_DIR/$ONLY_SITE.tar.gz")
+    if [[ ! -f "${TARBALLS[0]}" ]]; then
+        echo "fetch_assets: expected archive for $ONLY_SITE" >&2
+        exit 1
+    fi
+else
+    TARBALLS=("$CACHE_DIR"/*.tar.gz)
     expected=0
     for site_dir in sites/*/; do
         [[ -d "$site_dir" ]] && expected=$((expected + 1))
@@ -61,15 +63,14 @@ extracted=0
 for tarball in "${TARBALLS[@]}"; do
     site=$(basename "$tarball" .tar.gz)
     if [[ -n "$ONLY_SITE" && "$site" != "$ONLY_SITE" ]]; then continue; fi
+    python3 scripts/validate_asset_archive.py "$tarball" "$site"
     echo "[fetch] extracting $site"
-    if tar --version 2>/dev/null | grep -q 'GNU tar'; then
-        tar --warning=no-unknown-keyword --exclude='._*' -xzf "$tarball" -C sites/
-    else
-        COPYFILE_DISABLE=1 tar --exclude='._*' -xzf "$tarball" -C sites/
-    fi
+    python3 scripts/extract_asset_archive.py "$tarball" sites "$site"
     migrator="sites/$site/migrate_seed.py"
     database="sites/$site/instance_seed/$site.db"
-    if [[ -f "$migrator" && -f "$database" ]]; then
+    if [[ -f "sites/$site/.build-generated-seed" ]]; then
+        rm -rf "sites/$site/instance_seed"
+    elif [[ -f "$migrator" && -f "$database" ]]; then
         echo "[fetch] applying tracked $site seed migration"
         PYTHONHASHSEED=0 python3 "$migrator" "$database"
     fi

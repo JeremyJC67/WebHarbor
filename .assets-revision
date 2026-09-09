@@ -5,4 +5,4 @@
 # is a git revision (branch name like `main`, a tag, or a specific commit
 # sha). Override at runtime with the ASSETS_REVISION env var.
 repo: ChilleD/WebHarbor
-revision: 8f06eba81b2d1cdf62c8c17c9036850d9a6b9c32
+revision: 070123d74c01a8b29808201be85462fd7d0ec3c4
