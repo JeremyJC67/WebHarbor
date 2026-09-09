@@ -89,12 +89,13 @@ If neither snapshot can be obtained the verifier fails closed
 5. **Read-only invariance** — tasks 0–10, 16 and 18 FAIL on any change to
    `users`, `saved_jobs` or `applications` (`read_only_<table>_unchanged`).
 
-## Validation matrix (LLM-free)
+## Validation
 
-Produced by `scripts_dev/run_signature.py` (Playwright run-signature writer in
-the `agent.py` format) and graded through `eval_judge.py --verifier True`
-against the container `wh-review` (`-p 8201:8101 -p 41019:40019`). Full
-per-task table in `scripts_dev/VERIFICATION.md` §10.
+### LLM-free matrix
+
+Produced by `scripts_dev/run_signature.py` (Playwright run-signature writer in the
+`agent.py` format) and graded through `eval_judge.py --verifier True` against the
+container `wh-review` (`-p 8201:8101 -p 41019:40019`). No LLM call anywhere.
 
 | run kind | tasks | expected | result |
 |---|---|---|---|
@@ -105,8 +106,33 @@ per-task table in `scripts_dev/VERIFICATION.md` §10.
 | State mismatch (genuine trajectory + answer, after = seed) | 11–15, 17, 19 | FAIL on the DB check | 7/7 |
 | Over-action (extra save, two removals, extra application) | 11, 12, 15, 19 | FAIL on set equality / `applications_unchanged` | 4/4 |
 | Read-only write (task 0 that also saves a role) | 0 | FAIL on `read_only_saved_jobs_unchanged` | 1/1 |
-| Unit tests | all 20 + lib | green | 221 tests |
+| Unit tests | all 20 + lib | green | 223 tests |
 
 ```bash
 python -m unittest discover sites/walmart_careers/verify/tests
 ```
+
+### Real agent runs
+
+Two passes of the unchanged `agent_demo/agent.py` (default 15 steps, one attempt per
+task, no retries), each run graded by the verifier **and** by the LLM judge
+(`gpt-5.4-nano`, rubric-driven). Both passes are graded with the verifiers as
+committed after two fixes the runs prompted: a count written as "Open positions: 2."
+no longer fails on the trailing period (`verify_lib`), and verifier 5's results gate
+also accepts a typed header search naming Hoboken or Technology (`?q=`), not only the
+`area` / `loc` filter parameters.
+
+| agent | verifier PASS | judge PASS | agree | diverge |
+|---|---|---|---|---|
+| gpt-5.4-nano | 8/20 | 3/20 | 15/20 | 5 (all verifier PASS / judge FAIL) |
+| gpt-5.4-mini | 13/20 | 3/20 | 8/20 | 12 (11 verifier PASS / judge FAIL, 1 the reverse) |
+
+Every divergent trajectory was read; the deterministic verifier was right in all 17.
+The judge, with only the last four screenshots and no database, failed correct runs on
+facts it could not see (DB after-state, a below-the-fold hashtag, an earlier detail
+page), on requirements outside its rubric, and twice with every rubric checkpoint marked
+true; its one PASS against the verifier credited a mandated filter that was never
+applied. Every agree-FAIL run is a genuine agent failure (answered from result cards,
+wrong posting, out of steps, skipped a mandated filter, guest application instead of a
+signed-in one). Full per-task tables and the adjudication are in
+`scripts_dev/VERIFICATION.md` §11.
