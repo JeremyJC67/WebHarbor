@@ -66,6 +66,17 @@ def test_security_configuration_and_malformed_session_identity():
         assert site.load_user("not-an-integer") is None
 
 
+def test_navigation_controller_is_packaged(client):
+    page = client.get("/")
+    assert page.status_code == 200
+    assert b'/static/js/navigation.js' in page.data
+    script = client.get("/static/js/navigation.js")
+    assert script.status_code == 200
+    assert b'addEventListener("pointerdown"' in script.data
+    assert b'addEventListener("keydown"' in script.data
+    assert b'closeMenus(menu)' in script.data
+
+
 def test_health_and_seed_contract(client):
     response = client.get("/_health")
     assert response.status_code == 200

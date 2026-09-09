@@ -32,7 +32,7 @@ The original PR was conflicting with current `main`. Current `main` already assi
 
 | Validation | Result |
 | --- | --- |
-| Walmart application, integration, seed, asset, ground-truth, and verifier suites | 296 passed; 16 unittest subtests passed |
+| Walmart application, integration, seed, asset, ground-truth, and verifier suites | 297 passed; 16 unittest subtests passed |
 | Compass regression suite | 229 passed |
 | Rotten Tomatoes regression suite | 66 passed; 4,143 unittest subtests passed |
 | OSU regression suite | 25 passed; 264 unittest subtests passed |
@@ -52,6 +52,12 @@ The original PR was conflicting with current `main`. Current `main` already assi
 | Release reset-all | Passed; all 24 runtime seed trees matched their seed trees |
 | Walmart restart and reset | Valid runtime state survived restart; reset restored byte-identical seed state |
 | Ten consecutive Walmart resets | Passed; PID 1 file descriptors remained 4 → 4 and zombie count remained 0 → 0 |
+
+## Post-review Navigation Correction
+
+A reported header-navigation defect was reproduced at the 1080 × 397 CSS-pixel viewport represented by the supplied screenshot. Opening Career areas, Brands, and Resources left all three native `details` elements open; clicking outside or pressing Escape did not close them. The live Walmart Careers header was independently checked and kept only one primary menu expanded while closing it on outside pointer interaction and Escape.
+
+`static/js/navigation.js` now provides mutually exclusive header menus, same-trigger close, outside-pointer close, focus-leave close, Escape close with focus restoration, and mutual exclusion with the account menu. Packaged Chromium checks passed at 1080 × 397 and 320 × 480, the 20-task browser/verifier suite remained 20/20 with 106 steps, and the 105-case responsive matrix remained free of overflow, clipping, broken images, unlabeled controls, page errors, and remote requests.
 
 ## GitHub Write Policy
 
