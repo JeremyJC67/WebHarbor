@@ -122,17 +122,24 @@ no longer fails on the trailing period (`verify_lib`), and verifier 5's results 
 also accepts a typed header search naming Hoboken or Technology (`?q=`), not only the
 `area` / `loc` filter parameters.
 
-| agent | verifier PASS | judge PASS | agree | diverge |
+| agent | verifier PASS | judge PASS (original / rewritten rubric) | agree (original / rewritten) | diverge after rewrite |
 |---|---|---|---|---|
-| gpt-5.4-nano | 8/20 | 3/20 | 15/20 | 5 (all verifier PASS / judge FAIL) |
-| gpt-5.4-mini | 13/20 | 3/20 | 8/20 | 12 (11 verifier PASS / judge FAIL, 1 the reverse) |
+| gpt-5.4-nano | 8/20 | 3/20 / 3/20 | 15/20 / 15/20 | 5 (all verifier PASS / judge FAIL) |
+| gpt-5.4-mini | 13/20 | 3/20 / 6/20 | 8/20 / 13/20 | 7 (all verifier PASS / judge FAIL) |
 
-Every divergent trajectory was read; the deterministic verifier was right in all 17.
-The judge, with only the last four screenshots and no database, failed correct runs on
-facts it could not see (DB after-state, a below-the-fold hashtag, an earlier detail
-page), on requirements outside its rubric, and twice with every rubric checkpoint marked
-true; its one PASS against the verifier credited a mandated filter that was never
-applied. Every agree-FAIL run is a genuine agent failure (answered from result cards,
+Every divergent trajectory was read; the deterministic verifier was right in all 17
+under the original rubrics and in all 12 that remain after the rubric rewrite. The
+rubrics were then rewritten around evidence the judge can actually see (the /login
+step with the named account, the Save / Removed flash, the "Application submitted"
+page with its confirmation number, the updated account page, the My applications
+page; "must include" instead of "exactly as shown"; a scoring rule that the full step
+list is authoritative and that a fact missing from the last screenshots is not a
+contradiction, with the database left to the verifier) and all 40 runs were re-judged
+with the verifiers untouched: agreement 23/40 → 28/40, and the two runs the judge had
+wrongly passed (a skipped mandated filter, a guest application) now fail on both
+graders. The 12 residual divergences are the nano judge failing checkpoints it cannot
+confirm from the last four screenshots, or contradicting evidence it quotes itself.
+Every agree-FAIL run is a genuine agent failure (answered from result cards,
 wrong posting, out of steps, skipped a mandated filter, guest application instead of a
-signed-in one). Full per-task tables and the adjudication are in
-`scripts_dev/VERIFICATION.md` §11.
+signed-in one). Full per-task tables, the before/after table and the adjudication are in
+`scripts_dev/VERIFICATION.md` §11 and §11.1.
