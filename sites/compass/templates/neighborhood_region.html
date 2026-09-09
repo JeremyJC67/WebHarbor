@@ -13,14 +13,14 @@
   </section>
   <ul class="region-cards region-width">
     {% for card in guide.cards %}
-    <li><a href="{{ card.source_url }}" target="_blank" rel="noopener" aria-label="{{ card.name }} — full guide on Compass (opens new tab)"><div class="region-card-image" style="background-image:url('{{ card.image }}')"></div><h3>{{ card.name }}</h3></a></li>
+    <li><a href="{{ card.source_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ card.name }} — full guide on Compass (opens new tab)"><div class="region-card-image" style="background-image:url('{{ card.image }}')"></div><h3>{{ card.name }}</h3></a></li>
     {% endfor %}
   </ul>
   {% if guide.nearby %}
   <section class="region-nearby region-width">
     <h2>Explore Nearby Homes</h2>
     <div class="region-link-groups">
-      {% for group in guide.nearby %}<details open><summary>{{ group.title }}</summary><div class="region-link-list" data-region-links><ul>{% for link in group.links %}<li><a href="{{ link.source_url }}" target="_blank" rel="noopener" aria-label="{{ link.name }} on Compass (opens new tab)">{{ link.name }}</a></li>{% endfor %}</ul>{% if group.links|length > 5 %}<div class="region-more"><button type="button" aria-expanded="false" data-region-more>Show more</button></div>{% endif %}</div></details>{% endfor %}
+      {% for group in guide.nearby %}<details open><summary>{{ group.title }}</summary><div class="region-link-list" data-region-links><ul>{% for link in group.links %}<li><a href="{{ link.source_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ link.name }} on Compass (opens new tab)">{{ link.name }}</a></li>{% endfor %}</ul>{% if group.links|length > 5 %}<div class="region-more"><button type="button" aria-expanded="false" data-region-more>Show more</button></div>{% endif %}</div></details>{% endfor %}
     </div>
   </section>
   {% endif %}

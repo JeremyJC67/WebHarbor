@@ -1,17 +1,20 @@
 'use strict';
+const dialogOpeners = new WeakMap();
 for (const button of document.querySelectorAll('[data-open-dialog]')) {
-  button.addEventListener('click', () => document.getElementById(button.dataset.openDialog).showModal());
+  button.addEventListener('click', () => {
+    const dialog = document.getElementById(button.dataset.openDialog);
+    if (!dialog) return;
+    dialogOpeners.set(dialog, button);
+    dialog.showModal();
+    (dialog.querySelector('[data-close-dialog]') || dialog.querySelector('input,select,button,a[href]'))?.focus();
+  });
 }
 for (const button of document.querySelectorAll('[data-close-dialog]')) {
-  button.addEventListener('click', () => button.closest('dialog').close());
+  button.addEventListener('click', () => button.closest('dialog')?.close());
 }
 for (const dialog of document.querySelectorAll('dialog')) {
   dialog.addEventListener('click', event => { if (event.target === dialog) { const box = dialog.getBoundingClientRect(); if(event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close(); } });
-}
-// Associate existing form labels with their controls for keyboard and screen readers.
-for (const [index, field] of [...document.querySelectorAll('.field,.filter-group')].entries()) {
-  const label=field.querySelector('label'), input=field.querySelector('input,select,textarea');
-  if(label && input && !label.contains(input)) { input.id ||= 'field-'+index; label.htmlFor=input.id; }
+  dialog.addEventListener('close', () => dialogOpeners.get(dialog)?.focus());
 }
 const gallery=document.getElementById('photo-viewer');
 if(gallery) {
@@ -53,7 +56,8 @@ for (const button of document.querySelectorAll('.market-toggle,.footer-toggle'))
   button.addEventListener('click', () => {
     const expanded = button.getAttribute('aria-expanded') !== 'true';
     button.setAttribute('aria-expanded', String(expanded));
-    button.querySelector('span').textContent = expanded ? '−' : '＋';
+    const icon = button.querySelector('span');
+    if (icon) icon.textContent = expanded ? '−' : '＋';
   });
 }
 for (const frame of document.querySelectorAll('[data-home-gallery]')) {
@@ -67,6 +71,6 @@ for (const frame of document.querySelectorAll('[data-home-gallery]')) {
     image.src = photos[index];
     counter.textContent = `${index + 1}/${photos.length}`;
   }
-  frame.querySelector('[data-home-previous]').addEventListener('click', () => showPhoto(index - 1));
-  frame.querySelector('[data-home-next]').addEventListener('click', () => showPhoto(index + 1));
+  frame.querySelector('[data-home-previous]')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); showPhoto(index - 1); });
+  frame.querySelector('[data-home-next]')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); showPhoto(index + 1); });
 }

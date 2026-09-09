@@ -25,7 +25,7 @@
   .neighborhood-directory {font-size:14px;}
   .guide-masthead h1 {font:500 16px/1.3 var(--sans);padding:16px 16px 15px;}
   .guide-intro {display:block;margin-top:0;padding:0 16px;}
-  .guide-intro h2 {min-width:min-content;}
+  .guide-intro h2 {min-width:0;padding:32px 20px;font-size:32px;overflow-wrap:anywhere;}
   .guide-intro>div:last-child {display:none;}
   .guide-tile h3 {font-size:20px;}
 }

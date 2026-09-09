@@ -390,6 +390,14 @@ body:has(#sell-page) .cx-nav{position:static;}
 :where(#sell-page) .css-oyy2pr::after { height: 2px; width: 100%; position: absolute; left: 0px; top: 50%; transform: translateY(-50%); margin-top: 0px; z-index: 100; }
 }
 :where(#sell-page) .css-1tjhk5z { max-width: 400px; min-width: 310px; background-color: white; border: 1px solid #dadada; border-radius: 20px; margin: 0px; padding: 32px 0; display: flex; flex-direction: column; -webkit-box-align: center; align-items: center; gap: 24px; text-align: center; }
+#sell-appearance:not(.is-enhanced) [data-appearance-card]:not(:first-child),
+#sell-appearance:not(.is-enhanced) [data-appearance-step],
+#sell-advantage:not(.is-enhanced) [data-stack-step] { display:none; }
+@media (max-width: 480px) {
+:where(#sell-page) .css-d1c51c { width: 100%; min-width: 0; gap: 12px; }
+:where(#sell-page) .css-1tjhk5z { width: 100%; min-width: 0; flex: 1 1 auto; overflow-wrap:anywhere; }
+:where(#sell-page) .css-1tjhk5z > * { min-width:0; max-width:100%; }
+}
 @media (min-width: 1280px) {
 :where(#sell-page) .css-1tjhk5z { max-width: 360px; min-width: 360px; padding: 40px 0px; }
 }
@@ -1380,4 +1388,3 @@ body:has(#sell-page) .cx-nav{position:static;}
 #sell-page .sell-video-label {position:absolute;left:16px;bottom:16px;background:#000;color:white;padding:8px 12px;font:14px/1.5 var(--sans);}
 #sell-page a:focus-visible,#sell-page button:focus-visible {outline:2px solid #0064e5;outline-offset:4px;}
 @media(prefers-reduced-motion:reduce){#sell-page *{animation:none!important;transition:none!important;}}
-

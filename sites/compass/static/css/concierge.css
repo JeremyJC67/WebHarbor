@@ -1211,6 +1211,12 @@
 #concierge-page #contact .btn::before {display:none;}
 #concierge-page .video-thumb {pointer-events:none;}
 #concierge-page .video-cta {width:max-content;max-width:calc(100% - 32px);}
+@media(max-width:480px){
+  :where(#concierge-page) #video .video-cta {display:flex;align-items:center;justify-content:center;width:calc(100% - 32px);height:auto;min-height:50px;padding:8px 16px;line-height:1.35;white-space:normal;text-align:center;}
+  :where(#concierge-page) #video .video-cta span {margin:0 6px;font-size:16px;}
+  :where(#concierge-page) #stories .story-stats {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;}
+  :where(#concierge-page) #stories .story-stats .stat {margin-right:0;min-width:0;}
+}
 
 #concierge-page {display:grid;grid-template-columns:100%;}
 

@@ -12,6 +12,8 @@ from datetime import date, datetime, timedelta, timezone
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LISTINGS_JSON = os.path.join(BASE_DIR, "listings_clean.json")
 SOURCES_JSON = os.path.join(BASE_DIR, "source_data.json")
+SEED_VERSION = "compass-source-v3"
+SEED_COMPLETED_AT = datetime(2026, 9, 8, 12, 0, 0)
 
 
 def _h(*parts):
@@ -47,7 +49,6 @@ def seed_neighborhood_guides():
             slug=item["slug"], position=position,
             directory_json=json.dumps(item), content_json=json.dumps(guides[item["slug"]]),
         ))
-    db.session.commit()
 
 
 def seed_database():
@@ -61,10 +62,18 @@ def seed_database():
     agents = {}
     cities = {}
     featured = {"New York", "Los Angeles", "Miami", "San Francisco", "Boston", "Austin", "Aspen", "Denver"}
-    for raw in data:
+    # Preserve the reviewed IDs of the original priced catalog, then append
+    # records whose refreshed source page supplied a price missing from the
+    # contributor card snapshot.
+    ordered_data = [item for item in data if item.get("price")]
+    ordered_data.extend(item for item in data if not item.get("price")
+                        and sources.get(item["listing_id"], {}).get("price"))
+    for raw in ordered_data:
         gallery = _gallery_paths(raw["listing_id"])
-        if not gallery or not raw.get("city") or not raw.get("price"):
-            continue
+        if not gallery:
+            raise RuntimeError(f"Missing required gallery assets for {raw['listing_id']}")
+        if not raw.get("city"):
+            raise RuntimeError(f"Missing market city for {raw['listing_id']}")
         source = sources.get(raw["listing_id"], {})
         market = raw["city"]
         city = source.get("city") or market
@@ -101,6 +110,11 @@ def seed_database():
         elif normalized_status in {"rented", "closed", "expired", "canceled", "cancelled", "withdrawn"}:
             status = normalized_status
         badges = raw.get("badges") or []
+        open_badge = next((badge for badge in badges if badge.startswith("Open: ")), "")
+        open_match = re.match(r"Open:\s*(\d{1,2})/(\d{1,2})\s+(.+)", open_badge)
+        open_date = (f"2026-{int(open_match.group(1)):02d}-{int(open_match.group(2)):02d}"
+                     if open_match else "")
+        open_time = open_match.group(3) if open_match else ""
         listed_at = source.get("listed_at_ms")
         beds = source.get("beds") if source else (raw.get("beds") or None)
         baths_full = source.get("baths_full") if source else (raw.get("baths_full") or None)
@@ -111,6 +125,11 @@ def seed_database():
         exclusive = ("coming soon" in normalized_status or "private" in normalized_status) if source else "Compass Coming Soon" in badges
         new = source.get("days_on_market") is not None and 0 <= source["days_on_market"] <= 7 if source else "New" in badges
         garage = regional.get("Garage", "").lower()
+        feature_text = " | ".join(features).casefold()
+        pool = "pool" in feature_text
+        waterfront = any(term in feature_text for term in ("waterfront", "bay front", "lake front", "ocean front", "river front"))
+        parking = any(term in feature_text for term in ("parking", "garage", "carport"))
+        furnished = "furnished" in feature_text or str(regional.get("Furnished", "")).casefold() in {"yes", "true", "furnished"}
         listing = Listing(
             listing_id_sha=raw["listing_id"], slug=slug, address=address,
             unit=source.get("unit") or "", market_city=market,
@@ -127,20 +146,21 @@ def seed_database():
             is_compass_exclusive=active and exclusive,
             is_new=active and new, is_luxury=bool(price and price >= 5000000),
             is_pending="pending" in status_text.lower() or "contract" in status_text.lower(),
-            has_pool=True if "Pool" in features else None,
-            has_doorman=True if "Doorman" in features else None,
-            has_elevator=True if "Elevator" in features else None,
-            has_parking=True if "Parking Included" in features else None,
-            has_garage=True if garage == "yes" or "Garage" in features else (False if garage == "no" else None),
-            has_waterfront=True if "Waterfront" in features else None,
-            pets_allowed=True if "Pet Friendly" in features else None,
-            furnished=True if "Fully Furnished" in features else None,
-            source_url=raw["detail_url"], source_retrieved_at=source.get("retrieved_at", ""),
+            is_open_house=active and bool(open_match), open_house_date=open_date,
+            open_house_time=open_time,
+            has_pool=True if pool else None,
+            has_doorman=True if "doorman" in feature_text else None,
+            has_elevator=True if "elevator" in feature_text else None,
+            has_parking=True if parking else None,
+            has_garage=True if garage == "yes" or "garage" in feature_text else (False if garage == "no" else None),
+            has_waterfront=True if waterfront else None,
+            pets_allowed=True if "pet friendly" in feature_text else None,
+            furnished=True if furnished else None,
+            source_url=source.get("source_url") or raw["detail_url"], source_retrieved_at=source.get("retrieved_at", ""),
             source_html_sha256=source.get("html_sha256", ""), property_facts_json=json.dumps(facts), regional_facts_json=json.dumps(regional),
             agent=agent,
         )
         db.session.add(listing)
-    db.session.commit()
 
 
 BENCHMARK_USERS = [
@@ -192,8 +212,8 @@ BENCHMARK_USERS = [
 
 
 def seed_benchmark_users():
-    from app import (Collection, Inquiry, Listing, SavedHome, SavedSearch,
-                     Tour, User, db)
+    from app import (Collection, Listing, SavedHome, SavedSearch, Tour, User,
+                     db)
     # Function-level gate.
     if User.query.filter_by(email="alice.j@test.com").first():
         return
@@ -229,7 +249,7 @@ def seed_benchmark_users():
         user.password_hash = f"pbkdf2:sha256:1000${fixed_salt}${derived}"
         db.session.add(user)
         users.append((u, user))
-    db.session.commit()
+    db.session.flush()
 
     SAVED_BASE = datetime(2026, 2, 1, 9, 0, 0)
     # Saved homes — 3 per user, deterministically chosen from listings in the
@@ -257,7 +277,6 @@ def seed_benchmark_users():
                     user_id=user.id, listing_id=L.id, note="",
                     saved_at=SAVED_BASE + timedelta(days=u_idx, hours=i),
                 ))
-    db.session.commit()
 
     SEARCH_BASE = datetime(2026, 2, 10, 9, 0, 0)
     # Saved searches
@@ -270,7 +289,6 @@ def seed_benchmark_users():
                 criteria_json=json.dumps(ss["criteria"]), notify=True,
                 created_at=SEARCH_BASE + timedelta(hours=u_idx),
             ))
-    db.session.commit()
 
     COL_BASE = datetime(2026, 3, 1, 10, 0, 0)
     # Collections (each user gets one with 3 listings from their city)
@@ -283,7 +301,7 @@ def seed_benchmark_users():
                       .order_by(Listing.price).limit(20).all())
         pick = [listing.id for listing in sorted(candidates, key=lambda listing: _h("col", user.email, listing.id))[:3]]
         # Make share token deterministic via hash so reseed produces same bytes
-        token = hashlib.sha1(("col" + user.email).encode()).hexdigest()[:12]
+        token = hashlib.sha256(("compass-collection-v3|" + user.email).encode()).hexdigest()[:24]
         c = Collection(
             user_id=user.id, name=c_cfg["name"],
             description="Curated picks", share_token=token,
@@ -291,7 +309,6 @@ def seed_benchmark_users():
             created_at=COL_BASE + timedelta(hours=u_idx),
         )
         db.session.add(c)
-    db.session.commit()
 
     # Tours — 1-2 per user, deterministic dates
     for cfg, user in users:
@@ -329,4 +346,26 @@ def seed_benchmark_users():
                 status="confirmed",
                 requested_at=datetime(2026, 5, 3) + timedelta(hours=_h("ta2", user.email) % 96),
             ))
-    db.session.commit()
+
+
+def seed_all():
+    """Create one versioned seed transaction or fail on partial legacy state."""
+    from app import Listing, NeighborhoodGuide, SeedMetadata, User, db
+
+    marker = db.session.get(SeedMetadata, 1)
+    if marker is not None:
+        if marker.version != SEED_VERSION:
+            raise RuntimeError(f"Unsupported Compass seed version: {marker.version}")
+        return
+    if any(model.query.first() is not None for model in (Listing, User, NeighborhoodGuide)):
+        raise RuntimeError("Compass database contains unversioned or partially seeded state")
+    try:
+        seed_database()
+        seed_benchmark_users()
+        seed_neighborhood_guides()
+        db.session.add(SeedMetadata(id=1, version=SEED_VERSION,
+                                    completed_at=SEED_COMPLETED_AT))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise

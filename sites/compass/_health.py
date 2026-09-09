@@ -23,7 +23,12 @@ def run(p):
         'confirm':  user['password'],
     }, accept_status=(200, 302, 303))
 
-    p.get('/logout')
+    html = p.assert_get('account after registration', '/account')
+    token = p.csrf(html)
+    if not token:
+        p.check('logout csrf', False, 'no csrf'); return
+    p.assert_post('logout submit', '/logout', {'csrf_token': token},
+                  accept_status=(200, 302, 303))
     html = p.assert_get('login page', '/login')
     token = p.csrf(html)
     if not token:

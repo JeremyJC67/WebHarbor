@@ -20,7 +20,7 @@
       </dl></section>
       {% if listing.get_features() %}<section class="property-section"><h2>Amenities</h2><ul class="amenities">{% for feature in listing.get_features() %}<li>{{ feature }}</li>{% endfor %}</ul></section>{% endif %}
       {% if listing.is_open_house %}<section class="property-section"><h2>Open house</h2><p>{{ listing.open_house_date }} · {{ listing.open_house_time }}</p></section>{% endif %}
-      <p class="snapshot-note">{% if listing.source_retrieved_at %}Listing snapshot checked {{ listing.source_retrieved_at[:10] }}.{% else %}Archived listing. Only facts supplied by the original source are shown.{% endif %} Availability and pricing may have changed.</p>
+      <p class="snapshot-note">{% if listing.source_retrieved_at %}Listing snapshot checked {{ listing.source_retrieved_at[:10] }}.{% else %}Archived listing. Only facts supplied by the original source are shown.{% endif %} Availability and pricing may have changed. {% if listing.source_url %}<a href="{{ listing.source_url }}" target="_blank" rel="noopener noreferrer">View original source (external) ↗</a>{% endif %}</p>
     </div>
     <aside class="agent-sidebar" aria-label="Property actions">
       <div class="action-stack">

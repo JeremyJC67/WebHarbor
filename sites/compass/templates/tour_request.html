@@ -19,8 +19,8 @@
         <option value="video">Video tour</option>
       </select>
     </div>
-    <div class="field"><label for="field-phone">Phone</label><input id="field-phone" type="tel" name="phone" value="{{ current_user.phone }}"></div>
-    <div class="field"><label for="field-notes">Notes for the agent</label><textarea id="field-notes" name="notes"></textarea></div>
+    <div class="field"><label for="field-phone">Phone</label><input id="field-phone" type="tel" name="phone" value="{{ current_user.phone }}" maxlength="40"></div>
+    <div class="field"><label for="field-notes">Notes for the agent</label><textarea id="field-notes" name="notes" maxlength="2000"></textarea></div>
     <button class="btn" type="submit">Submit request</button>
     <a class="btn outline" href="{{ url_for('listing_detail', slug=listing.slug) }}">Cancel</a>
   </form>

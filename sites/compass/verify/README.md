@@ -1,20 +1,10 @@
 # Compass verification
 
-Each task has one `verify_N.py` entry point and a non-answer-bearing rubric in
-`../tasks.jsonl`. `facts.json` contains the frozen, source-backed answers used
-only by these graders. Task IDs 8 and 9 were retired because their original
-agent-performance and open-house facts could not be supported by sources.
+Each task has one `verify_N.py` entry point and a rubric in `../tasks.jsonl`. Task IDs 8 and 9 remain retired because their original generated agent-performance and unsupported schedule facts could not be grounded. The 19 current tasks use IDs 0–7 and 10–20.
 
-There are 19 tasks: IDs 0–7 and 10–20. Tasks 18–20 cover cancelling an
-existing tour, removing a selected member from an existing collection, and
-submitting a local Sell inquiry using contact information read from an account.
-The confirmation reference is checked against the newly created row, never a
-fixed token. Other rows, collection identity and share links are protected.
+All ground truth is derived from the supplied current `initial_db`. Ranking tasks recompute their complete eligible sets with exact integer ratios, require a unique result, and never trust a committed target ID. Tasks 18–20 derive the relevant tour, collection member, and account profile from the same snapshot. This removes answer-bearing `facts.json` from the agent-visible repository.
 
-Snapshot loading supports historical nine-table runs and the added
-`neighborhood_guides` (keyed by `slug`) and `seller_inquiries` tables. Every
-present table is checked, including for old tasks. Adding or dropping a table
-between before/after snapshots fails; unknown tables are rejected.
+The verifier requires the exact 12-table `compass-source-v3` schema and seed marker. It compares canonical `sqlite_master` definitions and all rows before and after execution. Unknown, missing, added, or altered tables, indexes, triggers, and views fail. Each stateful task allows only its requested row-level transition and preserves every unrelated row.
 
 ```sh
 python sites/compass/verify/verify_0.py \
@@ -23,34 +13,16 @@ python sites/compass/verify/verify_0.py \
   --after_db /path/to/frozen-after.db --no_llm
 ```
 
-Output is JSON with `task_id`, `pass`, `reason`, and `evidence`; exit status is
-0 for PASS and 1 for FAIL. `--no_llm` is accepted for harness compatibility;
-all checks are deterministic. If DB paths are omitted, `--container` (default
-`wh-review`) supplies the seed and live DB through `docker cp`. Use explicit
-frozen paths when scoring past runs, especially after a reset.
+Output is JSON with `task_id`, `pass`, `reason`, and `evidence`; exit status is 0 for PASS and 1 for FAIL. `--no_llm` is accepted for harness compatibility; grading is deterministic. If DB paths are omitted, `--container` supplies the seed and live DB through `docker cp`.
 
-The native run contract is `trajectory.json`, with `task_id`, `start_url`,
-`steps`, `terminated`, `termination_reason` (`agent_done` or `guided_done`),
-and `final_answer`. Each step carries `url`, `action`, screenshot basenames
-`screenshot_before`/`screenshot_after`, and optionally `url_after`.
-Screenshots reside in `screenshots/`. Normal local host aliases are accepted
-at the run's port; external domains, other ports, and paths embedded in query
-strings cannot satisfy navigation checks. The recorder is trusted to record
-the real UI. Screenshot packaging checks do not interpret their pixels or
-replace independent execution review.
+The trajectory contract requires `task_id`, `start_url`, non-empty `steps`, `terminated`, `termination_reason`, and `final_answer`. Every step references basename-only before/after PNGs in `screenshots/`. Images are fully decoded and must be at least 320×200. All recorded navigation must remain on the run's loopback origin and port. Exact path/query checks enforce task-mentioned filters and page sequences; direct detail-page shortcuts do not satisfy ranking workflows.
 
-Checks bind comparison facts to the correct property and use exact DB state
-differences for writes. Existing rows and unrelated tables must be preserved.
-For collection tasks, saving the target homes on a legitimate path through
-Saved Homes is allowed. No grader requires the reviewer's homepage route,
-sort order, number of clicks, or browser viewport. Explicit task requirements
-such as following an agent link or reopening a saved search are checked.
+Answer checks support conventional address abbreviations, grouped numbers, million notation, and natural English. Required assertions reject nearby negation. Multi-property comparisons bind each requested price, area, and year to its property line. Stateful references and share tokens are checked against rows created by that run.
 
-Natural English answers, ordinary address abbreviations, comma grouping,
-million notation, and Markdown rows are supported. Each comparison home must
-have its own line as requested by the task. Rejecting ambiguous or inconsistent
-numeric claims is intentional; no hidden LLM call repairs an answer.
+Run the current regression suite from the repository root:
 
-Run the synthetic regression suite with `python -m pytest
-sites/compass/verify`. These fixtures are not browser runs
-and cannot establish that a task is solvable through the UI.
+```sh
+uv run --with pytest --with pillow python -m pytest sites/compass/verify -q
+```
+
+The suite executes every verifier through `grade()` against full current databases and covers positive outcomes, answer-only shortcuts, wrong task IDs, foreign origins, missing filters, negated claims, unrelated writes, schema changes, truncated screenshots, no-op stateful runs, and incomplete comparisons. These tests complement, but do not replace, real browser execution.

@@ -2,7 +2,6 @@
 import importlib
 import json
 import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -50,15 +49,16 @@ def test_listing_title_does_not_contain_share_dialog_markup(client):
 @pytest.mark.parametrize("route", ["/login", "/register", "/account/edit", "/account/preferences",
                                    "/account/change-password", "/tour/1", "/inquiry/1",
                                    "/collections/new", "/saved-searches"])
-def test_form_labels_identify_their_controls(client, route):
+def test_every_visible_form_control_has_an_accessible_name(client, route):
     from html.parser import HTMLParser
 
-    class Labels(HTMLParser):
+    class Controls(HTMLParser):
         def __init__(self):
             super().__init__()
             self.ids = set()
-            self.labels = []
-            self.active = None
+            self.labels_for = set()
+            self.label_depth = 0
+            self.controls = []
 
         def handle_starttag(self, tag, attributes):
             attrs = dict(attributes)
@@ -66,23 +66,25 @@ def test_form_labels_identify_their_controls(client, route):
                 assert attrs["id"] not in self.ids, "duplicate control id"
                 self.ids.add(attrs["id"])
             if tag == "label":
-                self.active = {"for": attrs.get("for"), "wrapped": False}
-            if tag in {"input", "select", "textarea"} and self.active is not None:
-                self.active["wrapped"] = True
+                self.label_depth += 1
+                if attrs.get("for"):
+                    self.labels_for.add(attrs["for"])
+            if tag in {"input", "select", "textarea"} and attrs.get("type") not in {"hidden", "submit"}:
+                self.controls.append((attrs.get("id"), bool(attrs.get("aria-label") or attrs.get("aria-labelledby")), self.label_depth > 0))
 
         def handle_endtag(self, tag):
-            if tag == "label" and self.active is not None:
-                self.labels.append(self.active)
-                self.active = None
+            if tag == "label":
+                self.label_depth = max(0, self.label_depth - 1)
 
     if route not in {"/login", "/register"}:
         login(client)
-    parser = Labels()
+    parser = Controls()
     response = client.get(route)
     assert response.status_code == 200
     parser.feed(response.get_data(as_text=True))
-    assert parser.labels
-    assert all(label["wrapped"] or label["for"] in parser.ids for label in parser.labels)
+    assert parser.controls
+    assert all(has_aria or wrapped or (control_id and control_id in parser.labels_for)
+               for control_id, has_aria, wrapped in parser.controls)
 
 
 @pytest.mark.parametrize("target", ["https://foreign.example/", "//foreign.example/", "/\\foreign.example/", "https://localhost.evil.example/"])
@@ -163,8 +165,8 @@ def test_foreign_objects_cannot_be_modified(client):
     for path in ("/collections/1/add/1","/collections/1/remove/2","/collections/1/delete","/tour/1/cancel"):
         assert client.post(path).status_code==404
     with m.app.app_context():
-        assert m.Collection.query.get(1).get_listing_ids()==[2]
-        assert m.Tour.query.get(1).status=="requested"
+        assert m.db.session.get(m.Collection, 1).get_listing_ids()==[2]
+        assert m.db.session.get(m.Tour, 1).status=="requested"
 
 
 def test_collection_can_be_populated_from_listing_ui(client):
@@ -280,9 +282,9 @@ def test_seller_lead_persists_and_confirmation_belongs_to_browser(client):
             'Taylor Test', 'taylor@example.com', '+1 (212) 555-0199', '10011')
         reference = lead.reference
         assert (m.User.query.count(), m.Listing.query.count(), m.Inquiry.query.count()) == original_counts
-    for _ in range(2):
-        html = client.get('/sell/').get_data(as_text=True)
-        assert reference in html and 'Saved in this local environment' in html
+    html = client.get('/sell/').get_data(as_text=True)
+    assert reference in html and 'Saved in this local environment' in html
+    assert reference not in client.get('/sell/').get_data(as_text=True)
     assert reference not in m.app.test_client().get('/sell/').get_data(as_text=True)
     with m.app.app_context():
         assert m.SellerInquiry.query.count() == 1
@@ -344,3 +346,66 @@ def test_neighborhood_pages_read_seed_and_keep_every_directory_link_local(client
         assert [card['source_url'] for card in guide['cards']] == [
             link for link in links.links if link.startswith(guide['source_url']) and link != guide['source_url']]
         assert not any(link.startswith('/listing/') for link in links.links)
+
+
+def test_profile_input_limits_are_server_enforced_and_atomic(client):
+    login(client)
+    with m.app.app_context():
+        user = m.User.query.filter_by(email='alice@example.com').one()
+        before = (user.name, user.phone, user.city, user.state)
+    response = client.post('/account/edit', data={
+        'name': 'x' * 121, 'phone': 'abc', 'city': 'y' * 81, 'state': 'California'})
+    assert response.status_code == 400
+    with m.app.app_context():
+        user = m.User.query.filter_by(email='alice@example.com').one()
+        assert (user.name, user.phone, user.city, user.state) == before
+
+
+@pytest.mark.parametrize('route,data,model', [
+    ('/saved-searches', {'name': 'x' * 121, 'city': 'Boston'}, m.SavedSearch),
+    ('/collections/new', {'name': 'x' * 121, 'description': 'x' * 2001}, m.Collection),
+    ('/tour/1', {'date': '2026-07-12', 'time': '11:00 AM', 'tour_type': 'in-person', 'phone': 'abc'}, m.Tour),
+    ('/inquiry/1', {'subject': 'x' * 161, 'message': 'hello', 'phone': 'abc'}, m.Inquiry),
+])
+def test_persistent_forms_reject_oversized_or_malformed_values(client, route, data, model):
+    login(client)
+    with m.app.app_context():
+        before = model.query.count()
+    response = client.post(route, data=data)
+    assert response.status_code == 400
+    with m.app.app_context():
+        assert model.query.count() == before
+
+
+def test_request_body_limit_is_enforced(client):
+    response = client.post('/register', data=b'x' * (257 * 1024),
+                           content_type='application/x-www-form-urlencoded')
+    assert response.status_code == 413
+
+
+def test_login_form_preserves_safe_next_query(client):
+    page = client.get('/login?next=/saved?tab=homes').get_data(as_text=True)
+    assert 'action="/login?next=/saved?tab%3Dhomes"' in page
+
+
+@pytest.mark.parametrize('url', [
+    '/search?pool=0', '/search?garage=false', '/search?beds=many',
+    '/search?price_max=-1', '/search?year_built_min=9999',
+    '/search?property_type=invalid', '/search?status=invalid',
+    '/search?sort=invalid', '/search?beds=2&beds=3',
+    '/homes-for-sale/san-francisco-ca/?sort=invalid',
+    '/agents?city=%25', '/agents?city=Boston&city=Miami',
+    '/open-houses?city=_', '/open-houses?city=Boston&city=Miami',
+])
+def test_malformed_public_filters_fail_closed(client, url):
+    assert client.get(url).status_code == 400
+
+
+def test_collection_membership_json_validation_is_consistent(client):
+    with m.app.app_context():
+        collection = m.Collection(user_id=1, name='Broken', share_token='broken-token',
+                                  listing_ids_json='{"not":"a list"}')
+        with pytest.raises(ValueError, match='membership'):
+            collection.get_listing_ids()
+        with pytest.raises(ValueError, match='membership'):
+            collection.set_listing_ids([1, 1])
