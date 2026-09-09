@@ -74,6 +74,20 @@ class VerifyTask17Tests(VerifierTestCase):
         after = State(); after.add_application("CP-2503-11505", 1, "someone@else.com", "479-555-0134")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'new_application_belongs_to_alice')
 
+    def test_preexisting_target_application_fails(self) -> None:
+        initial = State(); initial.add_application("CP-2503-11505", 1, "alice.j@test.com", "479-555-0134")
+        after = State(); after.add_application("CP-2503-11505", 1, "alice.j@test.com", "479-555-0134")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), "initial_has_no_alice_application_for_target")
+
+    def test_saved_role_mutation_fails(self) -> None:
+        after = genuine_after()
+        after.remove_saved(1, "CP-9046-10913")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "saved_jobs_unchanged")
+
+    def test_missing_confirm_page_fails(self) -> None:
+        steps = [item for item in GENUINE_STEPS if not item["url"].endswith("/apply/confirm")]
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), "visited_apply_confirm_page")
+
 
 if __name__ == "__main__":
     unittest.main()

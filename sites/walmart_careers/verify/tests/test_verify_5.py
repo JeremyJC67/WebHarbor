@@ -59,20 +59,17 @@ class VerifyTask5Tests(VerifierTestCase):
         after.add_saved(2, "CP-5991-12522")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'read_only_saved_jobs_unchanged')
 
-    def test_location_only_results_gate_passes(self) -> None:
+    def test_location_only_results_gate_fails(self) -> None:
         steps = [step("/"), step("/results?q=engineer&loc=hoboken&radius=25"), step("/jobs/R-2411489", "done")]
-        self.assertPasses(self.verdict(steps, ANSWER))
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
     def test_plain_search_results_fail_gate(self) -> None:
         steps = [step("/"), step("/results?q=senior+software+engineer"), step("/jobs/R-2411489", "done")]
-        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_technology_or_hoboken")
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
-    def test_typed_search_naming_hoboken_or_technology_passes_gate(self) -> None:
-        # Real gpt-5.4-mini run: header search "Technology Hoboken, NJ" -> ?q=
+    def test_typed_search_without_filters_fails_gate(self) -> None:
         steps = [step("/"), step("/results?q=Technology+Hoboken%2C+NJ"), step("/jobs/R-2411489", "done")]
-        self.assertPasses(self.verdict(steps, ANSWER))
-        steps = [step("/"), step("/results?searchQuery=technology+full+time"), step("/jobs/R-2411489", "done")]
-        self.assertPasses(self.verdict(steps, ANSWER))
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
 
 if __name__ == "__main__":

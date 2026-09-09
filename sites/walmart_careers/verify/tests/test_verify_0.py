@@ -66,6 +66,33 @@ class VerifyTask0Tests(VerifierTestCase):
         steps = [step("/"), step("/jobs/CP-5991-12522", "done")]
         self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_optician_search")
 
+    def test_unterminated_run_fails(self) -> None:
+        verdict = self.verdict(GENUINE_STEPS, ANSWER, trajectory_updates={"terminated": False})
+        self.assertFailsOn(verdict, "trajectory_completed")
+
+    def test_mixed_origin_run_fails(self) -> None:
+        verdict = self.verdict(GENUINE_STEPS, ANSWER, trajectory_updates={"start_url": "http://127.0.0.1:41023/"})
+        self.assertFailsOn(verdict, "all_urls_match_local_origin")
+
+    def test_corrupt_screenshot_fails(self) -> None:
+        verdict = self.verdict(GENUINE_STEPS, ANSWER, corrupt_screenshot=True)
+        self.assertFailsOn(verdict, "screenshots_decode")
+
+    def test_schema_change_fails_closed(self) -> None:
+        after = State()
+        after.extra_sql.append("CREATE TABLE injected(id INTEGER PRIMARY KEY)")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "snapshot_contract_invalid")
+
+    def test_catalog_change_fails_closed(self) -> None:
+        after = State()
+        after.extra_sql.append("UPDATE jobs SET title='tampered' WHERE job_id='CP-5991-12522'")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "snapshot_contract_invalid")
+
+    def test_wrong_seed_marker_fails_closed(self) -> None:
+        initial = State()
+        initial.extra_sql.append("UPDATE seed_metadata SET value='wrong' WHERE key='version'")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial), "snapshot_contract_invalid")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -34,6 +34,9 @@ for site in sites/*/; do
             warnings=$((warnings + 1))
         fi
     done
+    if [[ -f "sites/$s/asset_inventory.json" ]]; then
+        python3 scripts/check_asset_inventory.py "sites/$s"
+    fi
 done
 
 if (( missing > 0 )); then

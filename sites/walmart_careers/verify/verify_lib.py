@@ -10,6 +10,8 @@ model. Ground truth lives only inside the per-task ``verify_N.py`` files.
 from __future__ import annotations
 
 import argparse
+import atexit
+import hashlib
 import ipaddress
 import json
 import os
@@ -22,6 +24,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 from urllib.parse import parse_qs, urlparse
+
+from PIL import Image
 
 
 SITE = "walmart_careers"
@@ -73,6 +77,7 @@ def load_run(run_dir: str | os.PathLike[str]) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError("trajectory.json must contain a JSON object")
+    data["_run_dir"] = str(Path(run_dir).resolve())
     return data
 
 
@@ -93,10 +98,8 @@ def final_url(trajectory: dict[str, Any]) -> str:
 def trajectory_urls(trajectory: dict[str, Any]) -> list[str]:
     """Return every browser URL recorded by supported trajectory producers."""
     urls: list[str] = []
-    for key in ("start_url", "final_url"):
-        value = trajectory.get(key)
-        if value:
-            urls.append(str(value))
+    if trajectory.get("start_url"):
+        urls.append(str(trajectory["start_url"]))
     for step in trajectory.get("steps") or []:
         if not isinstance(step, dict):
             continue
@@ -104,6 +107,8 @@ def trajectory_urls(trajectory: dict[str, Any]) -> list[str]:
             value = step.get(key)
             if value:
                 urls.append(str(value))
+    if trajectory.get("final_url"):
+        urls.append(str(trajectory["final_url"]))
     return urls
 
 
@@ -115,7 +120,7 @@ def normalized_url_path(url: str) -> str:
 def is_walmart_careers_site_url(url: str) -> bool:
     """Accept HTTP(S) URLs on a loopback host while allowing any port.
 
-    Runs hit the alt-port container (41022) while tasks.jsonl says 40022, so
+    Runs hit the alt-port container (41023) while tasks.jsonl says 40023, so
     the port is deliberately not checked.
     """
     parsed = urlparse(str(url or ""))
@@ -210,10 +215,25 @@ def _param_matches(query: dict[str, list[str]], key: str, expected: Any) -> bool
         values += query.get("searchQuery") or []
     elif key == "searchQuery":
         values += query.get("q") or []
-    if key in TEXT_PARAMS or key not in FACET_PARAMS:
+    if key in TEXT_PARAMS:
         if isinstance(expected, re.Pattern):
             return any(expected.search(normalize_text(v)) for v in values)
-        return any(normalize_text(expected) in normalize_text(v) for v in values if v)
+        expected_text = normalize_text(expected)
+        if key == "loc":
+            return any(
+                normalize_text(value) == expected_text
+                or normalize_text(value).startswith(expected_text + ",")
+                for value in values if value
+            )
+        expected_tokens = set(re.findall(r"[a-z0-9]+", expected_text))
+        return bool(expected_tokens) and any(
+            expected_tokens <= set(re.findall(r"[a-z0-9]+", normalize_text(value)))
+            for value in values if value
+        )
+    if key not in FACET_PARAMS:
+        if isinstance(expected, re.Pattern):
+            return any(expected.fullmatch(normalize_text(value)) for value in values)
+        return any(normalize_text(expected) == normalize_text(value) for value in values)
     if isinstance(expected, re.Pattern):
         return any(expected.search(v) for v in values)
     return str(expected) in values
@@ -233,14 +253,32 @@ def normalize_text(value: Any) -> str:
     return re.sub(r"\s+", " ", text).strip().casefold()
 
 
+def _match_is_affirmative(text: str, match: re.Match[str]) -> bool:
+    before = re.split(r"[.!?;:\n]+|\b(?:but|however|instead)\b", text[:match.start()], flags=re.I)[-1]
+    after = text[match.end():]
+    return not re.search(r"\b(?:not|no|never|without|wrong|incorrect|isn't|wasn't|isnt|wasnt)\b", before, re.I) and not re.match(
+        r"\s*(?:is|was|are|were)?\s*(?:not|wrong|incorrect)\b", after, re.I
+    )
+
+
+def _affirmative_search(pattern: str, text: str, flags: int = 0) -> bool:
+    return any(_match_is_affirmative(text, match) for match in re.finditer(pattern, text, flags))
+
+
 def contains_all(text: Any, expected: Iterable[Any]) -> bool:
     normalized = normalize_text(text)
-    return all(normalize_text(value) in normalized for value in expected)
+    return all(
+        bool(value_text) and _affirmative_search(re.escape(value_text), normalized)
+        for value_text in (normalize_text(value) for value in expected)
+    )
 
 
 def contains_any(text: Any, expected: Iterable[Any]) -> bool:
     normalized = normalize_text(text)
-    return any(normalize_text(value) in normalized for value in expected)
+    return any(
+        bool(value_text) and _affirmative_search(re.escape(value_text), normalized)
+        for value_text in (normalize_text(value) for value in expected)
+    )
 
 
 DASH = r"[-‐‑‒–—−]"
@@ -255,7 +293,7 @@ def contains_req_id(text: Any, job_id: str) -> bool:
     raw = unicodedata.normalize("NFKC", str(text or ""))
     parts = [re.escape(part) for part in str(job_id).split("-") if part]
     pattern = r"(?<![A-Z0-9])" + rf"\s*{DASH}\s*".join(parts) + r"(?![0-9])"
-    return bool(re.search(pattern, raw, re.I))
+    return _affirmative_search(pattern, raw, re.I)
 
 
 def contains_hashtag(text: Any, tag: str) -> bool:
@@ -263,7 +301,7 @@ def contains_hashtag(text: Any, tag: str) -> bool:
     expected = normalize_text(tag)
     if not expected.startswith("#"):
         expected = "#" + expected
-    return bool(re.search(r"(?<!\w)" + re.escape(expected) + r"(?!\w)", normalized))
+    return _affirmative_search(r"(?<!\w)" + re.escape(expected) + r"(?!\w)", normalized)
 
 
 _MERIDIEM = {"am": r"a\.?\s*m\b\.?", "pm": r"p\.?\s*m\b\.?"}
@@ -299,7 +337,7 @@ def _clock_pattern(value: str) -> str:
 
 def contains_clock_time(text: Any, value: str) -> bool:
     normalized = normalize_text(text)
-    return bool(re.search(_clock_pattern(value), normalized))
+    return _affirmative_search(_clock_pattern(value), normalized)
 
 
 def contains_shift_window(text: Any, start: str, end: str) -> bool:
@@ -356,7 +394,7 @@ def _standalone_integer(text: str, number: int, allow_hash: bool = False) -> boo
     real agents write the count that way (nano runs on tasks 3 and 4)."""
     forbidden = r"[\d.,]" if allow_hash else r"[\d.,#]"
     pattern = rf"(?<!{forbidden}){number}(?!\d|[.,]\d|\s*(?:st|nd|rd|th)\b)"
-    return bool(re.search(pattern, text))
+    return _affirmative_search(pattern, text)
 
 
 def contains_count(text: Any, number: int) -> bool:
@@ -366,7 +404,32 @@ def contains_count(text: Any, number: int) -> bool:
     if _standalone_integer(masked, int(number)):
         return True
     word = _NUMBER_WORDS.get(int(number))
-    return bool(word and re.search(rf"\b{word}\b", normalize_text(text)))
+    normalized = normalize_text(text)
+    return bool(word and _affirmative_search(rf"\b{word}\b", normalized))
+
+
+def contains_positions_count(text: Any, number: int) -> bool:
+    normalized = normalize_text(text)
+    word = _NUMBER_WORDS.get(int(number))
+    values = [str(int(number))] + ([word] if word else [])
+    patterns = []
+    for value in values:
+        escaped = re.escape(value)
+        patterns.extend([
+            rf"(?<!\w){escaped}(?!\w)\s+(?:(?:open\s+)?positions?|openings?)\b",
+            rf"\b(?:(?:open\s+)?positions?|openings?)\s*(?::|=|is|are)?\s*(?<!\w){escaped}(?!\w)",
+        ])
+    return any(_affirmative_search(pattern, normalized) for pattern in patterns)
+
+
+def contains_years_count(text: Any, number: int) -> bool:
+    normalized = normalize_text(text)
+    word = _NUMBER_WORDS.get(int(number))
+    values = [str(int(number))] + ([word] if word else [])
+    return any(
+        _affirmative_search(rf"(?<!\w){re.escape(value)}(?!\w)\s+years?\b", normalized)
+        for value in values
+    )
 
 
 def mentions_store_number(text: Any, number: int | str) -> bool:
@@ -409,17 +472,17 @@ def contains_street(text: Any, street: str) -> bool:
         token = token.rstrip(".")
         if token in _DIRECTIONALS:
             alternatives = "|".join(re.escape(a) for a in _DIRECTIONALS[token])
-            parts.append(rf"(?:[\s,.]+(?:{alternatives})\b\.?)?")
+            parts.append(rf"[\s,.]+(?:{alternatives})\b\.?")
         elif token in _SUFFIXES:
             alternatives = "|".join(re.escape(a) for a in _SUFFIXES[token])
-            parts.append(rf"(?:[\s,.]+(?:{alternatives})\b\.?)?")
+            parts.append(rf"[\s,.]+(?:{alternatives})\b\.?")
         elif re.fullmatch(r"[\d.]+", token):
             separator = "" if index == 0 else r"[\s,.]+"
             parts.append(rf"{separator}(?<![\d.]){re.escape(token)}(?![\d.])")
         else:
             separator = "" if index == 0 else r"[\s,.]+"
             parts.append(rf"{separator}\b{re.escape(token)}\b")
-    return bool(re.search("".join(parts), normalized))
+    return _affirmative_search("".join(parts), normalized)
 
 
 def digits_only(value: Any) -> str:
@@ -433,7 +496,12 @@ def extract_confirmation_numbers(text: Any) -> set[str]:
 
 
 def contains_confirmation_number(text: Any, confirmation_no: str) -> bool:
-    return str(confirmation_no or "").upper() in extract_confirmation_numbers(text)
+    expected = str(confirmation_no or "").upper()
+    raw = unicodedata.normalize("NFKC", str(text or ""))
+    parts = [re.escape(part) for part in expected.split("-") if part]
+    if not parts:
+        return False
+    return _affirmative_search(r"(?<![A-Za-z0-9])" + rf"\s*{DASH}\s*".join(parts) + r"(?!\d)", raw, re.I)
 
 
 # --------------------------------------------------------------------------- #
@@ -483,17 +551,79 @@ def fail_closed(task_id: str, reason: str, detail: str) -> None:
     raise SystemExit(1)
 
 
+def _same_local_origin(url: str, start_url: str) -> bool:
+    try:
+        observed = urlparse(str(url or ""))
+        start = urlparse(str(start_url or ""))
+        return (
+            observed.scheme == start.scheme == "http"
+            and observed.hostname is not None
+            and start.hostname is not None
+            and not observed.username
+            and not observed.password
+            and observed.port == start.port
+            and observed.hostname.casefold() == start.hostname.casefold()
+            and is_walmart_careers_site_url(url)
+        )
+    except ValueError:
+        return False
+
+
+def _screenshots_decode(trajectory: dict[str, Any]) -> tuple[bool, str]:
+    root = Path(str(trajectory.get("_run_dir") or ""))
+    steps = trajectory.get("steps")
+    if not root.is_dir() or not isinstance(steps, list) or not steps:
+        return False, "run directory or steps are missing"
+    checked = 0
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            return False, f"step {index} is not an object"
+        for key in ("screenshot_before", "screenshot_after"):
+            name = step.get(key)
+            relative = Path(str(name or ""))
+            if not name or relative.is_absolute() or ".." in relative.parts:
+                return False, f"step {index} has unsafe {key}"
+            candidates = (root / "screenshots" / relative, root / relative)
+            path = next((item for item in candidates if item.is_file()), None)
+            if path is None:
+                return False, f"step {index} is missing {key}={name!r}"
+            try:
+                with Image.open(path) as image:
+                    image.load()
+                    if image.format != "PNG" or image.width < 1 or image.height < 1:
+                        return False, f"step {index} {key} is not a nonempty PNG"
+            except Exception as exc:
+                return False, f"step {index} {key} cannot decode: {type(exc).__name__}"
+            checked += 1
+    return True, f"decoded {checked} PNG screenshots"
+
+
 def check_trajectory_identity(judge: Judge, trajectory: dict[str, Any], task_id: str) -> None:
-    judge.check(
-        "trajectory_task_matches",
-        trajectory_task_matches(trajectory, task_id),
-        f"expected_task_id={task_id!r}, observed_task_id={trajectory.get('task_id')!r}",
-    )
     judge.check(
         "final_answer_nonempty",
         bool(final_answer(trajectory)),
         f"final_answer={final_answer(trajectory)!r}",
     )
+    judge.check(
+        "trajectory_task_matches",
+        trajectory_task_matches(trajectory, task_id),
+        f"expected_task_id={task_id!r}, observed_task_id={trajectory.get('task_id')!r}",
+    )
+    steps = trajectory.get("steps")
+    judge.check(
+        "trajectory_completed",
+        trajectory.get("terminated") is True and trajectory.get("termination_reason") == "agent_done",
+        f"terminated={trajectory.get('terminated')!r}, reason={trajectory.get('termination_reason')!r}",
+    )
+    judge.check("trajectory_has_steps", isinstance(steps, list) and bool(steps), f"steps={len(steps) if isinstance(steps, list) else 'invalid'}")
+    recorded = trajectory_urls(trajectory)
+    judge.check(
+        "all_urls_match_local_origin",
+        bool(recorded) and all(_same_local_origin(url, trajectory.get("start_url", "")) for url in recorded),
+        f"start_url={trajectory.get('start_url')!r}, recorded_urls={recorded!r}",
+    )
+    screenshots_ok, screenshot_evidence = _screenshots_decode(trajectory)
+    judge.check("screenshots_decode", screenshots_ok, screenshot_evidence)
 
 
 def check_signed_in_as(judge: Judge, trajectory: dict[str, Any], email: str) -> None:
@@ -519,6 +649,29 @@ def check_visited_job_detail(judge: Judge, trajectory: dict[str, Any], job_id: s
         job_detail_visited(trajectory, job_id),
         f"required_path=/jobs/{job_id}",
     )
+
+
+def check_paths_in_order(
+    judge: Judge,
+    trajectory: dict[str, Any],
+    name: str,
+    requirements: Sequence[tuple[str, dict[str, Any]]],
+) -> bool:
+    urls = site_urls(trajectory)
+    cursor = 0
+    for expected_path, params in requirements:
+        expected = normalized_url_path(expected_path)
+        for index in range(cursor, len(urls)):
+            url = urls[index]
+            query = parse_qs(urlparse(url).query, keep_blank_values=True)
+            if normalized_url_path(url) == expected and all(
+                _param_matches(query, key, value) for key, value in params.items()
+            ):
+                cursor = index + 1
+                break
+        else:
+            return judge.check(name, False, f"requirements={requirements!r}, observed={urls!r}")
+    return judge.check(name, True, f"requirements={requirements!r}")
 
 
 def check_results_visited(
@@ -569,6 +722,7 @@ def fetch_db(container: str, kind: str) -> str:
         Path(destination).unlink(missing_ok=True)
         detail = result.stderr.strip() or result.stdout.strip()
         raise RuntimeError(f"could not copy {source}: {detail}")
+    atexit.register(Path(destination).unlink, missing_ok=True)
     return destination
 
 
@@ -582,8 +736,46 @@ def resolve_db(explicit_path: str | None, container: str, kind: str) -> str | No
         return None
 
 
+EXPECTED_TABLES = {"application_drafts", "applications", "areas", "categories", "jobs", "saved_jobs", "seed_metadata", "stores", "users"}
+IMMUTABLE_TABLES = ("areas", "categories", "stores", "jobs", "seed_metadata", "application_drafts")
+
+
+def _schema_objects(db_path: str) -> list[tuple[Any, ...]]:
+    return [
+        tuple(row)
+        for row in db_query(
+            db_path,
+            "SELECT type, name, tbl_name, sql FROM sqlite_schema "
+            "WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY type, name",
+        )
+    ]
+
+
+def _validate_snapshot_contract(initial_db: str, after_db: str) -> None:
+    initial_tables = {row["name"] for row in db_query(initial_db, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+    after_tables = {row["name"] for row in db_query(after_db, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+    if initial_tables != EXPECTED_TABLES or after_tables != EXPECTED_TABLES:
+        raise ValueError(f"unexpected tables: initial={sorted(initial_tables)}, after={sorted(after_tables)}")
+    initial_schema = _schema_objects(initial_db)
+    if initial_schema != _schema_objects(after_db):
+        raise ValueError("initial and after database schemas differ")
+    schema_hash = hashlib.sha256(json.dumps(initial_schema, separators=(",", ":")).encode()).hexdigest()
+    if schema_hash != "6067cd253ea017c494c5b3efacccd6e8068b5ff40709f9c17f80b45f4a69bebf":
+        raise ValueError(f"unsupported Walmart Careers schema hash: {schema_hash}")
+    marker = db_query(initial_db, "SELECT value FROM seed_metadata WHERE key='version'")
+    if len(marker) != 1 or marker[0]["value"] != "walmart-careers-v2":
+        raise ValueError("initial database seed version is missing or unsupported")
+    expected_counts = {"areas": 7, "categories": 33, "stores": 51, "jobs": 246, "users": 4, "application_drafts": 0}
+    observed = {table: len(table_rows(initial_db, table)) for table in expected_counts}
+    if observed != expected_counts:
+        raise ValueError(f"initial database counts differ: expected={expected_counts}, observed={observed}")
+    changed = [table for table in IMMUTABLE_TABLES if table_rows(initial_db, table) != table_rows(after_db, table)]
+    if changed:
+        raise ValueError(f"immutable catalog tables changed: {changed}")
+
+
 def resolve_snapshots(args: VerifyArgs, task_id: str) -> tuple[str, str]:
-    """Return (initial_db, after_db) or fail closed."""
+    """Return validated (initial_db, after_db) snapshots or fail closed."""
     initial_db = resolve_db(args.initial_db, args.container, "instance_seed")
     after_db = resolve_db(args.after_db, args.container, "instance")
     if not initial_db or not after_db:
@@ -592,6 +784,13 @@ def resolve_snapshots(args: VerifyArgs, task_id: str) -> tuple[str, str]:
             "database_unavailable",
             "both initial and after walmart_careers database snapshots are required",
         )
+    try:
+        _validate_snapshot_contract(str(initial_db), str(after_db))
+        from ground_truth import task_ground_truth
+        task_number = int(task_id.rsplit("--", 1)[1])
+        task_ground_truth(str(initial_db), task_number)
+    except (ImportError, OSError, sqlite3.Error, ValueError) as exc:
+        fail_closed(task_id, "snapshot_contract_invalid", str(exc))
     return str(initial_db), str(after_db)
 
 
@@ -694,6 +893,17 @@ def table_counts(db_path: str, tables: Iterable[str] = READ_ONLY_TABLES) -> dict
     return {table: len(table_rows(db_path, table)) for table in tables}
 
 
+def table_delta(initial_db: str, after_db: str, table: str) -> dict[str, list[Any]]:
+    before = {int(row[0]): row for row in table_rows(initial_db, table)}
+    after = {int(row[0]): row for row in table_rows(after_db, table)}
+    common = before.keys() & after.keys()
+    return {
+        "added": [after[key] for key in sorted(after.keys() - before.keys())],
+        "removed": [before[key] for key in sorted(before.keys() - after.keys())],
+        "changed": [(before[key], after[key]) for key in sorted(common) if before[key] != after[key]],
+    }
+
+
 def tables_unchanged(initial_db: str, after_db: str, tables: Iterable[str]) -> dict[str, bool]:
     return {
         table: table_rows(initial_db, table) == table_rows(after_db, table) for table in tables
@@ -725,4 +935,3 @@ def check_tables_unchanged(
 def check_read_only(judge: Judge, initial_db: str, after_db: str) -> None:
     """Read-only tasks: users, saved_jobs and applications must be row-identical."""
     check_tables_unchanged(judge, initial_db, after_db, READ_ONLY_TABLES, prefix="read_only_")
-

@@ -34,9 +34,14 @@ STREET = "2101 SE Simple Savings Dr"
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
-    check_results_visited(judge, trajectory, "visited_results_intern_filter", {"type": "Intern"})
+    check_results_visited(
+        judge, trajectory, "visited_results_required_filters",
+        {"area": "students", "type": "Intern", "brand": "Sam's Club"},
+    )
     check_visited_job_detail(judge, trajectory, JOB_ID)
     judge.check(
         "answer_has_worker_type_chip",

@@ -18,7 +18,7 @@ from verify_lib import (  # noqa: E402
     check_trajectory_identity,
     check_visited_job_detail,
     check_visited_path,
-    contains_count,
+    contains_positions_count,
     contains_req_id,
     contains_shift_window,
     fail_closed,
@@ -39,12 +39,23 @@ POSITIONS = 4
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_visited_path(judge, trajectory, "visited_supply_chain_area_page", AREA_PATH)
     check_results_visited(judge, trajectory, "visited_drivers_category_results", {"category": "drivers"})
     check_visited_job_detail(judge, trajectory, JOB_ID)
     check_visited_job_detail(judge, trajectory, LOSER_ID)
+    from verify_lib import check_paths_in_order
+    check_paths_in_order(
+        judge, trajectory, "winner_workflow_in_order",
+        [(AREA_PATH, {}), ("/results", {"category": "drivers"}), (f"/jobs/{JOB_ID}", {})],
+    )
+    check_paths_in_order(
+        judge, trajectory, "comparison_workflow_in_order",
+        [(AREA_PATH, {}), ("/results", {"category": "drivers"}), (f"/jobs/{LOSER_ID}", {})],
+    )
     judge.check(
         "answer_has_requisition_id",
         contains_req_id(answer, JOB_ID),
@@ -57,7 +68,7 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     )
     judge.check(
         "answer_has_positions_count",
-        contains_count(answer, POSITIONS),
+        contains_positions_count(answer, POSITIONS),
         f"expected={POSITIONS!r}, answer={answer!r}",
     )
     judge.check(

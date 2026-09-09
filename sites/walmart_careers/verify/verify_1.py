@@ -17,7 +17,6 @@ from verify_lib import (  # noqa: E402
     check_trajectory_identity,
     check_visited_job_detail,
     contains_all,
-    contains_any,
     fail_closed,
     final_answer,
     load_run,
@@ -28,25 +27,26 @@ from verify_lib import (  # noqa: E402
 
 TASK_ID = "Walmart Careers--1"
 JOB_ID = "R-2468347"
-OPTION_2_YEARS = "7 years"
-OPTION_2_CORE = "operating search or ML-serving systems in production"
-OPTION_1_MARKERS = ("5 years", "bachelor")
+OPTION_2_EXACT = "7 years' experience in software engineering or related area, including experience operating search or ML-serving systems in production."
+OPTION_1_EXACT = "Option 1: Bachelor's degree in computer science, computer engineering, computer information systems, software engineering, or related area and 5 years' experience in software engineering or related area, including experience operating search or ML-serving systems in production."
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_visited_job_detail(judge, trajectory, JOB_ID)
     judge.check(
         "answer_quotes_option_2",
-        contains_all(answer, [OPTION_2_YEARS, OPTION_2_CORE]),
-        f"expected_fragments={[OPTION_2_YEARS, OPTION_2_CORE]!r}, answer={answer!r}",
+        contains_all(answer, [OPTION_2_EXACT]),
+        f"expected_exact_option={OPTION_2_EXACT!r}, answer={answer!r}",
     )
-    quoted_option_1 = contains_any(answer, OPTION_1_MARKERS) and not contains_all(answer, [OPTION_2_YEARS])
+    quoted_option_1_only = contains_all(answer, [OPTION_1_EXACT]) and not contains_all(answer, [OPTION_2_EXACT])
     judge.check(
         "answer_is_not_option_1",
-        not quoted_option_1,
-        f"option_1_markers={OPTION_1_MARKERS!r}, answer={answer!r}",
+        not quoted_option_1_only,
+        f"option_1={OPTION_1_EXACT!r}, answer={answer!r}",
     )
     check_read_only(judge, initial_db, after_db)
 

@@ -18,7 +18,7 @@ from verify_lib import (  # noqa: E402
     check_trajectory_identity,
     check_visited_job_detail,
     check_visited_path,
-    contains_count,
+    contains_positions_count,
     contains_hashtag,
     fail_closed,
     final_answer,
@@ -36,6 +36,8 @@ POSITIONS = 2
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_visited_path(judge, trajectory, "visited_healthcare_area_page", AREA_PATH)
@@ -47,6 +49,11 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
         {"area": "healthcare"},
     )
     check_visited_job_detail(judge, trajectory, JOB_ID)
+    from verify_lib import check_paths_in_order
+    check_paths_in_order(
+        judge, trajectory, "workflow_in_order",
+        [(AREA_PATH, {}), ("/results", {"area": "healthcare"}), (f"/jobs/{JOB_ID}", {})],
+    )
     judge.check(
         "answer_has_hashtag",
         contains_hashtag(answer, HASHTAG),
@@ -54,7 +61,7 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     )
     judge.check(
         "answer_has_positions_count",
-        contains_count(answer, POSITIONS),
+        contains_positions_count(answer, POSITIONS),
         f"expected={POSITIONS!r}, answer={answer!r}",
     )
     check_read_only(judge, initial_db, after_db)

@@ -54,8 +54,8 @@ class VerifyTask8Tests(VerifierTestCase):
         verdict = self.verdict(GENUINE_STEPS, 'Store #1230 with 3 open positions', after=genuine_after())
         self.assertFailsOn(verdict, 'answer_has_positions_count')
 
-    def test_wrong_answer_2_fails(self) -> None:
-        verdict = self.verdict(GENUINE_STEPS, 'Store 1230 (5) vs store 954 (3): #954 has fewer', after=genuine_after())
+    def test_equivalent_comparison_by_loser_passes(self) -> None:
+        verdict = self.verdict(GENUINE_STEPS, 'Store 1230 has 5 open positions; store 954 has 3 open positions, so #954 has fewer.', after=genuine_after())
         self.assertPasses(verdict)
 
     def test_read_only_write_fails(self) -> None:

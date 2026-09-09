@@ -14,7 +14,12 @@ GENUINE_STEPS = [
     step("/careers-areas/stores-and-clubs"),
     step("/results?area=stores-and-clubs&category=digital-pickup-and-delivery"),
     step("/results?area=stores-and-clubs&category=digital-pickup-and-delivery&type=Full+time"),
+    step("/jobs/CP-144-10765", "navigate"),
     step("/jobs/CP-2073-11104", "navigate"),
+    step("/jobs/CP-2075-11715", "navigate"),
+    step("/jobs/CP-3593-12490", "navigate"),
+    step("/jobs/CP-3826-11166", "navigate"),
+    step("/jobs/CP-5260-10596", "navigate"),
     step("/jobs/CP-1179-11202"),
     step("/jobs/CP-1179-11202", "done"),
 ]
@@ -80,6 +85,23 @@ class VerifyTask19Tests(VerifierTestCase):
         after = State()
         after.add_saved(2, "CP-1179-11202")
         self.assertFailsOn(self.verdict(steps, ANSWER, after=after), "visited_digital_pickup_full_time_results")
+
+    def test_preexisting_target_noop_fails(self) -> None:
+        initial = State(); initial.add_saved(2, "CP-1179-11202")
+        after = State(); after.add_saved(2, "CP-1179-11202")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), "initial_target_not_saved")
+
+    def test_other_users_saved_roles_change_fails(self) -> None:
+        after = genuine_after()
+        after.add_saved(1, "CP-6088-10659")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "saved_jobs_exact_delta")
+
+    def test_area_after_results_fails_order(self) -> None:
+        steps = [step("/"), *login_steps("bob.c@test.com"),
+                 step("/results?category=digital-pickup-and-delivery&type=Full+time"),
+                 step("/careers-areas/stores-and-clubs"),
+                 *[step(f"/jobs/{job_id}") for job_id in ("CP-1179-11202", "CP-144-10765", "CP-2073-11104", "CP-2075-11715", "CP-3593-12490", "CP-3826-11166", "CP-5260-10596")]]
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), "workflow_in_order")
 
 
 if __name__ == "__main__":

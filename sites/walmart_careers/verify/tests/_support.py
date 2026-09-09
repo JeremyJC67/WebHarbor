@@ -6,8 +6,10 @@ writer in the agent_demo/agent.py format. No docker, no LLM.
 """
 from __future__ import annotations
 
+import base64
 import copy
 import json
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -17,8 +19,12 @@ from pathlib import Path
 from typing import Any
 
 VERIFY_DIR = Path(__file__).resolve().parents[1]
-BASE = "http://localhost:41022"
+BASE = "http://localhost:41023"
 PASSWORD = "TestPass123!"
+SITE_DIR = VERIFY_DIR.parent
+SEED_DB = SITE_DIR / "instance_seed" / "walmart_careers.db"
+if not SEED_DB.exists():
+    subprocess.run([sys.executable, str(SITE_DIR / "seed_data.py")], cwd=SITE_DIR, check=True)
 
 SCHEMA = """
 CREATE TABLE users (
@@ -75,6 +81,7 @@ class State:
         self.users = copy.deepcopy(SEED_USERS)
         self.saved = list(SEED_SAVED)
         self.applications = copy.deepcopy(SEED_APPLICATIONS)
+        self.extra_sql: list[str] = []
 
     # -- mutators -----------------------------------------------------------
     def add_user(self, email: str, **fields: Any) -> int:
@@ -108,22 +115,48 @@ class State:
 
     # -- persistence --------------------------------------------------------
     def write(self, path: Path) -> Path:
+        shutil.copy2(SEED_DB, path)
         connection = sqlite3.connect(path)
         try:
-            connection.executescript(SCHEMA)
+            connection.execute("PRAGMA foreign_keys=ON")
+            connection.execute("DELETE FROM saved_jobs")
+            connection.execute("DELETE FROM applications")
+            keep_ids = {int(user["id"]) for user in self.users}
+            for row in connection.execute("SELECT id FROM users").fetchall():
+                if int(row[0]) not in keep_ids:
+                    connection.execute("DELETE FROM users WHERE id = ?", (row[0],))
             for user in self.users:
-                connection.execute(
-                    "INSERT INTO users(id, email, username, display_name, first_name, last_name, phone, city, state) "
-                    "VALUES (:id, :email, :username, :first_name || ' ' || :last_name, :first_name, :last_name, :phone, :city, :state)",
-                    user,
-                )
-            connection.executemany("INSERT INTO saved_jobs(id, user_id, job_id) VALUES (?, ?, ?)", self.saved)
+                existing = connection.execute("SELECT 1 FROM users WHERE id = ?", (user["id"],)).fetchone()
+                values = {
+                    **user,
+                    "display_name": f"{user['first_name']} {user['last_name']}".strip(),
+                    "password_hash": "scrypt:32768:8:1$fixture$invalid",
+                    "created_at": "2026-08-01 00:00:00",
+                }
+                if existing:
+                    connection.execute(
+                        "UPDATE users SET email=:email, username=:username, display_name=:display_name, "
+                        "first_name=:first_name, last_name=:last_name, phone=:phone, city=:city, state=:state WHERE id=:id",
+                        values,
+                    )
+                else:
+                    connection.execute(
+                        "INSERT INTO users(id,email,username,display_name,first_name,last_name,phone,city,state,password_hash,created_at) "
+                        "VALUES (:id,:email,:username,:display_name,:first_name,:last_name,:phone,:city,:state,:password_hash,:created_at)",
+                        values,
+                    )
+            connection.executemany(
+                "INSERT INTO saved_jobs(id, user_id, job_id, saved_at) VALUES (?, ?, ?, '2026-08-01 00:00:00')",
+                self.saved,
+            )
             for application in self.applications:
                 connection.execute(
-                    "INSERT INTO applications(id, job_id, user_id, email, first_name, last_name, phone, confirmation_no) "
-                    "VALUES (:id, :job_id, :user_id, :email, 'F', 'L', :phone, :confirmation_no)",
+                    "INSERT INTO applications(id, job_id, user_id, email, first_name, last_name, phone, status, confirmation_no, submitted_at) "
+                    "VALUES (:id, :job_id, :user_id, :email, 'F', 'L', :phone, 'Submitted', :confirmation_no, '2026-08-01 00:00:00')",
                     application,
                 )
+            for statement in self.extra_sql:
+                connection.execute(statement)
             connection.commit()
         finally:
             connection.close()
@@ -157,14 +190,21 @@ def only_paths(steps: list[dict[str, Any]], *allowed: str) -> list[dict[str, Any
 
 def write_run(run_dir: Path, task_id: str, steps: list[dict[str, Any]], answer: str) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
+    shots = run_dir / "screenshots"
+    shots.mkdir(exist_ok=True)
+    png = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")
     numbered = []
     for index, item in enumerate(steps):
-        numbered.append({"step": index, **item, "screenshot_before": f"step_{index:03d}.png",
-                         "screenshot_after": f"step_{index + 1:03d}.png"})
+        before = f"step_{index:03d}_before.png"
+        after = f"step_{index:03d}_after.png"
+        (shots / before).write_bytes(png)
+        (shots / after).write_bytes(png)
+        numbered.append({"step": index, **item, "screenshot_before": before, "screenshot_after": after})
     trajectory = {
         "task": "synthetic", "task_id": task_id, "start_url": f"{BASE}/", "model": "unit-test",
-        "max_steps": 15, "steps": numbered, "terminated": True,
+        "max_steps": 30, "steps": numbered, "terminated": bool(answer),
         "termination_reason": "agent_done" if answer else "max_steps",
+        "final_url": numbered[-1]["url"] if numbered else f"{BASE}/",
         "final_answer": answer if answer else None,
     }
     (run_dir / "trajectory.json").write_text(json.dumps(trajectory, indent=2), encoding="utf-8")
@@ -187,6 +227,8 @@ class VerifierTestCase(unittest.TestCase):
         after: State | None = None,
         task_id: str | None = None,
         snapshots_in_run_dir: bool = False,
+        trajectory_updates: dict[str, Any] | None = None,
+        corrupt_screenshot: bool = False,
     ) -> dict[str, Any]:
         initial = initial or State()
         after = after or State()
@@ -194,6 +236,14 @@ class VerifierTestCase(unittest.TestCase):
             root = Path(directory)
             run_dir = root / "run"
             write_run(run_dir, task_id or self.task_id, steps, answer)
+            if trajectory_updates:
+                trajectory_path = run_dir / "trajectory.json"
+                trajectory = json.loads(trajectory_path.read_text())
+                trajectory.update(trajectory_updates)
+                trajectory_path.write_text(json.dumps(trajectory, indent=2))
+            if corrupt_screenshot:
+                first = next((run_dir / "screenshots").glob("*.png"))
+                first.write_bytes(b"not a png")
             if snapshots_in_run_dir:
                 initial.write(run_dir / "initial.db")
                 after.write(run_dir / "after.db")

@@ -58,6 +58,10 @@ class VerifyTask2Tests(VerifierTestCase):
         after.add_saved(2, "CP-5991-12522")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'read_only_saved_jobs_unchanged')
 
+    def test_count_attached_to_years_fails(self) -> None:
+        answer = "The shift is 6:00pm - 3:00am and the role requires 3 years of experience."
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_positions_count")
+
     def test_time_format_variants_pass(self) -> None:
         self.assertPasses(self.verdict(GENUINE_STEPS, "Starts 6 PM to 3 a.m.; three positions"))
         self.assertPasses(self.verdict(GENUINE_STEPS, "18:00-03:00, 3 openings"))

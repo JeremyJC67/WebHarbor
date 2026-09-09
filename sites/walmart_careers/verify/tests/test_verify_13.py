@@ -87,6 +87,15 @@ class VerifyTask13Tests(VerifierTestCase):
         after.add_application("CP-4137-10959", 3, "carol.d@test.com", "253-555-0142")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'exactly_one_new_application')
 
+    def test_existing_application_mutation_fails(self) -> None:
+        after = genuine_after()
+        after.applications[0]["phone"] = "999-555-1212"
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "applications_exact_delta")
+
+    def test_missing_confirm_page_fails(self) -> None:
+        steps = [item for item in GENUINE_STEPS if not item["url"].endswith("/apply/confirm")]
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), "visited_apply_confirm_page")
+
     def test_skipped_reset_still_matches_row(self) -> None:
         initial = State()
         initial.add_application("CP-2503-11505", 1, "alice.j@test.com", "479-555-0134")  # WMC-000005 already used

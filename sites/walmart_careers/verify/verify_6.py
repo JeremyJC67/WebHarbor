@@ -17,7 +17,7 @@ from verify_lib import (  # noqa: E402
     check_results_visited,
     check_trajectory_identity,
     check_visited_job_detail,
-    contains_count,
+    contains_positions_count,
     contains_street,
     fail_closed,
     final_answer,
@@ -34,9 +34,16 @@ POSITIONS = 2
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
-    check_results_visited(judge, trajectory, "visited_results_cleveland_location", {"loc": "cleveland"})
+    check_results_visited(
+        judge,
+        trajectory,
+        "visited_results_required_filters",
+        {"loc": "cleveland", "radius": "25", "type": "Full time", "shift": "Weekday Day"},
+    )
     check_visited_job_detail(judge, trajectory, JOB_ID)
     judge.check(
         "answer_has_street_address",
@@ -45,7 +52,7 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     )
     judge.check(
         "answer_has_positions_count",
-        contains_count(answer, POSITIONS),
+        contains_positions_count(answer, POSITIONS),
         f"expected={POSITIONS!r}, answer={answer!r}",
     )
     check_read_only(judge, initial_db, after_db)

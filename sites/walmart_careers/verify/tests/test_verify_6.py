@@ -43,7 +43,7 @@ class VerifyTask6Tests(VerifierTestCase):
 
     def test_shortcut_fails_on_gate(self) -> None:
         steps = [step("/"), step("/results?type=Full+time&shift=Weekday+Day"), step("/jobs/CP-2073-11104", "done")]
-        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), 'visited_results_cleveland_location')
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), 'visited_results_required_filters')
 
     def test_wrong_answer_0_fails(self) -> None:
         verdict = self.verdict(GENUINE_STEPS, '3400 Steelyard Dr / 2 open positions', after=genuine_after())

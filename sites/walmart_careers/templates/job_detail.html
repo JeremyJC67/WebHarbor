@@ -36,12 +36,6 @@
             <div class="id-loc">{{ job.store.city }}, {{ job.store.state }}</div>
           </div>
           <div class="id-actions">
-            <a class="icon-btn" href="{{ url_for('job_detail', job_id=job.job_id) }}" title="Share" aria-label="Share">
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                <path d="M12 3v12M12 3 8 7M12 3l4 4M5 13v6h14v-6" fill="none" stroke="currentColor"
-                      stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
             {% if is_saved %}
               <form method="post" action="{{ url_for('unsave_job', job_id=job.job_id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -110,7 +104,7 @@
           {% if job.positions_available %}
             <div><span class="positions">{{ job.positions_available }} open position{{ '' if job.positions_available == 1 else 's' }}</span></div>
           {% endif %}
-          <a class="req-id" href="{{ url_for('job_detail', job_id=job.job_id) }}">{{ job.job_id }}</a>
+          <span class="req-id">{{ job.job_id }}</span>
         </div>
         <div class="map-col">{{ map_svg|safe }}</div>
       </div>
@@ -157,6 +151,9 @@
             </svg>
             {{ job.shift_time or job.shift_label }}
           </span>
+          {% if job.shifts|length > 1 %}
+            <span class="chip">Eligible shifts: {{ job.shifts|join(', ') }}</span>
+          {% endif %}
         {% endif %}
       </div>
       {% if job.min_age_note %}
@@ -229,7 +226,7 @@
                       'Learn more', url_for('resources_hiring'), section_id='benefits') }}
 
     {{ life_block(content.LIFE_AT_WALMART_HEADING,
-                  content.LIFE_AT_WALMART_CORP if salaried else content.LIFE_AT_WALMART_FIELD) }}
+                  content.LIFE_AT_WALMART_CORP if salaried and job.store.city == 'Bentonville' else content.LIFE_AT_WALMART_FIELD) }}
   </div>
 </div>
 

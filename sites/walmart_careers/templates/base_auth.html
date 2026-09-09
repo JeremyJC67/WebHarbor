@@ -26,9 +26,7 @@
 <footer class="auth-footer">
   <span>{{ content.AUTH_COPYRIGHT }}</span>
   <nav aria-label="Legal">
-    {% for label in content.AUTH_FOOTER_LINKS %}
-      <a href="{{ url_for('resources_terms') }}">{{ label }}</a>
-    {% endfor %}
+    <a href="{{ url_for('resources_terms') }}">Mirror terms and data notice</a>
   </nav>
 </footer>
 </body>

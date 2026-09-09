@@ -58,9 +58,11 @@ class VerifyTask7Tests(VerifierTestCase):
         after.add_saved(2, "CP-5991-12522")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'read_only_saved_jobs_unchanged')
 
-    def test_intern_filter_missing_fails_gate(self) -> None:
-        steps = [step("/"), step("/results?area=students"), step("/jobs/R-2447168", "done")]
-        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_intern_filter")
+    def test_required_filter_missing_fails_gate(self) -> None:
+        for query in ("area=students&type=Intern", "area=students&brand=Sam%27s+Club", "type=Intern&brand=Sam%27s+Club"):
+            with self.subTest(query=query):
+                steps = [step("/"), step("/results?" + query), step("/jobs/R-2447168", "done")]
+                self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
 
 if __name__ == "__main__":

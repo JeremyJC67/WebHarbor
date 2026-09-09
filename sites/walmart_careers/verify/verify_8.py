@@ -16,7 +16,7 @@ from verify_lib import (  # noqa: E402
     check_read_only,
     check_trajectory_identity,
     check_visited_job_detail,
-    contains_count,
+    contains_positions_count,
     fail_closed,
     final_answer,
     load_run,
@@ -35,6 +35,8 @@ POSITIONS = 5
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_visited_job_detail(judge, trajectory, WINNER_ID)
@@ -46,7 +48,7 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     )
     judge.check(
         "answer_has_positions_count",
-        contains_count(answer, POSITIONS),
+        contains_positions_count(answer, POSITIONS),
         f"expected={POSITIONS!r}, answer={answer!r}",
     )
     judge.check(

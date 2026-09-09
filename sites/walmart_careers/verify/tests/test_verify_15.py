@@ -86,6 +86,21 @@ class VerifyTask15Tests(VerifierTestCase):
         after.set_profile(4, city="rogers", state="AR")
         self.assertPasses(self.verdict(GENUINE_STEPS, ANSWER, after=after))
 
+    def test_preexisting_requested_profile_noop_fails(self) -> None:
+        initial = State(); initial.set_profile(4, city="Rogers", state="AR")
+        after = State(); after.set_profile(4, city="Rogers", state="AR")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), "initial_profile_requires_update")
+
+    def test_other_profile_field_change_fails(self) -> None:
+        after = State()
+        after.set_profile(4, city="Rogers", state="AR", phone="999-555-1212")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "profile_exact_delta")
+
+    def test_applications_before_edit_fails_order(self) -> None:
+        steps = [step("/"), *login_steps("david.k@test.com"), step("/candidate-home/applications"),
+                 step("/account/edit", "done")]
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), "workflow_in_order")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -33,6 +33,8 @@ STREET = "2441 S Rock Rd"
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_results_visited(judge, trajectory, "visited_results_optician_search", {"q": "optician"})

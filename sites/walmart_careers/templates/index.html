@@ -160,11 +160,10 @@
         <div class="video-tile{% if loop.index == 2 %} wide{% endif %}">
           <img class="v-spark" src="{{ url_for('static', filename='icons/spark-yellow.svg') }}" alt="">
           <div class="v-cap"><em>{{ kicker }}</em><b>{{ role }}</b>
-            <span class="play" aria-hidden="true"></span></div>
+            </div>
         </div>
       {% endfor %}
     </div>
-    <div class="dots" aria-hidden="true"><i></i><i class="on"></i><i></i><i></i></div>
   </div>
 </section>
 

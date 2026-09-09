@@ -12,8 +12,9 @@ GENUINE_STEPS = [
     step("/"),
     step("/results"),
     step("/results?loc=Puerto+Rico&radius=25"),
-    step("/results?shift=Weekday+Day&rate=Hourly&loc=Puerto+Rico&radius=25"),
+    step("/results?q=cashier&shift=Weekday+Day&rate=Hourly&loc=Puerto+Rico&radius=25"),
     step("/jobs/CP-2503-11505", "navigate"),
+    step("/jobs/CP-2610-11040", "navigate"),
     step("/jobs/CP-2503-10981", "navigate"),
     step("/jobs/CP-2503-10981", "done"),
 ]
@@ -45,7 +46,7 @@ class VerifyTask16Tests(VerifierTestCase):
 
     def test_shortcut_fails_on_gate(self) -> None:
         steps = [step("/"), step("/results?shift=Weekday+Day&rate=Hourly"), step("/jobs/CP-2503-10981", "done")]
-        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), 'visited_results_puerto_rico_weekday_day')
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), 'visited_results_required_filters')
 
     def test_wrong_answer_0_fails(self) -> None:
         verdict = self.verdict(GENUINE_STEPS, 'CP-2503-11505 / 1 open position', after=genuine_after())
@@ -61,16 +62,16 @@ class VerifyTask16Tests(VerifierTestCase):
         after.add_saved(2, "CP-5991-12522")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'read_only_saved_jobs_unchanged')
 
-    def test_bayamon_pr_location_passes(self) -> None:
-        steps = [step("/"), step("/results?shift=Weekday+Day&rate=Hourly&loc=Bayamon%2C+PR&radius=60"), step("/jobs/CP-2503-10981", "done")]
-        self.assertPasses(self.verdict(steps, ANSWER))
+    def test_city_location_does_not_substitute_for_puerto_rico_scope(self) -> None:
+        steps = [step("/"), step("/results?q=cashier&shift=Weekday+Day&rate=Hourly&loc=Bayamon%2C+PR&radius=60"), step("/jobs/CP-2503-10981", "done")]
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
     def test_shift_filter_missing_fails(self) -> None:
         steps = [step("/"), step("/results?rate=Hourly&loc=Puerto+Rico&radius=25"), step("/jobs/CP-2503-10981", "done")]
-        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_puerto_rico_weekday_day")
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
     def test_detail_visit_of_other_cashier_only_fails(self) -> None:
-        steps = [step("/"), step("/results?shift=Weekday+Day&loc=Puerto+Rico&radius=25"), step("/jobs/CP-2503-11505", "done")]
+        steps = [step("/"), step("/results?q=cashier&shift=Weekday+Day&rate=Hourly&loc=Puerto+Rico&radius=25"), step("/jobs/CP-2503-11505", "done")]
         self.assertFailsOn(self.verdict(steps, ANSWER), "visited_job_detail_CP-2503-10981")
 
 

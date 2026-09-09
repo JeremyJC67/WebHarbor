@@ -30,7 +30,14 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); }
+[id] { scroll-margin-top: calc(var(--header-h) + 16px); }
+:where(a, button, summary, input, select, textarea):focus-visible {
+  outline: 3px solid var(--ld-spark-100); outline-offset: 3px;
+}
+.header-search form:focus-within, .hero-search:focus-within, .find-search:focus-within {
+  outline: 3px solid var(--ld-spark-100); outline-offset: 3px;
+}
 
 body {
   margin: 0;
@@ -88,6 +95,7 @@ img { max-width: 100%; }
   background: #fff; border-radius: 16px; padding: 12px 8px; min-width: 268px;
   box-shadow: 0 8px 28px rgba(0, 30, 96, .22); display: flex; flex-direction: column;
 }
+.nav-menu:not([open]) .nav-pop, .user-menu:not([open]) .nav-pop, .pop-wrap:not([open]) .pop-panel { display: none; }
 .nav-pop a, .nav-pop .linkish {
   color: var(--ld-blue-160); text-decoration: none; padding: 9px 16px; border-radius: 10px;
   font-size: 15px; text-align: left; white-space: nowrap;
@@ -822,7 +830,7 @@ table.data th { font-size: 14px; text-transform: uppercase; letter-spacing: .04e
    and the search pill takes a full second row. */
 @media (max-width: 1024px) {
   .site-header .wrap { flex-wrap: wrap; gap: 8px 12px; padding: 8px 16px; }
-  .main-nav { flex: 1 1 auto; gap: 2px; min-width: 0; overflow-x: auto; }
+  .main-nav { flex: 1 1 auto; gap: 2px; min-width: 0; flex-wrap: wrap; overflow: visible; }
   .main-nav .nav-link, .nav-menu > summary { font-size: 14px; padding: 8px 8px; }
   .header-search { flex: 1 0 100%; order: 10; }
   .header-search form { max-width: none; }
@@ -862,4 +870,55 @@ table.data th { font-size: 14px; text-transform: uppercase; letter-spacing: .04e
   .milestone-layout h2 { margin-top: 0; }
   .ribbon { flex-direction: column; }
   .ribbon-seg, .ribbon-seg:first-child { margin-left: 0; padding-left: 24px; border-radius: 0; }
+}
+
+@media (max-width: 600px) {
+  :root { --gutter: 16px; }
+  html, body { max-width: 100%; overflow-x: clip; }
+  .wrap, .wrap-narrow, .wrap-bleed, .l1 .wrap { padding-left: 16px; padding-right: 16px; }
+  .site-header .wrap { padding: 8px 12px; }
+  .site-footer .wrap { padding-left: 16px; padding-right: 16px; }
+  .social { flex-wrap: wrap; }
+  .results-page { padding-left: 12px; padding-right: 12px; }
+  .main-nav { flex-wrap: wrap; overflow: visible; order: 8; flex-basis: 100%; }
+  .main-nav .nav-link, .nav-menu > summary { padding: 6px; font-size: 13px; }
+  .nav-pop, .user-menu .nav-pop {
+    position: fixed; inset: 190px 12px auto; width: auto; min-width: 0;
+    max-height: calc(100vh - 202px); overflow: auto;
+  }
+  .header-search { flex-basis: 100%; }
+  .header-search form { padding-left: 16px; }
+  .milestones { padding-top: 56px; }
+  .badge-stack { gap: 28px; min-width: 0; }
+  .badge-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
+  .badge-blank { display: none; }
+  .badge, .badge-body { width: 100%; min-width: 0; }
+  .badge-body { padding: 28px 20px; font-size: 19px; }
+  .quote-cards { grid-template-columns: 1fr; padding-top: 48px; }
+  .quote-card.on { transform: none; }
+  .hub-links { flex-wrap: wrap; justify-content: flex-start; padding-top: 32px; }
+  .hub-links a { max-width: 100%; overflow-wrap: anywhere; }
+  .area-card { margin: -48px 16px 0; padding: 28px 20px; }
+  .area-card h1, .benefits-block h2 { font-size: 30px; overflow-wrap: anywhere; }
+  .area-hero img { height: 320px; }
+  .pop-panel, .pop-panel.wide {
+    position: fixed; inset: 72px 12px auto; width: auto; min-width: 0; max-height: calc(100vh - 84px);
+    overflow: auto; padding: 18px; z-index: 200;
+  }
+  .filter-grid, .benefit-grid, .steps, .job-grid, .job-grid.three-col { grid-template-columns: minmax(0, 1fr); }
+  .job-card, .job-card-compact, .steps .step { min-width: 0; }
+  .loc-hero h1 { left: 20px; right: 20px; bottom: 28px; width: auto; font-size: 40px; overflow-wrap: anywhere; }
+  .tabs, .toolbar, .results-head { flex-wrap: wrap; }
+  .apply-card, .detail-layout { margin-left: 0; margin-right: 0; padding-left: 16px; padding-right: 16px; }
+  .find-role { padding: 64px 0; }
+  .find-role h2, .hero h1 { font-size: 34px; overflow-wrap: anywhere; }
+  .auth-main { width: auto; margin-left: 16px; margin-right: 16px; }
+  .auth-footer { padding: 24px 16px 32px; }
+  .table-scroll { width: 100%; overflow-x: auto; }
+  table.data { min-width: 600px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

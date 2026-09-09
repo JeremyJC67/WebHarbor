@@ -493,7 +493,7 @@ AREA_PAGE = {
         "photos": ("area-technology-2.jpg", "supply-drone.jpg"),
         "quote": "Our vision is strong here. Walmart Global Tech works at the forefront of "
                  "cutting-edge technologies inspired by the vision of transforming retail tech.",
-        "hubs_heading": "Three hubs. One mission. Endless possibilities",
+        "hubs_heading": "Four hubs. One mission. Endless possibilities",
         "hubs_blurb": "Our hubs spark collaboration and innovation, so you're free to energize and push "
                       "boundaries from the space that serves you best.",
         "testimonials": [

@@ -8,12 +8,13 @@ werkzeug password hashes hard-coded because werkzeug salts randomly.
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 import random
 import shutil
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
+
+from sqlalchemy import text
 
 os.environ.setdefault("WEBSYN_SKIP_BOOTSTRAP", "1")
 
@@ -21,12 +22,15 @@ import catalog_source as source
 from _content import MIRROR_REFERENCE_DATE
 from app import (
     Application,
+    ApplicationDraft,
     Area,
     Category,
     Job,
     SavedJob,
+    SeedMetadata,
     Store,
     User,
+    SEED_VERSION,
     app,
     confirmation_for,
     db,
@@ -54,6 +58,16 @@ BENCHMARK_USERS = [
     ("david.k@test.com", "david.k", "David Kim", "David", "Kim", "214-555-0166", "Dallas", "TX"),
 ]
 USER_CREATED_AT = datetime(2026, 6, 12, 9, 30, 0)
+EXPECTED_COUNTS = {
+    "areas": 7,
+    "categories": 33,
+    "stores": 51,
+    "jobs": 246,
+    "users": 4,
+    "saved_jobs": 13,
+    "applications": 4,
+    "application_drafts": 0,
+}
 
 # (user email, job title, store number) — resolved to job ids after the catalog is built.
 SEED_SAVED_JOBS = [
@@ -352,20 +366,20 @@ def _build_jobs(areas, categories, stores) -> list[Job]:
 
 
 # --------------------------------------------------------------------------- #
-# Seed entry points (each gated as a whole — see AGENTS.md "Idempotent seeding")
+# Seed entry points
 # --------------------------------------------------------------------------- #
 def seed_database(force: bool = False) -> None:
     if Job.query.count() > 0 and not force:
         return
+    RNG.seed(20260905)
     areas = _build_areas()
     categories = _build_categories(areas)
     stores = _build_stores()
     _build_jobs(areas, categories, stores)
-    db.session.commit()
 
 
 def seed_benchmark_users(force: bool = False) -> None:
-    if User.query.filter_by(email="alice.j@test.com").first() and not force:
+    if User.query.count() > 0 and not force:
         return
     users: dict[str, User] = {}
     for email, username, display, first, last, phone, city, state in BENCHMARK_USERS:
@@ -407,7 +421,6 @@ def seed_benchmark_users(force: bool = False) -> None:
         db.session.flush()
         application.confirmation_no = confirmation_for(application.id)
 
-    db.session.commit()
 
 
 def _find_job(title: str, store_number: str) -> Job:
@@ -441,22 +454,84 @@ def _load_distractor_checks():
     return module.assert_distractors
 
 
+def _current_counts() -> dict[str, int]:
+    return {
+        "areas": Area.query.count(),
+        "categories": Category.query.count(),
+        "stores": Store.query.count(),
+        "jobs": Job.query.count(),
+        "users": User.query.count(),
+        "saved_jobs": SavedJob.query.count(),
+        "applications": Application.query.count(),
+        "application_drafts": ApplicationDraft.query.count(),
+    }
+
+
+def _seed_is_complete() -> bool:
+    marker = db.session.get(SeedMetadata, "version")
+    counts = _current_counts()
+    core_counts_match = all(counts[key] == EXPECTED_COUNTS[key] for key in ("areas", "categories", "stores", "jobs"))
+    benchmark_emails = {email for (email, *_rest) in BENCHMARK_USERS}
+    present_emails = {row.email for row in User.query.filter(User.email.in_(benchmark_emails)).all()}
+    return marker is not None and marker.value == SEED_VERSION and core_counts_match and present_emails == benchmark_emails
+
+
+def _database_has_seed_rows() -> bool:
+    return any(_current_counts().values()) or SeedMetadata.query.count() > 0
+
+
+def _validate_seed() -> None:
+    counts = _current_counts()
+    if counts != EXPECTED_COUNTS:
+        raise RuntimeError(f"seed row counts differ: expected={EXPECTED_COUNTS}, actual={counts}")
+    violations = db.session.execute(text("PRAGMA foreign_key_check")).all()
+    if violations:
+        raise RuntimeError(f"seed foreign-key violations: {violations[:5]}")
+
+
+def ensure_seed_database() -> None:
+    if _seed_is_complete():
+        return
+    if _database_has_seed_rows():
+        raise RuntimeError("walmart_careers database is partial, unversioned, or from another seed version")
+    try:
+        seed_database(force=True)
+        seed_benchmark_users(force=True)
+        _validate_seed()
+        db.session.add(SeedMetadata(key="version", value=SEED_VERSION))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+
 def build_seed_database() -> None:
     INSTANCE_SEED_DIR.mkdir(parents=True, exist_ok=True)
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if DB_PATH.exists():
-        DB_PATH.unlink()
+    destination = INSTANCE_SEED_DIR / "walmart_careers.db"
     checks = _load_distractor_checks()
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-        seed_database(force=True)
-        seed_benchmark_users(force=True)
-        if checks is not None:
-            checks()
-    shutil.copyfile(DB_PATH, INSTANCE_SEED_DIR / "walmart_careers.db")
+    try:
+        with app.app_context():
+            db.session.remove()
+            db.engine.dispose()
+        if DB_PATH.exists():
+            DB_PATH.unlink()
+        with app.app_context():
+            db.create_all()
+            ensure_seed_database()
+            if checks is not None:
+                checks()
+            db.session.remove()
+            db.engine.dispose()
+        temporary = destination.with_suffix(".db.tmp")
+        shutil.copyfile(DB_PATH, temporary)
+        os.replace(temporary, destination)
+    except Exception:
+        destination.with_suffix(".db.tmp").unlink(missing_ok=True)
+        DB_PATH.unlink(missing_ok=True)
+        raise
     if checks is None:
-        print("scripts_dev/assert_distractors.py not present - build-time invariants skipped.")
+        print("scripts_dev/assert_distractors.py not present - tracked tests provide the release invariants.")
 
 
 if __name__ == "__main__":

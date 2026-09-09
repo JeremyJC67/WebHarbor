@@ -18,7 +18,7 @@ from verify_lib import (  # noqa: E402
     check_results_visited,
     check_trajectory_identity,
     check_visited_job_detail,
-    contains_count,
+    contains_positions_count,
     contains_req_id,
     fail_closed,
     final_answer,
@@ -31,19 +31,23 @@ from verify_lib import (  # noqa: E402
 TASK_ID = "Walmart Careers--16"
 JOB_ID = "CP-2503-10981"
 POSITIONS = 5
-LOCATION_ALTERNATIVES = ("puerto rico", re.compile(r"\bpr\b"))
+LOCATION_ALTERNATIVES = ("puerto rico", re.compile(r"^pr$"))
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_results_visited(
         judge,
         trajectory,
-        "visited_results_puerto_rico_weekday_day",
-        {"loc": LOCATION_ALTERNATIVES, "shift": "Weekday Day"},
+        "visited_results_required_filters",
+        {"q": "cashier", "loc": LOCATION_ALTERNATIVES, "shift": "Weekday Day", "rate": "Hourly"},
     )
-    check_visited_job_detail(judge, trajectory, JOB_ID)
+    from ground_truth import task_ground_truth
+    for candidate in task_ground_truth(initial_db, 16)["candidates"]:
+        check_visited_job_detail(judge, trajectory, candidate["job_id"])
     judge.check(
         "answer_has_requisition_id",
         contains_req_id(answer, JOB_ID),
@@ -51,7 +55,7 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     )
     judge.check(
         "answer_has_positions_count",
-        contains_count(answer, POSITIONS),
+        contains_positions_count(answer, POSITIONS),
         f"expected={POSITIONS!r}, answer={answer!r}",
     )
     check_read_only(judge, initial_db, after_db)

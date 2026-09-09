@@ -19,7 +19,6 @@ from verify_lib import (  # noqa: E402
     check_trajectory_identity,
     check_visited_job_detail,
     fail_closed,
-    final_answer,
     load_run,
     parse_args,
     resolve_snapshots,
@@ -33,11 +32,17 @@ JOB_ID = "CP-6088-10659"
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
-    answer = final_answer(trajectory)
     check_signed_in_as(judge, trajectory, EMAIL)
-    check_results_visited(judge, trajectory, "visited_results_yard_driver_search", {"q": "yard"})
+    check_results_visited(judge, trajectory, "visited_results_yard_driver_search", {"q": "yard driver"})
     check_visited_job_detail(judge, trajectory, JOB_ID)
+    from verify_lib import check_paths_in_order
+    check_paths_in_order(
+        judge, trajectory, "workflow_in_order",
+        [("/login", {}), ("/results", {"q": "yard driver"}), (f"/jobs/{JOB_ID}", {})],
+    )
     before = saved_job_ids(initial_db, EMAIL)
     after = saved_job_ids(after_db, EMAIL)
     judge.check(
@@ -54,6 +59,15 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
         "alice_saved_roles_changed_only_by_target",
         before is not None and after == before | {JOB_ID},
         f"initial_saved={sorted(before or set())!r}, after_saved={sorted(after or set())!r}",
+    )
+    from verify_lib import table_delta, user_id_for_email
+    delta = table_delta(initial_db, after_db, "saved_jobs")
+    alice_id = user_id_for_email(initial_db, EMAIL)
+    judge.check(
+        "saved_jobs_exact_delta",
+        len(delta["added"]) == 1 and not delta["removed"] and not delta["changed"]
+        and delta["added"][0][1:3] == (alice_id, JOB_ID),
+        f"delta={delta!r}",
     )
     check_tables_unchanged(judge, initial_db, after_db, ("users", "applications"))
 

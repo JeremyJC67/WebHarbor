@@ -5,10 +5,11 @@ import json
 import math
 import os
 import re
+import secrets
 import sys
-from datetime import date, datetime
+from datetime import datetime, timedelta
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode, urlsplit
 
 from flask import (
     Flask,
@@ -31,6 +32,9 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import _content as content
@@ -42,10 +46,24 @@ DB_PATH = INSTANCE_DIR / "walmart_careers.db"
 INSTANCE_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__, instance_path=str(INSTANCE_DIR))
-app.config["SECRET_KEY"] = "webharbor-walmart-careers-demo-key"
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["WTF_CSRF_TIME_LIMIT"] = None
+app.config.update(
+    SECRET_KEY=os.environ.get("WALMART_CAREERS_SECRET_KEY") or os.urandom(32),
+    SQLALCHEMY_DATABASE_URI=f"sqlite:///{DB_PATH}",
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    WTF_CSRF_TIME_LIMIT=7200,
+    MAX_CONTENT_LENGTH=256 * 1024,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("WALMART_CAREERS_SECURE_COOKIE") == "1",
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
+)
+
+
+@event.listens_for(Engine, "connect")
+def enable_sqlite_foreign_keys(connection, _record) -> None:
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
@@ -57,6 +75,10 @@ login_manager.login_message_category = "info"
 DEMO_PASSWORD = "TestPass123!"
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 PAGE_SIZE = 10
+MAX_QUERY_LENGTH = 160
+MAX_LOCATION_LENGTH = 80
+MAX_PASSWORD_LENGTH = 256
+SEED_VERSION = "walmart-careers-v2"
 
 SHIFT_VALUES = [
     "Weekday Day",
@@ -82,6 +104,12 @@ STOPWORDS = {
 # --------------------------------------------------------------------------- #
 # Models
 # --------------------------------------------------------------------------- #
+class SeedMetadata(db.Model):
+    __tablename__ = "seed_metadata"
+    key = db.Column(db.String(64), primary_key=True)
+    value = db.Column(db.String(160), nullable=False)
+
+
 class Area(db.Model):
     __tablename__ = "areas"
     id = db.Column(db.Integer, primary_key=True)
@@ -119,7 +147,9 @@ class Category(db.Model):
     slug = db.Column(db.String(120), nullable=False)
     display_order = db.Column(db.Integer, nullable=False, default=0)
 
-    __table_args__ = (db.UniqueConstraint("area_id", "slug", name="uq_category_area_slug"),)
+    __table_args__ = (
+        db.UniqueConstraint("area_id", "slug", name="uq_category_area_slug"),
+    )
 
 
 class Store(db.Model):
@@ -179,6 +209,15 @@ class Job(db.Model):
     min_qualifications_json = db.Column(db.Text, nullable=True)
     preferred_qualifications = db.Column(db.Text, nullable=True)
     hero_images_json = db.Column(db.Text, nullable=False, default="[]")
+
+    __table_args__ = (
+        db.CheckConstraint("population IN ('salaried', 'hourly')", name="ck_jobs_population"),
+        db.CheckConstraint("brand IN ('Vizio', 'Walmart', 'Sam''s Club')", name="ck_jobs_brand"),
+        db.CheckConstraint("employment_type IN ('Full time', 'Part time', 'Intern')", name="ck_jobs_employment_type"),
+        db.CheckConstraint("pay_frequency IN ('Hourly', 'Annual')", name="ck_jobs_pay_frequency"),
+        db.CheckConstraint("min_pay >= 0 AND max_pay >= min_pay", name="ck_jobs_pay_range"),
+        db.CheckConstraint("positions_available IS NULL OR positions_available > 0", name="ck_jobs_positions"),
+    )
 
     store = db.relationship("Store", lazy="joined")
     area = db.relationship("Area", lazy="joined")
@@ -242,6 +281,7 @@ class Job(db.Model):
                 self.store.city if self.store else "",
                 self.store.state if self.store else "",
                 self.brand,
+                self.hashtag or "",
             ]
         )
 
@@ -249,8 +289,8 @@ class Job(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(160), unique=True, nullable=False)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(160, collation="NOCASE"), unique=True, nullable=False)
+    username = db.Column(db.String(80, collation="NOCASE"), unique=True, nullable=False)
     display_name = db.Column(db.String(120), nullable=False, default="")
     first_name = db.Column(db.String(80), nullable=False, default="")
     last_name = db.Column(db.String(80), nullable=False, default="")
@@ -271,9 +311,24 @@ class SavedJob(db.Model):
     job_id = db.Column(db.String(32), db.ForeignKey("jobs.job_id"), nullable=False)
     saved_at = db.Column(db.DateTime, nullable=False)
 
-    __table_args__ = (db.UniqueConstraint("user_id", "job_id", name="uq_saved_user_job"),)
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "job_id", name="uq_saved_user_job"),
+    )
 
     job = db.relationship("Job", lazy="joined")
+
+
+class ApplicationDraft(db.Model):
+    __tablename__ = "application_drafts"
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(64), unique=True, nullable=False)
+    job_id = db.Column(db.String(32), db.ForeignKey("jobs.job_id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    email = db.Column(db.String(160), nullable=False)
+    first_name = db.Column(db.String(80), nullable=False)
+    last_name = db.Column(db.String(80), nullable=False)
+    phone = db.Column(db.String(32), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False)
 
 
 class Application(db.Model):
@@ -289,11 +344,17 @@ class Application(db.Model):
     confirmation_no = db.Column(db.String(32), unique=True, nullable=False)
     submitted_at = db.Column(db.DateTime, nullable=False)
 
+    __table_args__ = (
+        db.CheckConstraint("status IN ('Submitted')", name="ck_applications_status"),
+    )
+
     job = db.relationship("Job", lazy="joined")
 
 
 @login_manager.user_loader
 def load_user(user_id: str):
+    if not str(user_id).isdigit():
+        return None
     return db.session.get(User, int(user_id))
 
 
@@ -322,12 +383,41 @@ def haversine_miles(lat1: float, lng1: float, lat2: float, lng2: float) -> float
 
 
 def safe_next(raw: str | None) -> str | None:
-    """Only allow same-origin relative paths as a ?next= target."""
-    if not raw:
+    """Return a canonical same-origin path/query target or ``None``."""
+    if not raw or len(raw) > 2048 or any(ord(char) < 32 for char in raw):
         return None
-    if not raw.startswith("/") or raw.startswith("//") or "\\" in raw:
+    decoded = raw
+    for _ in range(3):
+        expanded = unquote(decoded)
+        if expanded == decoded:
+            break
+        decoded = expanded
+    if decoded.startswith("//"):
         return None
-    return raw
+    parsed = urlsplit(decoded)
+    if parsed.scheme or parsed.netloc or not parsed.path.startswith("/"):
+        return None
+    if parsed.path.startswith("//") or "\\" in decoded:
+        return None
+    return parsed.path + (("?" + parsed.query) if parsed.query else "")
+
+
+def bounded_text(value: str | None, field: str, maximum: int, *, required: bool = False) -> tuple[str, str | None]:
+    text = (value or "").strip()
+    if required and not text:
+        return text, f"Enter your {field}."
+    if len(text) > maximum:
+        return text, f"{field.capitalize()} must be {maximum} characters or fewer."
+    if any(ord(char) < 32 for char in text):
+        return text, f"{field.capitalize()} contains unsupported control characters."
+    return text, None
+
+
+def single_query_arg(name: str, default: str = "") -> str:
+    values = request.args.getlist(name)
+    if len(values) > 1:
+        abort(400, description=f"duplicate query parameter: {name}")
+    return values[0] if values else default
 
 
 def resolve_location(raw: str) -> dict | None:
@@ -335,7 +425,7 @@ def resolve_location(raw: str) -> dict | None:
 
     Returns ``None`` when nothing matches, otherwise a scope dict:
 
-    * ``{"kind": "state", "state": "PR", "label": "Puerto Rico", "store": <anchor>}``
+    * ``{"kind": "state", "state": "PR", "label": "Puerto Rico"}``
       when the text names a whole state or territory — the result set is then
       every role in that state, with no radius applied.
     * ``{"kind": "store", "store": <Store>, "label": "Rochester, NY"}`` when the
@@ -347,14 +437,12 @@ def resolve_location(raw: str) -> dict | None:
     stores = Store.query.order_by(Store.store_number).all()
 
     def state_scope(code: str) -> dict | None:
-        anchor = next((s for s in stores if s.state == code), None)
-        if anchor is None:
+        if code not in content.STATE_NAMES:
             return None
         return {
             "kind": "state",
             "state": code,
-            "label": content.STATE_NAMES.get(code, code),
-            "store": anchor,
+            "label": content.STATE_NAMES[code],
         }
 
     # Whole-state searches: "PR", "Puerto Rico", "Ohio".
@@ -388,37 +476,57 @@ def resolve_location(raw: str) -> dict | None:
 
 
 def current_filters() -> dict:
-    """Read the results-page query string into a normalised dict."""
-    args = request.args
-    query = (args.get("q") or args.get("searchQuery") or "").strip()
-    if query.lower() == "all":
+    """Read and strictly validate the results-page query string."""
+    q_value = single_query_arg("q")
+    search_value = single_query_arg("searchQuery")
+    if q_value and search_value:
+        abort(400, description="use q or searchQuery, not both")
+    query = (q_value or search_value).strip()
+    location = single_query_arg("loc").strip()
+    if len(query) > MAX_QUERY_LENGTH or len(location) > MAX_LOCATION_LENGTH:
+        abort(400, description="query text is too long")
+    if any(ord(char) < 32 for char in query + location):
+        abort(400, description="query contains unsupported control characters")
+    if query.casefold() == "all":
         query = ""
-    try:
-        page = max(1, int(args.get("page", "1")))
-    except ValueError:
-        page = 1
-    try:
-        radius = int(args.get("radius", "25"))
-    except ValueError:
-        radius = 25
-    if radius not in RADIUS_VALUES:
-        radius = 25
-    sort = args.get("sort", "relevance")
-    if sort not in SORT_VALUES:
-        sort = "relevance"
+    if len(tokenize(query)) > 12:
+        abort(400, description="search contains too many terms")
+
+    page_text = single_query_arg("page", "1")
+    radius_text = single_query_arg("radius", "25")
+    sort = single_query_arg("sort", "relevance")
+    tab = single_query_arg("tab", "jobs")
+    if not page_text.isdigit() or not 1 <= int(page_text) <= 10000:
+        abort(400, description="invalid page")
+    if not radius_text.isdigit() or int(radius_text) not in RADIUS_VALUES:
+        abort(400, description="invalid radius")
+    if sort not in SORT_VALUES or tab not in {"jobs", "future", "content"}:
+        abort(400, description="invalid sort or tab")
+
+    area_values = {row.slug for row in Area.query.filter_by(is_filterable=True).all()}
+    category_values = {row.slug for row in Category.query.all()}
+    allowed = {
+        "area": area_values,
+        "category": category_values,
+        "brand": set(BRAND_VALUES),
+        "shift": set(SHIFT_VALUES),
+        "type": set(EMPLOYMENT_TYPE_VALUES),
+        "rate": set(RATE_VALUES),
+    }
+    facets: dict[str, list[str]] = {}
+    for name, choices in allowed.items():
+        values = [value for value in request.args.getlist(name) if value]
+        if len(values) != len(set(values)) or any(value not in choices for value in values):
+            abort(400, description=f"invalid {name} filter")
+        facets[name] = values
     return {
         "q": query,
-        "area": [v for v in args.getlist("area") if v],
-        "category": [v for v in args.getlist("category") if v],
-        "brand": [v for v in args.getlist("brand") if v in BRAND_VALUES],
-        "shift": [v for v in args.getlist("shift") if v in SHIFT_VALUES],
-        "type": [v for v in args.getlist("type") if v in EMPLOYMENT_TYPE_VALUES],
-        "rate": [v for v in args.getlist("rate") if v in RATE_VALUES],
-        "loc": (args.get("loc") or "").strip(),
-        "radius": radius,
+        **facets,
+        "loc": location,
+        "radius": int(radius_text),
         "sort": sort,
-        "page": page,
-        "tab": args.get("tab", "jobs"),
+        "page": int(page_text),
+        "tab": tab,
     }
 
 
@@ -444,7 +552,7 @@ def filters_query(filters: dict, **overrides) -> str:
 
 
 def _stem_match(token: str, blob_tokens: set[str]) -> bool:
-    """Loose match for inflected forms ('drivers' ~ 'driver', 'stocking' ~ 'stocker').
+    """Loose prefix match for closely related words such as ``drivers`` and ``driver``.
 
     Two words match when they share a prefix of at least six characters and
     their lengths are within three of each other. A five-letter prefix was
@@ -475,7 +583,7 @@ def score_job(job: Job, tokens: list[str]) -> float:
     for token in tokens:
         if token in blob_tokens:
             score += 2.0
-        elif any(other.startswith(token) for other in blob_tokens):
+        elif len(token) >= 3 and any(other.startswith(token) for other in blob_tokens):
             # word-prefix tier: 'cashi' -> cashier, 'hand' -> handler. A raw
             # substring test let 'care' light up every Healthcare posting.
             score += 1.0
@@ -496,6 +604,8 @@ def search_jobs(filters: dict) -> tuple[list[Job], dict | None, bool]:
     if filters["loc"]:
         location = resolve_location(filters["loc"])
         location_failed = location is None
+        if location_failed:
+            jobs = []
 
     if filters["brand"]:
         jobs = [j for j in jobs if j.brand in filters["brand"]]
@@ -692,6 +802,16 @@ def saved_job_ids() -> set[str]:
     }
 
 
+def discard_application_draft() -> None:
+    token = session.pop("apply_draft_token", None)
+    if not token:
+        return
+    draft = ApplicationDraft.query.filter_by(token=token).first()
+    if draft is not None:
+        db.session.delete(draft)
+        db.session.commit()
+
+
 @app.context_processor
 def inject_globals():
     return {
@@ -824,8 +944,12 @@ def save_job(job_id: str):
         db.session.add(
             SavedJob(user_id=current_user.id, job_id=job_id, saved_at=datetime.now())
         )
-        db.session.commit()
-        flash(f"Saved {job.title} to your saved roles.", "success")
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+        else:
+            flash(f"Saved {job.title} to your saved roles.", "success")
     target = safe_next(request.form.get("next")) or url_for("job_detail", job_id=job_id)
     return redirect(target)
 
@@ -868,21 +992,36 @@ def apply_contact(job_id: str):
             }
         )
     if request.method == "POST":
-        for key in form:
-            form[key] = (request.form.get(key) or "").strip()
+        limits = {"email": 160, "first_name": 80, "last_name": 80, "phone": 32}
+        for key, maximum in limits.items():
+            form[key], error = bounded_text(request.form.get(key), key.replace("_", " "), maximum, required=True)
+            if error:
+                errors.append(error)
+        form["email"] = form["email"].lower()
         agreed = request.form.get("terms") == "on"
-        if not EMAIL_PATTERN.fullmatch(form["email"]):
+        if form["email"] and (not EMAIL_PATTERN.fullmatch(form["email"])
+                              or len(form["email"].split("@", 1)[0]) > 64):
             errors.append("Enter a valid email address.")
-        if not form["first_name"]:
-            errors.append("Enter your first name.")
-        if not form["last_name"]:
-            errors.append("Enter your last name.")
-        if len(re.sub(r"[^0-9]", "", form["phone"])) < 10:
-            errors.append("Enter a phone number with at least 10 digits.")
+        phone_digits = re.sub(r"[^0-9]", "", form["phone"])
+        if form["phone"] and not 10 <= len(phone_digits) <= 15:
+            errors.append("Enter a phone number with 10 to 15 digits.")
         if not agreed:
             errors.append("You must accept the Terms & Conditions to continue.")
         if not errors:
-            session["apply_draft"] = {"job_id": job_id, **form}
+            discard_application_draft()
+            draft = ApplicationDraft(
+                token=secrets.token_urlsafe(32),
+                job_id=job_id,
+                user_id=current_user.id if current_user.is_authenticated else None,
+                email=form["email"],
+                first_name=form["first_name"],
+                last_name=form["last_name"],
+                phone=form["phone"],
+                created_at=datetime.now(),
+            )
+            db.session.add(draft)
+            db.session.commit()
+            session["apply_draft_token"] = draft.token
             return redirect(url_for("apply_confirm", job_id=job_id))
     return render_template("apply_contact.html", job=job, form=form, errors=errors)
 
@@ -892,27 +1031,35 @@ def apply_confirm(job_id: str):
     job = db.session.get(Job, job_id)
     if job is None:
         abort(404)
-    draft = session.get("apply_draft")
-    if not draft or draft.get("job_id") != job_id:
+    token = session.get("apply_draft_token")
+    draft = ApplicationDraft.query.filter_by(token=token, job_id=job_id).first() if token else None
+    expected_user_id = current_user.id if current_user.is_authenticated else None
+    if draft is None or draft.user_id != expected_user_id:
+        discard_application_draft()
         flash("Start your application by entering your contact details.", "warning")
         return redirect(url_for("apply_contact", job_id=job_id))
     if request.method == "POST":
         application = Application(
             job_id=job_id,
             user_id=current_user.id if current_user.is_authenticated else None,
-            email=draft["email"],
-            first_name=draft["first_name"],
-            last_name=draft["last_name"],
-            phone=draft["phone"],
+            email=draft.email,
+            first_name=draft.first_name,
+            last_name=draft.last_name,
+            phone=draft.phone,
             status="Submitted",
             confirmation_no="pending",
             submitted_at=datetime.now(),
         )
         db.session.add(application)
-        db.session.flush()
-        application.confirmation_no = confirmation_for(application.id)
-        db.session.commit()
-        session.pop("apply_draft", None)
+        db.session.delete(draft)
+        try:
+            db.session.flush()
+            application.confirmation_no = confirmation_for(application.id)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            abort(409, description="application could not be submitted")
+        session.pop("apply_draft_token", None)
         session["apply_submitted_id"] = application.id
         return redirect(url_for("apply_submitted", job_id=job_id))
     return render_template("apply_confirm.html", job=job, draft=draft)
@@ -925,7 +1072,8 @@ def apply_submitted(job_id: str):
         abort(404)
     application_id = session.get("apply_submitted_id")
     application = db.session.get(Application, application_id) if application_id else None
-    if application is None or application.job_id != job_id:
+    expected_user_id = current_user.id if current_user.is_authenticated else None
+    if application is None or application.job_id != job_id or application.user_id != expected_user_id:
         flash("We couldn't find that application. Please apply again.", "warning")
         return redirect(url_for("apply_contact", job_id=job_id))
     return render_template("apply_submitted.html", job=job, application=application)
@@ -982,13 +1130,21 @@ def login():
     errors: list[str] = []
     email = ""
     if request.method == "POST":
-        email = (request.form.get("email") or "").strip().lower()
+        email, email_error = bounded_text(request.form.get("email"), "email", 160, required=True)
+        email = email.lower()
         password = request.form.get("password") or ""
         next_url = safe_next(request.form.get("next")) or next_url
-        user = User.query.filter_by(email=email).first()
-        if user is None or not user.check_password(password):
+        if email_error or len(password) > MAX_PASSWORD_LENGTH:
             errors.append("We couldn't sign you in with that email and password.")
+            user = None
         else:
+            user = User.query.filter_by(email=email).first()
+        if user is None or not user.check_password(password):
+            if not errors:
+                errors.append("We couldn't sign you in with that email and password.")
+        else:
+            discard_application_draft()
+            session.pop("apply_submitted_id", None)
             login_user(user)
             flash(f"Signed in as {user.display_name}.", "success")
             return redirect(next_url or url_for("index"))
@@ -1001,18 +1157,22 @@ def register():
     errors: list[str] = []
     form = {"email": "", "first_name": "", "last_name": ""}
     if request.method == "POST":
-        for key in form:
-            form[key] = (request.form.get(key) or "").strip()
+        limits = {"email": 160, "first_name": 80, "last_name": 80}
+        for key, maximum in limits.items():
+            form[key], error = bounded_text(request.form.get(key), key.replace("_", " "), maximum, required=True)
+            if error:
+                errors.append(error)
         password = request.form.get("password") or ""
         confirm = request.form.get("confirm_password") or ""
         next_url = safe_next(request.form.get("next")) or next_url
         email = form["email"].lower()
-        if not EMAIL_PATTERN.fullmatch(email):
+        if form["email"] and (not EMAIL_PATTERN.fullmatch(email)
+                              or len(email.split("@", 1)[0]) > 64):
             errors.append("Enter a valid email address.")
         elif User.query.filter_by(email=email).first():
             errors.append("An account already exists for that email address.")
-        if len(password) < 8:
-            errors.append("Choose a password with at least 8 characters.")
+        if not 8 <= len(password) <= MAX_PASSWORD_LENGTH:
+            errors.append(f"Choose a password with 8 to {MAX_PASSWORD_LENGTH} characters.")
         if password != confirm:
             errors.append("The two passwords don't match.")
         if not form["first_name"]:
@@ -1040,7 +1200,14 @@ def register():
                 created_at=datetime.now(),
             )
             db.session.add(user)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                errors.append("That account identifier is already in use.")
+                return render_template("register.html", errors=errors, form=form, next_url=next_url), 409
+            discard_application_draft()
+            session.pop("apply_submitted_id", None)
             login_user(user)
             flash("Your candidate account is ready.", "success")
             return redirect(next_url or url_for("saved_roles"))
@@ -1050,8 +1217,8 @@ def register():
 @app.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    discard_application_draft()
     logout_user()
-    session.pop("apply_draft", None)
     session.pop("apply_submitted_id", None)
     flash("You have been signed out.", "info")
     return redirect(url_for("index"))
@@ -1080,17 +1247,28 @@ def account_edit():
         "state": current_user.state,
     }
     if request.method == "POST":
-        for key in form:
-            form[key] = (request.form.get(key) or "").strip()
-        form["state"] = form["state"].upper()[:2]
-        if not form["display_name"]:
-            errors.append("Enter a display name.")
-        if form["state"] and not re.fullmatch(r"[A-Z]{2}", form["state"]):
-            errors.append("Use a two-letter state code.")
+        limits = {"display_name": 120, "first_name": 80, "last_name": 80,
+                  "phone": 32, "city": 80, "state": 2}
+        for key, maximum in limits.items():
+            form[key], error = bounded_text(request.form.get(key), key.replace("_", " "), maximum,
+                                            required=key in {"display_name", "first_name", "last_name"})
+            if error:
+                errors.append(error)
+        form["state"] = form["state"].upper()
+        phone_digits = re.sub(r"[^0-9]", "", form["phone"])
+        if form["phone"] and not 10 <= len(phone_digits) <= 15:
+            errors.append("Enter a phone number with 10 to 15 digits.")
+        if form["state"] and form["state"] not in content.STATE_NAMES:
+            errors.append("Use a valid two-letter state or territory code.")
         if not errors:
             for key, value in form.items():
                 setattr(current_user, key, value)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                errors.append("Your profile could not be updated.")
+                return render_template("account_edit.html", form=form, errors=errors), 409
             flash("Your profile has been updated.", "success")
             return redirect(url_for("account"))
     return render_template("account_edit.html", form=form, errors=errors)
@@ -1126,17 +1304,21 @@ def applications():
 
 @app.route("/_health")
 def health():
-    return jsonify(
-        {
-            "ok": True,
-            "site": "walmart_careers",
-            "jobs": Job.query.count(),
-            "stores": Store.query.count(),
-            "areas": Area.query.count(),
-            "categories": Category.query.count(),
-            "users": User.query.count(),
-        }
-    )
+    counts = {
+        "jobs": Job.query.count(),
+        "stores": Store.query.count(),
+        "areas": Area.query.count(),
+        "categories": Category.query.count(),
+        "users": User.query.count(),
+    }
+    marker = db.session.get(SeedMetadata, "version")
+    core_ready = {key: counts[key] for key in ("jobs", "stores", "areas", "categories")} == {
+        "jobs": 246, "stores": 51, "areas": 7, "categories": 33
+    }
+    benchmark_users = {"alice.j@test.com", "bob.c@test.com", "carol.d@test.com", "david.k@test.com"}
+    present_users = {row.email for row in User.query.filter(User.email.in_(benchmark_users)).all()}
+    ready = core_ready and present_users == benchmark_users and marker is not None and marker.value == SEED_VERSION
+    return jsonify({"ok": ready, "site": "walmart_careers", "seed_version": marker.value if marker else None, **counts}), (200 if ready else 503)
 
 
 @app.errorhandler(404)
@@ -1146,16 +1328,16 @@ def not_found(_error):
 
 @app.errorhandler(500)
 def server_error(_error):  # pragma: no cover - defensive
-    return render_template("404.html"), 500
+    db.session.rollback()
+    return render_template("500.html"), 500
 
 
 def bootstrap_site() -> None:
-    from seed_data import seed_benchmark_users, seed_database
+    from seed_data import ensure_seed_database
 
     with app.app_context():
         db.create_all()
-        seed_database()
-        seed_benchmark_users()
+        ensure_seed_database()
 
 
 # `python app.py` loads this file as __main__; register it under its import

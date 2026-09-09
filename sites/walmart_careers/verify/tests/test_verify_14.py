@@ -63,13 +63,13 @@ class VerifyTask14Tests(VerifierTestCase):
     def test_new_user_saved_wrong_posting_fails(self) -> None:
         initial = State()
         after = genuine_after()
-        after = State(); uid = after.add_user("x@test.com"); after.add_saved(uid, "CP-9046-10913")
+        after = State(); uid = after.add_user("new.candidate@test.com"); after.add_saved(uid, "CP-9046-10913")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'target_saved_by_new_user')
 
     def test_new_user_but_seeded_account_saved_fails(self) -> None:
         initial = State()
         after = genuine_after()
-        after = State(); after.add_user("x@test.com"); after.add_saved(1, "CP-9046-11274")
+        after = State(); after.add_user("new.candidate@test.com"); after.add_saved(1, "CP-9046-11274")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'target_saved_by_new_user')
 
     def test_seeded_user_also_gained_target_fails(self) -> None:
@@ -90,6 +90,25 @@ class VerifyTask14Tests(VerifierTestCase):
         uid = after.add_user("new.candidate@test.com")
         after.add_saved(uid, "CP-9046-11274")
         self.assertFailsOn(self.verdict(steps, ANSWER, after=after), "visited_job_detail_CP-9046-11274")
+
+    def test_multiple_new_users_fail(self) -> None:
+        after = genuine_after()
+        after.add_user("second@test.com")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "new_user_registered")
+
+    def test_new_user_extra_save_fails(self) -> None:
+        after = genuine_after()
+        after.add_saved(5, "CP-9046-10913")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "target_saved_by_new_user")
+
+    def test_existing_user_mutation_fails(self) -> None:
+        after = genuine_after()
+        after.set_profile(1, city="Changed")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, after=after), "users_exact_delta")
+
+    def test_registration_after_job_visit_fails_order(self) -> None:
+        steps = [step("/"), step("/jobs/CP-9046-11274"), *GENUINE_STEPS[1:4]]
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), "workflow_in_order")
 
 
 if __name__ == "__main__":

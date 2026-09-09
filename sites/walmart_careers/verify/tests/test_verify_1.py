@@ -59,9 +59,12 @@ class VerifyTask1Tests(VerifierTestCase):
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'read_only_applications_unchanged')
 
     def test_curly_quotes_and_case_pass(self) -> None:
-        answer = "7 YEARS’ experience … including experience operating search or ML‑serving systems in production"
-        answer = answer.replace("‑", "-")
+        answer = "7 YEARS’ EXPERIENCE IN SOFTWARE ENGINEERING OR RELATED AREA, INCLUDING EXPERIENCE OPERATING SEARCH OR ML-SERVING SYSTEMS IN PRODUCTION."
         self.assertPasses(self.verdict(GENUINE_STEPS, answer))
+
+    def test_truncated_option_two_quote_fails(self) -> None:
+        answer = "7 years' experience operating search or ML-serving systems in production"
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_quotes_option_2")
 
 
 if __name__ == "__main__":

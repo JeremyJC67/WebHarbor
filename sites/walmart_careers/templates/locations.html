@@ -6,7 +6,6 @@
   <div class="loc-hero">
     <img src="{{ url_for('static', filename='images/' ~ content.LOCATIONS_HERO_IMAGE) }}" alt="">
     <h1>{{ content.LOCATIONS_HEADING }}</h1>
-    <span class="pause" aria-hidden="true">&#8214;</span>
   </div>
 </div>
 <section class="loc-intro">
@@ -21,7 +20,7 @@
       {% for hub in hubs %}
         <div class="hub-tile">
           <img src="{{ url_for('static', filename='images/' ~ (hub.hub_image or 'loc-international.jpg')) }}"
-               alt="{{ hub.hub_name or hub.city }}">
+               alt="">
           <b>{{ hub.hub_name or hub.city }}</b>
           <p>{{ hub.hub_blurb or 'A Walmart hub location.' }}</p>
           <a class="arrow-link" href="{{ url_for('results', loc=hub.city ~ ', ' ~ hub.state, radius=25) }}"

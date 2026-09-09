@@ -16,7 +16,7 @@ from verify_lib import (  # noqa: E402
     check_read_only,
     check_trajectory_identity,
     check_visited_job_detail,
-    contains_count,
+    contains_years_count,
     contains_req_id,
     fail_closed,
     final_answer,
@@ -33,6 +33,8 @@ YEARS = 9
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_visited_job_detail(judge, trajectory, JOB_ID)
@@ -44,7 +46,7 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     )
     judge.check(
         "answer_has_years_count",
-        contains_count(answer, YEARS),
+        contains_years_count(answer, YEARS),
         f"expected={YEARS!r}, answer={answer!r}",
     )
     judge.check(

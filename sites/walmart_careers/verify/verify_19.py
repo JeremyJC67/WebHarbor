@@ -38,6 +38,8 @@ AREA_PATH = "/careers-areas/stores-and-clubs"
 
 
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
+    from ground_truth import constants_for_task
+    globals().update(constants_for_task(initial_db, int(TASK_ID.rsplit("--", 1)[1])))
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
     check_signed_in_as(judge, trajectory, EMAIL)
@@ -48,7 +50,16 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
         "visited_digital_pickup_full_time_results",
         {"category": "digital-pickup-and-delivery", "type": "Full time"},
     )
-    check_visited_job_detail(judge, trajectory, JOB_ID)
+    from ground_truth import task_ground_truth
+    for candidate in task_ground_truth(initial_db, 19)["candidates"]:
+        check_visited_job_detail(judge, trajectory, candidate["job_id"])
+    from verify_lib import check_paths_in_order
+    check_paths_in_order(
+        judge, trajectory, "workflow_in_order",
+        [("/login", {}), (AREA_PATH, {}),
+         ("/results", {"category": "digital-pickup-and-delivery", "type": "Full time"}),
+         (f"/jobs/{JOB_ID}", {})],
+    )
     judge.check(
         "answer_has_requisition_id",
         contains_req_id(answer, JOB_ID),
@@ -62,6 +73,11 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     before = saved_job_ids(initial_db, EMAIL)
     after = saved_job_ids(after_db, EMAIL)
     judge.check(
+        "initial_target_not_saved",
+        before is not None and JOB_ID not in before,
+        f"initial_saved={sorted(before or set())!r}, target={JOB_ID}",
+    )
+    judge.check(
         "target_saved_for_bob",
         after is not None and JOB_ID in after,
         f"email={EMAIL}, job_id={JOB_ID}, after_saved={sorted(after or set())!r}",
@@ -71,7 +87,16 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
         before is not None and after == before | {JOB_ID},
         f"initial_saved={sorted(before or set())!r}, after_saved={sorted(after or set())!r}",
     )
-    check_tables_unchanged(judge, initial_db, after_db, ("applications",))
+    from verify_lib import table_delta, user_id_for_email
+    delta = table_delta(initial_db, after_db, "saved_jobs")
+    bob_id = user_id_for_email(initial_db, EMAIL)
+    judge.check(
+        "saved_jobs_exact_delta",
+        len(delta["added"]) == 1 and not delta["removed"] and not delta["changed"]
+        and delta["added"][0][1:3] == (bob_id, JOB_ID),
+        f"delta={delta!r}",
+    )
+    check_tables_unchanged(judge, initial_db, after_db, ("users", "applications"))
 
 
 def main() -> None:

@@ -23,12 +23,14 @@
 
       {% if filters.tab == 'future' %}
         <div class="empty-panel">
+          <h1>Future roles</h1>
           <h2>No future roles here</h2>
           <p>{{ content.EMPTY_FUTURE_ROLES }}</p>
           <a class="btn" href="{{ url_for('results') }}?{{ qs(filters, tab='jobs') }}">Back to open roles</a>
         </div>
       {% elif filters.tab == 'content' %}
         <div class="empty-panel">
+          <h1>Content results</h1>
           <h2>No content results</h2>
           <p>{{ content.EMPTY_CONTENT_TAB }}</p>
           <a class="btn" href="{{ url_for('results') }}?{{ qs(filters, tab='jobs') }}">Back to open roles</a>
@@ -52,6 +54,7 @@
               {% for key in ['area','category','brand','shift','type','rate'] %}
                 {% for value in filters[key] %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
               {% endfor %}
+              {% if filters.sort != 'relevance' %}<input type="hidden" name="sort" value="{{ filters.sort }}">{% endif %}
               <div class="field">
                 <label for="loc">Search by city, zipcode or state</label>
                 <input type="text" id="loc" name="loc" value="{{ filters.loc }}"
@@ -99,6 +102,7 @@
                 <input type="hidden" name="loc" value="{{ filters.loc }}">
                 <input type="hidden" name="radius" value="{{ filters.radius }}">
               {% endif %}
+              {% if filters.sort != 'relevance' %}<input type="hidden" name="sort" value="{{ filters.sort }}">{% endif %}
               <div class="filter-grid">
                 <fieldset>
                   <legend>Brand</legend>
@@ -120,7 +124,9 @@
                     <label><input type="checkbox" name="type" value="{{ value }}"
                                   {% if value in filters.type %}checked{% endif %}> {{ value }}</label>
                   {% endfor %}
-                  <legend style="margin-top:14px">Rate</legend>
+                </fieldset>
+                <fieldset>
+                  <legend>Rate</legend>
                   {% for value in rate_values %}
                     <label><input type="checkbox" name="rate" value="{{ value }}"
                                   {% if value in filters.rate %}checked{% endif %}> {{ value }}</label>

@@ -41,8 +41,8 @@ def traj(*urls: str) -> dict:
 class UrlGateTests(unittest.TestCase):
     def test_loopback_origins_on_any_port(self) -> None:
         for url in (
-            "http://localhost:40022/jobs/CP-1-1",
-            "http://127.0.0.1:41022/jobs/CP-1-1?x=1",
+            "http://localhost:40023/jobs/CP-1-1",
+            "http://127.0.0.1:41023/jobs/CP-1-1?x=1",
             "http://[::1]:5017/jobs/CP-1-1",
         ):
             with self.subTest(url=url):
@@ -56,22 +56,22 @@ class UrlGateTests(unittest.TestCase):
                 self.assertFalse(navigated_to_path(traj(url), "/jobs/CP-1-1"))
 
     def test_job_detail_is_exact(self) -> None:
-        self.assertTrue(job_detail_visited(traj("http://localhost:41022/jobs/CP-5991-12522/"), "CP-5991-12522"))
-        self.assertFalse(job_detail_visited(traj("http://localhost:41022/jobs/CP-5991-12522/apply"), "CP-5991-12522"))
-        self.assertFalse(job_detail_visited(traj("http://localhost:41022/jobs/CP-5991-11940"), "CP-5991-12522"))
+        self.assertTrue(job_detail_visited(traj("http://localhost:41023/jobs/CP-5991-12522/"), "CP-5991-12522"))
+        self.assertFalse(job_detail_visited(traj("http://localhost:41023/jobs/CP-5991-12522/apply"), "CP-5991-12522"))
+        self.assertFalse(job_detail_visited(traj("http://localhost:41023/jobs/CP-5991-11940"), "CP-5991-12522"))
 
     def test_start_url_counts(self) -> None:
-        self.assertTrue(navigated_to_path({"start_url": "http://localhost:40022/", "steps": []}, "/"))
+        self.assertTrue(navigated_to_path({"start_url": "http://localhost:40023/", "steps": []}, "/"))
 
     def test_results_text_params(self) -> None:
-        t = traj("http://localhost:41022/results?q=Yard+Driver+roles")
+        t = traj("http://localhost:41023/results?q=Yard+Driver+roles")
         self.assertTrue(results_visited(t, q="yard"))
-        self.assertTrue(results_visited(traj("http://localhost:41022/results?searchQuery=yard"), q="yard"))
+        self.assertTrue(results_visited(traj("http://localhost:41023/results?searchQuery=yard"), q="yard"))
         self.assertFalse(results_visited(t, q="optician"))
-        self.assertFalse(results_visited(traj("http://localhost:41022/?q=yard"), q="yard"))
+        self.assertFalse(results_visited(traj("http://localhost:41023/?q=yard"), q="yard"))
 
     def test_results_facets_are_exact(self) -> None:
-        t = traj("http://localhost:41022/results?brand=Sam%27s+Club&type=Part+time&shift=Weekend+Overnight&loc=Plano%2C+TX&radius=25")
+        t = traj("http://localhost:41023/results?brand=Sam%27s+Club&type=Part+time&shift=Weekend+Overnight&loc=Plano%2C+TX&radius=25")
         self.assertTrue(results_visited(t, shift="Weekend Overnight", type="Part time", brand="Sam's Club"))
         self.assertTrue(results_visited(t, loc="plano"))
         self.assertFalse(results_visited(t, shift="Weekend"))
@@ -79,9 +79,9 @@ class UrlGateTests(unittest.TestCase):
 
     def test_results_alternatives_and_regex(self) -> None:
         alternatives = ("puerto rico", re.compile(r"\bpr\b"))
-        self.assertTrue(results_visited(traj("http://localhost:41022/results?loc=Bayamon%2C+PR"), loc=alternatives))
-        self.assertTrue(results_visited(traj("http://localhost:41022/results?loc=puerto+rico"), loc=alternatives))
-        self.assertFalse(results_visited(traj("http://localhost:41022/results?loc=Springfield"), loc=alternatives))
+        self.assertTrue(results_visited(traj("http://localhost:41023/results?loc=Bayamon%2C+PR"), loc=alternatives))
+        self.assertTrue(results_visited(traj("http://localhost:41023/results?loc=puerto+rico"), loc=alternatives))
+        self.assertFalse(results_visited(traj("http://localhost:41023/results?loc=Springfield"), loc=alternatives))
 
     def test_last_email_input(self) -> None:
         t = {"steps": [
@@ -99,6 +99,7 @@ class MatcherTests(unittest.TestCase):
         self.assertFalse(contains_req_id("CP-5991-125220", "CP-5991-12522"))
         self.assertFalse(contains_req_id("XCP-5991-12522", "CP-5991-12522"))
         self.assertFalse(contains_req_id("R-2468347", "R-2411489"))
+        self.assertFalse(contains_req_id("The requisition is not CP-5991-12522.", "CP-5991-12522"))
 
     def test_streets(self) -> None:
         self.assertTrue(contains_street("2441 South Rock Road", "2441 S Rock Rd"))
@@ -107,6 +108,9 @@ class MatcherTests(unittest.TestCase):
         self.assertTrue(contains_street("Carr 2 KM 11.4, Bayamon", "Carr 2 KM 11.4"))
         self.assertFalse(contains_street("2441 S Maize Rd", "2441 S Rock Rd"))
         self.assertFalse(contains_street("12441 S Rock Rd", "2441 S Rock Rd"))
+        self.assertFalse(contains_street("The address is not 2441 S Rock Rd.", "2441 S Rock Rd"))
+        self.assertFalse(contains_street("2441 Rock", "2441 S Rock Rd"))
+        self.assertFalse(contains_street("2441 S Rock", "2441 S Rock Rd"))
 
     def test_shift_windows(self) -> None:
         self.assertTrue(contains_shift_window("6:00pm - 3:00am", "6:00pm", "3:00am"))
@@ -115,6 +119,7 @@ class MatcherTests(unittest.TestCase):
         self.assertTrue(contains_shift_window("noon to 5:00 pm", "12:00pm", "5:00pm"))
         self.assertFalse(contains_shift_window("6:00am - 3:00am", "6:00pm", "3:00am"))
         self.assertFalse(contains_shift_window("9:00pm - 1:30am", "3:00pm", "7:30pm"))
+        self.assertFalse(contains_shift_window("The window is not 6:00pm - 3:00am", "6:00pm", "3:00am"))
 
     def test_counts_ignore_ids_times_money_streets(self) -> None:
         text = "CP-5991-12522 at 2441 S Rock Rd, store #5991, $17.00-$19.50/hr, 6:00pm-3:00am, zip 67207: 3 open positions"
@@ -135,6 +140,7 @@ class MatcherTests(unittest.TestCase):
         self.assertFalse(contains_count("2.5 open positions", 2))
         self.assertFalse(contains_count("about 2,000 roles", 2))
         self.assertFalse(contains_count("12.", 2))
+        self.assertFalse(contains_count("There are not 2 open positions.", 2))
 
     def test_store_numbers(self) -> None:
         self.assertTrue(mentions_store_number("Store #1230 has more", 1230))
@@ -147,6 +153,7 @@ class MatcherTests(unittest.TestCase):
         self.assertFalse(contains_hashtag("#pharmacytechjobs2", "#pharmacytechjobs"))
         self.assertTrue(contains_confirmation_number("Confirmation: wmc–000005", "WMC-000005"))
         self.assertFalse(contains_confirmation_number("WMC-0000050", "WMC-000005"))
+        self.assertFalse(contains_confirmation_number("It is not WMC-000005.", "WMC-000005"))
 
 
 class StateHelperTests(unittest.TestCase):

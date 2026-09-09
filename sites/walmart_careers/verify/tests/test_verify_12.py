@@ -67,7 +67,7 @@ class VerifyTask12Tests(VerifierTestCase):
         initial = State()
         after = genuine_after()
         after.remove_saved(1, "CP-5991-12522")
-        self.assertPasses(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after))
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), "saved_jobs_exact_delta")
 
     def test_application_side_effect_fails(self) -> None:
         initial = State()

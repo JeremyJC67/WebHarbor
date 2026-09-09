@@ -42,7 +42,7 @@ class VerifyTask4Tests(VerifierTestCase):
 
     def test_shortcut_fails_on_gate(self) -> None:
         steps = [step("/"), step("/results"), step("/jobs/CP-4750-11130", "done")]
-        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), 'visited_results_weekend_overnight_filter')
+        self.assertFailsOn(self.verdict(steps, ANSWER, after=genuine_after()), 'visited_results_required_filters')
 
     def test_wrong_answer_0_fails(self) -> None:
         verdict = self.verdict(GENUINE_STEPS, 'CP-4750-11229 / 2 open positions', after=genuine_after())
@@ -58,9 +58,9 @@ class VerifyTask4Tests(VerifierTestCase):
         after.add_saved(2, "CP-5991-12522")
         self.assertFailsOn(self.verdict(GENUINE_STEPS, ANSWER, initial=initial, after=after), 'read_only_saved_jobs_unchanged')
 
-    def test_shift_filter_alone_satisfies_gate(self) -> None:
+    def test_shift_filter_alone_fails_gate(self) -> None:
         steps = [step("/"), step("/results?shift=Weekend+Overnight"), step("/jobs/CP-4750-11130", "done")]
-        self.assertPasses(self.verdict(steps, ANSWER))
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_required_filters")
 
 
 if __name__ == "__main__":

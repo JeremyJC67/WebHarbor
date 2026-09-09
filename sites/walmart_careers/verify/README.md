@@ -1,145 +1,50 @@
-# Walmart Careers — grading contract
+# Walmart Careers deterministic grading contract
 
-One deterministic verifier per task in `sites/walmart_careers/tasks.jsonl`, plus
-the shared helpers in `verify_lib.py`. Each task row points here through
-`verifier_path`; the matching `judge_rubric` in that row drives the LLM judge.
-The verifiers make **zero LLM calls** — a verdict never depends on a key or a
-model, so `eval_judge.py --verifier True` works offline.
+Each row in `sites/walmart_careers/tasks.jsonl` points to `verify_0.py` through `verify_19.py`. The wrappers use `verify_lib.py` for package, URL, answer and state validation and `ground_truth.py` to derive every qualifying set and target from the supplied initial SQLite snapshot. No verifier calls an LLM.
 
-## Layout
-
-```
-verify_lib.py     shared utilities: trajectory + URL gates, answer matchers,
-                  SQLite state diffing, the Judge harness, CLI parsing
-verify_0.py …     one per task, ground truth HARDCODED inside
-verify_19.py
-tests/            unittest suite: synthetic SQLite snapshots + hand-written
-                  trajectories, one file per verifier plus the library
-```
-
-Ground truth never lives in `tasks.jsonl` — the agent reads that file. Rubrics
-name the pages and the kind of fact required, never an answer value.
-
-## Running one
+## Inputs
 
 ```bash
-cd agent_demo
-uv run python ../sites/walmart_careers/verify/verify_2.py \
-    --run_dir /abs/path/runs/2 \
-    [--initial_db <seed.db> --after_db <live.db>] [--container wh-review]
+python sites/walmart_careers/verify/verify_0.py \
+  --run_dir /absolute/path/to/run \
+  --initial_db /absolute/path/to/initial.db \
+  --after_db /absolute/path/to/after.db
 ```
 
-Or through the single evaluation entry point (this is how the benchmark runs it):
+If explicit snapshots are omitted, the verifier checks `<run_dir>/initial.db` and `<run_dir>/after.db`, then falls back to `docker cp` from `$WH_CONTAINER` or `wh-review`. Missing or invalid inputs fail closed. Output is JSON with `task_id`, `pass`, `reason`, and `evidence`; exit code 0 means PASS and 1 means FAIL.
+
+## Package validation
+
+Every run must provide:
+
+- the exact task ID;
+- a nonempty final answer;
+- `terminated: true` with `termination_reason: agent_done`;
+- at least one recorded step;
+- HTTP URLs on the same loopback origin and port as `start_url`;
+- both referenced screenshots for every step;
+- PNG files that fully decode to nonempty images.
+
+The verifier validates recorder packaging and declared browser history. A deterministic verifier cannot cryptographically authenticate the recorder or bind screenshot pixels to the declared URL, so release evidence also includes independent Playwright execution against the packaged image.
+
+## Snapshot validation
+
+The initial and after snapshots must have the exact nine-table Walmart Careers schema, including `seed_metadata` version `walmart-careers-v2`. The initial snapshot must contain 246 jobs, 51 stores, 33 categories, seven areas, four users and no application drafts. `areas`, `categories`, `stores`, `jobs`, `seed_metadata`, and `application_drafts` must be row-identical before and after. Any schema change or immutable-catalog mutation fails closed.
+
+Read-only tasks additionally preserve `users`, `saved_jobs`, and `applications`. Stateful verifiers enforce exact added, removed or changed rows across all mutable tables. They reject collateral writes, stale-state no-ops, duplicate logical actions, changes to existing applications, extra users and extra saves.
+
+## Ground truth and workflows
+
+`ground_truth.py` queries the initial snapshot and fails on missing candidates, unexpected candidate cardinality, or tied extrema. Comparison tasks require every detail page needed to read hidden comparison values. Tasks requiring login, registration, career-area navigation, filters, application confirmation, profile update or save/remove actions enforce the required page order.
+
+Results gates parse query parameters. Facets use exact values, scalar values require exact equality, locations require the intended city/state scope, and keyword searches use whole normalized tokens. Task-requested filters must appear together when the task requires their conjunction.
+
+Answer matchers require affirmative values and reject negated occurrences. Requisition IDs, confirmation numbers, streets, shift windows, position counts, worker types, hashtags and qualification text are checked against the dynamically validated target. Complete street directionals and suffixes are required, with standard abbreviations accepted.
+
+## Tests
 
 ```bash
-uv run python agent_demo/eval_judge.py --run_dir /abs/path/runs/2 --verifier True
+python -m pytest sites/walmart_careers/tests sites/walmart_careers/verify/tests -q
 ```
 
-Output is `{task_id, pass, reason, evidence[]}` on stdout; exit 0 = PASS,
-1 = FAIL. `reason` is the **first failing check name** (or
-`all checks passed`); `evidence[]` lists every check with `[PASS]`/`[FAIL]`.
-Infrastructure problems (missing trajectory, missing snapshots, a query error)
-fail closed with `"infra_error": true`.
-
-Pass `--run_dir` as an **absolute path**: `eval_judge.py` re-runs the verifier
-with `cwd=agent_demo/`, so a relative run dir would resolve against the wrong
-directory.
-
-## Snapshot discovery
-
-Every verifier needs a before/after pair of SQLite databases:
-
-1. `--initial_db` / `--after_db` if given explicitly;
-2. otherwise `<run_dir>/initial.db` and `<run_dir>/after.db` if present
-   (the run-signature writer and the real-run procedure put them there);
-3. otherwise `docker cp` from the container named by `--container`, defaulting
-   to `$WH_CONTAINER` or `wh-review`:
-   `/opt/WebSyn/walmart_careers/instance_seed/walmart_careers.db` (initial)
-   and `/opt/WebSyn/walmart_careers/instance/walmart_careers.db` (after).
-
-If neither snapshot can be obtained the verifier fails closed
-(`database_unavailable`). The seed used for review has md5
-`b57631080969fe151e1717dbef3dd372`.
-
-## What the verifiers check, in order
-
-1. **Identity** — `task_id` matches and `final_answer` is non-empty
-   (`trajectory_task_matches`, `final_answer_nonempty`).
-2. **Navigation gates** — every URL the task mandates appears in
-   `trajectory_urls` (start_url plus each step's url), on a loopback host with
-   **any** port (runs hit 41022 while tasks say 40022). Detail-page gates are
-   exact `/jobs/<id>` paths, never `/jobs/<id>/apply`; results gates parse the
-   query string (`q`/`searchQuery`/`loc` as substrings, facets as exact
-   `getlist` values). Sign-in is `/login` visited plus the last typed email.
-   Every requisition-ID task gates on the detail page because result-card
-   hrefs expose IDs; the paired fact (street, count, window, chip, degree) is
-   detail-only.
-3. **Answer match** — tolerant matchers: requisition IDs (case, en/em dashes),
-   streets (Rd/Road, SE/Southeast, optional suffix), shift windows (`6 pm`,
-   `6:00 PM`, `6:00 p.m.`, `18:00`), counts (bare integer after masking IDs,
-   times, money, zips, street and store numbers; word forms), store numbers,
-   hashtags, confirmation numbers. Comparison tasks (8, 9, 10, 18) also fail
-   when the losing posting is reported instead of the winner.
-4. **Database after-state** — stateful tasks diff `initial.db` vs `after.db`:
-   set equality on the user's saved roles (an extra or missing save fails),
-   exactly one new `applications` row with the right job / user / phone, the
-   answer must contain **that row's** `confirmation_no` (never a hardcoded
-   string — tasks 13 and 17 both yield `WMC-000005` from a fresh reset), a new
-   `users` row for task 14, David's `city`/`state` for task 15.
-5. **Read-only invariance** — tasks 0–10, 16 and 18 FAIL on any change to
-   `users`, `saved_jobs` or `applications` (`read_only_<table>_unchanged`).
-
-## Validation
-
-### LLM-free matrix
-
-Produced by `scripts_dev/run_signature.py` (Playwright run-signature writer in the
-`agent.py` format) and graded through `eval_judge.py --verifier True` against the
-container `wh-review` (`-p 8201:8101 -p 41022:40022`). No LLM call anywhere.
-
-| run kind | tasks | expected | result |
-|---|---|---|---|
-| No-op (homepage only, empty answer, after = seed) | all 20 | FAIL on `final_answer_nonempty` | 20/20 |
-| Scripted genuine (real UI path, real DB after-state) | all 20 | PASS | 20/20 |
-| Scripted shortcut (right answer, trajectory restricted to `/`, `/results`, `/login`) | 0–10, 13, 15–19 | FAIL on a navigation gate | 17/17 |
-| Wrong answer (genuine trajectory, near-miss answer) | 0–10, 13, 15–19 | FAIL on the answer check | 17/17 |
-| State mismatch (genuine trajectory + answer, after = seed) | 11–15, 17, 19 | FAIL on the DB check | 7/7 |
-| Over-action (extra save, two removals, extra application) | 11, 12, 15, 19 | FAIL on set equality / `applications_unchanged` | 4/4 |
-| Read-only write (task 0 that also saves a role) | 0 | FAIL on `read_only_saved_jobs_unchanged` | 1/1 |
-| Unit tests | all 20 + lib | green | 223 tests |
-
-```bash
-python -m unittest discover sites/walmart_careers/verify/tests
-```
-
-### Real agent runs
-
-Two passes of the unchanged `agent_demo/agent.py` (default 15 steps, one attempt per
-task, no retries), each run graded by the verifier **and** by the LLM judge
-(`gpt-5.4-nano`, rubric-driven). Both passes are graded with the verifiers as
-committed after two fixes the runs prompted: a count written as "Open positions: 2."
-no longer fails on the trailing period (`verify_lib`), and verifier 5's results gate
-also accepts a typed header search naming Hoboken or Technology (`?q=`), not only the
-`area` / `loc` filter parameters.
-
-| agent | verifier PASS | judge PASS (original / rewritten rubric) | agree (original / rewritten) | diverge after rewrite |
-|---|---|---|---|---|
-| gpt-5.4-nano | 8/20 | 3/20 / 3/20 | 15/20 / 15/20 | 5 (all verifier PASS / judge FAIL) |
-| gpt-5.4-mini | 13/20 | 3/20 / 6/20 | 8/20 / 13/20 | 7 (all verifier PASS / judge FAIL) |
-
-Every divergent trajectory was read; the deterministic verifier was right in all 17
-under the original rubrics and in all 12 that remain after the rubric rewrite. The
-rubrics were then rewritten around evidence the judge can actually see (the /login
-step with the named account, the Save / Removed flash, the "Application submitted"
-page with its confirmation number, the updated account page, the My applications
-page; "must include" instead of "exactly as shown"; a scoring rule that the full step
-list is authoritative and that a fact missing from the last screenshots is not a
-contradiction, with the database left to the verifier) and all 40 runs were re-judged
-with the verifiers untouched: agreement 23/40 → 28/40, and the two runs the judge had
-wrongly passed (a skipped mandated filter, a guest application) now fail on both
-graders. The 12 residual divergences are the nano judge failing checkpoints it cannot
-confirm from the last four screenshots, or contradicting evidence it quotes itself.
-Every agree-FAIL run is a genuine agent failure (answered from result cards,
-wrong posting, out of steps, skipped a mandated filter, guest application instead of a
-signed-in one). Full per-task tables, the before/after table and the adjudication are in
-`scripts_dev/VERIFICATION.md` §11 and §11.1.
+The verifier fixtures copy the complete generated seed schema and invoke every verifier as a subprocess. Regression coverage includes malformed package evidence, corrupt PNGs, wrong task IDs, wrong answers, missing filters/pages, reordered workflows, schema/catalog mutation, unrelated state writes, stale-state preconditions, duplicate or extra rows, and positive representation variants. Application tests separately exercise the actual Flask routes and generated seed.
