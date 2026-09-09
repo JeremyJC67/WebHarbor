@@ -98,13 +98,13 @@ per-task table in `scripts_dev/VERIFICATION.md` §10.
 
 | run kind | tasks | expected | result |
 |---|---|---|---|
-| No-op (homepage only, empty answer, after = seed) | all 20 | FAIL on `final_answer_nonempty` | pending |
-| Scripted genuine (real UI path, real DB after-state) | all 20 | PASS | pending |
-| Scripted shortcut (right answer, trajectory restricted to `/`, `/results`, `/login`) | 0–10, 13, 15–19 | FAIL on a navigation gate | pending |
-| Wrong answer (genuine trajectory, near-miss answer) | 0–10, 13, 15–19 | FAIL on the answer check | pending |
-| State mismatch (genuine trajectory + answer, after = seed) | 11–15, 17, 19 | FAIL on the DB check | pending |
-| Over-action (extra save, two removals, extra application) | 11, 12, 15, 19 | FAIL on set equality / `applications_unchanged` | pending |
-| Read-only write (task 0 that also saves a role) | 0 | FAIL on `read_only_saved_jobs_unchanged` | pending |
+| No-op (homepage only, empty answer, after = seed) | all 20 | FAIL on `final_answer_nonempty` | 20/20 |
+| Scripted genuine (real UI path, real DB after-state) | all 20 | PASS | 20/20 |
+| Scripted shortcut (right answer, trajectory restricted to `/`, `/results`, `/login`) | 0–10, 13, 15–19 | FAIL on a navigation gate | 17/17 |
+| Wrong answer (genuine trajectory, near-miss answer) | 0–10, 13, 15–19 | FAIL on the answer check | 17/17 |
+| State mismatch (genuine trajectory + answer, after = seed) | 11–15, 17, 19 | FAIL on the DB check | 7/7 |
+| Over-action (extra save, two removals, extra application) | 11, 12, 15, 19 | FAIL on set equality / `applications_unchanged` | 4/4 |
+| Read-only write (task 0 that also saves a role) | 0 | FAIL on `read_only_saved_jobs_unchanged` | 1/1 |
 | Unit tests | all 20 + lib | green | 221 tests |
 
 ```bash
