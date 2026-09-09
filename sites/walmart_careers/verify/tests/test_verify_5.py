@@ -67,6 +67,13 @@ class VerifyTask5Tests(VerifierTestCase):
         steps = [step("/"), step("/results?q=senior+software+engineer"), step("/jobs/R-2411489", "done")]
         self.assertFailsOn(self.verdict(steps, ANSWER), "visited_results_technology_or_hoboken")
 
+    def test_typed_search_naming_hoboken_or_technology_passes_gate(self) -> None:
+        # Real gpt-5.4-mini run: header search "Technology Hoboken, NJ" -> ?q=
+        steps = [step("/"), step("/results?q=Technology+Hoboken%2C+NJ"), step("/jobs/R-2411489", "done")]
+        self.assertPasses(self.verdict(steps, ANSWER))
+        steps = [step("/"), step("/results?searchQuery=technology+full+time"), step("/jobs/R-2411489", "done")]
+        self.assertPasses(self.verdict(steps, ANSWER))
+
 
 if __name__ == "__main__":
     unittest.main()

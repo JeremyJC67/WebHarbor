@@ -35,8 +35,18 @@ DEGREE = "bachelor"
 def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -> None:
     check_trajectory_identity(judge, trajectory, TASK_ID)
     answer = final_answer(trajectory)
+    # Filter UI (area / loc params) or a typed header search naming the place or
+    # the career area — a real gpt-5.4-mini run typed "Technology Hoboken, NJ",
+    # opened the right posting and answered correctly; the task text says "find",
+    # it does not mandate the filter popover.
     check_results_visited(
-        judge, trajectory, "visited_results_technology_or_hoboken", {"area": "technology"}, {"loc": "hoboken"}
+        judge,
+        trajectory,
+        "visited_results_technology_or_hoboken",
+        {"area": "technology"},
+        {"loc": "hoboken"},
+        {"q": "hoboken"},
+        {"q": "technology"},
     )
     check_visited_job_detail(judge, trajectory, JOB_ID)
     judge.check(
