@@ -26,7 +26,7 @@ SITES = [
     'allrecipes', 'amazon', 'apple', 'arxiv', 'bbc_news', 'booking',
     'github', 'google_flights', 'google_map', 'google_search',
     'huggingface', 'wolfram_alpha', 'cambridge_dictionary',
-    'coursera', 'espn', 'merriam_webster', 'ikea', 'phys_org', 'target', 'ted', 'osu', 'rotten_tomatoes', 'compass',
+    'coursera', 'espn', 'merriam_webster', 'ikea', 'phys_org', 'target', 'ted', 'osu', 'rotten_tomatoes', 'compass', 'walmart_careers',
 ]
 BASE_PORT = 40000
 WEBSYN_DIR = '/opt/WebSyn'
@@ -48,6 +48,7 @@ _site_locks = {s: threading.Lock() for s in SITES}
 # for those.
 _site_procs: dict = {}
 _site_procs_lock = threading.Lock()
+_reap_lock = threading.Lock()
 
 # We tried graceful SIGTERM. Werkzeug's threaded serve_forever() doesn't
 # honor it. Since /reset wipes instance/ next anyway, in-flight transactions
@@ -91,6 +92,18 @@ def is_alive(pid) -> bool:
         return False
 
 
+def reap_exited_children() -> None:
+    """Reap every exited direct child, including re-parented Flask workers."""
+    with _reap_lock:
+        while True:
+            try:
+                pid, _status = os.waitpid(-1, os.WNOHANG)
+            except ChildProcessError:
+                return
+            if pid <= 0:
+                return
+
+
 def kill_site(site: str, reap_grace: float = REAP_GRACE_SECS):
     pid = read_pid(site)
     if not pid:
@@ -101,11 +114,8 @@ def kill_site(site: str, reap_grace: float = REAP_GRACE_SECS):
         os.killpg(pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
-    # If we own a Popen for this supervisor, wait()+reap so it doesn't
-    # linger as a zombie. (Supervisors started at boot via websyn_start.sh
-    # aren't tracked here; we still adopted them as children via container
-    # init, but Python won't reap them — they stay zombies until container
-    # exit. That's harmless: is_alive() correctly reports them as dead.)
+    # Reap supervisors created through Popen and boot-time supervisors that
+    # became direct children when websyn_start.sh exec'd this control process.
     with _site_procs_lock:
         proc = _site_procs.pop(site, None)
     if proc is not None:
@@ -113,12 +123,16 @@ def kill_site(site: str, reap_grace: float = REAP_GRACE_SECS):
             proc.wait(timeout=reap_grace)
         except subprocess.TimeoutExpired:
             pass
+    reap_exited_children()
     # Belt-and-suspenders: confirm the supervisor is actually dead before
     # returning, even when we don't own the Popen. is_alive() looks at
     # /proc state and returns False for zombies, so this loop exits in ms.
     deadline = time.time() + reap_grace
     while time.time() < deadline:
         if not is_alive(pid):
+            for _ in range(10):
+                reap_exited_children()
+                time.sleep(0.01)
             return
         time.sleep(0.01)
     raise RuntimeError(f'failed to stop {site} process group {pid}')
@@ -187,6 +201,8 @@ def restart_one(site: str) -> dict:
 
 @app.route('/health')
 def health():
+    reap_exited_children()
+
     def status(site):
         pid = read_pid(site)
         alive = is_alive(pid)
