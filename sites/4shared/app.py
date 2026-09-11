@@ -20,7 +20,7 @@ from sqlalchemy.engine import Engine
 
 SITE_SLUG = "4shared"
 SITE_NAME = "4shared"
-SITE_PORT = 40023
+SITE_PORT = 40024
 BENCHMARK_PASSWORD = "TestPass123!"
 BASE_DIR = Path(__file__).resolve().parent
 INSTANCE_DIR = BASE_DIR / "instance"
