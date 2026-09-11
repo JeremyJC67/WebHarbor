@@ -12,6 +12,7 @@ EXPECTED = [
     "google_flights", "google_map", "google_search", "huggingface", "wolfram_alpha",
     "cambridge_dictionary", "coursera", "espn", "merriam_webster", "ikea", "phys_org",
     "target", "ted", "osu", "rotten_tomatoes", "compass", "walmart_careers",
+    "amtrak",
 ]
 
 
@@ -37,8 +38,8 @@ def test_exact_24_site_registry_and_port():
 
 def test_docker_preserves_current_main_build_gates_and_adds_walmart():
     text = (ROOT / "Dockerfile").read_text()
-    assert "24 Flask mirror sites" in text
-    assert "EXPOSE 8101 40000-40023" in text
+    assert "25 Flask mirror sites" in text
+    assert "EXPOSE 8101 40000-40024" in text
     assert "check_asset_inventory.py /opt/WebSyn/compass" in text
     assert "check_asset_inventory.py /opt/WebSyn/walmart_careers" in text
     assert "walmart_careers/check_tracked_assets.py" in text
@@ -68,8 +69,8 @@ def test_assets_pin_is_immutable_merged_revision():
 def test_shared_documentation_uses_24_site_range():
     for relative in ["README.md", "AGENTS.md", "CONTRIBUTING.md", "CLAUDE.md", "agent_demo/README.md"]:
         text = (ROOT / relative).read_text()
-        assert "40000-40022" not in text, relative
-        assert "40000-40023" in text, relative
+        assert "40000-40023" not in text, relative
+        assert "40000-40024" in text, relative
 
 
 def test_no_merge_conflict_markers_in_release_files():
