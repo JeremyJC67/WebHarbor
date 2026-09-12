@@ -740,6 +740,8 @@ def notebooks_list():
     q = request.args.get("q", "").strip()
     language = request.args.get("language", "").strip()
     medal = request.args.get("medal", "").strip()
+    # Default matches the first option the form renders ("recent"), so a submit
+    # that does not change the sort select keeps the same ordering.
     sort = request.args.get("sort", "relevance" if q else "recent")
 
     notebooks = Notebook.query.all()
@@ -757,9 +759,11 @@ def notebooks_list():
     else:
         if sort == "comments":
             notebooks.sort(key=lambda n: -n.comments)
+        elif sort == "votes":
+            notebooks.sort(key=lambda n: -n.votes)
         elif sort == "recent":
             notebooks.sort(key=lambda n: (n.last_run or date.min), reverse=True)
-        else:
+        else:  # relevance without a query
             notebooks.sort(key=lambda n: -n.votes)
 
     return render_template("notebooks.html", notebooks=notebooks, q=q,

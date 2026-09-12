@@ -21,8 +21,9 @@
         <option value="bronze" {{ 'selected' if medal=='bronze' }}>🥉 Bronze</option>
       </select>
       <select name="sort" aria-label="Sort order" onchange="this.form.submit()">
+        <option value="recent" {{ 'selected' if sort=='recent' or sort=='relevance' }}>Recently run</option>
+        <option value="votes" {{ 'selected' if sort=='votes' }}>Most votes</option>
         <option value="comments" {{ 'selected' if sort=='comments' }}>Most comments</option>
-        <option value="recent" {{ 'selected' if sort=='recent' }}>Recently run</option>
       </select>
       <button class="btn btn-sm btn-ghost" type="submit">Apply</button>
     </form>
