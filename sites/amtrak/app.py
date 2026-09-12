@@ -1,11 +1,13 @@
 import json
 import os
 import re
+import secrets
 import string
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlparse
 
 from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_bcrypt import Bcrypt
@@ -19,6 +21,9 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "instance" / "amtrak.db"
@@ -49,14 +54,46 @@ SEARCH_KEY = "amtrak_search_state"
 MULTI_KEY = "amtrak_multi_city_state"
 LOOKUP_KEY = "amtrak_lookup_codes"
 BENCHMARK_PASSWORD = "TestPass123!"
+MAX_PASSENGERS = 8
+TRIP_TYPES = {"one-way", "round-trip", "multi-city"}
+SORT_KEYS = {"price", "price_desc", "duration", "departure"}
+TIME_WINDOWS = {"", "morning", "afternoon", "evening"}
+SAFE_HTTP_METHODS = {"GET", "HEAD", "OPTIONS"}
+MAX_UPLOAD_BYTES = 2 * 1024 * 1024
 
 app = Flask(__name__, instance_path=str(BASE_DIR / "instance"))
-app.config["SECRET_KEY"] = "webharbor-amtrak-demo-key"
+# A per-process random key unless one is supplied. A hardcoded key lets anyone forge a
+# signed session cookie for any account, which defeats the login tasks entirely.
+app.config["SECRET_KEY"] = os.environ.get("AMTRAK_SECRET_KEY") or secrets.token_hex(32)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+
+@event.listens_for(Engine, "connect")
+def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):
+    """SQLite defaults foreign keys to OFF, so declared relationships are not enforced."""
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
+
+@app.before_request
+def _reject_cross_origin_writes():
+    """No form on this mirror carries a CSRF token, so refuse state-changing
+    requests that announce a foreign origin. Combined with SameSite=Lax this
+    stops a third-party page from driving the booking or profile forms."""
+    if request.method in SAFE_HTTP_METHODS:
+        return None
+    origin = request.headers.get("Origin")
+    if origin and origin != f"{request.scheme}://{request.host}":
+        abort(403)
+    return None
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Sign in to continue with this Amtrak demo mirror."
@@ -614,11 +651,25 @@ def parse_date_input(value):
         return None
 
 
-def parse_int(value, default=1):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
+def bounded_int(value, default, low, high):
+    """Parse a user-supplied integer. Returns None when it is not an integer in range.
+
+    SQLite enforces no bounds of its own, so every number that reaches a template
+    loop or a price calculation has to be checked here first.
+    """
+    if value is None or str(value).strip() == "":
         return default
+    try:
+        number = int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return number if low <= number <= high else None
+
+
+def bounded_passengers(value, default=1):
+    """Clamp an already-stored passenger count (session/flow) into the allowed range."""
+    number = bounded_int(value, default, 1, MAX_PASSENGERS)
+    return default if number is None else number
 
 
 def fare_class_by_slug(slug):
@@ -640,6 +691,13 @@ def sleeper_room_for_trip(trip, room_type):
 
 
 def station_lookup(value):
+    """Resolve a station code, a "City - Name (CODE)" label, a station name or a city name.
+
+    Deliberately exact. The old substring fallback resolved "a" to Albany and "New"
+    to Detroit, so a typo silently searched a station the user never asked for. A
+    value that does not identify exactly one station returns None and the caller
+    answers 400 rather than guessing.
+    """
     raw = (value or "").strip()
     if not raw:
         return None
@@ -651,18 +709,16 @@ def station_lookup(value):
         station = Station.query.filter_by(code=match.group(1)).first()
         if station:
             return station
-    like = f"%{raw}%"
-    return (
-        Station.query.filter(
-            db.or_(
-                Station.name.ilike(like),
-                Station.city_name.ilike(like),
-                Station.code.ilike(like),
-            )
-        )
+    exact = (
+        Station.query.filter(db.or_(Station.name.ilike(raw), Station.city_name.ilike(raw)))
         .order_by(Station.is_hub.desc(), Station.city_name, Station.name)
-        .first()
+        .all()
     )
+    if len(exact) == 1:
+        return exact[0]
+    # An ambiguous city (Boston has South Station and Back Bay) resolves to its hub.
+    hubs = [station for station in exact if station.is_hub]
+    return hubs[0] if len(hubs) == 1 else None
 
 
 def trip_segments_ordered(trip):
@@ -935,12 +991,20 @@ def build_search_results(origin_code, destination_code, service_date, fare_slug=
 
 
 def booking_defaults():
+    """Blank-slate state for the trip-search widget.
+
+    Origin, destination and both dates ship EMPTY on purpose: a pre-filled
+    station pair or travel date types part of a benchmark task's answer into the
+    form before the agent has done anything. The remaining defaults (one-way, one
+    traveler, Saver, price sort) are the ordinary defaults any booking site opens
+    with and are never a task's target on their own.
+    """
     return {
         "trip_type": "one-way",
-        "origin": "NYP",
-        "destination": "WAS",
-        "departure_date": iso_date(MIRROR_REFERENCE_DATE.date()),
-        "return_date": iso_date(MIRROR_REFERENCE_DATE.date() + timedelta(days=2)),
+        "origin": "",
+        "destination": "",
+        "departure_date": "",
+        "return_date": "",
         "passengers": 1,
         "fare_class": "saver",
         "time_window": "",
@@ -974,7 +1038,7 @@ def current_selected_options():
 
 
 def flow_passenger_count():
-    return parse_int(get_flow().get("passengers", 1), 1)
+    return bounded_passengers(get_flow().get("passengers", 1))
 
 
 def flow_has_sleepers():
@@ -1040,7 +1104,7 @@ def booking_summary(flow=None):
     if not options:
         return None
     fare_slug = flow.get("fare_slug", "value")
-    passenger_count = parse_int(flow.get("passengers", 1), 1)
+    passenger_count = bounded_passengers(flow.get("passengers", 1))
     room_choices = flow.get("room_choices", {})
     passengers = flow.get("passenger_entries", [])
 
@@ -1320,10 +1384,15 @@ def deals_page():
 
 @app.route("/schedules")
 def schedules_page():
-    station_code = request.args.get("station_code", "NYP").upper()
-    schedule_date = parse_date_input(request.args.get("date")) or MIRROR_REFERENCE_DATE.date()
-    station = Station.query.filter_by(code=station_code).first()
-    departures = departures_for_station(station_code, schedule_date, 16) if station else []
+    raw_code = request.args.get("station_code", "").strip()
+    raw_date = request.args.get("date", "").strip()
+    station = station_lookup(raw_code) if raw_code else Station.query.filter_by(code="NYP").first()
+    if raw_code and not station:
+        abort(400, description=f"No station matches {raw_code!r}.")
+    schedule_date = parse_date_input(raw_date) if raw_date else MIRROR_REFERENCE_DATE.date()
+    if raw_date and not schedule_date:
+        abort(400, description="A service date in YYYY-MM-DD format is required.")
+    departures = departures_for_station(station.code, schedule_date, 16) if station else []
     return render_template(
         "schedules.html",
         station=station,
@@ -1411,58 +1480,81 @@ def booking_search():
 
 @app.route("/booking/results")
 def booking_results():
+    # Everything below is validated rather than defaulted. The old handler silently
+    # substituted NYP -> WAS on the reference date for missing or unparseable input, so
+    # /booking/results with no query string at all returned a full result list.
     params = booking_defaults()
     params.update(
         {
-            "trip_type": request.args.get("trip_type", params["trip_type"]),
-            "origin": request.args.get("origin", params["origin"]).upper(),
-            "destination": request.args.get("destination", params["destination"]).upper(),
-            "departure_date": request.args.get("departure_date", params["departure_date"]),
-            "return_date": request.args.get("return_date", params["return_date"]),
-            "passengers": parse_int(request.args.get("passengers"), 1),
-            "fare_class": request.args.get("fare_class", params["fare_class"]),
-            "time_window": request.args.get("time_window", ""),
-            "sort": request.args.get("sort", "price"),
+            "trip_type": request.args.get("trip_type", params["trip_type"]).strip().lower(),
+            "origin": request.args.get("origin", params["origin"]).strip().upper(),
+            "destination": request.args.get("destination", params["destination"]).strip().upper(),
+            "departure_date": request.args.get("departure_date", params["departure_date"]).strip(),
+            "return_date": request.args.get("return_date", params["return_date"]).strip(),
+            "fare_class": request.args.get("fare_class", params["fare_class"]).strip().lower(),
+            "time_window": request.args.get("time_window", "").strip().lower(),
+            "sort": request.args.get("sort", "price").strip().lower(),
             "direct_only": request.args.get("direct_only", "") in {"1", "true", "on"},
         }
     )
+    if params["trip_type"] not in TRIP_TYPES:
+        abort(400, description=f"Unknown trip type {params['trip_type']!r}.")
     if params["trip_type"] == "multi-city":
         return redirect(url_for("booking_multi_city"))
 
-    leg = request.args.get("leg", "outbound")
+    passengers = bounded_int(request.args.get("passengers"), 1, 1, MAX_PASSENGERS)
+    if passengers is None:
+        abort(400, description=f"Passengers must be a whole number between 1 and {MAX_PASSENGERS}.")
+    params["passengers"] = passengers
+
+    if params["sort"] not in SORT_KEYS:
+        abort(400, description=f"Unknown sort order {params['sort']!r}.")
+    if params["time_window"] not in TIME_WINDOWS:
+        abort(400, description=f"Unknown departure window {params['time_window']!r}.")
+    if not fare_class_by_slug(params["fare_class"]):
+        abort(400, description=f"Unknown fare class {params['fare_class']!r}.")
+
+    leg = request.args.get("leg", "outbound").strip().lower()
+    if leg not in {"outbound", "return"}:
+        abort(400, description=f"Unknown leg {leg!r}.")
+
     departure_date = parse_date_input(params["departure_date"])
-    return_date = parse_date_input(params["return_date"])
     if not departure_date:
-        departure_date = MIRROR_REFERENCE_DATE.date()
-        params["departure_date"] = iso_date(departure_date)
-    if not return_date:
-        return_date = departure_date + timedelta(days=2)
-        params["return_date"] = iso_date(return_date)
+        abort(400, description="A departure date in YYYY-MM-DD format is required.")
+    return_date = None
+    if params["trip_type"] == "round-trip":
+        return_date = parse_date_input(params["return_date"])
+        if not return_date:
+            abort(400, description="A round trip needs a return date in YYYY-MM-DD format.")
+        if return_date < departure_date:
+            abort(400, description="The return date cannot be before the departure date.")
+
+    origin_station = station_lookup(params["origin"])
+    if not origin_station:
+        abort(400, description=f"No station matches the origin {params['origin']!r}.")
+    destination_station = station_lookup(params["destination"])
+    if not destination_station:
+        abort(400, description=f"No station matches the destination {params['destination']!r}.")
+    if origin_station.code == destination_station.code:
+        abort(400, description="Origin and destination must be different stations.")
 
     if leg == "return" and params["trip_type"] == "round-trip":
-        origin_code = params["destination"]
-        destination_code = params["origin"]
+        origin_station, destination_station = destination_station, origin_station
         service_date = return_date
         leg_title = "Choose your return train"
     else:
-        origin_code = params["origin"]
-        destination_code = params["destination"]
         service_date = departure_date
         leg_title = "Choose your outbound train"
 
-    origin_station = station_lookup(origin_code)
-    destination_station = station_lookup(destination_code)
-    results = []
-    if origin_station and destination_station:
-        results = build_search_results(
-            origin_station.code,
-            destination_station.code,
-            service_date,
-            fare_slug=params["fare_class"],
-            direct_only=params["direct_only"],
-            time_window=params["time_window"],
-            sort_key=params["sort"],
-        )
+    results = build_search_results(
+        origin_station.code,
+        destination_station.code,
+        service_date,
+        fare_slug=params["fare_class"],
+        direct_only=params["direct_only"],
+        time_window=params["time_window"],
+        sort_key=params["sort"],
+    )
 
     option_map = {}
     for index, option in enumerate(results):
@@ -1596,7 +1688,7 @@ def booking_passengers():
     saved_profiles = Passenger.query.filter_by(user_id=current_user.id, is_saved_profile=True).order_by(Passenger.id).all()
     if request.method == "POST":
         entries = []
-        count = parse_int(flow.get("passengers", 1), 1)
+        count = bounded_passengers(flow.get("passengers", 1))
         for index in range(count):
             entries.append(
                 {
@@ -1618,7 +1710,7 @@ def booking_passengers():
         "booking_passengers.html",
         flow=flow,
         saved_profiles=saved_profiles,
-        passenger_count=parse_int(flow.get("passengers", 1), 1),
+        passenger_count=bounded_passengers(flow.get("passengers", 1)),
     )
 
 
@@ -1758,7 +1850,12 @@ def booking_checkout():
             )
             db.session.add(activity)
 
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("That demo booking could not be saved. Please try the checkout again.", "danger")
+            return redirect(url_for("booking_review"))
         session["last_booking_code"] = booking_code
         clear_flow()
         flash("Demo trip confirmed. No real ticketing or payment was processed.", "success")
@@ -1790,7 +1887,14 @@ def booking_multi_city():
                 depart_date = parse_date_input(request.form.get(f"date_{index}"))
                 if origin and destination and depart_date:
                     legs.append({"origin": origin, "destination": destination, "date": iso_date(depart_date)})
-            passengers = parse_int(request.form.get("passengers"), 1)
+            if not legs:
+                abort(400, description="Every multi-city leg needs an origin, a destination and a date.")
+            for leg in legs:
+                if not station_lookup(leg["origin"]) or not station_lookup(leg["destination"]):
+                    abort(400, description=f"No station matches {leg['origin']!r} -> {leg['destination']!r}.")
+            passengers = bounded_int(request.form.get("passengers"), 1, 1, MAX_PASSENGERS)
+            if passengers is None:
+                abort(400, description=f"Passengers must be a whole number between 1 and {MAX_PASSENGERS}.")
             options_by_leg = []
             for leg in legs:
                 options = build_search_results(leg["origin"], leg["destination"], parse_date_input(leg["date"]), fare_slug="value", direct_only=False, sort_key="price")
@@ -1838,7 +1942,7 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash("Signed in to the Amtrak demo mirror.", "success")
-            return redirect(request.args.get("next") or url_for("account"))
+            return redirect(safe_next_url(request.args.get("next")) or url_for("account"))
         flash("That demo email and password did not match.", "danger")
     return render_template("login.html")
 
@@ -1851,16 +1955,20 @@ def register():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
         if not email or not password:
             flash("Please complete the required fields.", "danger")
+        elif not first_name or not last_name:
+            # A blank surname used to become "Traveler", so the site invented a name
+            # for the account and then greeted the user by it.
+            flash("Please enter both a first name and a last name.", "danger")
         elif password != confirm_password:
             flash("Passwords must match.", "danger")
         elif User.query.filter_by(email=email).first():
             flash("That demo account already exists.", "warning")
         else:
-            display_name = request.form.get("display_name", "").strip() or email.split("@")[0]
-            first_name = request.form.get("first_name", "").strip() or display_name.split()[0]
-            last_name = request.form.get("last_name", "").strip() or "Traveler"
+            display_name = request.form.get("display_name", "").strip() or f"{first_name} {last_name}"
             user = User(
                 email=email,
                 display_name=display_name,
@@ -1900,15 +2008,23 @@ def register():
                 is_saved_profile=True,
             )
             db.session.add(saved_profile)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                # Without the rollback the session stays poisoned (PendingRollbackError)
+                # and every later query on it fails too.
+                db.session.rollback()
+                flash("That demo account could not be created. Please try again.", "danger")
+                return render_template("register.html")
             login_user(user)
             flash("Your local Amtrak demo account is ready.", "success")
             return redirect(url_for("account"))
     return render_template("register.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
+    """POST only: a link prefetcher issuing GET /logout would sign the agent out mid-task."""
     if current_user.is_authenticated:
         logout_user()
         flash("Signed out of the Amtrak demo mirror.", "success")
@@ -2018,6 +2134,61 @@ def trip_change(booking_code):
     db.session.commit()
     flash("Change request recorded as a local demo note only.", "success")
     return redirect(url_for("trip_detail", booking_code=booking.booking_code))
+
+
+def safe_next_url(candidate):
+    """Allow only same-site relative redirect targets after login."""
+    target = (candidate or "").strip()
+    if not target.startswith("/") or target.startswith("//"):
+        return None
+    parsed = urlparse(target)
+    return target if not parsed.scheme and not parsed.netloc else None
+
+
+ERROR_HEADINGS = {
+    400: "That request could not be understood.",
+    403: "You do not have access to that page.",
+    404: "That page is not part of this mirror.",
+    405: "That action uses a different method.",
+    413: "That upload is too large.",
+    500: "Something went wrong in the mirror.",
+}
+
+
+def render_error(code, default_detail):
+    detail = default_detail
+    return render_template("error.html", code=code, heading=ERROR_HEADINGS.get(code, "Error"), detail=detail), code
+
+
+@app.errorhandler(400)
+def handle_bad_request(error):
+    return render_error(400, getattr(error, "description", "") or "Check the values submitted with this request.")
+
+
+@app.errorhandler(403)
+def handle_forbidden(error):
+    return render_error(403, "This synthetic booking belongs to another demo account.")
+
+
+@app.errorhandler(404)
+def handle_not_found(error):
+    return render_error(404, "Check the address, or start again from the homepage.")
+
+
+@app.errorhandler(405)
+def handle_method_not_allowed(error):
+    return render_error(405, "Use the on-page button or form for this action.")
+
+
+@app.errorhandler(413)
+def handle_payload_too_large(error):
+    return render_error(413, f"Requests are limited to {MAX_UPLOAD_BYTES // (1024 * 1024)} MB on this mirror.")
+
+
+@app.errorhandler(500)
+def handle_server_error(error):
+    db.session.rollback()
+    return render_error(500, "The request was rolled back. Please try again.")
 
 
 @app.route("/_health")
