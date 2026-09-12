@@ -27,7 +27,8 @@ invokes the script named by the trajectory's `verifier_path`.
 - exact task id; non-empty final answer; `terminated: true` with `termination_reason: agent_done`;
 - at least one recorded step; every recorded URL is HTTP on the same loopback origin and
   port as `start_url` (the port itself is not pinned: runs use alt ports);
-- both referenced screenshots exist for every step and decode as non-empty PNGs.
+- both referenced screenshots exist for every step and decode as PNGs of at least
+  64x64 (a decodable 1x1 forgery used to pass and no longer does).
 
 ## Snapshot contract
 
@@ -39,10 +40,13 @@ must keep the same schema, and every catalog table (`cities`, `stations`, `route
 `sleeper_rooms`, `service_alerts`, `deals`, `help_articles`) must be row-identical.
 
 Read-only tasks additionally require `users`, `reward_accounts`, `reward_activities`,
-`bookings`, `booking_segments`, `tickets`, `passengers` and `payment_mocks` to be
-row-identical. `search_logs` is deliberately excluded everywhere: the site inserts a row
-on every `/search`, `/help?q=` and `/booking/results` request, so it changes during
-ordinary read-only browsing.
+`bookings`, `booking_segments`, `tickets`, `passengers`, `payment_mocks` **and
+`search_logs`** to be row-identical. `search_logs` used to be excluded everywhere,
+because the site committed a row on every `/search`, `/help?q=` and `/booking/results`
+request. That write was removed during review, so read-only browsing now leaves the
+database byte-identical and a `search_logs` row in an after-state is a regression, not
+expected drift. Tasks 8 and 17 assert it too: the only writes they authorise are the
+profile update and the new booking.
 
 ## Per-task contract
 

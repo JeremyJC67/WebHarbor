@@ -15,9 +15,11 @@ Philosophy: DETERMINISTIC FIRST.
   3. Answer checks - tokens / money / duration / date / code matchers against
      ground truth that is HARDCODED in each verify_N.py (never in tasks.jsonl).
   4. DB after-state (stateful tasks) - exact row deltas on the mutable tables;
-     read-only tasks must leave every table except ``search_logs`` identical.
-     (``search_logs`` is excluded because the site inserts a row on every
-     /search, /help?q= and /booking/results request.)
+     read-only tasks must leave EVERY table identical, ``search_logs`` included.
+     (The site used to commit a SearchLog row on every /search, /help?q= and
+     /booking/results request, and this library used to tolerate that drift. The
+     write was removed, so read-only is now genuinely read-only and the tolerance
+     that would have hidden a regression is gone.)
 
 No verdict depends on an LLM. ``llm_text_match`` is kept only for API parity
 with sites/merriam_webster/verify/verify_lib.py and is never called by a
@@ -47,8 +49,7 @@ from PIL import Image
 SITE = "amtrak"
 DEFAULT_CONTAINER = os.environ.get("WH_CONTAINER", "wh-review")
 
-# Every table in instance_seed/amtrak.db. ``search_logs`` is the only table a
-# read-only visit mutates, so it is excluded from all immutability checks.
+# Every table in instance_seed/amtrak.db.
 EXPECTED_TABLES = {
     "booking_segments", "bookings", "cities", "deals", "fare_classes", "fare_options", "help_articles",
     "passengers", "payment_mocks", "reward_accounts", "reward_activities", "route_stops", "routes",
@@ -63,7 +64,12 @@ MUTABLE_TABLES = (
     "users", "reward_accounts", "reward_activities", "bookings", "booking_segments", "tickets",
     "passengers", "payment_mocks",
 )
-READ_ONLY_TABLES = CATALOG_TABLES + MUTABLE_TABLES
+# Nothing on the site writes here any more; a row appearing means a read-only route
+# started committing again, which is exactly the regression worth failing on.
+LOG_TABLES = ("search_logs",)
+READ_ONLY_TABLES = CATALOG_TABLES + MUTABLE_TABLES + LOG_TABLES
+# A decodable 1x1 PNG is trivial to forge; a real page screenshot is never this small.
+MIN_SCREENSHOT_PX = 64
 SEED_COUNTS = {
     "users": 4, "stations": 62, "cities": 60, "routes": 18, "route_stops": 98, "trains": 36, "trips": 252,
     "trip_segments": 1120, "fare_classes": 4, "fare_options": 1008, "sleeper_rooms": 336, "bookings": 60,
@@ -513,8 +519,11 @@ def _screenshots_decode(trajectory: dict[str, Any]) -> tuple[bool, str]:
             try:
                 with Image.open(path) as image:
                     image.load()
-                    if image.format != "PNG" or image.width < 1 or image.height < 1:
-                        return False, f"step {index} {key} is not a nonempty PNG"
+                    if image.format != "PNG":
+                        return False, f"step {index} {key} is {image.format!r}, not a PNG"
+                    if image.width < MIN_SCREENSHOT_PX or image.height < MIN_SCREENSHOT_PX:
+                        return False, (f"step {index} {key} is {image.width}x{image.height}, below the "
+                                       f"{MIN_SCREENSHOT_PX}x{MIN_SCREENSHOT_PX} floor for a real screenshot")
             except Exception as exc:  # noqa: BLE001
                 return False, f"step {index} {key} cannot decode: {type(exc).__name__}"
             checked += 1
@@ -617,8 +626,12 @@ def check_tables_unchanged(judge: Judge, initial_db: str, after_db: str, tables:
 
 
 def check_read_only(judge: Judge, initial_db: str, after_db: str) -> None:
-    """Read-only tasks: every mutable table must be row-identical (catalog tables are checked by the snapshot contract)."""
-    check_tables_unchanged(judge, initial_db, after_db, MUTABLE_TABLES, prefix="read_only_")
+    """Read-only tasks: every mutable table AND ``search_logs`` must be row-identical.
+
+    Catalog tables are covered by the snapshot contract. ``search_logs`` is included
+    here rather than tolerated: a row in it means a GET route committed to the DB.
+    """
+    check_tables_unchanged(judge, initial_db, after_db, MUTABLE_TABLES + LOG_TABLES, prefix="read_only_")
 
 
 def _schema_objects(db_path: str) -> list[tuple[Any, ...]]:

@@ -6,7 +6,7 @@ generated on the fly by importing the site if the asset bundle is not present).
 """
 from __future__ import annotations
 
-import base64
+import io
 import json
 import shutil
 import sqlite3
@@ -17,6 +17,8 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+from PIL import Image
+
 TESTS_DIR = Path(__file__).resolve().parent
 VERIFY_DIR = TESTS_DIR.parent
 SITE_DIR = VERIFY_DIR.parent
@@ -24,7 +26,16 @@ SEED_DB = SITE_DIR / "instance_seed" / "amtrak.db"
 BASE = "http://localhost:41024"
 PASSWORD = "TestPass123!"
 ALICE = "alice.j@test.com"
-PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=")
+
+
+def _png(width: int, height: int) -> bytes:
+    buffer = io.BytesIO()
+    Image.new("RGB", (width, height), (240, 244, 248)).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+PNG = _png(320, 200)   # a plausible screenshot, above verify_lib.MIN_SCREENSHOT_PX
+TINY_PNG = _png(1, 1)  # the forged-thumbnail case the size floor exists to reject
 
 if not SEED_DB.exists():
     # Importing the app materialises instance/ and copies it to instance_seed/ (seed_data.copy_instance_to_seed).
@@ -42,15 +53,15 @@ def login_steps(email: str = ALICE) -> list[dict[str, Any]]:
     return [step("/login", "input", email), step("/login", "input", PASSWORD), step("/login", "click")]
 
 
-def write_run(run_dir: Path, task_id: str, steps: list[dict[str, Any]], answer: str) -> None:
+def write_run(run_dir: Path, task_id: str, steps: list[dict[str, Any]], answer: str, png: bytes = PNG) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
     shots = run_dir / "screenshots"
     shots.mkdir(exist_ok=True)
     numbered = []
     for index, item in enumerate(steps):
         before, after = f"step_{index:03d}.png", f"step_{index + 1:03d}.png"
-        (shots / before).write_bytes(PNG)
-        (shots / after).write_bytes(PNG)
+        (shots / before).write_bytes(png)
+        (shots / after).write_bytes(png)
         numbered.append({"step": index, "title": "Amtrak Demo Mirror", "thought": "", **item,
                          "screenshot_before": before, "screenshot_after": after})
     trajectory = {
@@ -138,13 +149,15 @@ class VerifierTestCase(unittest.TestCase):
 
     def verdict(self, steps: list[dict[str, Any]], answer: str, initial: Snapshot | None = None, after: Snapshot | None = None,
                 task_id: str | None = None, snapshots_in_run_dir: bool = False,
-                trajectory_updates: dict[str, Any] | None = None, corrupt_screenshot: bool = False) -> dict[str, Any]:
+                trajectory_updates: dict[str, Any] | None = None, corrupt_screenshot: bool = False,
+                tiny_screenshots: bool = False) -> dict[str, Any]:
         initial = initial or Snapshot()
         after = after or Snapshot()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             run_dir = root / "run"
-            write_run(run_dir, task_id or self.task_id, steps, answer)
+            write_run(run_dir, task_id or self.task_id, steps, answer,
+                      png=TINY_PNG if tiny_screenshots else PNG)
             if trajectory_updates:
                 path = run_dir / "trajectory.json"
                 trajectory = json.loads(path.read_text())

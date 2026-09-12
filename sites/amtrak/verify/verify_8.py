@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
     Judge,
+    LOG_TABLES,
     MUTABLE_TABLES,
     check_paths_in_order,
     check_signed_in_as,
@@ -58,7 +59,8 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
                 f"changed_columns={after_reward and row_diff_columns(initial_db, after_db, 'reward_accounts', int(after_reward['id']))!r}")
     judge.check("other_users_unchanged", bool(after_user) and rows_unchanged_except(initial_db, after_db, "users", [int(after_user["id"])]), "table=users")
     judge.check("other_reward_accounts_unchanged", bool(after_reward) and rows_unchanged_except(initial_db, after_db, "reward_accounts", [int(after_reward["id"])]), "table=reward_accounts")
-    check_tables_unchanged(judge, initial_db, after_db, [t for t in MUTABLE_TABLES if t not in ("users", "reward_accounts")])
+    check_tables_unchanged(judge, initial_db, after_db,
+                           [t for t in MUTABLE_TABLES if t not in ("users", "reward_accounts")] + list(LOG_TABLES))
     judge.check("answer_has_station_code", contains_word(answer, NEW_STATION), f"expected={NEW_STATION!r}, answer={answer!r}")
 
 

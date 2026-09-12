@@ -239,11 +239,33 @@ class MatrixTests(VerifierTestCase):
                     self.N = n
                     self.assertPasses(self.verdict(steps, answer, after=self.genuine_after(n)))
 
-    def test_search_logs_are_ignored_for_read_only_tasks(self) -> None:
-        self.N = 10
-        steps, answer, _w, _g = CASES[10]
-        after = Snapshot(["INSERT INTO search_logs(id,user_id,query,category,result_count,created_at) VALUES (1,NULL,'baggage','global',4,'2026-04-18 08:00:00')"])
-        self.assertPasses(self.verdict(steps, answer, after=after))
+    def test_search_logs_writes_are_rejected_for_read_only_tasks(self) -> None:
+        """/search, /help?q= and /booking/results no longer commit a SearchLog row, so a
+        row appearing in the after-state means a GET route started writing again."""
+        insert = ("INSERT INTO search_logs(id,user_id,query,category,result_count,created_at) "
+                  "VALUES (1,NULL,'baggage','global',4,'2026-04-18 08:00:00')")
+        for n in (0, 10, 16):
+            with self.subTest(task=n):
+                self.N = n
+                steps, answer, _w, _g = CASES[n]
+                self.assertFailsOn(self.verdict(steps, answer, after=Snapshot([insert])),
+                                   "read_only_search_logs_unchanged")
+
+    def test_search_logs_writes_are_rejected_for_stateful_tasks(self) -> None:
+        insert = ("INSERT INTO search_logs(id,user_id,query,category,result_count,created_at) "
+                  "VALUES (1,NULL,'nyp was','booking',13,'2026-04-18 08:00:00')")
+        for n, extra in ((8, preferred_station_sql("SEA")), (17, new_booking_sql("ZSLYNG"))):
+            with self.subTest(task=n):
+                self.N = n
+                steps, answer, _w, _g = CASES[n]
+                self.assertFailsOn(self.verdict(steps, answer, after=Snapshot(extra + [insert])),
+                                   "search_logs_unchanged")
+
+    def test_tiny_screenshots_are_rejected(self) -> None:
+        """A decodable 1x1 PNG used to satisfy the screenshot check; it no longer does."""
+        self.N = 9
+        steps, answer, _w, _g = CASES[9]
+        self.assertFailsOn(self.verdict(steps, answer, tiny_screenshots=True), "screenshots_decode")
 
     def test_snapshot_contract_fails_closed(self) -> None:
         self.N = 0

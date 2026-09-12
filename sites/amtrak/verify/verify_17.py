@@ -13,11 +13,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
     Judge,
+    LOG_TABLES,
     booking_payment,
     booking_segments,
     booking_tickets,
     check_paths_in_order,
     check_signed_in_as,
+    check_tables_unchanged,
     check_trajectory_identity,
     contains_code,
     db_query,
@@ -97,6 +99,9 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
                     and (table == "bookings" and len(delta["added"]) == 1
                          or table != "bookings" and bool(delta["added"]) and all(booking_id in [v for v in r if isinstance(v, int)] for r in delta["added"])),
                     f"delta_counts=added:{len(delta['added'])} removed:{len(delta['removed'])} changed:{len(delta['changed'])}")
+    # Booking is the only write this task authorises: the funnel passes through
+    # /booking/results, which must not log the search.
+    check_tables_unchanged(judge, initial_db, after_db, LOG_TABLES)
     judge.check("other_users_unchanged", bool(alice_after) and rows_unchanged_except(initial_db, after_db, "users", [alice_after["id"]]), "table=users")
     judge.check("other_reward_accounts_unchanged", bool(reward_after) and rows_unchanged_except(initial_db, after_db, "reward_accounts", [reward_after["id"]]), "table=reward_accounts")
     code = str(row.get("booking_code") or "")
