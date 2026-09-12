@@ -62,6 +62,8 @@ h1, h2, h3, h4 { color: var(--ink); margin: 0 0 .5em; font-weight: 600; }
 .gn-nav a:hover { background: var(--bg-soft); color: var(--ink); text-decoration: none; }
 .gn-auth { display: flex; gap: 8px; align-items: center; }
 .gn-logout { display: flex; margin: 0; }
+.download-form { display: flex; margin: 0; }
+.download-form .btn { width: 100%; justify-content: center; }
 .gn-avatar img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); display: block; }
 
 /* ---------- Buttons ---------- */

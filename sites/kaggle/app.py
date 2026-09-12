@@ -723,8 +723,10 @@ def dataset_detail(slug):
     return render_template("dataset_detail.html", d=d, owner=owner, notebooks=notebooks)
 
 
-@app.route("/datasets/<slug>/download")
+@app.route("/datasets/<slug>/download", methods=["POST"])
 def dataset_download(slug):
+    # POST only: this route writes the download counter, and a GET with side
+    # effects is triggered by prefetchers, crawlers and link checkers.
     d = Dataset.query.filter_by(slug=slug).first_or_404()
     d.downloads = (d.downloads or 0) + 1
     db.session.commit()

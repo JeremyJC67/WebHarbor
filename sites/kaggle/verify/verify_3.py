@@ -24,9 +24,10 @@ def main():
     origin_note_ok, origin_note = origin_ok(t)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_dataset", navigated_to(t, f"/datasets/{SLUG}"), "opened the Credit Card Fraud dataset")
-    # The download route 302-redirects back to the detail page, so a browser agent may not
-    # record /download as its own step. The download counter increment (below) is the
-    # authoritative, fail-closed proof that the download action ran.
+    # The download route is a CSRF-protected POST that 302-redirects back to the detail
+    # page, so a browser agent may not record /download as its own step. The download
+    # counter increment (below) is the authoritative, fail-closed proof that the download
+    # action ran, and the screenshot binding proves the detail page was really rendered.
     before = dataset_downloads(init, SLUG)
     now = dataset_downloads(after, SLUG)
     j.check("db_available", before is not None and now is not None, f"seed={before} after={now}")

@@ -21,7 +21,10 @@
       <button class="vote-btn {{ 'voted' if has_bookmarked('dataset', d.id) }}" data-bookmark data-type="dataset" data-id="{{ d.id }}">
         <span data-label>{{ 'Saved' if has_bookmarked('dataset', d.id) else 'Save' }}</span>
       </button>
-      <a class="btn btn-primary btn-sm" href="{{ url_for('dataset_download', slug=d.slug) }}">⬇ Download ({{ d.size }})</a>
+      <form method="post" action="{{ url_for('dataset_download', slug=d.slug) }}" class="download-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-primary btn-sm" type="submit">⬇ Download ({{ d.size }})</button>
+      </form>
     </div>
   </div>
 
