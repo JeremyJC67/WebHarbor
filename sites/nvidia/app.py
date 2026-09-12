@@ -258,7 +258,9 @@ class PasswordForm(FlaskForm):
 
 
 class ReviewForm(FlaskForm):
-    rating = SelectField('Rating', choices=[(str(i), f'{i} stars') for i in range(5, 0, -1)],
+    # An empty first option keeps the rating an explicit input: the task grades a
+    # five-star review, so the field must not arrive pre-answered (repair002, M11).
+    rating = SelectField('Rating', choices=[('', 'Select a rating')] + [(str(i), f'{i} stars') for i in range(5, 0, -1)],
                          validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired(), Length(max=160)])
     body = TextAreaField('Your review', validators=[DataRequired(), Length(max=2000)])

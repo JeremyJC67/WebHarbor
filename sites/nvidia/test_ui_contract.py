@@ -315,6 +315,23 @@ class UIContract(unittest.TestCase):
             self.assertIn(text, css)
         self.assertNotIn('.nav{display:none}', css)
 
+    def test_06b_review_rating_requires_explicit_selection(self):
+        """The graded rating field must not arrive pre-answered (repair002, M11)."""
+        self.login()
+        page = Markup(self.get('/products/jetson-orin-nano-super'))
+        rating = [field for field in page.attrs('select') if field.get('name') == 'rating'][0]
+        del rating  # option order is checked on the raw page below
+        raw = self.get('/products/jetson-orin-nano-super')
+        block = raw[raw.index('name="rating"'):]
+        block = block[:block.index('</select>')]
+        self.assertIn('<option value="">Select a rating</option>', block)
+        self.assertNotIn('selected', block)
+        before = self.snapshot()
+        self.post('/products/jetson-orin-nano-super/review',
+                  {'rating': '', 'title': 'Incredible', 'body': 'No rating chosen.'})
+        self.assertEqual(self.snapshot(), before)
+        self.post('/wishlist/remove/5')
+
     def test_07_form_regressions_and_local_returns(self):
         wrong = self.post('/login', {'email': 'alice.j@test.com', 'password': 'wrong'})
         self.assertIn('Invalid email or password', wrong.get_data(as_text=True))
