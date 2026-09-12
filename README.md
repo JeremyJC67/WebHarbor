@@ -169,6 +169,40 @@ archive, the repo-side steps of `fetch_assets.sh` run clean end to end
 what `_wh_review_tools/pr107-fixes/fixes/B2/after.txt` records. The replacement
 itself is an HF write and therefore a blocker for this repository.
 
+### Validation record for this review candidate
+
+The commands below are the ones actually run for the phase-1/phase-2 review; raw
+outputs live under
+`/data/zhaoyang-user-projects/websyn/_wh_review_tools/pr107-fixes/`.
+
+```bash
+# site suites (the driver suite is skipped unless its explicit input/output paths are set)
+python3 -B sites/nvidia/tests/test_verifiers.py --seed <seed.db> --out <new-dir>   # 306 cases
+WH_CONTAINER=<container> TEST_OUT=<outside-source-dir> python3 -B -m unittest discover -s sites/nvidia/tests
+#   -> 52 tests when DRIVER_TEST_INPUTS is unset (driver class skipped),
+#      73 tests when it is set (29 driver cases included)
+DRIVER_TEST_INPUTS=<dir-with-initial/after.db> DRIVER_TEST_OUT=<new-dir> \
+  python3 -B -m unittest discover -s sites/nvidia/tests -p 'test_driver_qualifier.py'   # 29 tests
+python3 -B sites/nvidia/test_ui_contract.py --output <new-dir>                     # 15 tests
+# verifier CLI contract and the mechanical negative-sample matrix
+WH_CONTAINER=<container> TEST_OUT=<dir> python3 -B -m unittest discover -s sites/nvidia/tests -p 'test_verifier_contract.py'
+python3 tests/test_verifiers.py ...
+```
+
+The earlier draft of this section quoted "44 unit tests pass" for the site suites;
+44 is the count when the driver regression class is skipped, and that class fails
+its own `test_other_information_task_not_relaxed` case in the PR head. Both are now
+fixed and the current counts are the ones listed above. The GitHub PR description
+itself cannot be edited from this repository.
+
+### Scope note: external references
+
+Several pages render links to `nvidia.com`, `marketplace.nvidia.com` and
+`store.nvidia.com` as dated source references. They are labelled as leaving the
+local mirror, and the site verifiers treat any navigation outside the mirror's
+loopback origin as a failure, so a task run that follows them fails rather than
+silently grading against an unreachable page.
+
 ## 🤝 Contribute
 
 We have built 23 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.

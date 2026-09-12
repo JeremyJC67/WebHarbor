@@ -58,6 +58,14 @@ stdout 始终是一份 JSON：`task_id` 为本题、`pass` 为严格 bool、`rea
 
 T11来源：官方`https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/`，2026-09-09离线采集。原HTML SHA256 `977dc25fd5586343e1e939bb67cae371a58b1d1df0e5d45c552eb7d55709c2fe`。可见文本含“NVIDIA Blackwell Architecture / Fifth-Gen Tensor Cores / Fourth-Gen Ray Tracing Cores”；该页5080“See All Buying Options”href为`https://marketplace.nvidia.com/en-us/consumer/graphics-cards/?...gpu=RTX%205080...`。来源只支撑入口与地区，不证明库存/价格/checkout。私有采集receipt、原始HTML及参考hash保存在review报告区，不随站点源码交付。
 
+## 已知偏差：rubric 含答案 token（repair002, M7）
+
+`tasks.jsonl` 中 20 题里有 18 题的 `judge_rubric` 直接写出了判分数值（例如 `32 GB GDDR7`、`10,752`、`566.36`、`June 16, 2026`），而 `CONTRIBUTING.md` 的 Reviewer 约定要求 rubric 只写规则、不写答案。已合并站点（如 `sites/osu`、`sites/ted`）存在同样写法，因此这是仓库既有惯例与文档的冲突，不是本 PR 独有的定义偏差。
+
+处理方式：保留 rubric 的答案检查点，不把它改写成模糊表述——rubric 是 LLM judge（次级评分器）的检查清单，去掉数值会直接降低次级评分强度；确定性 verifier 始终是主评分器，其真值固化在 `sites/nvidia/verify/` 内、不依赖 rubric。另需注意：本仓库的 harness（`agent_demo/agent.py`）只把 `ques` 交给被测模型，`judge_rubric` 仅进入 `trajectory.json` 供 judge 使用，因此当前路径下不构成运行期泄露。
+
+解除条件：要么在仓库层面统一决定 rubric 是否允许携带数值（并同步修正 CONTRIBUTING.md），要么改为“rubric 只描述必须出现的字段/关系、数值由 verifier 提供”并在评测端把 verifier 事实注入 judge 上下文，以免削弱次级评分。
+
 ## 机械回归
 
 使用正式素材或指定完整schema seed的**独立副本**，不import站点，输出必须是候选源树之外的新目录：
