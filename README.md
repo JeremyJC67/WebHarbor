@@ -128,6 +128,47 @@ descriptions lost the kit/module identity text, the RTX 5060 Ti is named without
 says 600 W, and the RTX 5070 tagline loses the memory mention), and that revision
 carries archives for only 17 of the 24 registered sites.
 
+### Asset archive conformity
+
+`nvidia.tar.gz` at the pinned revision must be re-packed before the pinned
+revision can be fetched. The archive in HF PR #75 carries two bare
+directory members, `nvidia/` and `nvidia/static/`, and
+`scripts/validate_asset_archive.py` rejects the second one:
+
+```
+$ python3 scripts/validate_asset_archive.py nvidia.tar.gz nvidia
+ValueError: unexpected managed path: 'nvidia/static'
+```
+
+Re-packing with the canonical command from `scripts/extract_assets.sh` removes
+them without touching any content member (verified: only those two entries differ,
+and the extracted trees are byte-identical, seed sha256
+`2143c954def96cc921760ab2bea79fe119de3d73212d1b01daf6c61792c2b38d`):
+
+```bash
+# member list exactly as scripts/extract_assets.sh builds it
+mkdir -p /tmp/nvidia-pack/sites && tar -xzf nvidia.tar.gz -C /tmp/nvidia-pack \
+  nvidia/instance_seed nvidia/static/images
+mv /tmp/nvidia-pack/nvidia /tmp/nvidia-pack/sites/
+cd /tmp/nvidia-pack && tar --exclude='._*' -czf nvidia.tar.gz -C sites \
+  nvidia/instance_seed nvidia/static/images
+```
+
+Resulting artifacts (both pass `validate_asset_archive.py`):
+
+| Artifact | Members | Bytes | SHA-256 |
+| --- | --- | --- | --- |
+| exact re-pack of HF PR #75 content | 40 | 6,704,337 | `987c6ed102f7165e8131c6bcddaae62554f613cd89175a39cd40242ac65a5843` |
+| re-pack without the unreferenced `static/images/series/geforce-rtx-40-super-family.png` | 38 | 6,521,457 | `c3f82009d18270c91889b8f6e1a59f310e41951311aca0fd09a759b51be28229` |
+
+The second artifact is the recommended upload: that series image is rendered by
+no route (`grep -rn 40-super-family sites/nvidia/` returns nothing), and the
+23 image files the templates do reference are all present. After replacing the
+archive, the repo-side steps of `fetch_assets.sh` run clean end to end
+(`validate_asset_archive.py` → `extract_asset_archive.py` → site boot), which is
+what `_wh_review_tools/pr107-fixes/fixes/B2/after.txt` records. The replacement
+itself is an HF write and therefore a blocker for this repository.
+
 ## 🤝 Contribute
 
 We have built 23 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
