@@ -1,44 +1,19 @@
 {% extends "base.html" %}
 {% block title %}B&H Photo Demo Mirror{% endblock %}
 {% block content %}
-<section class="hero">
-    <div class="shell hero-grid">
-        <div class="hero-copy">
-            <p class="kicker">Creator gear, local only</p>
-            <h1>Professional photo, video, audio, and computing workflows in a benchmark-ready B&amp;H mirror.</h1>
-            <p>Browse rich technical specs, compare models side by side, reserve pickup locally, and run a complete checkout flow without any external calls.</p>
-            <div class="hero-actions">
-                <a class="cta" href="{{ url_for('category_view', slug='photography') }}">Shop Photography</a>
-                <a class="ghost" href="{{ url_for('deals') }}">View Deals</a>
-            </div>
-        </div>
-        <div class="hero-panel">
-            <div class="hero-card">
-                <h3>Today’s local mirror highlights</h3>
-                <ul>
-                    <li>146 synthetic products with dense specs and compare-friendly rows</li>
-                    <li>20 bundles, 8 pickup locations, and deterministic checkout history</li>
-                    <li>Used and open-box gear mixed into search, deals, and brand pages</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="shell shelf-section">
-    <div class="section-head">
-        <div>
-            <p class="kicker">Top categories</p>
-            <h2>Browse by department</h2>
-        </div>
-        <a href="{{ url_for('categories') }}">View all</a>
-    </div>
-    <div class="category-grid">
+<section class="shell department-strip">
+    <h1 class="visually-hidden">B&amp;H Photo Video</h1>
+    <div class="department-row">
         {% for category in categories %}
-            <a class="category-tile" href="{{ url_for('category_view', slug=category.slug) }}">
-                <span class="category-icon">{{ category.icon_label }}</span>
+            <a class="department-tile" href="{{ url_for('category_view', slug=category.slug) }}">
+                <span class="department-thumb">
+                    {% if department_images.get(category.slug) %}
+                        <img src="{{ url_for('static', filename=department_images[category.slug]) }}" alt="{{ category.name }}" loading="lazy">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='icons/product-placeholder.svg') }}" alt="{{ category.name }}">
+                    {% endif %}
+                </span>
                 <strong>{{ category.name }}</strong>
-                <small>{{ category.description }}</small>
             </a>
         {% endfor %}
     </div>

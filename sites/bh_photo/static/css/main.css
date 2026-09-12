@@ -1186,3 +1186,61 @@ textarea {
         min-height: auto;
     }
 }
+
+
+/* Department row. Upstream fronts its home page with a row of circular
+   department thumbnails carrying real product photography; this mirrors that
+   shape rather than the marketing hero the contribution shipped. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.department-strip {
+    padding: 28px 0 8px;
+}
+
+.department-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
+    gap: 18px;
+}
+
+.department-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.department-thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+.department-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.department-tile:hover strong {
+    text-decoration: underline;
+}
