@@ -22,7 +22,7 @@ CLI 与仓库其他站点 verifier 完全一致：`--run_dir` 必填；`--initia
 - `final_url` 缺省时按“运行停下的最后一页”回退：取最后一步的 `url_after`，无则取该步 `url`。T11 仍要求该终页为本地 RTX 5080 购买页。
 - 无动作 baseline 为 `steps=[]`、空答案。
 - URL 按实际 origin 和精确 path/query 解析；端口在单次运行内必须一致，但允许运行之间映射变化，不强制任务文件的 40023。相关对象证据来自真正对应的详情、含目标slug的comparison、含目标行的driver结果或news列表；`?q=/products/...` 不是详情页证据。
-- 单站 backend 仅支持 local loopback origin；跨 origin、非 loopback 主机或 boundary 事件导致 FAIL。输入缺失/不可读/非法JSON（含重复键）、ID/query/task 不符、schema/integrity/FK 错误为 INFRA。
+- 单站 backend 仅支持 local loopback origin；`localhost`/`127.0.0.1`/`[::1]` 在同一端口下视为同一 loopback 主机（repair002, M9，因为 harness 的 host 拼写与端口映射都是运行细节）；同一次运行内端口必须一致，跨 origin、非 loopback 主机或 boundary 事件仍然 FAIL。输入缺失/不可读/非法JSON（含重复键）、ID/query/task 不符、schema/integrity/FK 错误为 INFRA。
 - 截图证据绑定（repair002, H3）：`run_dir` 下必须存在可解码的 PNG 截图，最小 320×200、最大 8 MiB。轨迹若命名了截图文件（`screenshot_before`/`screenshot_after`/`screenshot`/`screenshot_path`，生产 recorder 与 native-ready 都会写），每个命名文件都必须存在；否则按目录扫描并要求数量 ≥ min(步骤数, 2)。校验用标准库解析 PNG 签名/每个 chunk 的 CRC/IHDR/IDAT 的 zlib 解压与扫描行长度，因此 1×1、截断、改名的非 PNG 文件都会 FAIL（INFRA）。
 - SQLite 强制 `mode=ro` 和 `query_only`，要求原应用完整10表/列与一致 before/after schema。不会创建缺失DB，不会 fallback 到其他容器/题目。
 

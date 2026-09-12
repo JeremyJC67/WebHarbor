@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import urllib.request
 from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
@@ -79,6 +80,17 @@ class VerifierContract(unittest.TestCase):
         probe = subprocess.run(['docker', 'exec', CONTAINER, 'true'], capture_output=True)
         if probe.returncode != 0:
             raise unittest.SkipTest(f'container {CONTAINER} is not running')
+        # The container fallback compares the live instance DB with instance_seed, so the
+        # site must be at its seed state before the suite runs.
+        control = os.environ.get('WH_CONTROL', 'http://127.0.0.1:20013')
+        try:
+            request = urllib.request.Request(f'{control}/reset/nvidia', method='POST')
+            with urllib.request.urlopen(request, timeout=90) as response:
+                payload = json.loads(response.read())
+            if not payload.get('ready'):
+                raise unittest.SkipTest(f'container {CONTAINER} did not become ready after reset')
+        except Exception as error:  # noqa: BLE001
+            raise unittest.SkipTest(f'cannot reset {CONTAINER} through {control}: {error}')
         cls.work = Path(os.environ.get('TEST_OUT') or tempfile.mkdtemp(prefix='nvidia-contract-'))
         cls.work.mkdir(parents=True, exist_ok=True)
 
@@ -120,6 +132,26 @@ class VerifierContract(unittest.TestCase):
     def test_legacy_no_llm_flag_accepted(self):
         folder = write_fixture(self.work / 'no_llm', production_shape_trajectory())
         self.check('NVIDIA--0', folder, extra=('--no_llm', 'True'))
+
+    def test_loopback_host_spellings_are_the_same_origin(self):
+        """localhost/127.0.0.1 on the same port is one origin (repair002, M9)."""
+        trajectory = production_shape_trajectory()
+        trajectory['steps'][1]['url'] = trajectory['steps'][1]['url'].replace('127.0.0.1', 'localhost')
+        folder = write_fixture(self.work / 'loopback_aliases', trajectory)
+        self.check('NVIDIA--0', folder)
+
+    def test_different_run_port_is_rejected(self):
+        trajectory = production_shape_trajectory()
+        trajectory['steps'][1]['url'] = trajectory['steps'][1]['url'].replace(':21113', ':40023')
+        folder = write_fixture(self.work / 'port_change', trajectory)
+        self.check('NVIDIA--0', folder, expect=1)
+
+    def test_non_loopback_origin_is_rejected(self):
+        trajectory = production_shape_trajectory()
+        trajectory['steps'].append({**trajectory['steps'][0], 'step': len(trajectory['steps']),
+                                    'url': 'https://marketplace.nvidia.com/en-us/consumer/graphics-cards/'})
+        folder = write_fixture(self.work / 'off_origin', trajectory)
+        self.check('NVIDIA--0', folder, expect=1)
 
     def test_unreachable_container_is_structured_infra(self):
         folder = write_fixture(self.work / 'bad_container', production_shape_trajectory())

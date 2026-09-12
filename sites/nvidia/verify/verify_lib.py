@@ -353,10 +353,19 @@ class Context:
         return page
 
     def same_site(self):
-        # Runtime maps ports, so compare the actual observed origin, not task.web's port.
-        return (len(self.origins) <= 1 and
-                all(host in ('localhost', '127.0.0.1', '::1') for _, host, _ in self.origins) and
-                not self.trajectory.get('boundary_events'))
+        """All recorded pages must belong to one loopback origin.
+
+        Runtime port mapping and loopback host spelling are harness details, so
+        `localhost`, `127.0.0.1` and `[::1]` on the same port are treated as the
+        same host (repair002, M9); the port itself must stay constant within a run,
+        and non-loopback hosts or browser boundary events still fail.
+        """
+        if self.trajectory.get('boundary_events'):
+            return False
+        ports = {port for _, _, port in self.origins}
+        if len(ports) > 1:
+            return False
+        return all(host in ('localhost', '127.0.0.1', '::1') for _, host, _ in self.origins)
 
     def product(self, slug):
         rows = [r for r in self.before['products'] if r['slug'] == slug]
