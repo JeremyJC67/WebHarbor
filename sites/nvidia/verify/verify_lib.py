@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
-"""NVIDIA repair001: explicit, read-only stdlib grading contract.
+"""NVIDIA repair002: explicit, read-only stdlib grading contract.
 
-No application import, network, model, default database, or subprocess is used.
-Exit 0/1 means a valid PASS/FAIL; exit 2 is malformed/unavailable infrastructure.
+No application import, network, model or default database is used. Exit 0/1 means a
+valid PASS/FAIL; exit 2 is malformed/unavailable infrastructure.
+
+The CLI accepts the same three/five arguments as every other site verifier in this
+repository (`--run_dir`, optional `--initial_db`, optional `--after_db`, optional
+`--container`, optional `--no_llm`), so `agent_demo/eval_judge.py --verifier True`
+can drive it unchanged: when the two database paths are omitted they are fetched
+from the running container named by `--container` (default `$WH_CONTAINER` or
+`wh-review`). Trajectories are accepted in both the production recorder shape
+(`agent_demo/agent.py`: `task`/`start_url`, no `query`, no `task.json`, no
+`final_url`) and the explicit shape (`query`, `task.json`, `final_url`).
 """
 import argparse
 from collections import Counter
 from contextlib import closing
 import json
+import os
 from pathlib import Path
+import shutil
 import sqlite3
+import subprocess
 import sys
+import tempfile
 from urllib.parse import parse_qs, unquote, urlsplit
 
 SITE = Path(__file__).resolve().parent.parent
@@ -94,6 +107,40 @@ def canonical_task(number):
     return matches[0]
 
 
+def canonical_task_by_id(task_id):
+    tasks = [json.loads(line, object_pairs_hook=unique_object) for line in
+             (SITE / 'tasks.jsonl').read_text(encoding='utf-8').splitlines() if line.strip()]
+    matches = [t for t in tasks if t.get('id') == task_id]
+    if len(matches) != 1:
+        raise InfraError(f'unknown task id: {task_id!r}')
+    return matches[0]
+
+
+DB_KINDS = {'initial_db': 'instance_seed', 'after_db': 'instance'}
+
+
+def resolve_database(kind, explicit, container, workdir):
+    """Return a readable DB path: explicit path, else `docker cp` from the container.
+
+    This mirrors the fallback every other site verifier in this repository uses, so
+    `agent_demo/eval_judge.py --verifier True` (which forwards only --run_dir) works.
+    """
+    if explicit:
+        path = Path(explicit)
+        if not path.is_file():
+            raise InfraError(f'{kind} is not a readable file: {explicit}')
+        return str(path)
+    if shutil.which('docker') is None:
+        raise InfraError(f'{kind} missing and no docker CLI for the container fallback')
+    remote = f"{container}:/opt/WebSyn/nvidia/{DB_KINDS[kind]}/nvidia.db"
+    local = str(Path(workdir) / f'{DB_KINDS[kind]}.db')
+    result = subprocess.run(['docker', 'cp', remote, local], capture_output=True, text=True)
+    if result.returncode != 0 or not Path(local).is_file():
+        raise InfraError(f"{kind} missing and 'docker cp {remote}' failed: "
+                         f"{result.stderr.strip()[:160] or 'no output'}")
+    return local
+
+
 def parse_url(value):
     if not isinstance(value, str) or not value:
         raise InfraError('trajectory URL must be a nonempty string')
@@ -110,23 +157,43 @@ def parse_url(value):
 class Context:
     def __init__(self, number, args):
         self.number = number
-        self.task = load_json(Path(args.run_dir) / 'task.json')
-        if self.task != canonical_task(number):
-            raise InfraError('task.json differs from this verifier revision/task')
+        self.canonical = canonical_task(number)
+        # task.json is optional: the production recorder does not write it. When it
+        # is present it must match the canonical row exactly (no silent旧题/旧rubric).
+        task_json = Path(args.run_dir) / 'task.json'
+        if task_json.exists():
+            self.task = load_json(task_json)
+            if self.task != self.canonical:
+                raise InfraError('task.json differs from this verifier revision/task')
+        else:
+            self.task = self.canonical
         self.trajectory = load_json(Path(args.run_dir) / 'trajectory.json')
         t = self.trajectory
-        if (not isinstance(t, dict) or t.get('task_id') != self.task['id'] or
-                t.get('query') != self.task['ques'] or not isinstance(t.get('steps'), list) or
-                not isinstance(t.get('final_answer'), str)):
-            raise InfraError('trajectory task/query/steps/final_answer mismatch')
+        if not isinstance(t, dict):
+            raise InfraError('trajectory must be a JSON object')
+        if t.get('task_id') != self.task['id']:
+            raise InfraError('trajectory task_id does not match the requested task')
+        if t.get('task_id') != self.canonical['id']:
+            raise InfraError('trajectory task_id does not match this verifier')
+        # Accept either the explicit `query` key or the production recorder's `task`
+        # key; when the value is present it must equal the canonical question.
+        for key in ('query', 'task'):
+            if key in t and t[key] != self.canonical['ques']:
+                raise InfraError(f'trajectory {key} does not match the canonical question')
+        if not isinstance(t.get('steps'), list):
+            raise InfraError('trajectory steps must be a list')
+        if not isinstance(t.get('final_answer'), str):
+            raise InfraError('trajectory final_answer must be a string')
         self.answer = t['final_answer']
         self.pages = []
         self.origins = set()
         for index, step in enumerate(t['steps']):
             if not isinstance(step, dict) or type(step.get('step')) is not int or step['step'] != index:
                 raise InfraError('steps must have consecutive integer step indices')
-            if step.get('query', self.task['ques']) != self.task['ques']:
+            if 'query' in step and step['query'] != self.canonical['ques']:
                 raise InfraError('step query mismatch')
+            if 'task' in step and step['task'] != self.canonical['ques']:
+                raise InfraError('step task mismatch')
             if not any(k in step for k in ('url', 'url_before', 'url_after')):
                 raise InfraError('step lacks a URL')
             for field in ('url_before', 'url', 'url_after'):
@@ -135,8 +202,21 @@ class Context:
         self.final = None
         if t.get('final_url') is not None:
             self.final = self.add_page(t['final_url'])
-        self.before, schema = snapshot(args.initial_db)
-        self.after, after_schema = snapshot(args.after_db)
+            self.final_source = 'final_url'
+        else:
+            # Documented fallback: the production recorder writes no final_url, so the
+            # page the run stopped on is the last recorded step URL (url_after when the
+            # recorder measures it, else the step's own url).
+            last = None
+            for step in t['steps']:
+                value = step.get('url_after') or step.get('url')
+                if value:
+                    last = value
+            if last:
+                self.final = self.add_page(last)
+                self.final_source = 'last_step_url'
+        self.before, schema = snapshot(resolve_database('initial_db', args.initial_db, args.container, args._workdir))
+        self.after, after_schema = snapshot(resolve_database('after_db', args.after_db, args.container, args._workdir))
         if schema != after_schema:
             raise InfraError('before/after schema mismatch')
 
@@ -227,6 +307,10 @@ def delta(ctx, table):
     return added, removed, modified
 
 
+def bool_value(value):
+    return str(value).casefold() in {'1', 'true', 'yes', 'on'}
+
+
 class Parser(argparse.ArgumentParser):
     def error(self, message):
         raise InfraError(message)
@@ -235,23 +319,28 @@ class Parser(argparse.ArgumentParser):
 def run(number):
     task_id = f'NVIDIA--{number}'
     code = 2
-    try:
-        parser = Parser(description=__doc__)
-        for name in ('run_dir', 'initial_db', 'after_db'):
-            parser.add_argument('--' + name, required=True)
-        args = parser.parse_args()
-        ctx = Context(number, args)
-        require(ctx.same_site(), 'off-origin navigation or browser boundary violation')
-        from predicates import grade
-        evidence = grade(ctx)
-        result = {'task_id': task_id, 'pass': True, 'reason': 'Required facts/state verified', 'evidence': evidence}
-        code = 0
-    except TaskFailure as exc:
-        result = {'task_id': task_id, 'pass': False, 'reason': str(exc), 'evidence': []}
-        code = 1
-    except Exception as exc:
-        # Input errors and unexpected verifier faults are infrastructure, never
-        # a normal task FAIL. Keep stdout a single parseable JSON object.
-        result = {'task_id': task_id, 'pass': False, 'reason': f'INFRA_ERROR: {exc}', 'evidence': [], 'error': 'INFRA_ERROR'}
-    print(json.dumps(result, ensure_ascii=False, allow_nan=False))
-    return code
+    with tempfile.TemporaryDirectory(prefix='nvidia-verifier-') as workdir:
+        try:
+            parser = Parser(description=__doc__)
+            parser.add_argument('--run_dir', required=True)
+            parser.add_argument('--initial_db', default='')
+            parser.add_argument('--after_db', default='')
+            parser.add_argument('--container', default=os.environ.get('WH_CONTAINER', 'wh-review'))
+            parser.add_argument('--no_llm', nargs='?', const=True, default=False, type=bool_value)
+            parser.add_argument('--_workdir', default=workdir, help=argparse.SUPPRESS)
+            args = parser.parse_args()
+            ctx = Context(number, args)
+            require(ctx.same_site(), 'off-origin navigation or browser boundary violation')
+            from predicates import grade
+            evidence = grade(ctx)
+            result = {'task_id': task_id, 'pass': True, 'reason': 'Required facts/state verified', 'evidence': evidence}
+            code = 0
+        except TaskFailure as exc:
+            result = {'task_id': task_id, 'pass': False, 'reason': str(exc), 'evidence': []}
+            code = 1
+        except Exception as exc:
+            # Input errors and unexpected verifier faults are infrastructure, never
+            # a normal task FAIL. Keep stdout a single parseable JSON object.
+            result = {'task_id': task_id, 'pass': False, 'reason': f'INFRA_ERROR: {exc}', 'evidence': [], 'error': 'INFRA_ERROR'}
+        print(json.dumps(result, ensure_ascii=False, allow_nan=False))
+        return code

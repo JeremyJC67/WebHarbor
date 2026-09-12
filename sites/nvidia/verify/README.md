@@ -1,25 +1,31 @@
-# NVIDIA 确定性判分（repair001）
+# NVIDIA 确定性判分（repair002）
 
-本目录沿用 @DEM1TASSE 的20个入口名，由 reviewer 修复判分实现；站点原贡献归属 @KaKituken。判分仅使用 Python 标准库，不 import Flask/app，不调用模型、网络、Docker 或其他进程，不读取默认实例DB。
+本目录沿用 @DEM1TASSE 的20个入口名，由 reviewer 修复判分实现；站点原贡献归属 @KaKituken。判分仅使用 Python 标准库（PNG 结构校验用 `zlib`/`binascii` 自行实现），不 import Flask/app，不调用模型、网络或额外进程；唯一可选的子进程调用是 `docker cp` 取DB（与仓库其他站点 verifier 相同的 fallback）。
 
 ## 调用与输出
 
 ```bash
+# 1) 仓库文档路径：agent_demo/eval_judge.py --verifier True 只传 --run_dir
+WH_CONTAINER=wh-review python3 -B sites/nvidia/verify/verify_0.py --run_dir /absolute/run
+
+# 2) 显式输入（native-ready backend.verify() 的四输入复制）
 python3 -B sites/nvidia/verify/verify_0.py \
   --run_dir /absolute/phase-input \
   --initial_db /absolute/phase-input/initial.db \
   --after_db /absolute/phase-input/after.db
 ```
 
-`run_dir`必须包含本题完整`task.json`和`trajectory.json`；两DB必须显式提供。旧`--container`、`--no_llm`选项已移除，默认就是确定性判分。
+CLI 与仓库其他站点 verifier 完全一致：`--run_dir` 必填；`--initial_db`/`--after_db` 可选，缺省时按 `--container`（默认 `$WH_CONTAINER` 或 `wh-review`）从运行中的容器 `docker cp` `instance_seed/nvidia.db` 与 `instance/nvidia.db`；`--no_llm` 为兼容参数（判分始终确定性）。`docker cp` 失败是结构化 INFRA，不抛 traceback。
 
-- task.json逐字段等于本源码同站点`tasks.jsonl`中的本题定义，ID与当前入口一致。部署staging若有显式路径转换，必须同步其本地canonical tasks与传入task；不能偷偷接受旧题/旧rubric。
-- trajectory采用当前native-ready runtime格式：`task_id`、准确`query`、`steps`数组、字符串`final_answer`；每步连续整数`step`及`url`/`url_before`/`url_after`。可选`final_url`、`boundary_events`也参与判定。无动作baseline为`steps=[]`、空答案；T11正常终态必须有`final_url`。
-- URL按实际origin和精确path/query解析；端口可按运行映射变化，不强制任务文件的40023。相关对象证据来自真正对应的详情、含目标slug的comparison、含目标行的driver结果或news列表；`?q=/products/...`不是详情页证据。
-- 当前单站backend仅支持local loopback origin；跨origin/boundary事件导致FAIL。输入缺失/不可读/非法JSON（含重复键）、ID/query/task不符、schema/integrity/FK错误为INFRA。
-- SQLite强制`mode=ro`和`query_only`，要求原应用完整10表/列与一致before/after schema。不会创建缺失DB，不会fallback到其他容器/题目。
+- `run_dir` 必须包含 `trajectory.json`；`task.json` 可选（生产 recorder 不写）。`task.json` 存在时逐字段等于本源码同站点 `tasks.jsonl` 中的本题定义，否则为 INFRA——不能偷偷接受旧题/旧rubric。
+- trajectory 同时接受两种键集：(a) 显式/native-ready——`task_id`、`query`、`steps`、`final_answer`，每步连续整数 `step` 及 `url`/`url_before`/`url_after`，可选 `final_url`、`boundary_events`；(b) 生产 recorder（`agent_demo/agent.py`）——`task`（而非 `query`）、`start_url`，每步 `step`/`url`，无 `task.json`、无 `final_url`。两个键同时出现时必须都等于 canonical ques，否则 INFRA。
+- `final_url` 缺省时按“运行停下的最后一页”回退：取最后一步的 `url_after`，无则取该步 `url`。T11 仍要求该终页为本地 RTX 5080 购买页。
+- 无动作 baseline 为 `steps=[]`、空答案。
+- URL 按实际 origin 和精确 path/query 解析；端口在单次运行内必须一致，但允许运行之间映射变化，不强制任务文件的 40023。相关对象证据来自真正对应的详情、含目标slug的comparison、含目标行的driver结果或news列表；`?q=/products/...` 不是详情页证据。
+- 单站 backend 仅支持 local loopback origin；跨 origin、非 loopback 主机或 boundary 事件导致 FAIL。输入缺失/不可读/非法JSON（含重复键）、ID/query/task 不符、schema/integrity/FK 错误为 INFRA。
+- SQLite 强制 `mode=ro` 和 `query_only`，要求原应用完整10表/列与一致 before/after schema。不会创建缺失DB，不会 fallback 到其他容器/题目。
 
-stdout始终是一份JSON：`task_id`为本题、`pass`为严格bool、`reason`为说明、`evidence`为检查摘要。
+stdout 始终是一份 JSON：`task_id` 为本题、`pass` 为严格 bool、`reason` 为说明、`evidence` 为检查摘要。
 
 |exit|语义|
 |---|---|
@@ -27,7 +33,6 @@ stdout始终是一份JSON：`task_id`为本题、`pass`为严格bool、`reason`�
 |1|正常任务FAIL，`pass=false`|
 |2|INFRA_ERROR，`pass=false,error="INFRA_ERROR"`；外层应`success=false`，不能算正常负例|
 
-此接口与native-ready `backend.verify()`的四输入复制/三个CLI参数一致；不依赖其未传输的截图目录或旧agent_demo的`step_*.png`命名。
 比较页同时支持最终UI的原生GET `product=a&product=b`与旧`ids=a,b`；按app实际优先级前者覆盖后者，不能合并两组参数虚构已显示的产品。
 
 ## 判定原则
@@ -61,3 +66,10 @@ python3 -B sites/nvidia/tests/test_verifiers.py \
 ```
 
 覆盖每题no-op/正确fixture/专属near-miss，以及错账号/目标/delta、副作用、合法替代导航、格式正例和schema/身份INFRA。逐例保存输入DB/task/trajectory/hash、SQL变更、命令、stdout/stderr/exit与输入不变校验。fixture为机械证据，不是UI或native成绩；真实candidate seed、UI/native与独立主审仍需另行验收。
+
+CLI/输入契约另有回归套件，钉住 `agent_demo/eval_judge.py --verifier True` 所需的调用形式（仅 `--run_dir` + 容器 fallback）、生产 recorder 的 trajectory 键集、`--no_llm` 兼容、以及畸形输入的结构化 INFRA：
+
+```bash
+WH_CONTAINER=<running nvidia container> TEST_OUT=/absolute/outside/source/tree \
+  python3 -B -m unittest discover -s sites/nvidia/tests -p 'test_verifier_contract.py'
+```

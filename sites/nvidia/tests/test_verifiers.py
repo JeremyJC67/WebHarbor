@@ -142,12 +142,24 @@ class Suite:
             trajectory['final_url'] = addresses[-1] if final is None else 'http://127.0.0.1:48082'+final
         if corrupt == 'identity': trajectory['task_id'] = 'NVIDIA--999'
         if corrupt == 'query': trajectory['query'] += ' changed'
+        if corrupt == 'prod-shape':
+            # Production recorder shape (agent_demo/agent.py): `task` instead of `query`,
+            # no final_url. Must be accepted (repair002 contract).
+            trajectory.pop('query')
+            trajectory['task'] = task['ques']
+            trajectory['start_url'] = addresses[0] if addresses else 'http://127.0.0.1:48082/'
+            trajectory['termination_reason'] = 'agent_done'
+            trajectory.pop('final_url', None)
         if corrupt == 'task': task['ques'] += ' changed'
         if corrupt == 'steps': trajectory['steps'] = [{'step': '0', 'url': addresses[0]}]
         if corrupt == 'url': trajectory['steps'] = [{'step': 0, 'url': 123}]
         write(folder/'task.json', task)
         write(folder/'trajectory.json', trajectory)
         if corrupt == 'json': (folder/'trajectory.json').write_text('{')
+        if corrupt == 'altered-task':
+            altered = dict(json.loads((folder/'task.json').read_text()))
+            altered['ques'] = altered['ques'] + ' changed'
+            (folder/'task.json').write_text(json.dumps(altered, ensure_ascii=False, indent=2) + '\n')
         if corrupt == 'schema': sql(folder/'after.db', [('DROP TABLE newsletter', ())])
         if corrupt == 'db': (folder/'after.db').write_bytes(b'not SQLite')
         if corrupt == 'missing-task': (folder/'task.json').unlink()
@@ -230,8 +242,14 @@ class Suite:
         self.case(11, 'wrong-final-page', 1, final='/')
         self.case(11, 'reversed-browsing-order', 0, urls=['/where-to-buy/geforce-rtx-5080', '/geforce/graphics-cards/50-series/', '/where-to-buy/geforce-rtx-5080'])
         self.case(11, 'off-origin', 1, urls=URLS[11]+['https://marketplace.nvidia.com/en-us/consumer/graphics-cards/'])
-        for label in ('query', 'steps', 'url', 'json', 'db', 'missing-task', 'missing-db'):
+        for label in ('query', 'steps', 'url', 'json', 'db', 'missing-db'):
             self.case(0, 'infra-'+label, 2, corrupt=label)
+        # repair002 contract: task.json is an optional sidecar (the production recorder
+        # does not write one), so its absence is accepted; an altered one is still INFRA,
+        # and the production recorder's key set (`task`, no `query`, no final_url) works.
+        self.case(0, 'missing-task-json-accepted', 0, corrupt='missing-task')
+        self.case(0, 'altered-task-json', 2, corrupt='altered-task')
+        self.case(0, 'production-recorder-shape', 0, corrupt='prod-shape')
         formats = {0: ['32GB GDDR7', '32 gigabytes of GDDR7.', '32 GB GDDR 7'],
                    1: ['10 752 CUDA cores', '10752', '10,752 CUDA cores.'],
                    2: ['450 watts.', '450', '0.45 kW'], 3: ['RTX 5060 costs USD 299.00.', 'RTX 5060 costs 299 US dollars'],
