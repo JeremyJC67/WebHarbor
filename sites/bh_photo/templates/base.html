@@ -17,7 +17,7 @@
     <header class="site-header">
         <div class="shell header-top">
             <a class="brand-lockup" href="{{ url_for('index') }}">
-                <span class="brand-mark">B&amp;H</span>
+                <span class="brand-mark">B&amp;H<span>PHOTO&middot;VIDEO&middot;AUDIO</span></span>
                 <span class="brand-copy">
                     <strong>Photo</strong>
                     <small>Demo Mirror</small>
@@ -50,6 +50,8 @@
                 <a href="{{ url_for('bundles') }}">Bundles</a>
                 <a href="{{ url_for('help_page') }}">Help</a>
                 <a href="{{ url_for('contact') }}">Contact</a>
+                <a class="nav-accent" href="{{ url_for('used') }}">Used</a>
+                <a href="{{ url_for('deals') }}">Specials</a>
             </div>
         </nav>
     </header>

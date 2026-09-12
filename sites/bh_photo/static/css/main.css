@@ -1,19 +1,27 @@
 :root {
-    --bg: #eef2ef;
+    /* Palette measured on the Internet Archive capture of bhphotovideo.com
+       (20260909004043): page #ffffff, department nav #3f9a59, footer #f2f2f2,
+       logo fills #bd2c26 / #ffc745, body text #000, secondary text #666,
+       link accent #007ab8, content container 1350px. */
+    --bg: #ffffff;
     --paper: #ffffff;
-    --paper-alt: #f6f7f7;
-    --text: #1b2327;
-    --muted: #5d6b72;
-    --border: #d7dfdd;
-    --brand-dark: #2d382f;
-    --brand-deep: #213129;
-    --brand-gold: #f1c74b;
-    --brand-green: #2d7a5d;
+    --paper-alt: #f7f7f7;
+    --text: #1a1a1a;
+    --muted: #666666;
+    --border: #d9d9d9;
+    --brand-red: #bd2c26;
+    --brand-gold: #ffc745;
+    --brand-green: #3f9a59;
+    --brand-green-dark: #35824b;
+    --nav-accent: #e0f2aa;
+    --brand-dark: #333333;
+    --brand-deep: #007ab8;
+    --brand-blue: #007ab8;
     --brand-orange: #cb6a2b;
-    --brand-blue: #2f5f8f;
+    --footer-bg: #f2f2f2;
     --danger: #b14141;
-    --shadow: 0 18px 45px rgba(26, 39, 36, 0.08);
-    --radius: 18px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    --radius: 4px;
 }
 
 * {
@@ -22,9 +30,11 @@
 
 body {
     margin: 0;
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    /* Upstream serves OpenSans as a webfont; the mirror ships no webfont and
+       falls back to the same stack the upstream CSS declares after it. */
+    font-family: "Open Sans", "Segoe UI", Helvetica, Roboto, Arial, sans-serif;
     color: var(--text);
-    background: radial-gradient(circle at top left, #f7fbf9 0, var(--bg) 38%, #e7ece8 100%);
+    background: var(--bg);
 }
 
 a {
@@ -45,14 +55,15 @@ textarea {
 }
 
 .shell {
-    width: min(1240px, calc(100vw - 32px));
+    width: min(1350px, calc(100vw - 32px));
     margin: 0 auto;
 }
 
 .promo-strip {
-    background: linear-gradient(90deg, #f8d762, #efc541);
-    color: #372b08;
-    font-size: 14px;
+    background: #ffffff;
+    color: var(--muted);
+    font-size: 12px;
+    border-bottom: 1px solid #ececec;
 }
 
 .promo-inner {
@@ -60,7 +71,7 @@ textarea {
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 10px 0;
+    padding: 6px 0;
 }
 
 .promo-pill,
@@ -77,18 +88,20 @@ textarea {
 }
 
 .promo-pill {
-    background: rgba(55, 43, 8, 0.12);
+    background: #f2f2f2;
+    color: var(--muted);
+    font-weight: 600;
 }
 
 .count-chip {
-    background: rgba(255, 255, 255, 0.14);
+    background: #eeeeee;
+    color: var(--text);
     min-width: 24px;
 }
 
 .site-header {
-    background: linear-gradient(180deg, var(--brand-dark), var(--brand-deep));
-    color: #f1f5f2;
-    box-shadow: 0 10px 25px rgba(18, 25, 20, 0.18);
+    background: #ffffff;
+    color: var(--text);
 }
 
 .header-top {
@@ -96,7 +109,7 @@ textarea {
     grid-template-columns: auto 1fr auto;
     gap: 24px;
     align-items: center;
-    padding: 18px 0;
+    padding: 14px 0;
 }
 
 .brand-lockup {
@@ -109,13 +122,24 @@ textarea {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 82px;
-    height: 52px;
-    border-radius: 16px;
-    background: var(--brand-gold);
-    color: #2d2711;
-    font-size: 28px;
-    font-weight: 900;
+    flex-direction: column;
+    width: 98px;
+    height: 60px;
+    border: 2px solid var(--brand-red);
+    background: #ffffff;
+    color: var(--brand-red);
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.brand-mark span {
+    display: block;
+    margin-top: 3px;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--brand-red);
 }
 
 .brand-copy strong {
@@ -123,8 +147,12 @@ textarea {
     font-size: 21px;
 }
 
+.brand-copy strong {
+    color: var(--text);
+}
+
 .brand-copy small {
-    color: rgba(241, 245, 242, 0.76);
+    color: var(--muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -132,23 +160,24 @@ textarea {
 .search-bar {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.11);
-    padding: 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    padding: 0;
+    border-radius: var(--radius);
+    border: 1px solid #c6c6c6;
+    overflow: hidden;
 }
 
 .search-bar input {
     border: 0;
     outline: 0;
     background: transparent;
-    color: #fff;
+    color: var(--text);
     width: 100%;
-    padding: 0 16px;
+    padding: 11px 14px;
 }
 
 .search-bar input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: #8a8a8a;
 }
 
 .search-bar button,
@@ -161,12 +190,21 @@ textarea {
     transition: transform 0.15s ease, opacity 0.15s ease, background 0.2s ease;
 }
 
-.search-bar button,
+.search-bar button {
+    background: #ffffff;
+    color: var(--muted);
+    padding: 11px 18px;
+    font-weight: 600;
+    border-left: 1px solid #e4e4e4;
+    border-radius: 0;
+}
+
 .cta {
-    background: var(--brand-gold);
-    color: #2d2711;
-    padding: 12px 22px;
-    font-weight: 800;
+    background: var(--brand-green);
+    color: #ffffff;
+    padding: 11px 22px;
+    font-weight: 700;
+    border-radius: var(--radius);
 }
 
 .ghost {
@@ -199,22 +237,33 @@ textarea {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
-    font-size: 14px;
+    gap: 18px;
+    font-size: 13px;
+    color: var(--brand-dark);
 }
 
 .primary-nav {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--brand-green);
+    color: #ffffff;
 }
 
 .nav-row {
     display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 13px 0;
+    gap: 20px;
+    min-height: 32px;
+    padding: 0;
     overflow-x: auto;
     white-space: nowrap;
-    font-size: 15px;
+    font-size: 14px;
+}
+
+.nav-row a:hover {
+    text-decoration: underline;
+}
+
+.nav-row a.nav-accent {
+    color: var(--nav-accent);
 }
 
 .flash-stack {
@@ -1021,9 +1070,10 @@ textarea {
 }
 
 .site-footer {
-    margin-top: 56px;
-    background: var(--brand-deep);
-    color: #f1f5f2;
+    margin-top: 48px;
+    background: var(--footer-bg);
+    color: var(--text);
+    border-top: 1px solid #e2e2e2;
 }
 
 .footer-grid {
@@ -1036,7 +1086,12 @@ textarea {
 .footer-grid p,
 .footer-grid li,
 .footer-grid a {
-    color: rgba(241, 245, 242, 0.82);
+    color: var(--muted);
+}
+
+.footer-grid a:hover {
+    color: var(--brand-blue);
+    text-decoration: underline;
 }
 
 .empty-state {
