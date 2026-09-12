@@ -1,5 +1,16 @@
 /* NVIDIA mirror — design system (black + NVIDIA green #76B900) */
 :root{
+  /* Brand colour: decorative only (hero accents, logo, dark-surface hovers, button fill).
+     It is NOT used for text or focus on light surfaces: #76b900 is 2.41:1 on white. */
+  --brand:#76b900;
+  /* Text/action colour for light surfaces: 5.48:1 on #ffffff and 5.11:1 on #f7f7f7. */
+  --action:#4a7500;
+  /* Focus indicator: 5.48:1 on #ffffff, 5.11:1 on #f7f7f7, 3.84:1 on #000000,
+     3.18:1 on #1a1a1a and 3.45:1 on #111111, so one value clears the 3:1 WCAG 1.4.11 /
+     2.4.11 non-text requirement on both light and dark surfaces. */
+  --focus:#4a7500;
+  /* Rating glyph plus its numeric value: 5.05:1 on #ffffff. */
+  --star:#9c6200;
   --nv-green:#76b900; --nv-green-d:#5e9400; --ink:#1a1a1a; --muted:#6b6b6b;
   --line:#e3e3e3; --bg:#ffffff; --bg-soft:#f7f7f7; --black:#000; --dark:#1a1a1a;
   --radius:6px; --maxw:1280px;
@@ -9,7 +20,7 @@ html,body{margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   color:var(--ink);background:var(--bg);line-height:1.5;font-size:15px}
 a{color:inherit;text-decoration:none}
-a:hover{color:var(--nv-green-d)}
+a:hover{color:var(--action)}
 img{max-width:100%;height:auto;display:block}
 .container{max-width:var(--maxw);margin:0 auto;padding:0 24px}
 
@@ -64,7 +75,7 @@ img{max-width:100%;height:auto;display:block}
 /* category pills */
 .pills{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
 .pill{border:1px solid var(--line);border-radius:20px;padding:7px 16px;background:#fff;font-weight:600;font-size:13px}
-.pill.active,.pill:hover{border-color:var(--nv-green);color:var(--nv-green-d)}
+.pill.active,.pill:hover{border-color:var(--brand);color:var(--action)}
 
 /* product grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:22px}
@@ -74,13 +85,13 @@ img{max-width:100%;height:auto;display:block}
 .card .thumb{background:#0b0b0b;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;padding:14px}
 .card .thumb img{width:100%;height:100%;object-fit:contain}
 .card .body{padding:14px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
-.card .series{color:var(--nv-green-d);font-weight:700;font-size:12px;text-transform:uppercase}
+.card .series{color:var(--action);font-weight:700;font-size:12px;text-transform:uppercase}
 .card .name{font-weight:700;font-size:16px}
 .card .tagline{color:var(--muted);font-size:13px;flex:1}
 .card .price{font-weight:800;font-size:17px;margin-top:6px}
-.card .stars{color:#f5a623;font-size:13px}
+.card .stars{color:var(--star);font-size:13px}
 .muted{color:var(--muted)}
-.green{color:var(--nv-green-d)}
+.green{color:var(--action)}
 
 /* spec table */
 .specs{width:100%;border-collapse:collapse;margin:18px 0}
@@ -115,7 +126,10 @@ img{max-width:100%;height:auto;display:block}
 .field label{display:block;font-weight:600;margin-bottom:6px;font-size:14px}
 .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--line);
   border-radius:var(--radius);font-size:14px;font-family:inherit}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--nv-green)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--focus)}
+/* The global :focus-visible ring is not suppressed here: the previous `outline:none`
+   had higher specificity than the ring rule, so form fields had no focus indicator
+   at all (repair002, M1/M2). */
 .err{color:#c0392b;font-size:13px;margin-top:4px}
 .check{display:flex;align-items:center;gap:8px}
 .check input{width:auto}
@@ -132,12 +146,12 @@ img{max-width:100%;height:auto;display:block}
 .page-head h1{font-size:34px;margin:0;font-weight:800}
 .page-head p{color:#bbb;margin:8px 0 0}
 .breadcrumb{font-size:13px;color:var(--muted);margin:18px 0}
-.breadcrumb a:hover{color:var(--nv-green-d)}
+.breadcrumb a:hover{color:var(--action)}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:18px 0}
 .toolbar select{padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius)}
 .tag{display:inline-block;background:var(--bg-soft);border:1px solid var(--line);border-radius:4px;
   padding:2px 8px;font-size:12px;color:var(--muted);margin-right:6px}
-.badge-stock{color:var(--nv-green-d);font-weight:700;font-size:13px}
+.badge-stock{color:var(--action);font-weight:700;font-size:13px}
 .badge-out{color:#c0392b;font-weight:700;font-size:13px}
 
 /* news */
@@ -146,7 +160,7 @@ img{max-width:100%;height:auto;display:block}
 .news-card .thumb{aspect-ratio:16/9;background:#0b0b0b;overflow:hidden}
 .news-card .thumb img{width:100%;height:100%;object-fit:contain}
 .news-card .body{padding:16px}
-.news-card .cat{color:var(--nv-green-d);font-weight:700;font-size:12px;text-transform:uppercase}
+.news-card .cat{color:var(--action);font-weight:700;font-size:12px;text-transform:uppercase}
 .news-card h3{margin:6px 0;font-size:17px}
 .article{max-width:760px;margin:0 auto;padding:40px 0}
 .article h1{font-size:36px;font-weight:800;line-height:1.1}
@@ -170,7 +184,7 @@ button,input,select,textarea{max-width:100%;font-family:inherit}
 input[type=checkbox]{flex-shrink:0}
 .field,.form,.hero-copy,.hero-media,.footer .cols>div,.toolbar>*,.model-entry{min-width:0}
 .btn{text-align:center;white-space:normal}
-a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.scroll-x:focus-visible{outline:3px solid var(--nv-green);outline-offset:3px}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.scroll-x:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .skip-link{position:absolute;left:12px;top:-80px;z-index:20;background:#fff;color:#000;padding:12px}
 .skip-link:focus{top:8px}
 .text-link,.source-list a{text-decoration:underline;text-underline-offset:3px}
@@ -190,7 +204,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,s
 .buying-info dt{font-weight:700;margin-top:14px}
 .buying-info dd{margin:4px 0}
 .driver-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:end}
-.filter-summary{padding:12px;background:var(--bg-soft);border-left:4px solid var(--nv-green)}
+.filter-summary{padding:12px;background:var(--bg-soft);border-left:4px solid var(--action)}
 .footer .news-signup{max-width:100%}
 .footer .news-signup form{flex-wrap:wrap;gap:8px}
 .footer .news-signup input{flex:1 1 160px;min-width:0;border-radius:4px}

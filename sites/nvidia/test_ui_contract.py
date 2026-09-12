@@ -11,6 +11,7 @@ from html.parser import HTMLParser
 import importlib
 import io
 import json
+import re
 from pathlib import Path
 import shutil
 import sqlite3
@@ -365,6 +366,42 @@ class UIContract(unittest.TestCase):
         response = self.post('/wishlist/toggle/10', headers={'Referer': 'https://example.com/'})
         self.assertEqual(urlsplit(response.location).netloc, '')
         self.assertEqual(response.location, '/products/geforce-rtx-4060')
+
+    def test_09_contrast_tokens(self):
+        """Stylesheet-derived WCAG checks (repair002, M1/M2)."""
+        css = (copy / 'static/css/main.css').read_text()
+
+        def token(name):
+            match = re.search(name + r'\s*:\s*(#[0-9a-fA-F]{6})', css)
+            self.assertIsNotNone(match, name)
+            return match.group(1)
+
+        def channel(value):
+            value = value / 255
+            return value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4
+
+        def luminance(colour):
+            r, g, b = (int(colour[i:i + 2], 16) for i in (1, 3, 5))
+            return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+
+        def ratio(a, b):
+            la, lb = luminance(a), luminance(b)
+            high, low = max(la, lb), min(la, lb)
+            return (high + 0.05) / (low + 0.05)
+
+        action, focus, star, brand = token('--action'), token('--focus'), token('--star'), token('--brand')
+        for background in ('#ffffff', '#f7f7f7'):
+            self.assertGreaterEqual(round(ratio(action, background), 3), 4.5, f'{action} on {background}')
+            self.assertGreaterEqual(round(ratio(star, background), 3), 4.5, f'{star} on {background}')
+        for background in ('#ffffff', '#f7f7f7', '#000000', '#111111', '#1a1a1a'):
+            self.assertGreaterEqual(round(ratio(focus, background), 3), 3.0, f'{focus} on {background}')
+        # The brand colour stays decorative: it must not be used for text on light surfaces.
+        for selector in ('a:hover', '.card .series', '.green{', '.news-card .cat', '.pill.active'):
+            index = css.index(selector)
+            rule = css[index:css.index('}', index)]
+            self.assertIn('var(--action)', rule, selector)
+            self.assertNotIn('var(--nv-green', rule, selector)
+        self.assertIn('outline:3px solid var(--focus)', css)
 
     def test_08_seed_and_import_byte_identity(self):
         before = digest(database)
