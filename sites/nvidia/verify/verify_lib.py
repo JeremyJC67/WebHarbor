@@ -141,6 +141,130 @@ def resolve_database(kind, explicit, container, workdir):
     return local
 
 
+SCREENSHOT_MIN_WIDTH = 320
+SCREENSHOT_MIN_HEIGHT = 200
+SCREENSHOT_MAX_BYTES = 8 * 1024 * 1024
+SCREENSHOT_KEYS = ('screenshot_before', 'screenshot_after', 'screenshot', 'screenshot_path')
+_PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+_PNG_CHANNELS = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}
+
+
+def png_dimensions(path):
+    """Structural PNG validation using only the standard library.
+
+    Checks the signature, every chunk CRC, the IHDR fields, zlib-decompresses the
+    IDAT stream and verifies the decompressed scanline length, so a truncated,
+    hand-written or renamed file cannot pass as a screenshot.
+    """
+    import binascii
+    import struct
+    import zlib
+    data = Path(path).read_bytes()
+    if len(data) < 33 or not data.startswith(_PNG_SIGNATURE):
+        raise InfraError(f'screenshot is not a PNG: {Path(path).name}')
+    offset = len(_PNG_SIGNATURE)
+    idat = bytearray()
+    header = None
+    saw_end = False
+    while offset < len(data):
+        if offset + 8 > len(data):
+            raise InfraError(f'truncated PNG chunk header: {Path(path).name}')
+        length, kind = struct.unpack('>I4s', data[offset:offset + 8])
+        end = offset + 12 + length
+        if length > SCREENSHOT_MAX_BYTES or end > len(data):
+            raise InfraError(f'truncated PNG chunk: {Path(path).name}')
+        payload = data[offset + 8:offset + 8 + length]
+        stored = struct.unpack('>I', data[offset + 8 + length:end])[0]
+        if zlib.crc32(kind + payload) & 0xFFFFFFFF != stored:
+            raise InfraError(f'PNG chunk CRC mismatch: {Path(path).name}')
+        if kind == b'IHDR':
+            if length != 13:
+                raise InfraError(f'invalid IHDR length: {Path(path).name}')
+            header = struct.unpack('>IIBBBBB', payload)
+        elif kind == b'IDAT':
+            idat += payload
+        elif kind == b'IEND':
+            saw_end = True
+        offset = end
+    if header is None or not saw_end or not idat:
+        raise InfraError(f'PNG lacks IHDR/IDAT/IEND: {Path(path).name}')
+    width, height, depth, color, compression, filter_method, interlace = header
+    if color not in _PNG_CHANNELS or depth not in (1, 2, 4, 8, 16):
+        raise InfraError(f'unsupported PNG colour type/depth: {Path(path).name}')
+    if compression != 0 or filter_method != 0 or interlace not in (0, 1):
+        raise InfraError(f'unsupported PNG encoding: {Path(path).name}')
+    try:
+        raw = zlib.decompress(bytes(idat))
+    except zlib.error as exc:
+        raise InfraError(f'PNG IDAT is not decodable: {Path(path).name}: {exc}') from exc
+    if interlace == 0:
+        stride = width * _PNG_CHANNELS[color] * depth // 8
+        expected = height * (1 + stride)
+        if len(raw) != expected:
+            raise InfraError(f'PNG scanline length mismatch: {Path(path).name}')
+    if width < SCREENSHOT_MIN_WIDTH or height < SCREENSHOT_MIN_HEIGHT:
+        raise InfraError(f'screenshot smaller than {SCREENSHOT_MIN_WIDTH}x{SCREENSHOT_MIN_HEIGHT}: '
+                         f'{Path(path).name} is {width}x{height}')
+    return width, height
+
+
+def screenshot_files(run_dir, steps):
+    """Referenced screenshots when the trajectory names them, else the run's PNG set."""
+    referenced = []
+    for word in steps:
+        for key in SCREENSHOT_KEYS:
+            value = word.get(key)
+            if isinstance(value, str) and value.strip():
+                name = value.strip()
+                if name not in referenced:
+                    referenced.append(name)
+    if referenced:
+        return referenced, True
+    run_dir = Path(run_dir)
+    names = []
+    for base in (run_dir / 'screenshots', run_dir):
+        if not base.is_dir():
+            continue
+        for path in sorted(base.iterdir()):
+            if path.is_file() and path.suffix.casefold() == '.png' and path.name not in names:
+                names.append(path.name)
+        if names:
+            break
+    return names, False
+
+
+def validate_screenshots(run_dir, steps):
+    """Bind the verdict to real, decodable browser screenshots (repair002, H3).
+
+    A trajectory without usable screenshots is an unverifiable run: INFRA, not a
+    task FAIL. Named screenshot files must exist (that is the trajectory binding);
+    an unnamed run must still carry at least one valid PNG per step, capped at two.
+    """
+    run_dir = Path(run_dir)
+    names, referenced = screenshot_files(run_dir, steps)
+    if not names:
+        raise InfraError('run_dir has no screenshots: a browser run must provide PNG evidence')
+    valid = []
+    for name in names:
+        candidate = Path(name)
+        if candidate.is_absolute() or '..' in candidate.parts:
+            raise InfraError(f'screenshot reference must stay inside run_dir: {name!r}')
+        resolved = run_dir / candidate
+        if not resolved.is_file():
+            resolved = run_dir / 'screenshots' / candidate.name
+        if not resolved.is_file():
+            raise InfraError(f'referenced screenshot is missing: {name!r}')
+        if resolved.stat().st_size > SCREENSHOT_MAX_BYTES:
+            raise InfraError(f'screenshot exceeds {SCREENSHOT_MAX_BYTES} bytes: {candidate.name}')
+        png_dimensions(resolved)
+        valid.append(candidate.name)
+    if not referenced:
+        needed = max(1, min(len(steps), 2))
+        if len(valid) < needed:
+            raise InfraError(f'expected at least {needed} screenshots for {len(steps)} steps, found {len(valid)}')
+    return valid
+
+
 def parse_url(value):
     if not isinstance(value, str) or not value:
         raise InfraError('trajectory URL must be a nonempty string')
@@ -185,6 +309,7 @@ class Context:
         if not isinstance(t.get('final_answer'), str):
             raise InfraError('trajectory final_answer must be a string')
         self.answer = t['final_answer']
+        self.screenshots = validate_screenshots(args.run_dir, t['steps'])
         self.pages = []
         self.origins = set()
         for index, step in enumerate(t['steps']):

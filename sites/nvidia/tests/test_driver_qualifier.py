@@ -14,6 +14,19 @@ import unittest
 SITE=Path(__file__).resolve().parents[1]
 
 
+def write_png(path, width=320, height=200):
+    """Structurally valid PNG without third-party dependencies (repair002, H3)."""
+    import struct
+    import zlib
+    raw = b''.join(b'\x00' + bytes((10, 20, 30)) * width for _ in range(height))
+
+    def chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xFFFFFFFF)
+    path.write_bytes(b'\x89PNG\r\n\x1a\n'
+                     + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
+                     + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b''))
+
+
 class DriverQualifierRegression(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -39,6 +52,9 @@ class DriverQualifierRegression(unittest.TestCase):
                     'final_url':url,'final_answer':answer,'native_task':False}
         (folder/'task.json').write_text(json.dumps(task))
         (folder/'trajectory.json').write_text(json.dumps(trajectory))
+        shots=folder/'screenshots'; shots.mkdir()
+        for i in range(2):
+            write_png(shots/f'step_{i:03d}.png')
         cmd=[sys.executable,'-B',str(SITE/'verify'/f'verify_{number}.py'),'--run_dir',str(folder),
              '--initial_db',str(self.inputs/'initial.db'),'--after_db',str(self.inputs/'after.db')]
         r=subprocess.run(cmd,cwd=folder,env={'PATH':os.defpath,'PYTHONDONTWRITEBYTECODE':'1','PYTHONNOUSERSITE':'1'},capture_output=True,text=True,timeout=10)

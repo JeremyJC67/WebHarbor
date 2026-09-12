@@ -80,6 +80,31 @@ def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def write_png(path, width=320, height=200, payload=None):
+    """Write a structurally valid PNG without any third-party dependency."""
+    import struct
+    import zlib
+    path = Path(path)
+    if payload is not None:
+        path.write_bytes(payload)
+        return path
+    raw = b''.join(b'\x00' + bytes((10, 20, 30)) * width for _ in range(height))
+
+    def chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xFFFFFFFF)
+    png = (b'\x89PNG\r\n\x1a\n'
+           + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
+           + chunk(b'IDAT', zlib.compress(raw))
+           + chunk(b'IEND', b''))
+    path.write_bytes(png)
+    return path
+
+
+TINY_PNG = bytes.fromhex(
+    '89504e470d0a1a0a0000000d4948445200000001000000010806000000'
+    '1f15c4890000000a49444154789c63000100000500010d0a2db40000000049454e44ae426082')
+
+
 def write(path, obj):
     with Path(path).open('x', encoding='utf-8') as stream:
         json.dump(obj, stream, ensure_ascii=False, indent=2)
@@ -164,6 +189,25 @@ class Suite:
         if corrupt == 'db': (folder/'after.db').write_bytes(b'not SQLite')
         if corrupt == 'missing-task': (folder/'task.json').unlink()
         if corrupt == 'missing-db': (folder/'after.db').unlink()
+        # Screenshot evidence (repair002, H3): every case carries real PNGs unless the
+        # case is specifically about screenshot defects.
+        shots = folder / 'screenshots'
+        if corrupt != 'no-screenshots':
+            shots.mkdir(exist_ok=True)
+            for i in range(len(steps) + 1):
+                target = shots / f'step_{i:03d}.png'
+                if corrupt == 'tiny-screenshots':
+                    write_png(target, payload=TINY_PNG)
+                elif corrupt == 'corrupt-screenshot':
+                    write_png(target, payload=b'\x89PNG\r\n\x1a\n' + b'\x00' * 8)
+                else:
+                    write_png(target)
+        if corrupt == 'missing-referenced-screenshot':
+            traj = json.loads((folder/'trajectory.json').read_text())
+            if traj['steps']:
+                traj['steps'][0]['screenshot_before'] = 'step_999.png'
+                write(folder/'trajectory-2.json', traj)
+                (folder/'trajectory.json').write_text(json.dumps(traj, indent=2) + '\n')
         command = [sys.executable, '-B', str(SITE/'verify'/f'verify_{n}.py'), '--run_dir', str(folder),
                    '--initial_db', str(folder/'initial.db'), '--after_db', str(folder/'after.db')]
         inputs = {p.name: digest(p) for p in folder.iterdir() if p.is_file()}
@@ -250,6 +294,10 @@ class Suite:
         self.case(0, 'missing-task-json-accepted', 0, corrupt='missing-task')
         self.case(0, 'altered-task-json', 2, corrupt='altered-task')
         self.case(0, 'production-recorder-shape', 0, corrupt='prod-shape')
+        self.case(0, 'no-screenshots', 2, corrupt='no-screenshots')
+        self.case(0, 'tiny-screenshots', 2, corrupt='tiny-screenshots')
+        self.case(0, 'corrupt-screenshot', 2, corrupt='corrupt-screenshot')
+        self.case(0, 'missing-referenced-screenshot', 2, corrupt='missing-referenced-screenshot')
         formats = {0: ['32GB GDDR7', '32 gigabytes of GDDR7.', '32 GB GDDR 7'],
                    1: ['10 752 CUDA cores', '10752', '10,752 CUDA cores.'],
                    2: ['450 watts.', '450', '0.45 kW'], 3: ['RTX 5060 costs USD 299.00.', 'RTX 5060 costs 299 US dollars'],
