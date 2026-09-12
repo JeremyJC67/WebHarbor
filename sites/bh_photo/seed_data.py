@@ -371,8 +371,13 @@ def seed_database(db, models, base_dir: str):
                                         label=f"{product.name} main image", sort_order=0))
 
         groups = {}
+        seen_specs: set[tuple[str, str, str]] = set()
         for row in entry["specs"]:
             title = row["group"] or "Specifications"
+            fingerprint = (title, row["label"], row["value"])
+            if fingerprint in seen_specs:
+                continue  # some captured pages list the same row twice
+            seen_specs.add(fingerprint)
             if title not in groups:
                 group = ProductSpecGroup(product_id=product.id, title=title, sort_order=len(groups))
                 db.session.add(group)
@@ -402,18 +407,25 @@ def seed_database(db, models, base_dir: str):
         product.rating = round(sum(ratings) / len(ratings), 1)
 
         question_total = 1 + digest("questions", seed_key) % 3
+        asked: set[int] = set()
         for number in range(question_total):
+            # the answer must be the one written for this question, so both are
+            # taken from the same index rather than drawn independently
+            index = digest("question", seed_key, number) % len(QUESTION_TEMPLATES)
+            while index in asked:
+                index = (index + 1) % len(QUESTION_TEMPLATES)
+            asked.add(index)
             question = ProductQuestion(
                 product_id=product.id,
-                question=pick(QUESTION_TEMPLATES, "question", seed_key, number),
+                question=QUESTION_TEMPLATES[index],
                 asker_name=pick(REVIEW_AUTHORS, "asker", seed_key, number),
                 created_at=MIRROR_REFERENCE_DATE - timedelta(days=20 + number * 9),
             )
             db.session.add(question)
             db.session.flush()
             db.session.add(ProductAnswer(
-                question_id=question.id, responder_name="B&H Demo Support",
-                answer=pick(ANSWER_TEMPLATES, "answer", seed_key, number),
+                question_id=question.id, responder_name="B&H Support",
+                answer=ANSWER_TEMPLATES[index],
                 created_at=question.created_at + timedelta(days=1),
             ))
         product.qa_count = question_total
@@ -460,6 +472,28 @@ def seed_database(db, models, base_dir: str):
                 db.session.add(BundleItem(bundle_id=bundle.id, product_id=item.id, quantity=1))
 
     db.session.commit()
+
+
+def distinct_picks(shelf: list, purpose: str, key: str, count: int) -> list:
+    """Choose `count` products that a shopper would plausibly have saved together.
+
+    Two colour or kit variants of the same product share a name prefix; picking
+    them into one cart or wishlist looks like a data bug, so the prefix must be
+    new each time.
+    """
+    chosen, prefixes = [], set()
+    if not shelf:
+        return chosen
+    for offset in range(len(shelf)):
+        product = shelf[(digest(purpose, key, offset)) % len(shelf)]
+        prefix = " ".join(product.name.split()[:4]).lower()
+        if prefix in prefixes or any(product.id == item.id for item in chosen):
+            continue
+        prefixes.add(prefix)
+        chosen.append(product)
+        if len(chosen) == count:
+            break
+    return chosen
 
 
 def seed_benchmark_users(db, models):
@@ -509,28 +543,27 @@ def seed_benchmark_users(db, models):
 
     for index, user in enumerate(created_users):
         department = departments[index % len(departments)]
-        shelf = [p for p in products if p.top_category_slug == department] or products
+        shelf = [p for p in products if p.top_category_slug == department]
+        # a small department (Drones carries three variants of one camera) cannot
+        # fill a distinct cart and wishlist, so widen to the whole catalog
+        if len(shelf) < 8:
+            shelf = products
         shelf = sorted(shelf, key=lambda p: p.id)
 
-        for offset in range(min(3, len(shelf))):
-            product = shelf[(digest("wish", user.email, offset)) % len(shelf)]
-            if not WishlistItem.query.filter_by(user_id=user.id, product_id=product.id).first():
-                db.session.add(WishlistItem(user_id=user.id, product_id=product.id,
-                                            created_at=MIRROR_REFERENCE_DATE - timedelta(days=9 + offset)))
+        wished = distinct_picks(shelf, "wish", user.email, 3)
+        for offset, product in enumerate(wished):
+            db.session.add(WishlistItem(user_id=user.id, product_id=product.id,
+                                        created_at=MIRROR_REFERENCE_DATE - timedelta(days=9 + offset)))
 
-        for offset in range(min(3, len(shelf))):
-            product = shelf[(digest("compare", user.email, offset)) % len(shelf)]
-            if not CompareItem.query.filter_by(user_id=user.id, product_id=product.id).first():
-                db.session.add(CompareItem(user_id=user.id, product_id=product.id,
-                                           created_at=MIRROR_REFERENCE_DATE - timedelta(days=5 + offset)))
+        for offset, product in enumerate(distinct_picks(shelf, "compare", user.email, 3)):
+            db.session.add(CompareItem(user_id=user.id, product_id=product.id,
+                                       created_at=MIRROR_REFERENCE_DATE - timedelta(days=5 + offset)))
 
-        for offset in range(min(2, len(shelf))):
-            product = shelf[(digest("cart", user.email, offset)) % len(shelf)]
-            if not CartItem.query.filter_by(user_id=user.id, product_id=product.id).first():
-                db.session.add(CartItem(user_id=user.id, product_id=product.id,
-                                        quantity=1 + (digest("qty", user.email, offset) % 2),
-                                        variant_label="", bundle_label="",
-                                        added_at=MIRROR_REFERENCE_DATE - timedelta(days=3 + offset)))
+        for offset, product in enumerate(distinct_picks(shelf, "cart", user.email, 2)):
+            db.session.add(CartItem(user_id=user.id, product_id=product.id,
+                                    quantity=1 + (digest("qty", user.email, offset) % 2),
+                                    variant_label="", bundle_label="",
+                                    added_at=MIRROR_REFERENCE_DATE - timedelta(days=3 + offset)))
         db.session.flush()
 
         # one delivered order and, for half the accounts, one still processing
@@ -538,9 +571,7 @@ def seed_benchmark_users(db, models):
         if index % 2 == 1:
             statuses.append(("Processing", "Store pickup", 5 + index))
         for number, (status, fulfillment, days_ago) in enumerate(statuses):
-            items = [shelf[(digest("order", user.email, number, slot)) % len(shelf)]
-                     for slot in range(2)]
-            items = list(dict.fromkeys(items))
+            items = distinct_picks(shelf, f"order{number}", user.email, 2)
             subtotal = round(sum(item.price for item in items), 2)
             if subtotal <= 0:
                 continue
