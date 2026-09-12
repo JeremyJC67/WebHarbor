@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Reject unsafe or out-of-contract WebHarbor asset archive members."""
+"""Reject unsafe or out-of-contract WebHarbor asset archive members.
+
+An archive member is in contract when it lives inside one of the managed roots
+(`instance_seed`, `static/images`, `static/external_cache`) under the site's own
+root directory. A directory entry that is a bare ancestor of a managed root
+(`kaggle/static`, on the way to `static/images`) carries no content of its own
+and is accepted; files outside the managed roots are never accepted.
+"""
 from __future__ import annotations
 
 import argparse
@@ -7,6 +14,19 @@ import tarfile
 from pathlib import Path, PurePosixPath
 
 ALLOWED_ROOTS = {"instance_seed", "static/images", "static/external_cache"}
+
+
+def is_managed_member(relative: str, is_dir: bool) -> bool:
+    """True when `relative` (the member path below the site root) is managed."""
+    if not relative:
+        return True  # the site root directory entry itself
+    for root in ALLOWED_ROOTS:
+        if relative == root or relative.startswith(root + "/"):
+            return True
+    if is_dir:
+        # Ancestor directory entry such as `static` or `static/images/avatars`.
+        return any(root.startswith(relative + "/") for root in ALLOWED_ROOTS)
+    return False
 
 
 def validate(archive: Path, expected_site: str) -> int:
@@ -21,11 +41,11 @@ def validate(archive: Path, expected_site: str) -> int:
                 continue
             if parts[0] != expected_site:
                 raise ValueError(f"unexpected site root in archive: {member.name!r}")
-            relative = "/".join(parts[1:])
-            if relative and not any(relative == root or relative.startswith(root + "/") for root in ALLOWED_ROOTS):
-                raise ValueError(f"unexpected managed path: {member.name!r}")
             if not (member.isfile() or member.isdir()):
                 raise ValueError(f"unsafe archive member type: {member.name!r}")
+            relative = "/".join(parts[1:])
+            if not is_managed_member(relative, member.isdir()):
+                raise ValueError(f"unexpected managed path: {member.name!r}")
             count += 1
     if count == 0:
         raise ValueError("asset archive contains no managed members")
