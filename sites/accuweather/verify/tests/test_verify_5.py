@@ -37,6 +37,17 @@ class VerifyTask5Tests(VerifierTestCase):
     def test_shortcut_fails_on_navigation_gate(self) -> None:
         self.assertFailsOn(self.verdict([step("/"), step("/", "done")], C["answer"], after=genuine_after()), C["gate"])
 
+    def test_catalog_wide_query_does_not_satisfy_the_search_gate(self) -> None:
+        """The point of this gate is that the agent disambiguated three
+        Springfields. ``q=United States`` matches every US location, so it must
+        not stand in for a real search; ``q=Springfield`` must."""
+        universal = [step("/"), step("/search?q=United%20States"), step("/weather/springfield-mo"),
+                     step("/air-quality/springfield-mo", "done")]
+        self.assertFailsOn(self.verdict(universal, C["answer"], after=genuine_after()), C["gate"])
+        real = [step("/"), step("/search?q=Springfield"), step("/weather/springfield-mo"),
+                step("/air-quality/springfield-mo", "done")]
+        self.assertPasses(self.verdict(real, C["answer"], after=genuine_after()))
+
     def test_wrong_answers_fail(self) -> None:
         for answer, reason in C["wrong"]:
             with self.subTest(answer=answer):

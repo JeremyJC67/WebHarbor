@@ -68,6 +68,36 @@ class FactMatchers(unittest.TestCase):
         self.assertTrue(L.search_surfaces(traj, "springfield-mo"))
         self.assertTrue(L.search_surfaces(traj, "springfield-il"))
         self.assertFalse(L.search_surfaces(traj, "phoenix-az"))
+
+    def test_search_gate_ignores_catalog_wide_tokens(self) -> None:
+        """``United States`` matches 20/20 locations, so it must not satisfy the
+        anti-shortcut gate for any of them; a city/region/postal token must."""
+        def q(term):
+            return {"start_url": "http://localhost:41024/",
+                    "steps": [{"url": "http://localhost:41024/search?q=" + term}]}
+        for slug in ("springfield-mo", "portland-me", "toronto-ca", "london-gb"):
+            self.assertFalse(L.search_surfaces(q("United+States"), slug), slug)
+            self.assertFalse(L.search_surfaces(q("states"), slug), slug)
+        self.assertTrue(L.search_surfaces(q("Springfield"), "springfield-mo"))
+        self.assertTrue(L.search_surfaces(q("65806"), "springfield-mo"))
+        self.assertTrue(L.search_surfaces(q("Kingdom"), "london-gb"))
+        self.assertNotIn("united", L._discriminative_tokens("london-gb"))
+        self.assertIn("london", L._discriminative_tokens("london-gb"))
+
+    def test_screenshots_reject_stub_sizes(self) -> None:
+        """A decodable but 1x1 PNG is a placeholder, not page evidence."""
+        from _support import make_png
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "screenshots").mkdir()
+            traj = {"_run_dir": root, "steps": [{"screenshot_before": "step_000.png", "screenshot_after": "step_001.png"}]}
+            for w, h, expected in ((320, 200, True), (L.MIN_SHOT_WIDTH, L.MIN_SHOT_HEIGHT, True),
+                                   (1, 1, False), (L.MIN_SHOT_WIDTH - 1, L.MIN_SHOT_HEIGHT, False),
+                                   (L.MIN_SHOT_WIDTH, L.MIN_SHOT_HEIGHT - 1, False)):
+                for name in ("step_000.png", "step_001.png"):
+                    (root / "screenshots" / name).write_bytes(make_png(w, h))
+                ok, evidence = L.screenshots_decode(traj)
+                self.assertEqual(ok, expected, f"{w}x{h}: {evidence}")
         self.assertTrue(L.navigated_to_path({"steps": [{"url": "http://127.0.0.1:5000/weather/phoenix-az?x=1"}]}, "/weather/phoenix-az"))
         self.assertFalse(L.navigated_to_path({"steps": [{"url": "http://example.com/weather/phoenix-az"}]}, "/weather/phoenix-az"))
         self.assertFalse(L._same_local_origin("http://localhost:41025/", "http://localhost:41024/"))

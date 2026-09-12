@@ -91,6 +91,10 @@ HOME_GRID_SLUGS = ("new-york-ny", "phoenix-az", "seattle-wa", "miami-fl",
 SEED_USERS = ("alice.j@test.com", "bob.smith@test.com", "carol.w@test.com", "david.b@test.com")
 PASSWORD = "TestPass123!"
 
+# A real browser screenshot is at least viewport-sized. A decodable 1x1 PNG is a
+# stub, not evidence, so the package-identity gate rejects anything this small.
+MIN_SHOT_WIDTH, MIN_SHOT_HEIGHT = 200, 150
+
 
 # ---------------------------------------------------------------- CLI
 @dataclass
@@ -216,11 +220,19 @@ def _tokens(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", normalize_text(text)))
 
 
+def _discriminative_tokens(slug: str) -> set[str]:
+    """`slug`'s own field tokens, minus tokens that most of the catalog shares.
+    ``united`` and ``states`` match every US location, so ``q=United States``
+    proves nothing about having found *this* one; ``springfield`` does."""
+    mine = _tokens(" ".join(CATALOG[slug]))
+    catalog = [_tokens(" ".join(fields)) for fields in CATALOG.values()]
+    return {t for t in mine if sum(1 for other in catalog if t in other) <= len(catalog) / 2}
+
+
 def search_surfaces(traj, slug: str) -> bool:
     """True when some /search?q= visit would list `slug` under the site's own
-    scoring (any query token hits city / region / country / postal)."""
-    fields = " ".join(CATALOG[slug])
-    field_tokens = _tokens(fields)
+    scoring, on a token that actually narrows the catalog down to it."""
+    field_tokens = _discriminative_tokens(slug)
     return any(_tokens(q) & field_tokens for q in search_queries(traj))
 
 
@@ -295,8 +307,9 @@ def screenshots_decode(traj) -> tuple[bool, str]:
                 w, h = _png_dimensions(path)
             except Exception as exc:  # noqa: BLE001
                 return False, f"step {i} {key} cannot decode: {exc}"
-            if w < 1 or h < 1:
-                return False, f"step {i} {key} is an empty PNG"
+            if w < MIN_SHOT_WIDTH or h < MIN_SHOT_HEIGHT:
+                return False, (f"step {i} {key} is {w}x{h}, under the {MIN_SHOT_WIDTH}x{MIN_SHOT_HEIGHT} "
+                               "minimum for a real page screenshot")
             checked += 1
     return True, f"decoded {checked} PNG screenshots"
 

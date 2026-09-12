@@ -178,7 +178,7 @@ class State:
         return path
 
 
-def make_png(width: int = 2, height: int = 2) -> bytes:
+def make_png(width: int = 320, height: int = 200) -> bytes:
     raw = b"".join(b"\x00" + b"\x10\x20\x30" * width for _ in range(height))
 
     def chunk(kind: bytes, data: bytes) -> bytes:
@@ -201,7 +201,7 @@ def login_steps(email: str, password: str = PASSWORD) -> list[dict[str, Any]]:
 
 def write_run(run_dir: Path, task_id: str, steps: list[dict[str, Any]], answer: str, *,
               base: str = BASE, start_url: str | None = None, updates: dict[str, Any] | None = None,
-              corrupt_screenshot: bool = False) -> Path:
+              corrupt_screenshot: bool = False, stub_screenshot: bool = False) -> Path:
     shots = run_dir / "screenshots"
     shots.mkdir(parents=True, exist_ok=True)
     logged = []
@@ -220,6 +220,8 @@ def write_run(run_dir: Path, task_id: str, steps: list[dict[str, Any]], answer: 
         (shots / f"step_{i:03d}.png").write_bytes(PNG)
     if corrupt_screenshot:
         (shots / "step_001.png").write_bytes(b"definitely not a png")
+    if stub_screenshot:  # decodable, but a 1x1 placeholder rather than a page
+        (shots / "step_001.png").write_bytes(make_png(1, 1))
     traj = {"task_id": task_id, "task": "", "start_url": start_url or (base + "/"), "max_steps": 15, "steps": logged,
             "terminated": True, "termination_reason": "agent_done", "final_answer": answer, "success_self_report": True,
             "verifier_path": f"sites/accuweather/verify/verify_{task_id.rsplit('--', 1)[1]}.py", "judge_rubric": ""}

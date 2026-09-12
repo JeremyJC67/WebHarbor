@@ -56,6 +56,10 @@ class VerifyTask0Tests(VerifierTestCase):
     def test_corrupt_screenshot_fails(self) -> None:
         self.assertFailsOn(self.verdict(C["steps"], C["answer"], after=genuine_after(), corrupt_screenshot=True), "screenshots_decode")
 
+    def test_stub_screenshot_fails(self) -> None:
+        """A 1x1 PNG decodes cleanly but is not evidence that a page was seen."""
+        self.assertFailsOn(self.verdict(C["steps"], C["answer"], after=genuine_after(), stub_screenshot=True), "screenshots_decode")
+
     def test_schema_change_fails_closed(self) -> None:
         after = genuine_after()
         after.extra_sql.append("CREATE TABLE injected(id INTEGER PRIMARY KEY)")
