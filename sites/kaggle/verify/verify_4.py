@@ -8,8 +8,9 @@ Checks: nav leaderboard/competition | answer names team + score | DB anchor | LL
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, final_answer, resolve_db, db_query,
-                        contains_any, contains_score, llm_text_match, Judge, parse_args)
+from verify_lib import (Judge, contains_any, contains_score, db_query, final_answer,
+                        llm_text_match, load_run, navigated_to, parse_args, resolve_db,
+                        tables_unchanged)
 
 SLUG = "credit-default-risk-2026"
 
@@ -18,6 +19,10 @@ def main():
     j = Judge('Kaggle--4', a.no_llm)
     t = load_run(a.run_dir); fa = final_answer(t)
     ref = resolve_db(a.initial_db, a.container, "instance_seed") or resolve_db(a.after_db, a.container, "instance")
+    # Read-only task: the live DB must be unchanged, otherwise the run is not
+    # a read-only visit (a missing DB leaves `changed` as None and fails).
+    changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
+    j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     rows = db_query(ref,
         "SELECT s.team_name, s.score FROM submissions s JOIN competitions c ON c.id=s.competition_id "
         "WHERE c.slug=? ORDER BY s.rank LIMIT 1", (SLUG,))

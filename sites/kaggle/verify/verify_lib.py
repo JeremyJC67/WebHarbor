@@ -234,6 +234,40 @@ def scalar(db_path, table, column, slug):
     rows = db_query(db_path, f"SELECT {column} FROM {table} WHERE slug=?", (slug,))
     return rows[0][0] if rows else None
 
+
+def db_tables(db_path):
+    """{table: [rows as sorted tuples of strings]} for every user table, or None if unreadable."""
+    if not db_path:
+        return None
+    try:
+        con = sqlite3.connect(db_path)
+        try:
+            tables = [r[0] for r in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+            out = {}
+            for table in tables:
+                rows = sorted(tuple("" if v is None else str(v) for v in row)
+                              for row in con.execute(f'SELECT * FROM "{table}"'))
+                out[table] = rows
+            return out
+        finally:
+            con.close()
+    except sqlite3.Error:
+        return None
+
+
+def tables_unchanged(init_db, after_db, ignore=()):
+    """Tables whose content differs between the two DBs.
+
+    Returns None when either DB is unavailable so callers can fail-closed: a
+    read-only task must be able to prove that nothing was written.
+    """
+    before, after = db_tables(init_db), db_tables(after_db)
+    if before is None or after is None:
+        return None
+    return [table for table in sorted(set(before) | set(after))
+            if table not in ignore and before.get(table) != after.get(table)]
+
 # ---------------------------------------------------------------- shared LLM utilities (anchored)
 _NO_LLM = False
 

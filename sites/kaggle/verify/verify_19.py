@@ -8,14 +8,19 @@ Checks: nav notebooks (code) | answer names the notebook + author | DB anchor | 
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, final_answer, resolve_db, db_query,
-                        contains_any, contains_all, llm_text_match, Judge, parse_args)
+from verify_lib import (Judge, contains_all, contains_any, db_query, final_answer,
+                        llm_text_match, load_run, navigated_to, parse_args, resolve_db,
+                        tables_unchanged)
 
 def main():
     a = parse_args()
     j = Judge('Kaggle--19', a.no_llm)
     t = load_run(a.run_dir); fa = final_answer(t)
     ref = resolve_db(a.initial_db, a.container, "instance_seed") or resolve_db(a.after_db, a.container, "instance")
+    # Read-only task: the live DB must be unchanged, otherwise the run is not
+    # a read-only visit (a missing DB leaves `changed` as None and fails).
+    changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
+    j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     rows = db_query(ref, "SELECT title, author_username, votes FROM notebooks "
                          "WHERE language='Python' AND medal='gold' ORDER BY votes DESC")
     title = rows[0][0] if rows else None

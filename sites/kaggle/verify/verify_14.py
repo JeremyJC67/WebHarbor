@@ -8,8 +8,9 @@ Checks: nav the course page | answer states the lesson count | DB anchor | LLM.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, final_answer, resolve_db, scalar,
-                        contains_number, contains_any, llm_text_match, Judge, parse_args)
+from verify_lib import (Judge, contains_any, contains_number, final_answer, llm_text_match,
+                        load_run, navigated_to, parse_args, resolve_db, scalar,
+                        tables_unchanged)
 
 SLUG = "intro-to-machine-learning"
 _NUM_WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven",
@@ -20,6 +21,10 @@ def main():
     j = Judge('Kaggle--14', a.no_llm)
     t = load_run(a.run_dir); fa = final_answer(t)
     ref = resolve_db(a.initial_db, a.container, "instance_seed") or resolve_db(a.after_db, a.container, "instance")
+    # Read-only task: the live DB must be unchanged, otherwise the run is not
+    # a read-only visit (a missing DB leaves `changed` as None and fails).
+    changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
+    j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     lessons = scalar(ref, "courses", "lessons", SLUG)  # 7
     j.check("nav_course", navigated_to(t, f"/learn/{SLUG}"), "opened the Intro to ML course page")
     j.check("db_ground_truth", lessons is not None, f"lessons={lessons}")

@@ -8,8 +8,8 @@ Checks: nav rankings | answer names the #1 user | DB anchor (replicates the rank
 """
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, final_answer, resolve_db, db_query,
-                        contains_any, llm_text_match, Judge, parse_args)
+from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
+                        load_run, navigated_to, parse_args, resolve_db, tables_unchanged)
 
 TIERS = ["Novice", "Contributor", "Expert", "Master", "Grandmaster"]
 
@@ -18,6 +18,10 @@ def main():
     j = Judge('Kaggle--13', a.no_llm)
     t = load_run(a.run_dir); fa = final_answer(t)
     ref = resolve_db(a.initial_db, a.container, "instance_seed") or resolve_db(a.after_db, a.container, "instance")
+    # Read-only task: the live DB must be unchanged, otherwise the run is not
+    # a read-only visit (a missing DB leaves `changed` as None and fails).
+    changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
+    j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     w = {t_: i for i, t_ in enumerate(TIERS)}
     rows = db_query(ref, "SELECT username, display_name, tier, tiers_json, points FROM users WHERE is_org=0")
     top_u = top_d = None
