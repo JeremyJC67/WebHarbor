@@ -4,14 +4,17 @@ starting dose. GT: 50 mg once daily.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, final_answer, navigated_any, contains_any,
+from verify_lib import (load_run, final_answer, navigated_to, contains_any,
                         llm_text_match, Judge, parse_args)
 
 def main():
     a = parse_args(); j = Judge('Healthline--11', a.no_llm)
     t = load_run(a.run_dir); fa = final_answer(t)
-    j.check("nav_drug", navigated_any(t, ["/drug/sertraline", "/drugs"]),
-            "expected the Drugs A-Z browse / sertraline page")
+    # The dose lives ONLY on the drug detail page; the A-Z card shows just the
+    # class and generic name. Accepting "/drugs" alone let a run pass that
+    # recalled "50 mg" from medical knowledge without reading the page.
+    j.check("nav_drug", navigated_to(t, "/drug/sertraline"),
+            "expected the sertraline drug page")
     j.check("answer_dose", contains_any(fa, ["50 mg", "50mg"]), f"expected 50 mg; final={fa!r}")
     ok, ev = llm_text_match(fa, "50 mg once daily (typical starting dose)",
                             "What is sertraline's typical recommended starting dose?")

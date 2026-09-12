@@ -28,12 +28,78 @@ import simpleArgParser as sap
 
 SITE = "healthline"
 
+# Evidence thresholds. A trajectory is only admissible as proof if its
+# screenshots are real PNGs of a plausible viewport size and its recorded URLs
+# point at the loopback mirror rather than the live internet.
+MIN_SHOT_BYTES = 512
+MIN_SHOT_W = 200
+MIN_SHOT_H = 200
+LOOPBACK_RE = re.compile(r"^https?://(?:127\.0\.0\.1|localhost|\[::1\])(?::\d+)?(?:/|$)")
+
+# Tables a read-only task must leave byte-identical between initial and after.
+# `reading_history` is excluded on purpose: viewing an article while signed in
+# is a legitimate, recorded user action.
+READ_ONLY_TABLES = ("sections", "authors", "articles", "conditions", "drugs",
+                    "users", "saved_articles")
+
+# Cross-cutting state so a single verify_lib change gives all 20 verifiers the
+# same input-validation and evidence guarantees without editing each of them.
+_STATE = {"judge": None, "traj": None, "args": None, "after_db_requested": False}
+
+
+def fail_structured(reason):
+    """Emit a structured FAIL and exit 1. Never let a verifier raise."""
+    j = _STATE.get("judge")
+    task_id = getattr(j, "task_id", None) or "<unknown>"
+    evidence = list(getattr(j, "evidence", []))
+    evidence.append(f"[FAIL] verifier_input: {reason}")
+    print(json.dumps({"task_id": task_id, "pass": False, "reason": reason,
+                      "evidence": evidence}, indent=2))
+    sys.exit(1)
+
+
+def _excepthook(exc_type, exc, tb):
+    if issubclass(exc_type, SystemExit):
+        sys.__excepthook__(exc_type, exc, tb)
+        return
+    fail_structured(f"unhandled {exc_type.__name__}: {exc}")
+
+
+sys.excepthook = _excepthook
+
+
+def _png_ok(path):
+    """True when the file is a decodable PNG of at least the minimum size."""
+    try:
+        b = path.read_bytes()
+    except OSError:
+        return False
+    if len(b) < MIN_SHOT_BYTES or not b.startswith(b"\x89PNG\r\n\x1a\n") or len(b) < 24:
+        return False
+    if b[12:16] != b"IHDR":
+        return False
+    w = int.from_bytes(b[16:20], "big")
+    h = int.from_bytes(b[20:24], "big")
+    return w >= MIN_SHOT_W and h >= MIN_SHOT_H
+
+
 # ---------------------------------------------------------------- trajectory
 def load_run(run_dir):
     d = Path(run_dir)
-    traj = json.loads((d / "trajectory.json").read_text())
+    tj = d / "trajectory.json"
+    if not tj.is_file():
+        fail_structured(f"trajectory.json not found under {run_dir!r}")
+    try:
+        traj = json.loads(tj.read_text())
+    except (OSError, ValueError) as e:
+        fail_structured(f"trajectory.json unreadable: {type(e).__name__}: {e}")
+    if not isinstance(traj, dict):
+        fail_structured("trajectory.json is not a JSON object")
+    if not isinstance(traj.get("steps"), list):
+        fail_structured("trajectory.json has no 'steps' list")
     traj["_run_dir"] = d
     traj["_shots"] = {p.name: p for p in sorted((d / "screenshots").glob("step_*.png"))}
+    _STATE["traj"] = traj
     return traj
 
 def step_urls(traj):
@@ -87,8 +153,16 @@ def count_matches(final, tokens):
     return sum(1 for t in tokens if norm(t) in f)
 
 def number_mentioned(final, amount):
+    """Match `amount` as a standalone number.
+
+    Plain substring matching accepted "15 saved articles" for an expected 5 and
+    "1600 IU" for an expected 600, so the number is anchored on both sides.
+    """
     f = norm(final)
-    return str(amount) in f or f"{amount:,}" in f
+    for form in {str(amount), f"{amount:,}"}:
+        if re.search(rf"(?<![\d.,]){re.escape(form)}(?![\d.,]?\d)", f):
+            return True
+    return False
 
 # ---------------------------------------------------------------- DB state
 def fetch_db(container, kind):
@@ -106,7 +180,16 @@ def fetch_db(container, kind):
     return path
 
 def resolve_db(arg, container, kind):
+    if kind == "instance":
+        # Remember that this task grades an after-state itself, so the generic
+        # read-only gate in Judge.emit() stands down for it.
+        _STATE["after_db_requested"] = True
     if arg:
+        # An explicitly passed path that does not exist is malformed input, not
+        # an "unavailable DB" — surface it as a structured FAIL, not a crash.
+        if not Path(arg).is_file():
+            fail_structured(f"--{'after' if kind == 'instance' else 'initial'}_db "
+                            f"{arg!r} does not exist")
         return arg
     try:
         return fetch_db(container, kind)
@@ -119,6 +202,26 @@ def db_query(db_path, sql, params=()):
         return con.execute(sql, params).fetchall()
     finally:
         con.close()
+
+def tables_unchanged(initial_db, after_db, tables=READ_ONLY_TABLES):
+    """Compare whole tables between the initial and after DB.
+
+    Returns (ok, detail); ok is None when the comparison could not be made.
+    """
+    if not (initial_db and after_db):
+        return None, "initial/after DB unavailable"
+    diffs = []
+    for t in tables:
+        try:
+            a = db_query(initial_db, f"SELECT * FROM {t} ORDER BY id")
+            b = db_query(after_db, f"SELECT * FROM {t} ORDER BY id")
+        except sqlite3.Error as e:
+            return None, f"{t}: {e}"
+        if a != b:
+            diffs.append(f"{t} ({len(a)} -> {len(b)} rows, content differs)")
+    if diffs:
+        return False, "CHANGED: " + "; ".join(diffs)
+    return True, "unchanged: " + ", ".join(tables)
 
 # --- Healthline-specific state helpers (return None if db unavailable) --------
 def user_field(db_path, email, field):
@@ -221,6 +324,7 @@ class Judge:
         self.ok = True
         self.reason = ""
         self.evidence = []
+        _STATE["judge"] = self
 
     def check(self, name, cond, evidence="", llm=False):
         if llm and self.no_llm:
@@ -235,7 +339,51 @@ class Judge:
             self.evidence.append(f"[FAIL] {name}: {evidence}")
         return bool(cond)
 
+    # -------------------------------------------------- evidence binding
+    def _evidence_gate(self):
+        """Checks every task gets for free: task_id binding, decodable
+        screenshots of a real viewport, and same-origin loopback URLs."""
+        traj = _STATE.get("traj")
+        if traj is None:
+            return
+        tid = traj.get("task_id")
+        if tid:
+            self.check("task_id_bound", tid == self.task_id,
+                       f"trajectory task_id={tid!r}, verifier expects {self.task_id!r}")
+        shots = list(traj.get("_shots", {}).values())
+        good = [p for p in shots if _png_ok(p)]
+        self.check("evidence_screenshots", bool(good),
+                   f"{len(good)}/{len(shots)} screenshots are PNGs >= {MIN_SHOT_BYTES}B "
+                   f"and >= {MIN_SHOT_W}x{MIN_SHOT_H}px")
+        urls = [u for u in step_urls(traj) if u]
+        off = [u for u in urls if not LOOPBACK_RE.match(u)]
+        self.check("evidence_origin", bool(urls) and not off,
+                   f"{len(urls)} recorded step URLs, off-origin={off[:3]}")
+
+    def _read_only_gate(self):
+        """A task that never asked for the after-state DB is a read-only task,
+        so nothing it touched may have changed the graded tables."""
+        if _STATE["after_db_requested"]:
+            return
+        a = _STATE.get("args")
+        if a is None:
+            return
+        init = resolve_db(a.initial_db, a.container, "instance_seed")
+        after = a.after_db if a.after_db else None
+        if not after:
+            try:
+                after = fetch_db(a.container, "instance")
+            except Exception:
+                after = None
+        ok, detail = tables_unchanged(init, after)
+        if ok is None:
+            self.evidence.append(f"[SKIP] tables_unchanged ({detail})")
+            return
+        self.check("tables_unchanged", ok, detail)
+
     def emit(self):
+        self._evidence_gate()
+        self._read_only_gate()
         print(json.dumps({"task_id": self.task_id, "pass": self.ok,
                           "reason": self.reason, "evidence": self.evidence}, indent=2))
         sys.exit(0 if self.ok else 1)
@@ -252,4 +400,6 @@ def parse_args():
         def post_process(self):
             if not self.run_dir:
                 raise SystemExit("--run_dir is required")
-    return sap.parse_args(VerifyArgs)
+    args = sap.parse_args(VerifyArgs)
+    _STATE["args"] = args
+    return args
