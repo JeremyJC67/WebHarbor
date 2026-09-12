@@ -9,8 +9,8 @@ Checks: nav login + user profile | DB after: follow row exists.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, follow_exists, last_shot, llm_screenshot_shows, load_run,
-                        navigated_to, origin_ok, parse_args, resolve_db, shot_at,
-                        shot_distinct, shot_final)
+                        navigated_to, origin_ok, parse_args, resolve_db, run_complete,
+                        shot_at, shot_distinct, shot_final)
 
 EMAIL = "bob.c@test.com"
 TARGET = "psi_grandmaster"
@@ -23,6 +23,8 @@ def main():
     init = resolve_db(a.initial_db, a.container, "instance_seed")
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_login", navigated_to(t, "/login"), f"login={navigated_to(t, '/login')}")
     j.check("nav_profile", navigated_to(t, f"/user/{TARGET}"), "opened psi_grandmaster's profile")

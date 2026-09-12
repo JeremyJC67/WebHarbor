@@ -79,6 +79,31 @@ def load_run(run_dir):
     return traj
 
 
+def run_complete(traj, require_answer=True):
+    """(ok, note): the trajectory is a finished run, not a truncated tail.
+
+    agent_demo writes `terminated`, `termination_reason` and a final `done` step
+    (with the self-reported answer). A trajectory whose last step is not that
+    `done` step is a truncated recording, and one that ended on max_steps never
+    finished the task.
+    """
+    steps = traj.get("steps") or []
+    if not steps:
+        return False, "trajectory has no steps"
+    last = steps[-1]
+    terminated = traj.get("terminated")
+    reason = traj.get("termination_reason")
+    if terminated is not True:
+        return False, f"trajectory is not terminated (terminated={terminated!r}, reason={reason!r})"
+    if reason != "agent_done":
+        return False, f"run did not finish with agent_done (termination_reason={reason!r})"
+    if last.get("action") != "done":
+        return False, f"the last step is {last.get('action')!r}, not the final 'done' step (truncated recording)"
+    if require_answer and not (traj.get("final_answer") or "").strip():
+        return False, "the final 'done' step carries no answer"
+    return True, f"terminated with agent_done after {len(steps)} steps"
+
+
 def run_load_errors():
     return list(_RUN_ERRORS)
 

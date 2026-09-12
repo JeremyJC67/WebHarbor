@@ -10,8 +10,8 @@ Checks: nav sara's profile | answer names the earliest-deadline comp | DB anchor
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
-                        load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
-                        shot_distinct, shot_final, tables_unchanged)
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db,
+                        run_complete, shot_at, shot_distinct, shot_final, tables_unchanged)
 
 HOST = "sara_timeseries"
 
@@ -29,6 +29,8 @@ def main():
     title = rows[0][0] if rows else None
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_host_profile", navigated_to(t, f"/user/{HOST}"), "opened sara_timeseries's profile")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][1] < rows[1][1]),

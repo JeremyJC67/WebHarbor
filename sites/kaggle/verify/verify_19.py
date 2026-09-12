@@ -10,7 +10,8 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, affirms, affirms_any, db_query, final_answer,
                         llm_text_match, load_run, navigated_to, origin_ok, parse_args,
-                        resolve_db, shot_at, shot_distinct, shot_final, tables_unchanged)
+                        resolve_db, run_complete, shot_at, shot_distinct, shot_final,
+                        tables_unchanged)
 
 def main():
     a = parse_args()
@@ -27,6 +28,8 @@ def main():
     author = rows[0][1] if rows else None
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_code", navigated_to(t, "/code"), "opened the notebooks (Code) area")
     # Gate on both filters the task requires.

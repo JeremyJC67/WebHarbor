@@ -12,7 +12,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, competition_entry, last_shot, llm_screenshot_shows,
                         load_run, navigated_to, norm, origin_ok, parse_args, resolve_db,
-                        shot_at, shot_distinct, shot_final)
+                        run_complete, shot_at, shot_distinct, shot_final)
 
 EMAIL = "alice.j@test.com"
 SLUG = "llm-prompt-recovery"
@@ -25,6 +25,8 @@ def main():
     init = resolve_db(a.initial_db, a.container, "instance_seed")
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_login", navigated_to(t, "/login"), f"login={navigated_to(t, '/login')}")
     j.check("nav_competition", navigated_to(t, f"/competitions/{SLUG}"), "opened the LLM Prompt Recovery page")

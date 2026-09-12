@@ -9,8 +9,8 @@ Checks: nav the datasets listing | answer names the top dataset | DB anchor | LL
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
-                        load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
-                        shot_distinct, shot_final, tables_unchanged)
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db,
+                        run_complete, shot_at, shot_distinct, shot_final, tables_unchanged)
 
 def main():
     a = parse_args()
@@ -25,6 +25,8 @@ def main():
     top = rows[0][0] if rows else None  # "Global Temperature Anomalies 1880–2025"
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_datasets", navigated_to(t, "/datasets"), "opened the datasets area")
     # Gate on the filter the task requires, not just on the listing page.

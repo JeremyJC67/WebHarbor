@@ -10,8 +10,8 @@ Checks: nav the competition detail page | answer names the metric | LLM anchor.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, affirms_any, final_answer, llm_text_match, load_run,
-                        navigated_to, origin_ok, parse_args, resolve_db, scalar, shot_at,
-                        shot_distinct, shot_final, tables_unchanged)
+                        navigated_to, origin_ok, parse_args, resolve_db, run_complete,
+                        scalar, shot_at, shot_distinct, shot_final, tables_unchanged)
 
 SLUG = "titanic-survival"
 
@@ -27,6 +27,8 @@ def main():
     gt = scalar(ref, "competitions", "metric", SLUG)  # "Classification Accuracy"
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_competition", navigated_to(t, f"/competitions/{SLUG}"), "opened the Titanic competition page")
     j.check("db_ground_truth", gt is not None, f"metric={gt!r}")

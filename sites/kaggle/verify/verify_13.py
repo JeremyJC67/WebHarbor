@@ -9,8 +9,8 @@ Checks: nav rankings | answer names the #1 user | DB anchor (replicates the rank
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
-                        load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
-                        shot_distinct, shot_final, tables_unchanged)
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db,
+                        run_complete, shot_at, shot_distinct, shot_final, tables_unchanged)
 
 TIERS = ["Novice", "Contributor", "Expert", "Master", "Grandmaster"]
 
@@ -37,6 +37,8 @@ def main():
     # notebooks tab the task asks about.
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
+    complete_ok, complete_note = run_complete(t)
+    j.check("run_complete", complete_ok, complete_note)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_rankings", navigated_to(t, "category=notebooks"),
             f"opened the Notebooks rankings tab ({[u for u in [s.get('url','') for s in t.get('steps', [])] if '/rankings' in u]})")
