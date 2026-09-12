@@ -52,9 +52,9 @@ a task allows it. Any drift fails closed with `snapshot_contract_invalid`.
 | 3 | `/interest/science`; detail of the humming-bridge post (original or clone) | count `440` + `railing(s)`; DB unchanged |
 | 4 | search (library/community/night/shift/cabinet); detail of the night-shift library (original or clone) | `blue` + `Thursday` + clock `6 am` (`6:00 AM`, `06:00`, `6 a.m.` ok); DB unchanged |
 | 5 | `/interest/sports`; detail of the grandmother-marathon post (original or clone) | count `38` + `orange`; DB unchanged |
-| 6 | search (sourdough/skyline/baker/bread); detail of the **original** sourdough post only | count `3`/`three` + count `14`/`fourteen`; DB unchanged |
+| 6 | search (sourdough/skyline/baker/bread); detail of the sourdough post (original **or** its remix clone — same facts) | count `3`/`three` + count `14`/`fourteen`; DB unchanged |
 | 7 | `/interest/gaming`; detail of the transparent keyboard (original or clone) | `silent` + `tactile` + `acrylic`; DB unchanged |
-| 8 | search (rain/delay/concert/musician/street/platform/chorus); detail of the **original** street-musician post only | count `7`/`seven`; DB unchanged |
+| 8 | search (rain/delay/concert/musician/street/platform/chorus); detail of the street-musician post (original **or** its remix clone — same facts) | count `7`/`seven`; DB unchanged |
 | 9 | `/interest/animals`; detail of the garden-fox post (the original with the most points; frozen points re-checked against the seed) | `Copper`; DB unchanged |
 | 10 | login as alice (`/login` + identity typed); search (lighthouse/office/ocean); detail of the **original** lighthouse office; `/login` before the detail | exactly one added `saved_post` (alice, post 12); nothing else changes |
 | 11 | login as carol; `/interest/animals`; detail of the **original** kayak-dog post; order login → feed → detail | exactly one added `vote` (carol, post 20, +1); post 20 `up_votes` +1 only; nothing else changes |
@@ -73,8 +73,18 @@ mention such as "not orange" does not count), counts must be standalone integers
 decimals must match exactly.
 
 Note on the "Community remix" clones: the seed duplicates every curated post as `Community remix N: …`
-with the same description, so for read tasks whose wording does not say "original" either detail page is
-accepted (the facts are identical). Tasks that say "original" (6, 8, 9, 10-13, 18, 19) require the original.
+with the same description. The rule is **provenance only matters where it changes the graded outcome**:
+
+- **Read-only fact tasks (0-8): either detail page is accepted**, because the clone repeats the original's
+  description verbatim, so an agent that reads the fact off the clone has answered the question correctly.
+  Requiring the original there would fail a correct answer on a hidden provenance rule.
+- **Task 9 requires the original**, because it compares *point counts* and the clones carry different ones,
+  so using a clone changes the answer.
+- **Stateful tasks (10-13, 18, 19) require the original**, because the clone is a genuinely different row
+  and saving/voting/hiding/commenting on it is a different database effect.
+
+Every task whose grade depends on provenance now says so in its `ques` ("not its 'Community remix' copy"),
+so the requirement is visible to the agent instead of hidden in the verifier.
 
 ## Tests
 

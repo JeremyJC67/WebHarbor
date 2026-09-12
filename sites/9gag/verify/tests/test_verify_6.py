@@ -22,9 +22,17 @@ class VerifyTask6Tests(ReadTaskTests):
         "Three attempts and four hours.": "answer_has_shaping_hours",
     }
 
-    def test_remix_clone_does_not_count_as_original(self) -> None:
+    def test_remix_clone_is_accepted(self) -> None:
+        """The clone repeats the original's description verbatim, so an agent that reads the facts off
+        it has answered the question; failing it would be a hidden provenance rule (verify/README.md)."""
         steps = [step("/"), step("/search?q=sourdough"), step(REMIX, "done")]
-        self.assertFailsOn(self.verdict(steps, self.ANSWER), "visited_original_post_detail")
+        self.assertPasses(self.verdict(steps, self.ANSWER))
+
+    def test_unrelated_detail_page_still_fails(self) -> None:
+        """Mutation proof that widening the gate did not disable it."""
+        steps = [step("/"), step("/search?q=sourdough"),
+                 step("/gag/a-fox-naps-on-the-same-garden-wall-every-afternoon-23", "done")]
+        self.assertFailsOn(self.verdict(steps, self.ANSWER), "visited_post_detail")
 
     def test_numeric_forms_pass(self) -> None:
         self.assertPasses(self.verdict(self.GENUINE_STEPS, "3 attempts, ~14 hours"))
