@@ -29,7 +29,14 @@ def run(p):
         'confirm':  user['password'],
     }, accept_status=(200, 302, 303))
 
-    p.get('/logout')
+    # Sign out between the register and login legs is POST-only too.
+    html = p.assert_get('register redirect target', '/', accept_status=(200, 302))
+    token = p.csrf(html)
+    if token:
+        p.assert_post('logout after register', '/logout', {'csrf_token': token},
+                      accept_status=(200, 302, 303))
+    else:
+        p.check('logout after register', False, 'no csrf token on the home page')
 
     html = p.assert_get('login page', '/login')
     token = p.csrf(html)
