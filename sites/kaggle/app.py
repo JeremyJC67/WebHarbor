@@ -48,6 +48,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import (LoginManager, UserMixin, login_user, logout_user,
                          login_required, current_user)
 from flask_bcrypt import Bcrypt
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
 from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import (StringField, PasswordField, TextAreaField, SelectField,
                      HiddenField)
@@ -81,6 +84,20 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+
+@event.listens_for(Engine, "connect")
+def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):
+    """SQLite leaves foreign keys off by default; the schema declares them.
+
+    Without this the declared FKs are decoration and account deletion can leave
+    orphan rows (votes/bookmarks/follows/entries pointing at a deleted user).
+    """
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("PRAGMA foreign_keys=ON")
+    finally:
+        cursor.close()
 csrf = CSRFProtect(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -1127,8 +1144,26 @@ def change_password():
 @login_required
 def account_delete():
     user = db.session.get(User, current_user.id)
-    db.session.delete(user)
-    db.session.commit()
+    username = user.username
+    try:
+        # Delete what references this account first, in dependency order, so the
+        # declared foreign keys hold and no orphan rows survive the deletion.
+        Comment.query.filter_by(author_username=username).delete(synchronize_session=False)
+        for discussion in Discussion.query.filter_by(author_username=username).all():
+            db.session.delete(discussion)  # cascades to the thread's comments
+        Submission.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        Vote.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        Bookmark.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        Follow.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        Follow.query.filter_by(target_username=username).delete(synchronize_session=False)
+        CompetitionEntry.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        db.session.delete(user)
+        db.session.commit()
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        app.logger.warning("account delete failed for %s: %s", username, error)
+        flash("Your account could not be deleted. Please try again.", "error")
+        return redirect(url_for("account"))
     logout_user()
     flash("Account deleted.", "info")
     return redirect(url_for("index"))
