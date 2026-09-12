@@ -42,6 +42,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
     f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'nvidia.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['WTF_CSRF_TIME_LIMIT'] = None
+# Bound request bodies; over-large requests get the 413 handler below instead of
+# being buffered into memory (repair002, M6).
+app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024
 
 os.makedirs(os.path.join(BASE_DIR, 'instance'), exist_ok=True)
 
@@ -542,9 +545,11 @@ def register():
     return render_template('register.html', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
+    # POST-only: a GET/HEAD prefetch, crawler or <img> must not end the session
+    # (repair002, M5). GET returns 405 by Flask's method handling.
     logout_user()
     flash('You have been signed out.', 'info')
     return redirect(url_for('index'))
@@ -729,12 +734,18 @@ def add_review(slug):
     return redirect(url_for('product_detail', slug=slug))
 
 
+EMAIL_MAX_LENGTH = 120  # matches the NewsletterSubscriber.email column
+
+
 @app.route('/newsletter', methods=['POST'])
 def newsletter():
     email = (request.form.get('email') or '').lower().strip()
     topic = (request.form.get('topic') or 'GeForce').strip()
     if not email or '@' not in email:
         flash('Please enter a valid email address.', 'error')
+    elif len(email) > EMAIL_MAX_LENGTH or len(topic) > 60:
+        # SQLite does not enforce VARCHAR lengths, so bound them here (repair002, M6).
+        flash(f'Please use an email address of at most {EMAIL_MAX_LENGTH} characters.', 'error')
     elif NewsletterSubscriber.query.filter_by(email=email).first():
         flash('You are already subscribed.', 'info')
     else:
@@ -753,6 +764,11 @@ def not_found(e):
 def server_error(e):
     db.session.rollback()
     return render_template('500.html'), 500
+
+
+@app.errorhandler(413)
+def request_too_large(e):
+    return render_template('413.html', limit_mb=1), 413
 
 
 # --------------------------------------------------------------------------

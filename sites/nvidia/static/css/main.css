@@ -190,6 +190,10 @@ input[type=checkbox]{flex-shrink:0}
 .field,.form,.hero-copy,.hero-media,.footer .cols>div,.toolbar>*,.model-entry{min-width:0}
 .btn{text-align:center;white-space:normal}
 a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.scroll-x:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+/* Logout is a POST form so prefetching cannot end a session; it must still read as a link. */
+.logout-form{display:inline;margin:0}
+.link-button{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:none}
+.link-button:hover{color:var(--nv-green)}
 .skip-link{position:absolute;left:12px;top:-80px;z-index:20;background:#fff;color:#000;padding:12px}
 .skip-link:focus{top:8px}
 .text-link,.source-list a{text-decoration:underline;text-underline-offset:3px}

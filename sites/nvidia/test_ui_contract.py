@@ -273,10 +273,10 @@ class UIContract(unittest.TestCase):
         for _ in range(2):
             page = self.get('/account/wishlist')
             self.assertIn('GeForce RTX 5060 Ti 16GB', page)
-        self.get('/logout', 302)
+        self.post('/logout')
         self.login('bob.c@test.com')
         self.assertIn('Your wishlist is empty', self.get('/account/wishlist'))
-        self.get('/logout', 302)
+        self.post('/logout')
         self.login()
         self.post('/wishlist/add/10', headers={'Referer': 'http://localhost/'})
         self.assertIn('GeForce RTX 4060', self.get('/account/wishlist'))
@@ -384,6 +384,20 @@ class UIContract(unittest.TestCase):
             self.assertEqual(response.status_code, 302, literal)
             self.assertNotIn('Alice Johnson', response.get_data(as_text=True), literal)
 
+    def test_06d_logout_requires_post(self):
+        """GET/HEAD logout is refused so a prefetch cannot end the session (repair002, M5)."""
+        self.login()
+        self.get('/logout', 405)
+        self.assertEqual(self.client.head('/logout').status_code, 405)
+        self.assertIn('Alice Johnson', self.get('/account'))
+        page = Markup(self.get('/'))
+        forms = [form for form in page.attrs('form') if form.get('action') == '/logout']
+        self.assertEqual(len(forms), 1)
+        self.assertEqual(forms[0].get('method'), 'post')
+        self.post('/logout')
+        self.get('/account', 302)
+        self.login()
+
     def test_07_form_regressions_and_local_returns(self):
         wrong = self.post('/login', {'email': 'alice.j@test.com', 'password': 'wrong'})
         self.assertIn('Invalid email or password', wrong.get_data(as_text=True))
@@ -391,19 +405,19 @@ class UIContract(unittest.TestCase):
             from urllib.parse import urlencode
             response = self.login(query='?' + urlencode({'next': target}))
             self.assertEqual(response.location, '/account')
-            self.get('/logout', 302)
+            self.post('/logout')
         self.assertEqual(self.login(query='?next=/where-to-buy/geforce-rtx-5080').location,
                          '/where-to-buy/geforce-rtx-5080')
         # Browser flow: the login form posts to /login without the query string,
         # so the hidden next field must carry the user back to where they came from.
-        self.get('/logout', 302)
+        self.post('/logout')
         page = Markup(self.get('/login?next=/products/geforce-rtx-5090'))
         self.assertEqual([field.get('value') for field in page.attrs('input')
                           if field.get('name') == 'next'], ['/products/geforce-rtx-5090'])
         response = self.post('/login', {'email': 'alice.j@test.com', 'password': 'TestPass123!',
                                         'next': '/products/geforce-rtx-5090'})
         self.assertEqual(response.location, '/products/geforce-rtx-5090')
-        self.get('/logout', 302)
+        self.post('/logout')
         self.login()
         self.get('/account/edit')
         self.assertEqual(self.post('/account/edit', {'name': 'Alice Johnson', 'company': 'Pixel Forge Studios',
