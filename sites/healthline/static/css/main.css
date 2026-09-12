@@ -1,6 +1,13 @@
 /* Healthline mirror — clean health-site look, teal accents */
 :root {
+  /* --hl-teal is the BRAND colour and is decoration only: white text on it is
+     2.96:1, below the WCAG AA 4.5:1 body-text and 3:1 non-text thresholds.
+     Anything interactive (filled buttons, active chips, focus rings) uses
+     --hl-action (white on it = 4.51:1); text on tinted teal surfaces uses
+     --hl-teal-deep (5.6:1 on #e6f7f4). */
   --hl-teal: #1EA896;
+  --hl-action: #168578;
+  --hl-teal-deep: #0f6e63;
   --hl-teal-dark: #168578;
   --hl-ink: #1a1a1a;
   --hl-gray: #5a6672;
@@ -48,30 +55,47 @@ img { max-width: 100%; display: block; }
 .search-form { flex: 1; display: flex; max-width: 480px; }
 .search-form input[type="search"], .search-form input[type="text"] {
   flex: 1; padding: 10px 14px; border: 1px solid var(--hl-border);
-  border-radius: 22px 0 0 22px; font-size: 15px; outline: none;
+  border-radius: 22px 0 0 22px; font-size: 15px; min-width: 0;
 }
-.search-form input:focus { border-color: var(--hl-teal); }
+.search-form input:focus { border-color: var(--hl-action); }
 .search-form button {
-  padding: 10px 18px; border: none; background: var(--hl-teal); color: #fff;
+  padding: 10px 18px; border: none; background: var(--hl-action); color: #fff;
   border-radius: 0 22px 22px 0; cursor: pointer; font-weight: 600;
 }
-.search-form button:hover { background: var(--hl-teal-dark); }
+.search-form button:hover { background: var(--hl-teal-deep); }
 
 .header-actions { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 .btn {
   display: inline-block; padding: 8px 16px; border-radius: 22px;
   font-weight: 600; font-size: 14px; cursor: pointer; border: none;
 }
-.btn-primary { background: var(--hl-teal); color: #fff; }
-.btn-primary:hover { background: var(--hl-teal-dark); text-decoration: none; }
-.btn-outline { border: 1.5px solid var(--hl-teal); color: var(--hl-teal-dark); background: #fff; }
+.btn-primary { background: var(--hl-action); color: #fff; }
+.btn-primary:hover { background: var(--hl-teal-deep); text-decoration: none; }
+.btn-outline { border: 1.5px solid var(--hl-action); color: var(--hl-action); background: #fff; }
 .btn-outline:hover { background: var(--hl-light); text-decoration: none; }
 .btn-ghost { color: var(--hl-gray); background: none; }
+.link-button {
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: var(--hl-action); text-decoration: none;
+}
+.link-button:hover { text-decoration: underline; }
+
+/* Focus indicator: a visible ring on every interactive element, in the action
+   colour (3:1+ against both #fff and --hl-light). Previously the only focus
+   affordance was a 2.96:1 border with `outline: none`. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--hl-action);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 .avatar {
   width: 34px; height: 34px; border-radius: 50%; color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px;
+  /* The circle's fill is an inline per-user colour from the seed; darken it
+     uniformly so the white initials clear 4.5:1 for every seeded colour. */
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, .30);
 }
 
 /* ---- Nav ---- */
@@ -92,7 +116,7 @@ img { max-width: 100%; display: block; }
 
 /* ---- Flash ---- */
 .flash { padding: 12px 16px; border-radius: var(--radius); margin: 16px 0; font-size: 14.5px; }
-.flash.success { background: #e6f7f4; color: var(--hl-teal-dark); border: 1px solid #b9e8e0; }
+.flash.success { background: #e6f7f4; color: var(--hl-teal-deep); border: 1px solid #b9e8e0; }
 .flash.error { background: #fdeaef; color: #b32a4f; border: 1px solid #f5c2d1; }
 
 /* ---- Hero / Index ---- */
@@ -146,7 +170,7 @@ img { max-width: 100%; display: block; }
 .byline .who { font-size: 14px; }
 .byline .who strong { display: block; }
 .byline .who span { color: var(--hl-gray); }
-.evidence-badge { display: inline-flex; align-items: center; gap: 6px; background: #e6f7f4; color: var(--hl-teal-dark); padding: 5px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 700; }
+.evidence-badge { display: inline-flex; align-items: center; gap: 6px; background: #e6f7f4; color: var(--hl-teal-deep); padding: 5px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 700; }
 .hero-photo { border-radius: var(--radius); width: 100%; max-height: 420px; object-fit: cover; margin: 8px 0 4px; }
 .photo-caption { font-size: 12.5px; color: var(--hl-gray); margin-bottom: 18px; }
 .article-body p { font-size: 17px; margin: 0 0 20px; color: #2a2a2a; }
@@ -175,8 +199,8 @@ img { max-width: 100%; display: block; }
   display: inline-block; padding: 7px 14px; border: 1px solid var(--hl-border);
   border-radius: 20px; font-size: 13.5px; color: var(--hl-ink); background: #fff;
 }
-.chip:hover { border-color: var(--hl-teal); text-decoration: none; }
-.chip.active { background: var(--hl-teal); color: #fff; border-color: var(--hl-teal); }
+.chip:hover { border-color: var(--hl-action); text-decoration: none; }
+.chip.active { background: var(--hl-action); color: #fff; border-color: var(--hl-action); }
 .select-sort { padding: 8px 12px; border: 1px solid var(--hl-border); border-radius: 8px; font-size: 14px; }
 
 /* ---- Page heads ---- */
@@ -194,7 +218,7 @@ img { max-width: 100%; display: block; }
   width: 100%; padding: 10px 12px; border: 1px solid var(--hl-border);
   border-radius: 8px; font-size: 15px; font-family: inherit;
 }
-.form-row input:focus, .form-row textarea:focus { border-color: var(--hl-teal); outline: none; }
+.form-row input:focus, .form-row textarea:focus { border-color: var(--hl-action); }
 .form-actions { margin-top: 20px; }
 .muted { color: var(--hl-gray); font-size: 14px; }
 
@@ -222,9 +246,33 @@ img { max-width: 100%; display: block; }
 
 .pagination { display: flex; gap: 8px; margin: 30px 0; justify-content: center; }
 .pagination a, .pagination span { padding: 8px 14px; border: 1px solid var(--hl-border); border-radius: 8px; }
-.pagination .current { background: var(--hl-teal); color: #fff; border-color: var(--hl-teal); }
+.pagination .current { background: var(--hl-action); color: #fff; border-color: var(--hl-action); }
 
 @media (max-width: 820px) {
   .hero-grid, .account-grid { grid-template-columns: 1fr; }
   .hero-main img { height: 240px; }
+}
+
+/* The header row was `flex-wrap: nowrap` with a 480px search field and a
+   non-shrinking action group, so its intrinsic width (625px) forced horizontal
+   page scroll at every viewport below ~640px. Let it wrap instead. */
+@media (max-width: 720px) {
+  .header-top { flex-wrap: wrap; gap: 12px; }
+  .logo { font-size: 22px; }
+  /* `flex: 1 1 100%` (not `1 0 100%`): the row must still be allowed to shrink
+     below its basis, otherwise the search field pins the page wider than the
+     viewport. `min-width: 0` lets the flex item ignore its min-content floor. */
+  .search-form { order: 3; flex: 1 1 100%; min-width: 0; max-width: none; }
+  .header-actions { margin-left: auto; gap: 8px; min-width: 0; }
+  .btn { padding: 7px 12px; font-size: 13.5px; }
+  .detail-head img { width: 100%; height: auto; }
+  .spec-table th { width: 130px; }
+}
+
+@media (max-width: 400px) {
+  .container { padding: 0 14px; }
+  .header-actions .btn { padding: 6px 10px; font-size: 13px; }
+  .search-form button { padding: 10px 12px; }
+  .grid { grid-template-columns: 1fr; }
+  .article-wrap h1 { font-size: 26px; }
 }
