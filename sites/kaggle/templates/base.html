@@ -36,7 +36,10 @@
                 <a href="{{ url_for('account') }}" class="gn-avatar" title="{{ current_user.username }}">
                     <img src="{{ current_user.avatar_url }}" alt="{{ current_user.username }}" onerror="this.src='/static/images/avatars/default.png'">
                 </a>
-                <a class="btn btn-sm btn-ghost" href="{{ url_for('logout') }}">Sign Out</a>
+                <form class="gn-logout" method="post" action="{{ url_for('logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-ghost" type="submit">Sign Out</button>
+                </form>
             {% else %}
                 <a class="btn btn-sm btn-ghost" href="{{ url_for('login') }}">Sign In</a>
                 <a class="btn btn-sm btn-primary" href="{{ url_for('register') }}">Register</a>

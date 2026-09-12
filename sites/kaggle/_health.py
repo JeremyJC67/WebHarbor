@@ -43,3 +43,13 @@ def run(p):
     }, accept_status=(200, 302, 303))
 
     p.assert_get('account page', '/account', accept_status=(200, 302))
+
+    # Sign out is POST-only (GET/HEAD must stay 405) and CSRF-protected, so the
+    # probe takes the token from the account page it just loaded.
+    html = p.assert_get('account page for logout token', '/account', accept_status=(200, 302))
+    token = p.csrf(html)
+    if not token:
+        p.check('logout csrf', False, 'no csrf token on the account page')
+        return
+    p.assert_post('logout submit', '/logout', {'csrf_token': token},
+                  accept_status=(200, 302, 303))
