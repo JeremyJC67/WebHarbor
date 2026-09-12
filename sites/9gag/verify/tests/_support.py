@@ -246,6 +246,14 @@ class ReadTaskTests(VerifierTestCase):
     def test_genuine_run_passes(self) -> None:
         self.assertPasses(self.verdict(self.GENUINE_STEPS, self.ANSWER))
 
+    def test_production_recorder_shape_without_final_url_passes(self) -> None:
+        """``agent_demo/agent.py`` never writes ``final_url`` - its trajectory keys are task, task_id,
+        start_url, model, max_steps, steps, terminated, termination_reason, final_answer,
+        judge_rubric, verifier_path (+ success_self_report on done). These fixtures do write it, so
+        without this case the verifiers would only ever be proven against a shape the production
+        recorder does not emit, where the landing page is carried solely by the ``done`` step's url."""
+        self.assertPasses(self.verdict(self.GENUINE_STEPS, self.ANSWER, trajectory_updates={"final_url": None}))
+
     def test_run_dir_snapshots_are_discovered(self) -> None:
         self.assertPasses(self.verdict(self.GENUINE_STEPS, self.ANSWER, snapshots_in_run_dir=True))
 

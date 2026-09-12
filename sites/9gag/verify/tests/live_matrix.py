@@ -116,8 +116,11 @@ class Recorder:
                            "screenshot_after": f"step_{self.idx + 1:03d}.png"})
         self.idx += 1
         self._shot(self.idx)
+        # No `final_url`: agent_demo/agent.py never writes one. The landing page is carried by the
+        # `done` step's url above (agent.py records state.url on the done action the same way), so the
+        # evidence this matrix produces is shape-identical to a real recorder run.
         self.traj.update(steps=self.steps, terminated=True, termination_reason="agent_done", final_answer=text,
-                         success_self_report=success, final_url=self.page.url)
+                         success_self_report=success)
         (self.run_dir / "trajectory.json").write_text(json.dumps(self.traj, indent=2), encoding="utf-8")
 
 
