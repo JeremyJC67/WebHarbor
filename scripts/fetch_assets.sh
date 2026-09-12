@@ -7,10 +7,16 @@
 # 4000+ tiny image files. Each tarball extracts back to
 # sites/<site>/{instance_seed,static/images,static/external_cache}.
 #
+# "Registered" means the site is listed in control_server.py's SITES registry
+# (the same list websyn_start.sh starts and the Dockerfile exposes). The
+# dataset is allowed to carry archives for sites that are not registered here
+# (their PRs are still open), so coverage is checked by registered site NAME,
+# never by archive count.
+#
 # Usage:
-#   ./scripts/fetch_assets.sh                 # fetch all sites at pinned rev
+#   ./scripts/fetch_assets.sh                 # fetch every registered site
 #   ./scripts/fetch_assets.sh google_search   # fetch one site only
-#   ASSETS_REVISION=abc123 ./scripts/fetch_assets.sh   # override pin
+#   ASSETS_REVISION=abc123 ./scripts/fetch_assets.sh   # override the pin
 #
 # Requires:
 #   - hf CLI  (pip install -U "huggingface_hub[cli]")
@@ -28,41 +34,69 @@ if ! command -v hf >/dev/null 2>&1; then
     exit 1
 fi
 
+# Registered sites, derived from control_server.py so the fetch scope can never
+# drift from the runtime registry.
+mapfile -t REGISTERED < <(python3 - <<'PY'
+import ast
+import pathlib
+import sys
+
+source = pathlib.Path('control_server.py').read_text()
+tree = ast.parse(source)
+for node in tree.body:
+    if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == 'SITES' for target in node.targets):
+        for name in ast.literal_eval(node.value):
+            print(name)
+        break
+else:
+    sys.exit('fetch_assets: could not read the SITES registry from control_server.py')
+PY
+)
+if [[ ${#REGISTERED[@]} -eq 0 ]]; then
+    echo "fetch_assets: the SITES registry in control_server.py is empty" >&2
+    exit 1
+fi
+
 mkdir -p "$CACHE_DIR"
 echo "[fetch] huggingface.co/datasets/$REPO @ $REVISION -> sites/"
 
 if [[ -n "$ONLY_SITE" ]]; then
-    INCLUDE="$ONLY_SITE.tar.gz"
+    if [[ ! -d "sites/$ONLY_SITE" ]]; then
+        echo "fetch_assets: no such site directory: sites/$ONLY_SITE" >&2
+        exit 1
+    fi
+    EXPECTED=("$ONLY_SITE")
     echo "[fetch] scope: $ONLY_SITE only"
 else
-    INCLUDE="*.tar.gz"
+    EXPECTED=("${REGISTERED[@]}")
+    echo "[fetch] scope: ${#EXPECTED[@]} registered sites"
 fi
+
+INCLUDE_ARGS=()
+for site in "${EXPECTED[@]}"; do
+    INCLUDE_ARGS+=(--include "$site.tar.gz")
+done
 
 hf download "$REPO" --repo-type dataset --revision "$REVISION" \
-    --include "$INCLUDE" --local-dir "$CACHE_DIR"
+    "${INCLUDE_ARGS[@]}" --local-dir "$CACHE_DIR"
 
 shopt -s nullglob
-if [[ -n "$ONLY_SITE" ]]; then
-    TARBALLS=("$CACHE_DIR/$ONLY_SITE.tar.gz")
-    if [[ ! -f "${TARBALLS[0]}" ]]; then
-        echo "fetch_assets: expected archive for $ONLY_SITE" >&2
-        exit 1
-    fi
-else
-    TARBALLS=("$CACHE_DIR"/*.tar.gz)
-    expected=0
-    for site_dir in sites/*/; do
-        [[ -d "$site_dir" ]] && expected=$((expected + 1))
+missing=()
+for site in "${EXPECTED[@]}"; do
+    [[ -f "$CACHE_DIR/$site.tar.gz" ]] || missing+=("$site")
+done
+if (( ${#missing[@]} > 0 )); then
+    echo "fetch_assets: revision $REVISION has no archive for ${#missing[@]} registered site(s): ${missing[*]}" >&2
+    for site in "${missing[@]}"; do
+        [[ -d "sites/$site" ]] || echo "  registered site without a directory either: sites/$site" >&2
     done
-    if [[ ${#TARBALLS[@]} -ne $expected ]]; then
-        echo "fetch_assets: expected $expected site archives at revision $REVISION, found ${#TARBALLS[@]}" >&2
-        exit 1
-    fi
+    exit 1
 fi
+
 extracted=0
-for tarball in "${TARBALLS[@]}"; do
-    site=$(basename "$tarball" .tar.gz)
-    if [[ -n "$ONLY_SITE" && "$site" != "$ONLY_SITE" ]]; then continue; fi
+for site in "${EXPECTED[@]}"; do
+    tarball="$CACHE_DIR/$site.tar.gz"
     python3 scripts/validate_asset_archive.py "$tarball" "$site"
     echo "[fetch] extracting $site"
     python3 scripts/extract_asset_archive.py "$tarball" sites "$site"
@@ -77,8 +111,5 @@ for tarball in "${TARBALLS[@]}"; do
     extracted=$((extracted + 1))
 done
 
-if [[ -n "$ONLY_SITE" && $extracted -ne 1 ]]; then
-    echo "fetch_assets: did not extract requested site $ONLY_SITE" >&2
-    exit 1
-fi
-echo "[fetch] done — $extracted site(s) extracted into sites/"
+echo "[fetch] done — $extracted registered site(s) extracted into sites/"
+echo "[fetch] note: the dataset may also carry archives for unregistered sites; they are ignored here."
