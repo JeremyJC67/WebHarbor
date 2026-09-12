@@ -40,14 +40,47 @@ from pathlib import Path
 SITE = "kaggle"
 WEBSYN_DIR = "/opt/WebSyn"
 _DB_CACHE: dict = {}
+_RUN_ERRORS: list = []
 
 # ---------------------------------------------------------------- trajectory
+def _empty_run(run_dir, error):
+    _RUN_ERRORS.append(str(error))
+    return {"steps": [], "final_answer": "", "_shots": {}, "_run_dir": Path(run_dir),
+            "_load_error": str(error)}
+
+
 def load_run(run_dir):
+    """Load trajectory.json + screenshots/, or return an empty run carrying the error.
+
+    Never raises: a missing or malformed run directory must produce a structured
+    FAIL verdict (Judge.emit forces it), not a traceback.
+    """
     d = Path(run_dir)
-    traj = json.loads((d / "trajectory.json").read_text())
+    trajectory_file = d / "trajectory.json"
+    try:
+        raw = trajectory_file.read_text()
+    except OSError as error:
+        return _empty_run(run_dir, f"cannot read {trajectory_file}: {error}")
+    try:
+        traj = json.loads(raw)
+    except ValueError as error:
+        return _empty_run(run_dir, f"trajectory.json is not valid JSON: {error}")
+    if not isinstance(traj, dict):
+        return _empty_run(run_dir, f"trajectory.json must be an object, got {type(traj).__name__}")
+    if not isinstance(traj.get("steps", []), list):
+        return _empty_run(run_dir, "trajectory.json: 'steps' must be a list")
     traj["_run_dir"] = d
-    traj["_shots"] = {p.name: p for p in sorted((d / "screenshots").glob("step_*.png"))}
+    shots_dir = d / "screenshots"
+    try:
+        traj["_shots"] = {p.name: p for p in sorted(shots_dir.glob("step_*.png"))}
+    except OSError as error:
+        traj["_shots"] = {}
+        _RUN_ERRORS.append(f"cannot list {shots_dir}: {error}")
     return traj
+
+
+def run_load_errors():
+    return list(_RUN_ERRORS)
 
 def step_urls(traj):
     return [s.get("url", "") for s in traj.get("steps", [])]
@@ -582,6 +615,12 @@ class Judge:
         return bool(cond)
 
     def emit(self):
+        # A missing or malformed run directory is a structured FAIL, never a traceback.
+        errors = run_load_errors()
+        if errors:
+            self.ok = False
+            self.reason = "run_dir_unreadable"
+            self.evidence.insert(0, f"[FAIL] run_dir_readable: {'; '.join(errors)}")
         print(json.dumps({"task_id": self.task_id, "pass": self.ok,
                           "reason": self.reason, "evidence": self.evidence}, indent=2))
         sys.exit(0 if self.ok else 1)
