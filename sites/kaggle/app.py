@@ -408,7 +408,13 @@ class Follow(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    # user_id comes from the session cookie: never let a malformed value raise
+    # (int('inf') / int('') would turn a forged cookie into a 500).
+    try:
+        identifier = int(user_id)
+    except (TypeError, ValueError):
+        return None
+    return db.session.get(User, identifier)
 
 
 # ------------------------------------------------------------
