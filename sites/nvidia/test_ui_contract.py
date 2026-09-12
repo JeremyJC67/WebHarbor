@@ -221,6 +221,21 @@ class UIContract(unittest.TestCase):
             self.assertIsNone(module.load_user(2 ** 63))
             self.assertIsNone(module.load_user('not-a-number'))
 
+    def test_02c_request_body_limits(self):
+        """Oversized bodies are 413 and oversized field values are not stored (repair002, M6)."""
+        self.assertIn(413, module.app.error_handler_spec[None])
+        before = self.snapshot()['newsletter']
+        response = self.post('/newsletter', {'email': 'o' * 121 + '@example.com'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.snapshot()['newsletter'], before)
+        response = self.post('/newsletter', {'email': 'b' * 2_000_000 + '@example.com'})
+        self.assertEqual(response.status_code, 413)
+        self.assertIn('Request Too Large', response.get_data(as_text=True))
+        self.assertEqual(self.snapshot()['newsletter'], before)
+        response = self.post('/newsletter', {'email': 'kept@example.com'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(self.snapshot()['newsletter']), len(before) + 1)
+
     def test_03_legacy_post_and_csrf_no_mutation(self):
         # A preexisting cart verifies update/remove/checkout cannot consume old rows.
         with module.app.app_context():

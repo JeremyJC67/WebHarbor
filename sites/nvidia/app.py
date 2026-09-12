@@ -295,10 +295,6 @@ class ReviewForm(FlaskForm):
     body = TextAreaField('Your review', validators=[DataRequired(), Length(max=2000)])
 
 
-class SimpleForm(FlaskForm):
-    """CSRF-only form for local wishlist and driver demonstration actions."""
-
-
 # --------------------------------------------------------------------------
 # Search scoring — token overlap (NOT strict AND)
 # --------------------------------------------------------------------------
@@ -327,8 +323,10 @@ def _article_hay(a):
 # --------------------------------------------------------------------------
 @app.context_processor
 def inject_globals():
-    return {'CATEGORIES': CATEGORIES,
-            'current_year': 2026, 'simple_form': SimpleForm()}
+    # No form object is constructed here: building a FlaskForm reads request.form, which
+    # raises RequestEntityTooLarge for an over-limit body and would turn the 413 handler
+    # itself into a 500 (repair002, M6).
+    return {'CATEGORIES': CATEGORIES, 'current_year': 2026}
 
 
 # --------------------------------------------------------------------------
