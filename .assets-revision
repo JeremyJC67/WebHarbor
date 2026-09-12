@@ -4,5 +4,18 @@
 # fetch_assets.sh uses the `hf download` CLI. The pin below
 # is a git revision (branch name like `main`, a tag, or a specific commit
 # sha). Override at runtime with the ASSETS_REVISION env var.
+#
+# The revision is a commit sha, never a moving branch name.
+#
+# Current pin = the resolved commit of HF dataset PR #74
+# ("Upload kaggle.tar.gz with huggingface_hub"). That PR is still open,
+# so this sha is not on HF `main`; it is the only revision that carries
+# sites/kaggle's assets (kaggle.tar.gz, sha256
+# c533c283fb68f924989523b6fb686beecf66846cb13579ca0eae32b524c99343,
+# 11278264 bytes). Every pre-existing archive is byte-identical between
+# this revision and HF main, so pinning here does not change any other
+# site's assets. Before merge, re-point this pin at the HF main sha that
+# contains kaggle.tar.gz (see review-reports/PR-106-FINAL-AUDIT.md
+# "Open blocker").
 repo: ChilleD/WebHarbor
-revision: 65c479f894763f64c6073e0d180ebf542d1d2c02
+revision: b857f92034f4a91e5a814c11511194b13008b89a
