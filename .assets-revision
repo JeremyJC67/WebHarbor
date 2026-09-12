@@ -4,5 +4,12 @@
 # fetch_assets.sh uses the `hf download` CLI. The pin below
 # is a git revision (branch name like `main`, a tag, or a specific commit
 # sha). Override at runtime with the ASSETS_REVISION env var.
+#
+# Pinned revision: the resolved commit of HF dataset PR #75, which is the only
+# revision that carries every registered site archive including nvidia.tar.gz.
+# PR #75 is still a draft; this commit is not on the dataset's main branch, so a
+# `main`-pinned fetch cannot prepare the 24-site candidate yet. Two blockers are
+# recorded in README.md "Asset delivery status": the draft/unmerged PR, and the
+# archive-member shape of nvidia.tar.gz.
 repo: ChilleD/WebHarbor
-revision: 070123d74c01a8b29808201be85462fd7d0ec3c4
+revision: fbf6b9f4f735116ae0e4194db2b160e9a4207fc1

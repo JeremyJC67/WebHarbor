@@ -83,11 +83,50 @@ docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48023:40000-40023 webharbo
 NVIDIA inherits the site contribution from @KaKituken
 ([#55](https://github.com/aiming-lab/WebHarbor/pull/55)) and the verifier/rubric
 contribution from @DEM1TASSE
-([#58](https://github.com/aiming-lab/WebHarbor/pull/58)). Its local assets are
-tracked separately while review continues: the unchanged `.assets-revision`
-pin does not contain `nvidia.tar.gz`, so `fetch_assets.sh` alone cannot yet
-prepare this 24-site candidate. This is file-level integration, not a claim
-that either PR was merged or that the NVIDIA review has passed.
+([#58](https://github.com/aiming-lab/WebHarbor/pull/58)). This is file-level
+integration, not a claim that either PR was merged or that the NVIDIA review has
+passed.
+
+### Asset delivery status (blocker)
+
+`.assets-revision` is pinned to the resolved commit of HF dataset PR
+[#75](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/75),
+`fbf6b9f4f735116ae0e4194db2b160e9a4207fc1`. That revision is the only candidate
+that carries an archive for every registered site (28 `*.tar.gz`, including
+`nvidia.tar.gz`, sha256
+`acafd81955a1491406e41bac886c1903b11fa370913162df0adcdc43fb40ddb0`, 6,706,510
+bytes).
+
+Two blockers remain on the asset side; neither can be cleared from this
+repository:
+
+1. **HF PR #75 is a draft and is not merged.** The pinned commit is not on the
+dataset's `main`, so a clone that pins the dataset default branch still has no
+`nvidia.tar.gz`, and `hf download --revision main` cannot resolve the pin until
+the PR merges. Clearing condition: merge HF PR #75 and, if the tree still
+contains archives for unregistered sites (`drugs_com`, `fedex`,
+`walmart_careers`, `webmd_doctor`), tighten `fetch_assets.sh` to match archive
+names against the registered site list instead of comparing counts.
+2. **`nvidia.tar.gz` at that revision contains bare parent-directory members**
+(`nvidia/`, `nvidia/static/`), so the repo-side validator rejects it:
+
+   ```
+   $ python3 scripts/validate_asset_archive.py nvidia.tar.gz nvidia
+   ValueError: unexpected managed path: 'nvidia/static'
+   ```
+
+   Clearing condition and the exact repair are in "Asset archive conformity"
+   below.
+
+The previously pinned revision `070123d74c01a8b29808201be85462fd7d0ec3c4` has 26
+entries and no `nvidia.tar.gz`, so it cannot prepare this candidate either. The
+older candidate archive from HF PR #38 (`2707761e4041a492379ea227f09b3bd9ea838a02`,
+sha256 `89e0d0d21000bb94acaeaa329fd28a1264afa05f40834c0f3e3cee5c3a2ae9a1`) does
+pass the validator but was rejected as a pin: its seed is stale (the Jetson
+descriptions lost the kit/module identity text, the RTX 5060 Ti is named without
+`16GB` and its `recommended_psu_watts` is 550 while the page's own source note
+says 600 W, and the RTX 5070 tagline loses the memory mention), and that revision
+carries archives for only 17 of the 24 registered sites.
 
 ## 🤝 Contribute
 
