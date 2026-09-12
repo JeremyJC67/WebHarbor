@@ -418,6 +418,10 @@ textarea {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* The generated hero SVGs draw their title at x=72 of a 1200-wide viewBox. A centred
+     cover crop starts at x=150, which cut the first characters off every card title
+     ("la Express", "trak Cascades"). Anchoring the crop left keeps the title. */
+  object-position: left center;
 }
 
 .media-card .media-body {
@@ -715,6 +719,27 @@ textarea:focus {
   letter-spacing: 0.08em;
 }
 
+/* Departure boards are wider than a phone. Scroll the table, not the page. */
+.info-table-wrap {
+  overflow-x: auto;
+}
+
+/* Grid items default to min-width:auto (= min-content), so a wide table stretched its
+   own track and pushed the whole document sideways at 320-390px. Letting the tracks
+   shrink is what makes the overflow-x above actually take effect. */
+.grid > *,
+.split-layout > *,
+.sidebar-layout > *,
+.two-column-layout > *,
+.option-head > * {
+  min-width: 0;
+}
+
+.inline-logout {
+  display: inline-flex;
+  margin: 0;
+}
+
 .flash-stack {
   display: grid;
   gap: 12px;
@@ -816,6 +841,9 @@ textarea:focus {
   border-radius: 18px;
   background: white;
   border: 1px solid rgba(12, 35, 64, 0.08);
+  /* These tiles sit inside .page-hero, which sets color:white. Without an explicit
+     colour the body text inherited white onto a near-white tile (contrast 1.13:1). */
+  color: var(--ink);
 }
 
 .progress-step.active {

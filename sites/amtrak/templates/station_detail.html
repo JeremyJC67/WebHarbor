@@ -13,7 +13,7 @@
       </div>
       <div class="hero-actions">
         <a class="button" href="{{ url_for('schedules_page', station_code=station.code, date='2026-04-18') }}">View departures</a>
-        <a class="button-secondary" href="{{ url_for('booking_results', origin=station.code, destination='WAS', departure_date='2026-04-20') }}">Start from this station</a>
+        <a class="button-secondary" href="{{ url_for('booking_search') }}">Start a booking</a>
       </div>
     </div>
     <div class="hero-art">

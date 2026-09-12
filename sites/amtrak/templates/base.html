@@ -34,7 +34,9 @@
             <div class="nav-actions">
               {% if current_user.is_authenticated %}
                 <a class="button-secondary" href="{{ url_for('account') }}">My Account</a>
-                <a class="button-ghost" href="{{ url_for('logout') }}">Sign out</a>
+                <form class="inline-logout" action="{{ url_for('logout') }}" method="post">
+                  <button class="button-ghost" type="submit">Sign out</button>
+                </form>
               {% else %}
                 <a class="button-ghost" href="{{ url_for('login') }}">Sign in</a>
                 <a class="button-secondary" href="{{ url_for('register') }}">Create demo account</a>
