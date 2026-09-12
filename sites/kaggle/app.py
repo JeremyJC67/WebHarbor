@@ -932,7 +932,9 @@ def user_profile(username):
     notebooks = Notebook.query.filter_by(author_username=username).order_by(Notebook.votes.desc()).all()
     models = Model.query.filter_by(owner_username=username).order_by(Model.downloads.desc()).all()
     discussions = Discussion.query.filter_by(author_username=username).order_by(Discussion.votes.desc()).all()
-    hosted = Competition.query.filter_by(owner_username=username).all()
+    # Neutral ordering (title asc): insertion order put the earliest-deadline hosted
+    # competition first, which let a solver answer without comparing deadlines.
+    hosted = Competition.query.filter_by(owner_username=username).order_by(Competition.title.asc()).all()
     follower_count = Follow.query.filter_by(target_username=username).count()
     return render_template("user_profile.html", u=u, datasets=datasets, notebooks=notebooks,
                            models=models, discussions=discussions, hosted=hosted,
