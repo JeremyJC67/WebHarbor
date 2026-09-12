@@ -36,13 +36,18 @@ def negative_measure(text, kind):
 
 def strip_harmless_contrasts(text):
     """Remove recognised non-target clarifications so -not X- contrast with
-    another model, an unrelated metric, a live-feed note or a variant name is
-    not treated as denial of the requested fact. A denial of the target value
-    (e.g. 'not 32 GB') is left intact for the caller to reject."""
+    another model, an unrelated metric or a variant name is not treated as denial
+    of the requested fact. A denial of the target value (e.g. 'not 32 GB') is left
+    intact for the caller to reject.
+
+    Document-scope phrases ("not a live release feed", "frozen historical
+    catalog") are deliberately NOT exempted here: only the driver tasks T9/T10
+    carry a frozen-catalog qualifier, and predicates.driver_qualifier_scope applies
+    that exemption for those two tasks alone (repair002, H2).
+    """
     patterns = [
         r"\bnot\s+(?:its|the|a|an)?\s*(?:psu|power\s+supply|recommended\s+psu|"
-        r"memory[- ]capacity\s+comparison|update\s+date|live\s+(?:release\s+)?feed|"
-        r"real[- ]time\s+(?:release\s+)?feed|frozen\s+(?:historical\s+)?(?:catalog|catalogue|snapshot))",
+        r"memory[- ]capacity\s+comparison|update\s+date)",
         r"\bnot\s+(?:(?:an?|the)\s+)?(?:photograph|product\s+photo)",
         r"\bnot\s+(?:(?:an?|the)\s+)?\d+\s*gb\s+variant",
         r"\bnot\s+(?:(?:an?|the)\s+)?(?:canada|germany|united\s+kingdom|uk|china|japan|france|"

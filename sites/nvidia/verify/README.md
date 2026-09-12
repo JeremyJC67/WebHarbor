@@ -39,6 +39,7 @@ stdout 始终是一份 JSON：`task_id` 为本题、`pass` 为严格 bool、`rea
 
 - 信息题：事实取显式initial DB（T11静态技术/购买事实见来源），必需相关页/对象证据。信息匹配使用型号实体、数值和单位、比较主语方向、版本分量与完整日期；不是substring。支持大小写/空白/千分位、GB/GDDR 7、USD/美元、W/watts等合理格式，以及清晰的日期格式。
 - 确定性解析支持简洁事实句和明确关系，不保证理解任意修辞/暗示。遇歧义或矛盾返回FAIL，保持原输出并交独立主审；不调用LLM兜底，也不让LLM缺配置变成任务FAIL。
+- 否定作用域（repair002, H2）：“not a live release feed / frozen historical catalog”这类文档作用域保留语只对 **T9/T10** 豁免（由 `predicates.driver_qualifier_scope` 在完整保留原文的前提下仅去掉该短语内的否定词）；其余 18 题只豁免与目标无关的对比（其它型号、无关指标、变体名、PSU 说明），出现针对性的否定/不确定词即 FAIL（fail-closed）。该边界由自带回归 `tests/test_driver_qualifier.py::test_other_information_task_not_relaxed` 钉住。
 - T6题意指定comparison工具，必须同一比较包含5090/4090；T7未指定工具，可分别读两详情。T18相关news/search列表显示日期时可接受，不强制详情。T11必须技术页与5080购买页两类证据，最终停本地购买页，无固定浏览顺序。
 - 状态题：DB是完成结果的权威依据，不附加英文最终回答或登录页面访问要求。按新增/删除row ID绑定同一账号和目标，保护所有其他wishlist/users/reviews/orders等记录。仅模拟driver download计数非递减作为无害副作用允许；不把账号/收藏误操作或额外订单当无害。
 - Wishlist新增要求目标原先不存在、只新增一条；T16仅删Alice目标且保留所有其他条目。T14仅改Alice country，保留其他字段。T15同一新增row满足Alice/Jetson/5星/精确归一化标题/非空body；`Not Incredible`失败。T19仅新增指定邮箱subscription。
