@@ -251,3 +251,8 @@ table.lb tr:hover td { background: var(--bg-rail); }
   .gn-auth .btn { padding-left: 10px; padding-right: 10px; }
   .footer-cols { grid-template-columns: 1fr; }
 }
+
+/* ---------- Avatars ---------- */
+.avatar-img { border-radius: 50%; object-fit: cover; display: inline-block; flex: 0 0 auto; }
+.avatar-fallback { display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--action), #114a63); color: #fff; font-weight: 700; }

@@ -152,7 +152,9 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(200), nullable=False)
     display_name = db.Column(db.String(120), default="")
     bio = db.Column(db.Text, default="")
-    avatar_url = db.Column(db.String(300), default="/static/images/avatars/default.png")
+    # Empty means "no avatar": the templates render a letter tile. The archive's
+    # default.png is another user's photo, so it must not be the fallback.
+    avatar_url = db.Column(db.String(300), default="")
     location = db.Column(db.String(120), default="")
     occupation = db.Column(db.String(120), default="")
     organization = db.Column(db.String(120), default="")
@@ -1054,7 +1056,7 @@ def register():
                 display_name=username, tier="Novice",
                 tiers_json=json.dumps({"competitions": "Novice", "datasets": "Novice",
                                        "notebooks": "Novice", "discussions": "Novice"}),
-                avatar_url="/static/images/avatars/default.png",
+                avatar_url="",
                 created_at=mirror_now(),
             )
             db.session.add(user)

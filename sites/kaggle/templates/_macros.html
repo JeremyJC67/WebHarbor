@@ -7,6 +7,20 @@
        onerror="this.onerror=null; this.outerHTML='<div class=\'{{ cls }} thumb-fallback\'>{{ (title[0] if title else '?')|e }}</div>'">
 {% endmacro %}
 
+{# Avatar: the stored image when the user has one, otherwise a letter tile. A photo
+   must not stand in for "no avatar" (the archive's default.png is one user's photo). #}
+{% macro avatar(user, size=32, extra_class='') %}
+  {% set name = (user.username if user else '') or '?' %}
+  {% if user and user.avatar_url %}
+    <img class="avatar-img {{ extra_class }}" src="{{ user.avatar_url }}" alt="{{ name }}"
+         style="width:{{ size }}px;height:{{ size }}px"
+         onerror="this.onerror=null; this.outerHTML='<div class=\'avatar-img avatar-fallback {{ extra_class }}\' style=\'width:{{ size }}px;height:{{ size }}px;font-size:{{ (size * 0.42)|round|int }}px\'>{{ name[0]|upper }}</div>'">
+  {% else %}
+    <div class="avatar-img avatar-fallback {{ extra_class }}"
+         style="width:{{ size }}px;height:{{ size }}px;font-size:{{ (size * 0.42)|round|int }}px">{{ name[0]|upper }}</div>
+  {% endif %}
+{% endmacro %}
+
 {% macro tier_badge(user) %}
   {% if user %}
   <span class="tier" style="color: {{ TIER_COLORS.get(user.tier, '#888') }}">

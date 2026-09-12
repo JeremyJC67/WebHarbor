@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import competition_card, dataset_card, notebook_card, model_card, tier_badge %}
+{% from "_macros.html" import competition_card, dataset_card, notebook_card, model_card, tier_badge, avatar %}
 {% block title %}Search: {{ q }} | Kaggle{% endblock %}
 {% block content %}
 <div class="container-wide section">
@@ -38,7 +38,7 @@
   {% if users %}
   <div class="section"><div class="section-head"><h2>Users</h2></div>
     <div class="row-list">{% for u in users %}
-      <div class="row"><img class="row-thumb" style="border-radius:50%;" src="{{ u.avatar_url }}" onerror="this.src='/static/images/avatars/default.png'">
+      <div class="row">{{ avatar(u, 28, "row-thumb") }}
       <div class="row-main"><div class="row-title"><a href="{{ url_for('user_profile', username=u.username) }}">{{ u.display_name }}</a> {{ tier_badge(u) }}</div>
       <div class="row-sub">@{{ u.username }} · {{ u.occupation }}</div></div><div class="row-right">{{ u.points|commafy }} pts</div></div>
     {% endfor %}</div></div>

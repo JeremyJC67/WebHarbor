@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import thumb, tier_badge %}
+{% from "_macros.html" import thumb, tier_badge, avatar %}
 {% block title %}{{ m.title }} | Kaggle{% endblock %}
 {% block content %}
 <div class="container-wide">
@@ -45,7 +45,7 @@
         {% set owner = user_by_name(m.owner_username) %}
         {% if owner %}
         <a href="{{ url_for('user_profile', username=owner.username) }}" style="display:flex;align-items:center;gap:10px;color:inherit;">
-          <img src="{{ owner.avatar_url }}" onerror="this.src='/static/images/avatars/default.png'" style="width:40px;height:40px;border-radius:50%;">
+          {{ avatar(owner, 40) }}
           <div><b>{{ owner.display_name }}</b><br>{{ tier_badge(owner) }}</div>
         </a>
         {% else %}<p>{{ m.owner_username }}</p>{% endif %}

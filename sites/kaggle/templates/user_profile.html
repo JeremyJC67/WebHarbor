@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% from "_macros.html" import tier_badge, medals, dataset_card, notebook_card, model_card, competition_card %}
+{% from "_macros.html" import tier_badge, medals, dataset_card, notebook_card, model_card, competition_card, avatar %}
 {% block title %}{{ u.display_name }} | Kaggle{% endblock %}
 {% block content %}
 <div class="container-wide">
   <div class="profile-head">
-    <img class="profile-avatar" src="{{ u.avatar_url }}" onerror="this.src='/static/images/avatars/default.png'" alt="{{ u.username }}">
+    {{ avatar(u, 110, "profile-avatar") }}
     <div style="flex:1;">
       <h1 class="profile-name">{{ u.display_name }} {{ tier_badge(u) }}</h1>
       <div class="profile-handle">@{{ u.username }}{% if u.comp_rank %} · Competitions rank #{{ u.comp_rank }}{% endif %}</div>

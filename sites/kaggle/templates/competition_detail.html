@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import thumb, tier_badge %}
+{% from "_macros.html" import thumb, tier_badge, avatar %}
 {% block title %}{{ c.title }} | Kaggle{% endblock %}
 {% block content %}
 <div class="container-wide">
@@ -121,7 +121,7 @@
         <h4>Host</h4>
         {% if host_user %}
         <a href="{{ url_for('user_profile', username=host_user.username) }}" style="display:flex;align-items:center;gap:10px;color:inherit;">
-          <img src="{{ host_user.avatar_url }}" onerror="this.src='/static/images/avatars/default.png'" style="width:40px;height:40px;border-radius:50%;">
+          {{ avatar(host_user, 40) }}
           <div><b>{{ host_user.display_name }}</b><br>{{ tier_badge(host_user) }}</div>
         </a>
         {% else %}<p>{{ c.host }}</p>{% endif %}

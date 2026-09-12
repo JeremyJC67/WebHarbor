@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import tier_name, medals %}
+{% from "_macros.html" import tier_name, medals, avatar %}
 {% block title %}Rankings | Kaggle{% endblock %}
 {% block content %}
 <div class="container-wide section">
@@ -20,7 +20,7 @@
       <td class="rank-medal">{{ loop.index }}</td>
       <td>
         <a href="{{ url_for('user_profile', username=u.username) }}" style="display:flex;align-items:center;gap:10px;color:inherit;">
-          <img src="{{ u.avatar_url }}" onerror="this.src='/static/images/avatars/default.png'" style="width:32px;height:32px;border-radius:50%;">
+          {{ avatar(u, 32) }}
           <div><b>{{ u.display_name }}</b> <span class="muted">@{{ u.username }}</span></div>
         </a>
       </td>
