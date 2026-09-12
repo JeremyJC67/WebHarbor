@@ -348,13 +348,13 @@ DRIVERS = [
 # --------------------------------------------------------------------------
 BENCHMARK_USERS = [
     dict(email="alice.j@test.com", name="Alice Johnson", password="TestPass123!",
-         company="Pixel Forge Studios", country="United States", newsletter_opt_in=True),
+         company="Pixel Forge Studios", country="United States", newsletter_opt_in=True, password_hash="$2b$12$lro0PfsmmYC9b55GQgXXiOIqsFtWMS7XdJELfSdwe13jqPhPvqhDG"),
     dict(email="bob.c@test.com", name="Bob Chen", password="TestPass123!",
-         company="", country="United States", newsletter_opt_in=False),
+         company="", country="United States", newsletter_opt_in=False, password_hash="$2b$12$gosWpdgzhUX4dZUUzk11BeIPxUye8hTT2ytkhV7TAIOf1QVD5joya"),
     dict(email="carol.d@test.com", name="Carol Davis", password="TestPass123!",
-         company="Helix Robotics", country="Canada", newsletter_opt_in=True),
+         company="Helix Robotics", country="Canada", newsletter_opt_in=True, password_hash="$2b$12$zKphy3moiPKf2KlNqKTdDO/lv4f61rgYXC03dtKfHhQbIFOKnOtBq"),
     dict(email="david.k@test.com", name="David Kim", password="TestPass123!",
-         company="", country="United Kingdom", newsletter_opt_in=False),
+         company="", country="United Kingdom", newsletter_opt_in=False, password_hash="$2b$12$vq8uQwhqSngMg1cGr.OTbOb4GziwVj14y5GCJYHTwqOfAWc8xYg6O"),
 ]
 
 # --------------------------------------------------------------------------

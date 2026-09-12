@@ -449,6 +449,23 @@ class UIContract(unittest.TestCase):
         self.assertEqual(urlsplit(response.location).netloc, '')
         self.assertEqual(response.location, '/products/geforce-rtx-4060')
 
+    def test_08b_seed_passwords_are_pinned(self):
+        """Demo password hashes are pinned so a regenerated seed is deterministic (repair002, L4)."""
+        import seed_data
+        self.assertTrue(seed_data.BENCHMARK_USERS)
+        for user in seed_data.BENCHMARK_USERS:
+            self.assertIn('password_hash', user, user['email'])
+            self.assertTrue(module.bcrypt.check_password_hash(user['password_hash'], user['password']),
+                            user['email'])
+            with module.app.app_context():
+                stored = module.User.query.filter_by(email=user['email']).one()
+                self.assertEqual(stored.password_hash, user['password_hash'], user['email'])
+        with module.app.app_context():
+            module.seed_benchmark_users()   # gated: a no-op must leave the hashes untouched
+            for user in seed_data.BENCHMARK_USERS:
+                self.assertEqual(module.User.query.filter_by(email=user['email']).one().password_hash,
+                                 user['password_hash'], user['email'])
+
     def test_09_contrast_tokens(self):
         """Stylesheet-derived WCAG checks (repair002, M1/M2)."""
         css = (copy / 'static/css/main.css').read_text()

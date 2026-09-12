@@ -810,7 +810,13 @@ def seed_benchmark_users():
                     country=u.get('country', 'United States'),
                     newsletter_opt_in=u.get('newsletter_opt_in', False),
                     created=datetime(2026, 1, 1))
-        user.set_password(u['password'])
+        # Deterministic hash when the catalog pins one, so a regenerated seed is
+        # byte-identical to the shipped one (bcrypt salts are random otherwise)
+        # (repair002, L4).
+        if u.get('password_hash'):
+            user.password_hash = u['password_hash']
+        else:
+            user.set_password(u['password'])
         db.session.add(user)
     db.session.commit()
 
