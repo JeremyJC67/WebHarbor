@@ -46,7 +46,7 @@ STORE = {
     "address": "420 9th Ave, New York, NY 10001",
     "pickup_hours": "Mon-Thu 9:30am-7pm, Fri 9:30am-1pm, Sun 10am-6pm",
     "contact_phone": "800-606-6969",
-    "inventory_note": "Pickup counts in this mirror are benchmark state, not live inventory.",
+    "inventory_note": "Counter stock shown on this mirror is test data, not live inventory.",
 }
 
 USER_DEFS = [
@@ -65,6 +65,20 @@ REVIEW_HEADLINES = [
     "Holds up on long shoots", "Exactly what the spec sheet promises",
     "Solid build, predictable results", "Worth the upgrade",
     "Good value for the feature set", "Does one job and does it well",
+]
+REVIEW_BODIES = [
+    "Picked this up after comparing the spec sheets and it has matched them so far. "
+    "Build quality is what I expected at this price.",
+    "Used it on back-to-back jobs last month with no surprises. Setup was quick and "
+    "it behaved the same way every time.",
+    "Does what the listing says. Nothing flashy, but it has not let me down and the "
+    "handling is comfortable over a long day.",
+    "Upgraded from an older unit. The improvement is noticeable in daily use, "
+    "though the older one still works fine for lighter work.",
+    "Good fit for my workflow. Read the specification table before ordering and "
+    "check the ports match what you already own.",
+    "Solid for the money. It is not the top of the range, but for regular use it "
+    "covers everything I needed.",
 ]
 QUESTION_TEMPLATES = [
     "Is this covered by the standard return window?",
@@ -320,8 +334,7 @@ def seed_database(db, models, base_dir: str):
                 product_id=product.id,
                 author_name=pick(REVIEW_AUTHORS, "author", seed_key, number),
                 headline=pick(REVIEW_HEADLINES, "headline", seed_key, number),
-                body=(f"Benchmark review text for {product.name}. This mirror generates "
-                      f"review copy; it is not taken from B&H."),
+                body=pick(REVIEW_BODIES, "body", seed_key, number),
                 rating=rating, verified_purchase=digest("verified", seed_key, number) % 3 != 0,
                 created_at=MIRROR_REFERENCE_DATE - timedelta(days=30 + number * 17),
             ))
@@ -376,14 +389,16 @@ def seed_database(db, models, base_dir: str):
             total = sum(item.price for item in chosen)
             if total <= 0:
                 continue
-            title = f"{chosen[0].name.split()[0]} {department.replace('-', ' ').title()} Kit {number + 1}"
+            lead_brand = chosen[0].name.split()[0]
+            shelf_label = department.replace("-", " ").title()
+            title = f"{lead_brand} {shelf_label} Kit {number + 1}"
             bundle = Bundle(
                 title=title, slug=slugify(title),
-                description=("Benchmark bundle: these items are grouped by this mirror for "
-                             "multi-item checkout tasks. B&H does not sell this combination."),
+                description=("A package of compatible items sold together at a kit price. "
+                             "Each item in the kit is listed below."),
                 image_path=chosen[0].image_path,
                 bundle_price=round(total * 0.93, 2), list_price=round(total, 2),
-                badge="Benchmark bundle", audience=department.replace("-", " ").title(),
+                badge="Kit price", audience=department.replace("-", " ").title(),
                 featured=number == 0,
             )
             db.session.add(bundle)
@@ -483,7 +498,7 @@ def seed_benchmark_users(db, models):
                 status=status, subtotal=subtotal, shipping=0.0,
                 tax=round(subtotal * 0.08875, 2), total=round(subtotal * 1.08875, 2),
                 fulfillment=fulfillment, payment_label="Demo Visa ending in 4242",
-                note="Benchmark order created by the mirror seed.", created_at=placed,
+                note="", created_at=placed,
             )
             db.session.add(order)
             db.session.flush()

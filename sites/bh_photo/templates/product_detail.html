@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ product.name }} · B&H Demo Mirror{% endblock %}
+{% block title %}{{ product.name }} | B&H{% endblock %}
 {% block content %}
 <section class="shell breadcrumb-row">
     <a href="{{ url_for('index') }}">Home</a>
@@ -113,7 +113,7 @@
             <ul class="purchase-meta">
                 <li>{{ product.return_window }}</li>
                 <li>{{ product.warranty }}</li>
-                <li>{{ product.pickup_store_count }} store pickup locations in this demo mirror</li>
+                <li>Pickup at the B&amp;H SuperStore, New York</li>
             </ul>
             {% if current_user.is_authenticated %}
                 <form action="{{ url_for('add_to_cart', product_slug=product.slug) }}" method="post" class="stack-form">
@@ -142,7 +142,7 @@
 
         <div class="purchase-card">
             <h3>Reserve in store</h3>
-            <p>Secure a deterministic pickup slot locally. This never contacts any live reservation system.</p>
+            <p>Reserve this item for pickup at the B&amp;H SuperStore. No payment is taken now.</p>
             {% if current_user.is_authenticated %}
                 <form action="{{ url_for('reserve_store_pickup', product_slug=product.slug) }}" method="post" class="stack-form">
                     <label>Pickup store

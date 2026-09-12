@@ -799,7 +799,7 @@ def inject_globals():
         "cart_count": metrics["count"],
         "compare_count": len(current_compare_products()),
         "wishlist_count": len(current_user.wishlist_items) if current_user.is_authenticated else 0,
-        "demo_notice": "Local benchmark mirror with deterministic demo inventory, users, orders, and checkout flows.",
+        "demo_notice": "Offline research mirror. Catalog facts are sourced from archived B&H pages; accounts, reviews and orders are generated test data.",
     }
 
 

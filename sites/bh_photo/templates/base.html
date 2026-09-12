@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}B&H Photo Demo Mirror{% endblock %}</title>
+    <title>{% block title %}B&H Photo Video Digital Cameras, Photography, Computers{% endblock %}</title>
     <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
     <div class="promo-strip">
         <div class="shell promo-inner">
-            <span>Demo mirror only: all checkout, reservations, inventory, and orders use deterministic local benchmark data.</span>
+            <span>Offline research mirror of bhphotovideo.com. Catalog facts come from archived B&amp;H pages; accounts, reviews, orders and inventory are generated test data. No live payment or fulfilment.</span>
             <span class="promo-pill">No live payment</span>
         </div>
     </div>
@@ -19,8 +19,8 @@
             <a class="brand-lockup" href="{{ url_for('index') }}">
                 <span class="brand-mark">B&amp;H<span>PHOTO&middot;VIDEO&middot;AUDIO</span></span>
                 <span class="brand-copy">
-                    <strong>Photo</strong>
-                    <small>Demo Mirror</small>
+                    <strong>Photo Video</strong>
+                    <small>Pro Audio</small>
                 </span>
             </a>
             <form class="search-bar" action="{{ url_for('search') }}" method="get">
@@ -73,7 +73,7 @@
     <footer class="site-footer">
         <div class="shell footer-grid">
             <div>
-                <h4>B&amp;H Demo Mirror</h4>
+                <h4>B&amp;H Photo Video</h4>
                 <p>{{ demo_notice }}</p>
             </div>
             <div>

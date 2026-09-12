@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Sign In · B&H Demo Mirror{% endblock %}
+{% block title %}Sign In | B&H{% endblock %}
 {% block content %}
 <section class="shell auth-wrap">
     <div class="auth-panel">
         <p class="kicker">Account access</p>
         <h1>Sign in</h1>
-        <p>Use one of the seeded benchmark users or create a new local-only demo account.</p>
+        <p>Sign in to your account, or create one.</p>
         <form method="post" class="card-form">
             <label>Email
                 <input type="email" name="email" required>
@@ -15,7 +15,7 @@
             </label>
             <button type="submit" class="cta">Sign in</button>
         </form>
-        <p class="auth-note">Seeded benchmark password: <strong>TestPass123!</strong></p>
+        <p class="auth-note">Test accounts on this mirror use the password <strong>TestPass123!</strong></p>
         <p><a href="{{ url_for('register') }}">Create a demo account</a></p>
     </div>
 </section>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ page_title }} · B&H Demo Mirror{% endblock %}
+{% block title %}{{ page_title }} | B&H{% endblock %}
 {% block content %}
 <section class="shell page-hero simple">
     <p class="kicker">{% if category %}{{ category.parent.name if category.parent else 'Department' }}{% elif brand %}Brand store{% else %}Catalog{% endif %}</p>
