@@ -10,6 +10,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_from_directory,
     session,
     url_for,
 )
@@ -1230,7 +1231,10 @@ def cart():
 @login_required
 def add_to_cart(product_slug: str):
     product = Product.query.filter_by(slug=product_slug).first_or_404()
-    quantity = max(int(request.form.get("quantity", 1) or 1), 1)
+    quantity = parse_positive_int(request.form.get("quantity"))
+    if quantity is None:
+        flash("Enter a valid quantity as a whole number.", "danger")
+        return redirect(request.referrer or url_for("product_detail", product_slug=product.slug))
     variant_label = request.form.get("variant_label", "").strip()
     existing = CartItem.query.filter_by(
         user_id=current_user.id,
@@ -1258,7 +1262,10 @@ def add_to_cart(product_slug: str):
 @login_required
 def update_cart(item_id: int):
     item = CartItem.query.filter_by(id=item_id, user_id=current_user.id).first_or_404()
-    quantity = max(int(request.form.get("quantity", 1) or 1), 1)
+    quantity = parse_positive_int(request.form.get("quantity"))
+    if quantity is None:
+        flash("Enter a valid quantity as a whole number.", "danger")
+        return redirect(url_for("cart"))
     item.quantity = quantity
     db.session.commit()
     flash("Your cart quantity was updated.", "success")
@@ -1279,8 +1286,14 @@ def remove_cart_item(item_id: int):
 @login_required
 def reserve_store_pickup(product_slug: str):
     product = Product.query.filter_by(slug=product_slug).first_or_404()
-    store_id = int(request.form.get("store_id", 0) or 0)
-    quantity = max(int(request.form.get("quantity", 1) or 1), 1)
+    store_id = parse_positive_int(request.form.get("store_id"), default=0)
+    if store_id is None:
+        flash("Choose a pickup store from the list.", "danger")
+        return redirect(url_for("store_pickup", product=product.slug))
+    quantity = parse_positive_int(request.form.get("quantity"))
+    if quantity is None:
+        flash("Enter a valid quantity as a whole number.", "danger")
+        return redirect(url_for("store_pickup", product=product.slug))
     inventory = StoreInventory.query.filter_by(product_id=product.id, store_id=store_id).first()
     if not inventory or inventory.quantity < quantity:
         flash("That pickup slot is no longer available in this demo inventory.", "danger")
@@ -1357,6 +1370,28 @@ def order_receipt(order_number: str):
 @app.route("/contact-support")
 def contact_support_redirect():
     return redirect(url_for("contact"))
+
+
+def parse_positive_int(raw, default: int = 1) -> int | None:
+    """Return a >=1 integer from form input, or None when it is not a number.
+
+    Callers turn None into a visible validation message; the site must never
+    raise a 500 because a form field carried text instead of digits.
+    """
+    if raw is None or str(raw).strip() == "":
+        return default
+    try:
+        value = int(str(raw).strip())
+    except (TypeError, ValueError):
+        return None
+    return max(value, 1)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(app.static_folder, "icons"), "favicon.svg", mimetype="image/svg+xml"
+    )
 
 
 @app.route("/_health")
