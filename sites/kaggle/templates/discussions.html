@@ -9,12 +9,12 @@
 
   <div class="toolbar">
     <form method="get">
-      <input type="text" name="q" placeholder="Search discussions" value="{{ q }}">
-      <select name="forum" onchange="this.form.submit()">
+      <input type="text" name="q" aria-label="Search this listing" placeholder="Search discussions" value="{{ q }}">
+      <select name="forum" aria-label="Forum filter" onchange="this.form.submit()">
         <option value="">All forums</option>
         {% for f in nav_forums %}<option value="{{ f }}" {{ 'selected' if forum==f }}>{{ f }}</option>{% endfor %}
       </select>
-      <select name="sort" onchange="this.form.submit()">
+      <select name="sort" aria-label="Sort order" onchange="this.form.submit()">
         <option value="hot" {{ 'selected' if sort=='hot' }}>Hot</option>
         <option value="recent" {{ 'selected' if sort=='recent' }}>Recent</option>
         <option value="comments" {{ 'selected' if sort=='comments' }}>Most comments</option>

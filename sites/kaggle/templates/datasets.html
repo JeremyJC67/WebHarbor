@@ -8,12 +8,12 @@
 
   <div class="toolbar">
     <form method="get">
-      <input type="text" name="q" placeholder="Search datasets" value="{{ q }}">
-      <select name="file_type" onchange="this.form.submit()">
+      <input type="text" name="q" aria-label="Search this listing" placeholder="Search datasets" value="{{ q }}">
+      <select name="file_type" aria-label="File type filter" onchange="this.form.submit()">
         <option value="">All file types</option>
         {% for ft in ['CSV','JSON','JPEG','GeoTIFF','GeoJSON'] %}<option value="{{ ft }}" {{ 'selected' if file_type==ft }}>{{ ft }}</option>{% endfor %}
       </select>
-      <select name="sort" onchange="this.form.submit()">
+      <select name="sort" aria-label="Sort order" onchange="this.form.submit()">
         <option value="hottest" {{ 'selected' if sort=='hottest' }}>Hottest</option>
         <option value="downloads" {{ 'selected' if sort=='downloads' }}>Most downloads</option>
         <option value="usability" {{ 'selected' if sort=='usability' }}>Usability</option>

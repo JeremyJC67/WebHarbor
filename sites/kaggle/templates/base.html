@@ -21,7 +21,7 @@
     <div class="gn-inner">
         <a class="gn-logo" href="{{ url_for('index') }}">{{ kaggle_logo() }}</a>
         <form class="gn-search" action="{{ url_for('search') }}" method="get">
-            <input type="text" name="q" placeholder="Search competitions, datasets, notebooks, and more" value="{{ request.args.get('q', '') }}">
+            <input type="text" name="q" aria-label="Search Kaggle" placeholder="Search competitions, datasets, notebooks, and more" value="{{ request.args.get('q', '') }}">
         </form>
         <div class="gn-nav">
             <a href="{{ url_for('competitions_list') }}">Competitions</a>

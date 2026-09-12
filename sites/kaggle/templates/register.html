@@ -6,13 +6,13 @@
   <p class="sub">Join the world's largest data science community</p>
   <form method="post">
     {{ form.csrf_token }}
-    <div class="field"><label>Email</label>{{ form.email(placeholder="you@example.com") }}
+    <div class="field"><label for="{{ form.email.id }}">Email</label>{{ form.email(placeholder="you@example.com") }}
       {% for e in form.email.errors %}<div class="err">{{ e }}</div>{% endfor %}</div>
-    <div class="field"><label>Username</label>{{ form.username(placeholder="username") }}
+    <div class="field"><label for="{{ form.username.id }}">Username</label>{{ form.username(placeholder="username") }}
       {% for e in form.username.errors %}<div class="err">{{ e }}</div>{% endfor %}</div>
-    <div class="field"><label>Password</label>{{ form.password(placeholder="At least 6 characters") }}
+    <div class="field"><label for="{{ form.password.id }}">Password</label>{{ form.password(placeholder="At least 6 characters") }}
       {% for e in form.password.errors %}<div class="err">{{ e }}</div>{% endfor %}</div>
-    <div class="field"><label>Confirm password</label>{{ form.confirm(placeholder="Repeat password") }}
+    <div class="field"><label for="{{ form.confirm.id }}">Confirm password</label>{{ form.confirm(placeholder="Repeat password") }}
       {% for e in form.confirm.errors %}<div class="err">{{ e }}</div>{% endfor %}</div>
     <button class="btn btn-primary btn-block" type="submit">Register with Email</button>
   </form>

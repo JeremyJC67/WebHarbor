@@ -8,12 +8,12 @@
 
   <div class="toolbar">
     <form method="get">
-      <input type="text" name="q" placeholder="Search models" value="{{ q }}">
-      <select name="framework" onchange="this.form.submit()">
+      <input type="text" name="q" aria-label="Search this listing" placeholder="Search models" value="{{ q }}">
+      <select name="framework" aria-label="Framework filter" onchange="this.form.submit()">
         <option value="">All frameworks</option>
         {% for f in frameworks %}<option value="{{ f }}" {{ 'selected' if framework==f }}>{{ f }}</option>{% endfor %}
       </select>
-      <select name="sort" onchange="this.form.submit()">
+      <select name="sort" aria-label="Sort order" onchange="this.form.submit()">
         <option value="downloads" {{ 'selected' if sort=='downloads' }}>Most downloads</option>
         <option value="votes" {{ 'selected' if sort=='votes' }}>Most votes</option>
         <option value="updated" {{ 'selected' if sort=='updated' }}>Recently updated</option>

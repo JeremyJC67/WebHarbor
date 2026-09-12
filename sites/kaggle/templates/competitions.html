@@ -8,17 +8,17 @@
 
   <div class="toolbar">
     <form method="get">
-      <input type="text" name="q" placeholder="Search competitions" value="{{ q }}">
-      <select name="category" onchange="this.form.submit()">
+      <input type="text" name="q" aria-label="Search this listing" placeholder="Search competitions" value="{{ q }}">
+      <select name="category" aria-label="Category filter" onchange="this.form.submit()">
         <option value="">All categories</option>
         {% for cat in comp_categories %}<option value="{{ cat }}" {{ 'selected' if cat==category }}>{{ cat }}</option>{% endfor %}
       </select>
-      <select name="status" onchange="this.form.submit()">
+      <select name="status" aria-label="Status filter" onchange="this.form.submit()">
         <option value="">All</option>
         <option value="active" {{ 'selected' if status=='active' }}>Active</option>
         <option value="completed" {{ 'selected' if status=='completed' }}>Completed</option>
       </select>
-      <select name="sort" onchange="this.form.submit()">
+      <select name="sort" aria-label="Sort order" onchange="this.form.submit()">
         <option value="teams" {{ 'selected' if sort=='teams' }}>Most teams</option>
         <option value="deadline" {{ 'selected' if sort=='deadline' }}>Deadline</option>
         <option value="newest" {{ 'selected' if sort=='newest' }}>Newest</option>

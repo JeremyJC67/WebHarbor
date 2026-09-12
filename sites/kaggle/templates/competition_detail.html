@@ -81,7 +81,7 @@
           <form method="post" action="{{ url_for('competition_join', slug=c.slug) }}" class="form-card" style="margin:0;">
             {{ join_form.csrf_token }}
             <div class="field">
-              <label>Team name</label>
+              <label for="{{ join_form.team_name.id }}">Team name</label>
               {{ join_form.team_name(placeholder="Your team name") }}
             </div>
             <div class="field">
