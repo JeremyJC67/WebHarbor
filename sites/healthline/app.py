@@ -16,8 +16,10 @@ content is defined in seed_data.py (Python data, no runtime JSON dependency).
 """
 import os
 import re
+import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import (
     Flask, render_template, request, redirect, url_for, flash, abort
@@ -37,10 +39,13 @@ DB_DIR = BASE_DIR / "instance"
 DB_DIR.mkdir(exist_ok=True)
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "healthline-mirror-secret-key-change-in-prod-1602"
+app.config["SECRET_KEY"] = os.environ.get("HEALTHLINE_SECRET_KEY") or secrets.token_hex(32)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_DIR / 'healthline.db'}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["WTF_CSRF_TIME_LIMIT"] = None
+# The mirror accepts no uploads; cap request bodies so an oversized POST is
+# rejected with 413 instead of being buffered.
+app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -50,6 +55,33 @@ login_manager.login_message = "Please sign in to continue."
 csrf = CSRFProtect(app)
 
 REF_DATE = SD.MIRROR_REFERENCE_DATE
+
+# --- input bounds ----------------------------------------------------------
+# SQLite does not enforce VARCHAR lengths, so the app has to. Limits mirror the
+# column widths declared on the User model below.
+MAX_LEN = {"full_name": 200, "username": 80, "email": 200, "location": 120,
+           "bio": 1000, "password": 200}
+MIN_PASSWORD = 6
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
+
+
+def bounded(value, field):
+    """Strip a submitted string and return None when it exceeds its column width."""
+    s = (value or "").strip()
+    return None if len(s) > MAX_LEN[field] else s
+
+
+def safe_redirect_target(target, fallback):
+    """Only follow same-origin relative paths; anything else falls back.
+
+    Guards `?next=` and `Referer`-driven redirects against off-site targets.
+    """
+    if not target:
+        return fallback
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc or not target.startswith("/") or target.startswith("//"):
+        return fallback
+    return target
 
 
 # =======================================================================
@@ -455,7 +487,9 @@ def index():
 @app.route("/section/<slug>")
 def section_page(slug):
     section = get_section_or_404(slug)
-    page = max(1, request.args.get("page", 1, type=int))
+    # Clamp the page number: SQLite raises on an offset that overflows int64,
+    # which turned `?page=99999999999999999999` into a 500.
+    page = min(max(1, request.args.get("page", 1, type=int) or 1), 10_000)
     per_page = 9
     sub = (request.args.get("sub") or "").strip()
     sort = request.args.get("sort", "latest")
@@ -481,7 +515,11 @@ def section_page(slug):
 @app.route("/article/<slug>")
 def article_detail(slug):
     art = Article.query.filter_by(slug=slug).first_or_404()
-    art.view_count += 1
+    # NOTE: deliberately no `view_count` increment here. A popularity counter
+    # bumped on every anonymous GET makes a read-only route write to the DB,
+    # which (a) prevents read-only tasks from asserting `tables_unchanged` and
+    # (b) makes every view_count-ordered surface (home page "featured", the
+    # search tie-break) depend on the agent's own browsing.
     if current_user.is_authenticated:
         existing = ReadingHistory.query.filter_by(
             user_id=current_user.id, article_id=art.id).first()
@@ -490,7 +528,7 @@ def article_detail(slug):
         else:
             db.session.add(ReadingHistory(user_id=current_user.id, article_id=art.id,
                                           viewed_at=REF_DATE))
-    db.session.commit()
+        db.session.commit()
 
     related = (Article.query.filter(Article.section_slug == art.section_slug,
                                     Article.id != art.id)
@@ -573,13 +611,15 @@ def search():
         if scope in ("all", "articles"):
             article_results = scored_article_search(q)
         if scope in ("all", "conditions"):
-            for c in Condition.query.all():
+            # ORDER BY name: without it SQLite returns rowid (seed-authoring)
+            # order, which is not a neutral, reproducible ranking rule.
+            for c in Condition.query.order_by(Condition.name.asc()).all():
                 hay = " ".join([(c.name or "").lower(), (c.overview or "").lower(),
                                 (c.category or "").lower(), (c.symptoms or "").lower()])
                 if any(t in hay for t in tokens):
                     condition_results.append(c)
         if scope in ("all", "drugs"):
-            for d in Drug.query.all():
+            for d in Drug.query.order_by(Drug.name.asc()).all():
                 hay = " ".join([(d.name or "").lower(), (d.generic_name or "").lower(),
                                 (d.uses or "").lower(), (d.drug_class or "").lower()])
                 if any(t in hay for t in tokens):
@@ -607,8 +647,10 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash("Signed in successfully.", "success")
-            return redirect(request.args.get("next") or url_for("account"))
+            return redirect(safe_redirect_target(request.args.get("next"),
+                                                 url_for("account")))
         flash("Invalid email or password.", "error")
+        return render_template("login.html"), 400
     return render_template("login.html")
 
 
@@ -622,18 +664,33 @@ def register():
         full_name = (request.form.get("full_name") or "").strip()
         password = request.form.get("password") or ""
         confirm = request.form.get("confirm_password") or ""
+
+        # Validate before writing. SQLite silently accepts over-long values and
+        # the previous version accepted a 10 000-character username, an address
+        # with no "@" and a 2-character password.
+        errors = []
         if not (email and username and password and full_name):
-            flash("Full name, email, username, and password are all required.", "error")
-            return render_template("register.html")
+            errors.append("Full name, email, username, and password are all required.")
+        for value, field, label in ((full_name, "full_name", "Full name"),
+                                    (username, "username", "Username"),
+                                    (email, "email", "Email"),
+                                    (password, "password", "Password")):
+            if bounded(value, field) is None:
+                errors.append(f"{label} must be at most {MAX_LEN[field]} characters.")
+        if email and not EMAIL_RE.match(email):
+            errors.append("Enter a valid email address.")
+        if password and len(password) < MIN_PASSWORD:
+            errors.append(f"Password must be at least {MIN_PASSWORD} characters.")
         if password != confirm:
-            flash("Passwords do not match.", "error")
-            return render_template("register.html")
-        if User.query.filter_by(email=email).first():
-            flash("An account with that email already exists.", "error")
-            return render_template("register.html")
-        if User.query.filter_by(username=username).first():
-            flash("That username is already taken.", "error")
-            return render_template("register.html")
+            errors.append("Passwords do not match.")
+        if not errors and User.query.filter_by(email=email).first():
+            errors.append("An account with that email already exists.")
+        if not errors and User.query.filter_by(username=username).first():
+            errors.append("That username is already taken.")
+        if errors:
+            for e in errors:
+                flash(e, "error")
+            return render_template("register.html"), 400
         u = User(email=email, username=username, full_name=full_name)
         u.set_password(password)
         db.session.add(u)
@@ -644,8 +701,10 @@ def register():
     return render_template("register.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
+    # POST-only: a GET-reachable logout is fired by link prefetchers and by any
+    # crawler that follows the footer link, silently ending the session.
     logout_user()
     flash("You have been signed out.", "success")
     return redirect(url_for("index"))
@@ -669,9 +728,17 @@ def account():
 @login_required
 def account_edit():
     if request.method == "POST":
-        current_user.full_name = (request.form.get("full_name") or "").strip()
-        current_user.location = (request.form.get("location") or "").strip()
-        current_user.bio = (request.form.get("bio") or "").strip()
+        full_name = bounded(request.form.get("full_name"), "full_name")
+        location = bounded(request.form.get("location"), "location")
+        bio = bounded(request.form.get("bio"), "bio")
+        if full_name is None or location is None or bio is None:
+            flash("Full name, location, and bio must stay within their length "
+                  f"limits ({MAX_LEN['full_name']}/{MAX_LEN['location']}/"
+                  f"{MAX_LEN['bio']} characters).", "error")
+            return render_template("account_edit.html"), 400
+        current_user.full_name = full_name
+        current_user.location = location
+        current_user.bio = bio
         current_user.newsletter = request.form.get("newsletter") == "on"
         db.session.commit()
         flash("Profile updated.", "success")
@@ -690,13 +757,16 @@ def change_password():
             flash("Current password is incorrect.", "error")
         elif new != confirm:
             flash("New passwords do not match.", "error")
-        elif len(new) < 6:
-            flash("Password must be at least 6 characters.", "error")
+        elif len(new) < MIN_PASSWORD:
+            flash(f"Password must be at least {MIN_PASSWORD} characters.", "error")
+        elif bounded(new, "password") is None:
+            flash(f"Password must be at most {MAX_LEN['password']} characters.", "error")
         else:
             current_user.set_password(new)
             db.session.commit()
             flash("Password updated.", "success")
             return redirect(url_for("account"))
+        return render_template("change_password.html"), 400
     return render_template("change_password.html")
 
 
@@ -733,7 +803,8 @@ def toggle_save(article_id):
                                     saved_at=REF_DATE))
         db.session.commit()
         flash("Saved to your articles.", "success")
-    return redirect(request.referrer or url_for("article_detail", slug=art.slug))
+    return redirect(safe_redirect_target(
+        request.referrer, url_for("article_detail", slug=art.slug)))
 
 
 # =======================================================================
@@ -743,6 +814,29 @@ def toggle_save(article_id):
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    # base.html declares an SVG icon, but Chromium still probes /favicon.ico on
+    # a fresh origin and logged a 404 console error on every page.
+    return redirect(url_for("static", filename="icons/favicon.svg"), code=301)
+
+
+@app.errorhandler(404)
+def not_found(_error):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(413)
+def payload_too_large(_error):
+    return render_template("413.html"), 413
+
+
+@app.errorhandler(500)
+def server_error(_error):  # pragma: no cover - defensive
+    db.session.rollback()
+    return render_template("500.html"), 500
 
 
 @app.route("/_health")
