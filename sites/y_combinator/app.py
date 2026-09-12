@@ -167,7 +167,8 @@ class LibraryCarousel(db.Model):
     description = db.Column(db.Text)
     sort_order = db.Column(db.Integer, default=0, nullable=False)
     articles = db.relationship('LibraryArticle', secondary=carousel_articles,
-                               lazy='subquery', order_by='LibraryArticle.slug')
+                               lazy='subquery',
+                               order_by=carousel_articles.c.position)
 
 
 class Bookmark(db.Model):

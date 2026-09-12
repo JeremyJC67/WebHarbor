@@ -185,9 +185,23 @@ def algolia_facets(cache: Path) -> dict[str, dict]:
     return facets
 
 
+def launch_facets(cache: Path) -> dict[str, dict]:
+    """The Launch YC feed carries batch and industry for companies that are not
+    in the captured directory index, so those fields are not lost."""
+    facets: dict[str, dict] = {}
+    for path in sorted(cache.glob("launches_p*.json")):
+        for hit in json.loads(path.read_text(encoding="utf-8")).get("hits", []):
+            company = hit.get("company") or {}
+            slug = company.get("slug")
+            if slug and slug not in facets:
+                facets[slug] = company
+    return facets
+
+
 def build_companies(cache: Path, assets: Assets) -> tuple[list[dict], list[dict]]:
     """Companies and their founders, from captured company detail pages."""
     facets = algolia_facets(cache)
+    from_launches = launch_facets(cache)
     companies: list[dict] = []
     founders: list[dict] = []
     founder_slugs: set[str] = set()
@@ -198,13 +212,14 @@ def build_companies(cache: Path, assets: Assets) -> tuple[list[dict], list[dict]
         name = c.get("name")
         if not slug or not name:
             continue
-        facet = facets.get(slug, {})
+        facet = facets.get(slug) or {}
+        fallback = from_launches.get(slug) or {}
         row = {
             "slug": slug,
             "name": name,
-            "batch": c.get("batch_name") or facet.get("batch"),
+            "batch": c.get("batch_name") or facet.get("batch") or fallback.get("batch"),
             "batch_code": c.get("batch"),
-            "industry": facet.get("industry"),
+            "industry": facet.get("industry") or fallback.get("industry"),
             "subindustry": facet.get("subindustry"),
             "stage": facet.get("stage"),
             "regions": [r for r in (facet.get("regions") or []) if isinstance(r, str)],

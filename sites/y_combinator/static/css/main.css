@@ -349,7 +349,11 @@ h3 { font-size: 1.25rem; }
 .person-card img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; }
 
 .carousel { margin-bottom: 44px; }
-.carousel-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.carousel-row {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 300px; gap: 18px;
+  overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory;
+}
+.article-card { scroll-snap-align: start; }
 .article-card { background: var(--bg-white); border-radius: 12px; overflow: hidden; }
 .article-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
 .article-card .body { padding: 14px; }
@@ -409,7 +413,8 @@ form.inline { display: inline; }
   .section-title { font-size: 30px; margin-bottom: 32px; }
   .cta h2 { font-size: 34px; }
   .news-columns, .quote-grid, .video-grid, .partner-grid,
-  .carousel-row, .cta-strip { grid-template-columns: 1fr; }
+  .cta-strip { grid-template-columns: 1fr; }
+  .carousel-row { grid-auto-columns: 240px; }
   .reveal-names a, .reveal-total { font-size: 28px; }
   .story-strip { grid-auto-columns: 260px; }
   .partner-grid > .partner-card:nth-child(3n+2) { margin-top: 0; }

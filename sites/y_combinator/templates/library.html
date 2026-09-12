@@ -31,8 +31,9 @@
         <section class="carousel">
             <h2>{{ carousel.name }}</h2>
             {% if carousel.description %}<p class="muted">{{ carousel.description }}</p>{% endif %}
+            <p class="muted" style="font-size:.85rem">{{ carousel.articles|length }} in this collection</p>
             <div class="carousel-row">
-                {% for article in carousel.articles[:4] %}
+                {% for article in carousel.articles %}
                 <article class="article-card">
                     {% if article.thumbnail %}<img src="{{ url_for('static', filename='images/' + article.thumbnail) }}" alt="">{% endif %}
                     <div class="body">
