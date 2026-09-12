@@ -30,7 +30,12 @@ def main():
     # Evidence binding: the graded mirror is a local origin, not the live upstream.
     origin_note_ok, origin_note = origin_ok(t)
     j.check("nav_origin_local", origin_note_ok, origin_note)
-    j.check("nav_leaderboard", navigated_to(t, f"/competitions/{SLUG}"), "opened the competition/leaderboard")
+    # The task asks for the leaderboard: require the leaderboard surface itself
+    # (?tab=leaderboard, or the standalone /leaderboard route), not just the
+    # competition overview page.
+    j.check("nav_leaderboard",
+            navigated_to(t, f"/competitions/{SLUG}/leaderboard") or navigated_to(t, f"/competitions/{SLUG}?tab=leaderboard"),
+            f"opened the leaderboard ({[s.get('url','') for s in t.get('steps', []) if '/competitions/' in s.get('url','')]})")
     j.check("db_ground_truth", team is not None, f"top=({team!r},{score})")
     j.check("answer_team", team is not None and contains_any(fa, [team]), f"expected_team={team!r} final={fa!r}")
     j.check("answer_score", score is not None and contains_score(fa, score), f"expected_score={score} final={fa!r}")

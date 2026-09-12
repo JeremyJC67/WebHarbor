@@ -29,6 +29,9 @@ def main():
     origin_note_ok, origin_note = origin_ok(t)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_competitions", navigated_to(t, "/competitions"), "opened the competitions listing")
+    # Gate on the category filter the task requires.
+    j.check("nav_featured_filter", navigated_to(t, "category=Featured"),
+            f"applied the Featured category filter ({[s.get('url','') for s in t.get('steps', []) if '/competitions' in s.get('url','')]})")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][2] > rows[1][2]),
             f"top={title!r} reward={reward!r}")
     j.check("answer_names_comp", title is not None and contains_any(fa, [title, "home credit"]),

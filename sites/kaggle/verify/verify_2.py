@@ -27,6 +27,9 @@ def main():
     origin_note_ok, origin_note = origin_ok(t)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_datasets", navigated_to(t, "/datasets"), "opened the datasets area")
+    # Gate on the filter the task requires, not just on the listing page.
+    j.check("nav_climate_filter", navigated_to(t, "tag=climate"),
+            f"applied the climate tag filter ({[s.get('url','') for s in t.get('steps', []) if '/datasets' in s.get('url','')]})")
     j.check("db_ground_truth", top is not None and (len(rows) < 2 or rows[0][1] > rows[1][1]),
             f"top={top!r} rows={[(r[0], r[1]) for r in (rows or [])][:3]}")
     j.check("answer_top_dataset", contains_any(fa, ["global temperature anomalies", "temperature anomalies"]),

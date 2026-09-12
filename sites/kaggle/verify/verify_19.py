@@ -29,6 +29,11 @@ def main():
     origin_note_ok, origin_note = origin_ok(t)
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_code", navigated_to(t, "/code"), "opened the notebooks (Code) area")
+    # Gate on both filters the task requires.
+    j.check("nav_language_filter", navigated_to(t, "language=Python"),
+            f"applied the Python language filter ({[s.get('url','') for s in t.get('steps', []) if '/code' in s.get('url','')]})")
+    j.check("nav_medal_filter", navigated_to(t, "medal=gold"),
+            "applied the gold medal filter")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][2] > rows[1][2]),
             f"top=({title!r},{author!r})")
     j.check("answer_names_notebook", title is not None and contains_any(fa, [title, "top 3%"]),
