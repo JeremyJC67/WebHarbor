@@ -334,8 +334,9 @@ def inject_globals():
 # --------------------------------------------------------------------------
 @app.route('/')
 def index():
+    # Name order keeps this curated strip from implying a price ranking (repair002, L7).
     featured = Product.query.filter_by(is_featured=True).order_by(
-        Product.price_usd.desc().nullslast()).limit(6).all()
+        Product.name).limit(6).all()
     if not featured:
         featured = Product.query.limit(6).all()
     latest_news = Article.query.order_by(Article.published.desc()).limit(3).all()
@@ -348,7 +349,10 @@ def index():
 def products():
     cat = request.args.get('category', '').strip()
     series = request.args.get('series', '').strip()
-    sort = request.args.get('sort', 'featured')
+    # Default ordering is neutral (name): ordering by "featured" put the
+    # most-expensive Studio card first, which hinted the answer to the
+    # most-memory task (repair002, L7).
+    sort = request.args.get('sort', 'name')
     q = request.args.get('q', '').strip()
 
     query = Product.query
@@ -370,8 +374,10 @@ def products():
         items.sort(key=lambda p: -(p.price_usd or 0))
     elif sort == 'newest':
         items.sort(key=lambda p: -(p.release_year or 0))
-    else:  # featured
+    elif sort == 'featured':
         items.sort(key=lambda p: (not p.is_featured, -(p.price_usd or 0)))
+    else:  # name
+        items.sort(key=lambda p: p.name.casefold())
 
     series_list = sorted({p.series for p in Product.query.all() if p.series})
     return render_template('products.html', items=items, cat=cat, cat_name=cat_name,
