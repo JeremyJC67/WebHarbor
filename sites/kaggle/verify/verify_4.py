@@ -10,7 +10,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, contains_score, db_query, final_answer,
                         llm_text_match, load_run, navigated_to, parse_args, resolve_db,
-                        tables_unchanged)
+                        shot_at, shot_distinct, shot_final, tables_unchanged)
 
 SLUG = "credit-default-risk-2026"
 
@@ -34,6 +34,15 @@ def main():
     ok, ev = llm_text_match(fa, f"Rank #1 is team '{team}' with score {score}.",
         "Which team is ranked #1 on the Home Credit Default Risk 2026 leaderboard, and what is their score?")
     j.check("answer_llm", ok, ev, llm=True)
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/competitions/credit-default-risk-2026?tab=leaderboard")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     j.emit()
 
 if __name__ == "__main__":

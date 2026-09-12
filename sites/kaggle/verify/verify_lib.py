@@ -34,7 +34,7 @@ sample matrix uses. Every check stays fail-closed: if a DB cannot be obtained, t
 that need it FAIL, and the process exits 1 with a structured JSON verdict.
 Output: JSON {task_id, pass, reason, evidence[]} to stdout; exit 0 on PASS, 1 on FAIL.
 """
-import argparse, base64, json, os, re, shutil, sqlite3, subprocess, sys, tempfile, urllib.request
+import argparse, base64, hashlib, json, os, re, shutil, sqlite3, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
 
 SITE = "kaggle"
@@ -83,6 +83,102 @@ def last_shot(traj):
             return p
     shots = sorted(traj["_shots"].values())
     return shots[-1] if shots else None
+
+
+# ---------------------------------------------------------------- screenshot evidence
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def png_size(path):
+    """(width, height) of a decodable PNG, else None.
+
+    Reads the IHDR chunk directly so the check stays dependency-free.
+    """
+    if not path:
+        return None
+    try:
+        data = Path(path).read_bytes()
+    except OSError:
+        return None
+    if len(data) < 33 or data[:8] != PNG_SIGNATURE or data[12:16] != b"IHDR":
+        return None
+    width = int.from_bytes(data[16:20], "big")
+    height = int.from_bytes(data[20:24], "big")
+    if width <= 0 or height <= 0:
+        return None
+    return width, height
+
+
+def screenshot_ok(path, min_w=200, min_h=120, min_bytes=2000):
+    """(ok, note) for one screenshot file: exists, decodable PNG, plausible size."""
+    if not path:
+        return False, "no screenshot recorded"
+    try:
+        size = Path(path).stat().st_size
+    except OSError as error:
+        return False, f"unreadable: {error}"
+    dims = png_size(path)
+    if dims is None:
+        return False, f"not a decodable PNG ({path.name}, {size} bytes)"
+    if dims[0] < min_w or dims[1] < min_h:
+        return False, f"too small: {dims[0]}x{dims[1]} ({path.name})"
+    if size < min_bytes:
+        return False, f"too few bytes: {size} ({path.name})"
+    return True, f"{path.name} {dims[0]}x{dims[1]} {size}B"
+
+
+def shot_at(traj, url_substr, min_w=200, min_h=120, min_bytes=2000):
+    """Screenshot bound to a step whose url contains `url_substr`.
+
+    The recorder captures `screenshot_before` for the page the step was decided
+    on, i.e. the page whose URL that step carries, so that frame is the evidence
+    that the page was actually rendered. `screenshot_after` is accepted as a
+    fallback. Returns (ok, note) and fails when the page has no valid frame.
+    """
+    tried = []
+    for step in traj.get("steps", []):
+        if url_substr not in (step.get("url") or ""):
+            continue
+        for field in ("screenshot_before", "screenshot_after"):
+            path = _shot(traj, step.get(field))
+            if not path:
+                continue
+            ok, note = screenshot_ok(path, min_w, min_h, min_bytes)
+            if ok:
+                return True, f"{url_substr} -> {note}"
+            tried.append(f"{path.name}: {note}")
+    if tried:
+        return False, f"no valid screenshot for {url_substr} ({' ; '.join(tried[:4])})"
+    return False, f"no trajectory step ever recorded a screenshot for {url_substr}"
+
+
+def shot_final(traj, min_w=200, min_h=120, min_bytes=2000):
+    """Screenshot of the final page (the state the agent finished on)."""
+    ok, note = screenshot_ok(last_shot(traj), min_w, min_h, min_bytes)
+    return ok, ("final screenshot " + note)
+
+
+def shot_distinct(traj, minimum=3):
+    """Distinct frames among the screenshots the steps reference.
+
+    Every recorded step must bring its own frame; a run that pastes a single
+    image into every step slot (or reuses one frame for the whole run) cannot
+    claim to have rendered the visited pages. `minimum` is floored by half of the
+    referenced frames so short runs are not penalised.
+    """
+    frames = []
+    for step in traj.get("steps", []):
+        for field in ("screenshot_before", "screenshot_after"):
+            path = _shot(traj, step.get(field))
+            if not path:
+                continue
+            try:
+                frames.append(hashlib.sha256(Path(path).read_bytes()).hexdigest())
+            except OSError:
+                continue
+    required = min(minimum, max(1, len(frames) // 2))
+    distinct = len(set(frames))
+    return distinct >= required, f"distinct frames={distinct} of {len(frames)} referenced (required {required})"
 
 # ---------------------------------------------------------------- deterministic answer match
 def norm(s):

@@ -10,8 +10,9 @@ Checks: nav login + new-discussion | DB after: discussion row (author, title, fo
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, resolve_db, discussion_row, db_query, norm,
-                        last_shot, llm_screenshot_shows, Judge, parse_args)
+from verify_lib import (Judge, db_query, discussion_row, last_shot, llm_screenshot_shows,
+                        load_run, navigated_to, norm, parse_args, resolve_db, shot_at,
+                        shot_distinct, shot_final)
 
 USERNAME = "alicejdata"
 TITLE_SUBSTR = "how do you handle class imbalance"
@@ -39,6 +40,15 @@ def main():
         (USERNAME, TITLE, "Questions & Answers")) if after else None
     j.check("db_body_present", bool(body_rows and norm(body_rows[0][0])),
             f"body={body_rows[0][0] if body_rows else None!r}")
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/discussions/how-do-you-handle-class-imbalance")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     s = last_shot(t)
     if s:
         ok, ev = llm_screenshot_shows(s, "a new discussion titled 'How do you handle class imbalance?' in Questions & Answers",

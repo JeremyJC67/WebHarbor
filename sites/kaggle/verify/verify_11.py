@@ -11,8 +11,9 @@ Checks: nav login + discussion | DB after: davidtran comment count on the thread
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, resolve_db, comment_by_on,
-                        last_shot, llm_screenshot_shows, Judge, parse_args)
+from verify_lib import (Judge, comment_by_on, last_shot, llm_screenshot_shows, load_run,
+                        navigated_to, parse_args, resolve_db, shot_at, shot_distinct,
+                        shot_final)
 
 USERNAME = "davidtran"
 SLUG = "titanic-feature-ideas"
@@ -38,6 +39,15 @@ def main():
     j.check("db_comment_thanks_author", len(added) == 1 and any(
         word in (added[0] or "").casefold() for word in ("thank", "appreciate", "grateful")),
         f"added={added!r}")
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/discussions/titanic-feature-ideas")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     s = last_shot(t)
     if s:
         ok, ev = llm_screenshot_shows(s, "a new comment by David (davidtran) on the Titanic features discussion",

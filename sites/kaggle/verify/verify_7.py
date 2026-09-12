@@ -9,8 +9,9 @@ Checks: nav login + dataset | DB after: vote row exists.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, resolve_db, id_by_slug, vote_exists,
-                        last_shot, llm_screenshot_shows, Judge, parse_args)
+from verify_lib import (Judge, id_by_slug, last_shot, llm_screenshot_shows, load_run,
+                        navigated_to, parse_args, resolve_db, shot_at, shot_distinct,
+                        shot_final, vote_exists)
 
 EMAIL = "alice.j@test.com"
 SLUG = "world-happiness-report-2026"
@@ -30,6 +31,15 @@ def main():
     voted = vote_exists(after, EMAIL, "dataset", did) if did else None
     j.check("db_upvoted", before_voted is False and voted is True,
             f"dataset_id={did} seed={before_voted} after={voted}")
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/datasets/world-happiness-report-2026")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     s = last_shot(t)
     if s:
         ok, ev = llm_screenshot_shows(s, "the World Happiness Report 2026 dataset upvoted by the signed-in user",

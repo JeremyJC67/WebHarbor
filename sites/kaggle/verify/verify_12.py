@@ -9,8 +9,9 @@ Checks: nav login + account edit | DB after: location updated.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, resolve_db, user_location, norm,
-                        last_shot, llm_screenshot_shows, Judge, parse_args)
+from verify_lib import (Judge, last_shot, llm_screenshot_shows, load_run, navigated_to,
+                        norm, parse_args, resolve_db, shot_at, shot_distinct, shot_final,
+                        user_location)
 
 EMAIL = "david.k@test.com"
 
@@ -28,6 +29,15 @@ def main():
     j.check("db_location_updated", norm(before_loc) != "boston, united states" and
             norm(loc) == "boston, united states",
             f"seed={before_loc!r} after={loc!r}")
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/user/davidtran")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     s = last_shot(t)
     if s:
         ok, ev = llm_screenshot_shows(s, "profile location set to Boston, United States",

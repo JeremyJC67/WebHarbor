@@ -9,8 +9,9 @@ Checks: nav login + notebook | DB after: bookmark row exists.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, navigated_to, resolve_db, id_by_slug, bookmark_exists,
-                        last_shot, llm_screenshot_shows, Judge, parse_args)
+from verify_lib import (Judge, bookmark_exists, id_by_slug, last_shot,
+                        llm_screenshot_shows, load_run, navigated_to, parse_args,
+                        resolve_db, shot_at, shot_distinct, shot_final)
 
 EMAIL = "bob.c@test.com"
 SLUG = "titanic-top-3-percent"
@@ -30,6 +31,15 @@ def main():
     marked = bookmark_exists(after, EMAIL, "notebook", nid) if nid else None
     j.check("db_bookmarked", before_marked is False and marked is True,
             f"notebook_id={nid} seed={before_marked} after={marked}")
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/code/titanic-top-3-percent")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     s = last_shot(t)
     if s:
         ok, ev = llm_screenshot_shows(s, "the Titanic Top 3% notebook saved/bookmarked by the signed-in user",

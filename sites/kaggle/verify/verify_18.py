@@ -9,7 +9,8 @@ Checks: nav dataset detail | answer names the license | DB anchor | LLM.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, final_answer, llm_text_match, load_run,
-                        navigated_to, parse_args, resolve_db, scalar, tables_unchanged)
+                        navigated_to, parse_args, resolve_db, scalar, shot_at,
+                        shot_distinct, shot_final, tables_unchanged)
 
 SLUG = "handwritten-digits-mnist"
 
@@ -29,6 +30,15 @@ def main():
     ok, ev = llm_text_match(fa, f"The dataset is released under {lic}.",
         "Under what license is the MNIST Handwritten Digits dataset released?")
     j.check("answer_llm", ok, ev, llm=True)
+    # Deterministic evidence binding: the target page must have a real,
+    # decodable screenshot (a fabricated 1x1 image, or a page the run never
+    # rendered, cannot satisfy this).
+    shot_ok, shot_note = shot_at(t, "/datasets/handwritten-digits-mnist")
+    j.check("shot_target_page", shot_ok, shot_note)
+    final_ok, final_note = shot_final(t)
+    j.check("shot_final_page", final_ok, final_note)
+    distinct_ok, distinct_note = shot_distinct(t)
+    j.check("shot_frames_distinct", distinct_ok, distinct_note)
     j.emit()
 
 if __name__ == "__main__":
