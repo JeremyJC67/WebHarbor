@@ -12,11 +12,13 @@
 <section class="shell product-layout">
     <div class="product-gallery">
         <img class="hero-image" src="{{ url_for('static', filename=product.main_image) }}" alt="{{ product.name }}">
-        <div class="thumb-row">
-            {% for image in product.images %}
-                <img src="{{ url_for('static', filename=image.path) }}" alt="{{ image.label }}">
-            {% endfor %}
-        </div>
+        {% if product.images|length > 1 %}
+            <div class="thumb-row">
+                {% for image in product.images %}
+                    <img src="{{ url_for('static', filename=image.path) }}" alt="{{ image.label }}">
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
     <div class="product-main">
         <p class="eyebrow"><a href="{{ url_for('brand_view', brand_slug=product.brand.slug) }}">{{ product.brand.name }}</a> · {{ product.category.name }}</p>

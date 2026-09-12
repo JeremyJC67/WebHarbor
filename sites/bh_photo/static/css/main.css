@@ -697,7 +697,10 @@ textarea {
 }
 
 .price-line.large strong {
-    font-size: 2rem;
+    /* upstream product price: 28px, weight 700, black */
+    font-size: 28px;
+    font-weight: 700;
+    color: #000000;
 }
 
 .price-line strong {
@@ -734,6 +737,12 @@ textarea {
     min-width: 0;
 }
 
+/* the gallery is as tall as its image; without this it stretches to the row
+   height and leaves a large empty panel under a single product photo */
+.product-gallery {
+    align-self: start;
+}
+
 .product-gallery,
 .product-main {
     background: var(--paper);
@@ -744,9 +753,11 @@ textarea {
 }
 
 .hero-image {
+    /* upstream renders its main product image in a 655x500 box */
     width: 100%;
-    border-radius: 18px;
-    background: linear-gradient(180deg, #eff4f2, #f8fbfb);
+    aspect-ratio: 655 / 500;
+    object-fit: contain;
+    background: #ffffff;
 }
 
 .thumb-row {
