@@ -22,6 +22,7 @@ import re
 import secrets
 from datetime import datetime, date
 from pathlib import Path
+from urllib.parse import urlsplit
 
 # ----------------------------------------------------------------------------
 # Pinned mirror clock. The image is built once and evaluated at any future
@@ -964,6 +965,25 @@ def search():
 # ------------------------------------------------------------
 # Auth
 # ------------------------------------------------------------
+def _safe_next(target):
+    """Return `target` when it is a local path, else None.
+
+    Only same-origin absolute paths are accepted, so ?next= cannot bounce the
+    browser to an external host after a successful sign-in.
+    """
+    if not target:
+        return None
+    candidate = target.strip()
+    if not candidate.startswith("/") or candidate.startswith("//"):
+        return None
+    if "\\" in candidate or candidate.startswith("/%5C"):
+        return None
+    parts = urlsplit(candidate)
+    if parts.scheme or parts.netloc:
+        return None
+    return candidate
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -974,7 +994,7 @@ def login():
         if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
             login_user(user)
             flash("Welcome back!", "success")
-            return redirect(request.args.get("next") or url_for("index"))
+            return redirect(_safe_next(request.args.get("next")) or url_for("index"))
         flash("Invalid email or password.", "error")
     return render_template("login.html", form=form)
 
