@@ -221,9 +221,30 @@ class NewsletterSubscriber(db.Model):
     topic = db.Column(db.String(60), default='GeForce')
 
 
+SQLITE_MAX_INT = 2 ** 63 - 1
+
+
+def fetch_or_404(model, pk):
+    """db.session.get() with an explicit integer bound.
+
+    SQLite cannot bind integers above 2**63-1, and passing one through the
+    <int:...> converters made the ORM raise OverflowError -> HTTP 500
+    (repair002, M3). Out-of-range ids are a missing row, not a server error.
+    """
+    if not isinstance(pk, int) or pk < 1 or pk > SQLITE_MAX_INT:
+        abort(404)
+    return db.session.get(model, pk) or abort(404)
+
+
 @login_manager.user_loader
 def load_user(uid):
-    return db.session.get(User, int(uid))
+    try:
+        value = int(uid)
+    except (TypeError, ValueError):
+        return None
+    if not 1 <= value <= SQLITE_MAX_INT:
+        return None
+    return db.session.get(User, value)
 
 
 # --------------------------------------------------------------------------
@@ -426,13 +447,13 @@ def drivers():
 
 @app.route('/drivers/<int:driver_id>')
 def driver_detail(driver_id):
-    d = db.session.get(Driver, driver_id) or abort(404)
+    d = fetch_or_404(Driver, driver_id)
     return render_template('driver_detail.html', d=d)
 
 
 @app.route('/drivers/<int:driver_id>/download', methods=['POST'])
 def driver_download(driver_id):
-    d = db.session.get(Driver, driver_id) or abort(404)
+    d = fetch_or_404(Driver, driver_id)
     d.download_count += 1
     db.session.commit()
     flash(f'Local download demo recorded: {d.product_series} driver {d.version} '
@@ -605,7 +626,7 @@ def checkout():
 @app.route('/order/<int:order_id>')
 @login_required
 def order_detail(order_id):
-    order = db.session.get(Order, order_id) or abort(404)
+    order = fetch_or_404(Order, order_id)
     if order.user_id != current_user.id:
         abort(403)
     return render_template('order_detail.html', order=order)
@@ -638,7 +659,7 @@ def wishlist_toggle(product_id):
     """Compatibility toggle. Prefer /wishlist/add or /wishlist/remove: a toggle
     reverses on a duplicated submit, while the explicit endpoints are idempotent
     (repair002, M8)."""
-    p = db.session.get(Product, product_id) or abort(404)
+    p = fetch_or_404(Product, product_id)
     item = WishlistItem.query.filter_by(user_id=current_user.id, product_id=p.id).first()
     if item:
         db.session.delete(item)
@@ -655,7 +676,7 @@ def wishlist_toggle(product_id):
 @login_required
 def wishlist_add(product_id):
     """Idempotent save: repeating the same request leaves exactly one row."""
-    p = db.session.get(Product, product_id) or abort(404)
+    p = fetch_or_404(Product, product_id)
     item = WishlistItem.query.filter_by(user_id=current_user.id, product_id=p.id).first()
     if item:
         flash(f'{p.name} is already in your wishlist.', 'info')
@@ -670,7 +691,7 @@ def wishlist_add(product_id):
 @login_required
 def wishlist_remove(product_id):
     """Idempotent removal: repeating the same request leaves no row."""
-    p = db.session.get(Product, product_id) or abort(404)
+    p = fetch_or_404(Product, product_id)
     item = WishlistItem.query.filter_by(user_id=current_user.id, product_id=p.id).first()
     if item:
         db.session.delete(item)
@@ -721,6 +742,12 @@ def newsletter():
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    db.session.rollback()
+    return render_template('500.html'), 500
 
 
 # --------------------------------------------------------------------------

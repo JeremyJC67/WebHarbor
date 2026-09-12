@@ -201,6 +201,26 @@ class UIContract(unittest.TestCase):
             self.assertNotIn('not a photograph', image['alt'])
             self.assertEqual(figure.attrs('figcaption'), [])
 
+    def test_02b_integer_bounds_and_error_pages(self):
+        """Out-of-range ids are 404, not 500; 500 renders the custom page (repair002, M3)."""
+        self.get('/drivers/999999999999999999999', 404)
+        self.get('/drivers/9223372036854775808', 404)
+        self.get('/drivers/0', 404)
+        self.login()
+        self.get('/order/999999999999999999999', 404)
+        self.get('/order/9223372036854775808', 404)
+        self.assertEqual(self.post('/wishlist/add/999999999999999999999').status_code, 404)
+        self.assertEqual(self.post('/wishlist/remove/999999999999999999999').status_code, 404)
+        self.get('/order/1')
+        self.assertIn(500, module.app.error_handler_spec[None])
+        with module.app.test_request_context('/'):
+            body, status = module.server_error(RuntimeError('probe'))
+            self.assertEqual(status, 500)
+            self.assertIn('Something Went Wrong', body)
+        with module.app.app_context():
+            self.assertIsNone(module.load_user(2 ** 63))
+            self.assertIsNone(module.load_user('not-a-number'))
+
     def test_03_legacy_post_and_csrf_no_mutation(self):
         # A preexisting cart verifies update/remove/checkout cannot consume old rows.
         with module.app.app_context():
