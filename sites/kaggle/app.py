@@ -51,7 +51,8 @@ from flask_bcrypt import Bcrypt
 from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import (StringField, PasswordField, TextAreaField, SelectField,
                      HiddenField)
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional as OptionalV
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional as OptionalV, ValidationError
+from email_validator import validate_email, EmailNotValidError
 
 from seed_data import (
     PERFORMANCE_TIERS, COMPETITION_CATEGORIES, DISCUSSION_FORUMS, ML_FRAMEWORKS,
@@ -69,6 +70,11 @@ app = Flask(__name__)
 # cookie and read another account. KAGGLE_SECRET_KEY pins the key when one must
 # survive a restart; otherwise each process generates its own random key.
 app.config["SECRET_KEY"] = os.environ.get("KAGGLE_SECRET_KEY") or secrets.token_hex(32)
+# Bound the request body: the largest legitimate form is a 240-char title plus a
+# discussion body, so 2 MiB is generous. Without this the only limit was Werkzeug's
+# 500 KB max_form_memory_size for non-file parts, and multipart file parts streamed
+# to disk without a cap.
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{ROOT / 'instance' / 'kaggle.db'}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 (ROOT / "instance").mkdir(exist_ok=True)
@@ -424,13 +430,28 @@ def load_user(user_id):
 # ------------------------------------------------------------
 # Forms
 # ------------------------------------------------------------
+def OfflineEmail(message="Invalid email address."):
+    """Email() for the offline mirror: RFC 6761 special-use domains are valid here.
+
+    The seeded accounts and the note-style addresses this site ships use
+    @kaggle.test / @test.com, which email_validator rejects unless the
+    test_environment flag is set. Deliverability is never checked (no network).
+    """
+    def _validate(form, field):
+        try:
+            validate_email(field.data or "", check_deliverability=False, test_environment=True)
+        except EmailNotValidError as error:
+            raise ValidationError(message) from error
+    return _validate
+
+
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
+    email = StringField("Email", validators=[DataRequired(), OfflineEmail()])
     password = PasswordField("Password", validators=[DataRequired()])
 
 
 class RegisterForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
+    email = StringField("Email", validators=[DataRequired(), OfflineEmail()])
     username = StringField("Username", validators=[DataRequired(), Length(min=3, max=40)])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
     confirm = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password")])
@@ -1224,6 +1245,11 @@ def not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template("500.html"), 500
+
+
+@app.errorhandler(413)
+def payload_too_large(e):
+    return render_template("413.html"), 413
 
 
 # ------------------------------------------------------------
