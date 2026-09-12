@@ -8,7 +8,7 @@ Checks: nav competition detail | answer names the metric | LLM anchor.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, final_answer, llm_text_match, load_run,
+from verify_lib import (Judge, affirms_any, final_answer, llm_text_match, load_run,
                         navigated_to, origin_ok, parse_args, resolve_db, scalar, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
@@ -29,7 +29,7 @@ def main():
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_competition", navigated_to(t, f"/competitions/{SLUG}"), "opened the Home Credit competition page")
     j.check("db_ground_truth", gt is not None, f"metric={gt!r}")
-    j.check("answer_metric", contains_any(fa, ["roc auc", "auc"]), f"final={fa!r}")
+    j.check("answer_metric", affirms_any(fa, ["roc auc", "auc"]), f"final={fa!r}")
     ok, ev = llm_text_match(fa, f"The scoring metric is {gt}.",
         "Which evaluation metric scores submissions in the Home Credit Default Risk 2026 competition?")
     j.check("answer_llm", ok, ev, llm=True)

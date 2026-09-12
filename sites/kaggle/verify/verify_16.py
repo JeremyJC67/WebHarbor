@@ -8,7 +8,7 @@ Checks: nav competitions | answer names the comp + amount | DB anchor | LLM.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
+from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
                         load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
@@ -34,9 +34,9 @@ def main():
             f"applied the Featured category filter ({[s.get('url','') for s in t.get('steps', []) if '/competitions' in s.get('url','')]})")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][2] > rows[1][2]),
             f"top={title!r} reward={reward!r}")
-    j.check("answer_names_comp", title is not None and contains_any(fa, [title, "home credit"]),
+    j.check("answer_names_comp", title is not None and affirms_any(fa, [title, "home credit"]),
             f"expected={title!r} final={fa!r}")
-    j.check("answer_amount", contains_any(fa, ["100,000", "100000", "$100k"]), f"final={fa!r}")
+    j.check("answer_amount", affirms_any(fa, ["100,000", "100000", "$100k"]), f"final={fa!r}")
     ok, ev = llm_text_match(fa, f"The largest-cash-prize Featured competition is '{title}' with {reward}.",
         "Which Featured cash-prize competition has the largest reward, and how much is it?")
     j.check("answer_llm", ok, ev, llm=True)

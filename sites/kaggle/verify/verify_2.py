@@ -8,7 +8,7 @@ Checks: nav the datasets listing | answer names the top dataset | DB anchor | LL
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
+from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
                         load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
@@ -32,7 +32,7 @@ def main():
             f"applied the climate tag filter ({[s.get('url','') for s in t.get('steps', []) if '/datasets' in s.get('url','')]})")
     j.check("db_ground_truth", top is not None and (len(rows) < 2 or rows[0][1] > rows[1][1]),
             f"top={top!r} rows={[(r[0], r[1]) for r in (rows or [])][:3]}")
-    j.check("answer_top_dataset", contains_any(fa, ["global temperature anomalies", "temperature anomalies"]),
+    j.check("answer_top_dataset", affirms_any(fa, ["global temperature anomalies", "temperature anomalies"]),
             f"final={fa!r}")
     ok, ev = llm_text_match(fa, f"The most-upvoted climate-tagged dataset is '{top}'.",
         "Among datasets tagged 'climate', which one has the most upvotes?")

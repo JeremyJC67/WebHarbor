@@ -8,7 +8,7 @@ Checks: nav notebooks (code) | answer names the notebook + author | DB anchor | 
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_all, contains_any, db_query, final_answer,
+from verify_lib import (Judge, affirms, affirms_any, db_query, final_answer,
                         llm_text_match, load_run, navigated_to, origin_ok, parse_args,
                         resolve_db, shot_at, shot_distinct, shot_final, tables_unchanged)
 
@@ -36,9 +36,9 @@ def main():
             "applied the gold medal filter")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][2] > rows[1][2]),
             f"top=({title!r},{author!r})")
-    j.check("answer_names_notebook", title is not None and contains_any(fa, [title, "top 3%"]),
+    j.check("answer_names_notebook", title is not None and affirms_any(fa, [title, "top 3%"]),
             f"expected={title!r} final={fa!r}")
-    j.check("answer_names_author", author is not None and contains_any(fa, [author]),
+    j.check("answer_names_author", author is not None and affirms(fa, author),
             f"expected_author={author!r} final={fa!r}")
     ok, ev = llm_text_match(fa, f"The most-voted Python gold notebook is '{title}' by {author}.",
         "Among Python notebooks with a gold medal, which has the most votes, and who is its author?")

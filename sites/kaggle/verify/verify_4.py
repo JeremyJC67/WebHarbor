@@ -8,7 +8,7 @@ Checks: nav leaderboard/competition | answer names team + score | DB anchor | LL
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, contains_score, db_query, final_answer,
+from verify_lib import (Judge, affirms, affirms_score, db_query, final_answer,
                         llm_text_match, load_run, navigated_to, origin_ok, parse_args,
                         resolve_db, shot_at, shot_distinct, shot_final, tables_unchanged)
 
@@ -37,8 +37,8 @@ def main():
             navigated_to(t, f"/competitions/{SLUG}/leaderboard") or navigated_to(t, f"/competitions/{SLUG}?tab=leaderboard"),
             f"opened the leaderboard ({[s.get('url','') for s in t.get('steps', []) if '/competitions/' in s.get('url','')]})")
     j.check("db_ground_truth", team is not None, f"top=({team!r},{score})")
-    j.check("answer_team", team is not None and contains_any(fa, [team]), f"expected_team={team!r} final={fa!r}")
-    j.check("answer_score", score is not None and contains_score(fa, score), f"expected_score={score} final={fa!r}")
+    j.check("answer_team", team is not None and affirms(fa, team), f"expected_team={team!r} final={fa!r}")
+    j.check("answer_score", score is not None and affirms_score(fa, score), f"expected_score={score} final={fa!r}")
     ok, ev = llm_text_match(fa, f"Rank #1 is team '{team}' with score {score}.",
         "Which team is ranked #1 on the Home Credit Default Risk 2026 leaderboard, and what is their score?")
     j.check("answer_llm", ok, ev, llm=True)

@@ -238,6 +238,88 @@ def contains_any(final, tokens):
     f = norm(final)
     return any(norm(t) in f for t in tokens)
 
+
+# ---------------------------------------------------------------- negation-aware match
+# An answer that names the expected value inside a negation ("the metric is not
+# Classification Accuracy") must not count as an answer. A cue only negates when it
+# sits in the same clause, so the search window stops at the previous clause
+# separator ("not RMSE but Classification Accuracy" still affirms the metric).
+NEGATION_CUES = ("not", "n't", "never", "without", "rather than", "instead of",
+                 "other than", "except", "excluding", "neither", "nor", "false",
+                 "incorrect", "wrong", "invalid", "untrue", "cannot", "can't")
+CLAUSE_SEPARATORS = (";", ".", "!", "?", ",", "\n", " but ", " however", " whereas",
+                     " although", " and ", " yet ", " though", " while ")
+NEGATION_WINDOW = 48
+
+
+def _clause_before(text, index, window=NEGATION_WINDOW):
+    chunk = text[max(0, index - window):index].casefold()
+    cut = 0
+    for marker in CLAUSE_SEPARATORS:
+        position = chunk.rfind(marker)
+        if position >= 0:
+            cut = max(cut, position + len(marker))
+    return chunk[cut:]
+
+
+def _negated(text, index):
+    clause = _clause_before(text, index)
+    for cue in NEGATION_CUES:
+        position = clause.rfind(cue)
+        if position < 0:
+            continue
+        before = clause[position - 1] if position > 0 else " "
+        after_index = position + len(cue)
+        after = clause[after_index] if after_index < len(clause) else " "
+        if not before.isalnum() and not after.isalnum():
+            return True
+    return False
+
+
+def affirms(text, token):
+    """True when `token` occurs in `text` and at least once not inside a negation."""
+    if not text or not token:
+        return False
+    low, needle = text.casefold(), token.casefold()
+    start = 0
+    while True:
+        index = low.find(needle, start)
+        if index < 0:
+            return False
+        if not _negated(text, index):
+            return True
+        start = index + max(1, len(needle))
+
+
+def affirms_any(text, tokens):
+    return any(affirms(text, token) for token in tokens)
+
+
+def affirms_regex(text, pattern):
+    """True when `pattern` matches `text` and the match is not inside a negation."""
+    if not text:
+        return False
+    for match in re.finditer(pattern, text):
+        if not _negated(text, match.start()):
+            return True
+    return False
+
+
+def affirms_number(final, n):
+    """contains_number() with negation awareness."""
+    return affirms_regex(final or "", rf"(?<!\d){int(n)}(?!\d)")
+
+
+def affirms_score(final, value):
+    """contains_score() with negation awareness."""
+    try:
+        rendered = ("%f" % float(value)).rstrip("0").rstrip(".")
+    except (TypeError, ValueError):
+        return False
+    variants = {rendered, rendered.lstrip("0")}
+    return any(affirms_regex(final or "", rf"(?<![\d.]){re.escape(v)}(?!\d)")
+               for v in variants if v)
+
 def contains_number(final, n):
     """True if integer n appears as a standalone number (not a digit inside a larger
     number). Avoids '7' matching '17'/'70'/'2027'."""

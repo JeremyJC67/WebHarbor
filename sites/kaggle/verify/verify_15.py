@@ -9,10 +9,9 @@ Checks: nav dataset + the linked notebook | answer states the best score | DB an
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, contains_score, db_query, final_answer,
-                        llm_text_match, load_run, navigated_to, origin_ok, parse_args,
-                        resolve_db, scalar, shot_at, shot_distinct, shot_final,
-                        tables_unchanged)
+from verify_lib import (Judge, affirms, affirms_score, final_answer, llm_text_match,
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db, scalar,
+                        shot_at, shot_distinct, shot_final, tables_unchanged)
 
 DATASET = "credit-card-fraud-transactions"
 NOTEBOOK = "lgbm-baseline-fraud"
@@ -21,10 +20,10 @@ def _score_ok(final, best):
     """Accept the literal stored score or a rounded form of it (e.g. 0.912)."""
     if best is None:
         return False
-    if contains_any(final, [str(best)]):
+    if affirms(final, str(best)):
         return True
     try:
-        return contains_score(final, float(best))
+        return affirms_score(final, float(best))
     except (TypeError, ValueError):
         return False
 

@@ -9,7 +9,7 @@ Checks: nav sara's profile | answer names the earliest-deadline comp | DB anchor
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
+from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
                         load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
@@ -33,7 +33,7 @@ def main():
     j.check("nav_host_profile", navigated_to(t, f"/user/{HOST}"), "opened sara_timeseries's profile")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][1] < rows[1][1]),
             f"earliest={title!r} rows={[(r[0], r[1]) for r in (rows or [])]}")
-    j.check("answer_names_comp", title is not None and contains_any(fa, [title, "global wheat yield"]),
+    j.check("answer_names_comp", title is not None and affirms_any(fa, [title, "global wheat yield"]),
             f"expected={title!r} final={fa!r}")
     ok, ev = llm_text_match(fa, f"The earliest-deadline competition hosted by {HOST} is '{title}'.",
         "Which of sara_timeseries's hosted competitions has the earliest deadline?")

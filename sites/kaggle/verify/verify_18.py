@@ -8,7 +8,7 @@ Checks: nav dataset detail | answer names the license | DB anchor | LLM.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, final_answer, llm_text_match, load_run,
+from verify_lib import (Judge, affirms_any, final_answer, llm_text_match, load_run,
                         navigated_to, origin_ok, parse_args, resolve_db, scalar, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
@@ -29,7 +29,7 @@ def main():
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_dataset", navigated_to(t, f"/datasets/{SLUG}"), "opened the MNIST dataset page")
     j.check("db_ground_truth", lic is not None, f"license={lic!r}")
-    j.check("answer_license", contains_any(fa, ["cc0", "public domain"]), f"final={fa!r}")
+    j.check("answer_license", affirms_any(fa, ["cc0", "public domain"]), f"final={fa!r}")
     ok, ev = llm_text_match(fa, f"The dataset is released under {lic}.",
         "Under what license is the MNIST Handwritten Digits dataset released?")
     j.check("answer_llm", ok, ev, llm=True)

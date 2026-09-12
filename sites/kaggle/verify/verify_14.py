@@ -8,7 +8,7 @@ Checks: nav the course page | answer states the lesson count | DB anchor | LLM.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, contains_number, final_answer, llm_text_match,
+from verify_lib import (Judge, affirms, affirms_number, final_answer, llm_text_match,
                         load_run, navigated_to, origin_ok, parse_args, resolve_db, scalar,
                         shot_at, shot_distinct, shot_final, tables_unchanged)
 
@@ -31,8 +31,8 @@ def main():
     j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_course", navigated_to(t, f"/learn/{SLUG}"), "opened the Intro to ML course page")
     j.check("db_ground_truth", lessons is not None, f"lessons={lessons}")
-    count_ok = lessons is not None and (contains_number(fa, lessons)
-                                        or (lessons in _NUM_WORDS and contains_any(fa, [_NUM_WORDS[lessons]])))
+    count_ok = lessons is not None and (affirms_number(fa, lessons)
+                                        or (lessons in _NUM_WORDS and affirms(fa, _NUM_WORDS[lessons])))
     j.check("answer_lesson_count", count_ok, f"expected={lessons} final={fa!r}")
     ok, ev = llm_text_match(fa, f"The course has {lessons} lessons.",
         "How many lessons does the 'Intro to Machine Learning' course contain?")

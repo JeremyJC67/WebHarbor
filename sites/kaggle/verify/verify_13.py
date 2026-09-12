@@ -8,7 +8,7 @@ Checks: nav rankings | answer names the #1 user | DB anchor (replicates the rank
 """
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
+from verify_lib import (Judge, affirms_any, db_query, final_answer, llm_text_match,
                         load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
@@ -41,7 +41,7 @@ def main():
     j.check("nav_rankings", navigated_to(t, "category=notebooks"),
             f"opened the Notebooks rankings tab ({[u for u in [s.get('url','') for s in t.get('steps', [])] if '/rankings' in u]})")
     j.check("db_ground_truth", top_u is not None, f"top=({top_u!r},{top_d!r})")
-    j.check("answer_top_user", top_u is not None and contains_any(fa, [top_u, top_d or top_u]),
+    j.check("answer_top_user", top_u is not None and affirms_any(fa, [top_u, top_d or top_u]),
             f"expected={top_u!r}/{top_d!r} final={fa!r}")
     ok, ev = llm_text_match(fa, f"The rank #1 notebooks user is {top_d} ({top_u}).",
         "Who is the top-ranked user (rank #1) on the Notebooks rankings page?")
