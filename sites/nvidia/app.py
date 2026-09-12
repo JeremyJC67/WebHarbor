@@ -9,6 +9,7 @@ local wishlist, and product reviews. No orders or payments are accepted.
 """
 import os
 import re
+import secrets
 from datetime import datetime, date
 from urllib.parse import urlsplit
 
@@ -32,7 +33,11 @@ from seed_data import (PRODUCTS, ARTICLES, DRIVERS, BENCHMARK_USERS,
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'nvidia-mirror-dev-secret-key'
+# Session signing key: environment override or a random per-process value, so a
+# committed literal cannot be used to forge a session cookie (repair002, M4).
+# Restarting the process invalidates existing sessions, which is expected for this
+# benchmark mirror.
+app.config['SECRET_KEY'] = os.environ.get('NVIDIA_SECRET_KEY') or secrets.token_hex(32)
 app.config['SQLALCHEMY_DATABASE_URI'] = \
     f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'nvidia.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

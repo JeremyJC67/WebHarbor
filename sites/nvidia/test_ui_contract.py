@@ -353,6 +353,37 @@ class UIContract(unittest.TestCase):
         self.assertEqual(self.snapshot(), before)
         self.post('/wishlist/remove/5')
 
+    def test_06c_session_cookie_cannot_be_forged_with_a_literal_key(self):
+        """The signing key is not a committed literal (repair002, M4)."""
+        from itsdangerous import URLSafeTimedSerializer
+
+        def cookie_for(key):
+            signer = URLSafeTimedSerializer(key, salt='cookie-session',
+                                            signer_kwargs={'key_derivation': 'hmac', 'digest_method': 'sha1'})
+            return signer.dumps({'_user_id': '1', '_fresh': True})
+
+        from flask.sessions import SecureCookieSessionInterface
+        serializer = SecureCookieSessionInterface().get_signing_serializer(module.app)
+
+        def forge(key):
+            client = module.app.test_client()
+            value = serializer.dumps({'_user_id': '1', '_fresh': True}) if key == module.app.secret_key else \
+                URLSafeTimedSerializer(key, salt='cookie-session',
+                                       signer_kwargs={'key_derivation': 'hmac', 'digest_method': 'sha1'}
+                                       ).dumps({'_user_id': '1', '_fresh': True})
+            client.set_cookie('session', value)
+            return client.get('/account')
+
+        # Control: the application's own key authenticates through this exact code path,
+        # so a rejection below is about the key rather than the cookie transport.
+        control = forge(module.app.secret_key)
+        self.assertEqual(control.status_code, 200)
+        self.assertIn('Alice Johnson', control.get_data(as_text=True))
+        for literal in ('nvidia-mirror-dev-secret-key', 'nvidia-mirror-secret', 'secret'):
+            response = forge(literal)
+            self.assertEqual(response.status_code, 302, literal)
+            self.assertNotIn('Alice Johnson', response.get_data(as_text=True), literal)
+
     def test_07_form_regressions_and_local_returns(self):
         wrong = self.post('/login', {'email': 'alice.j@test.com', 'password': 'wrong'})
         self.assertIn('Invalid email or password', wrong.get_data(as_text=True))
