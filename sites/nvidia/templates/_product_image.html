@@ -13,7 +13,9 @@
 } %}
 {% macro product_image(p, variant='card') -%}
   {% if p.image %}
-  {% set label = illustrations.get(p.slug) %}
+  {# Every product image carries a caption; the ten entries above keep their specific
+     illustration wording and the rest get a generic one (repair002, L6). #}
+  {% set label = illustrations.get(p.slug, 'Local mirror illustration for ' ~ p.name) %}
   <figure class="product-figure product-figure-{{ variant }}" data-product-image="{{ p.slug }}">
     <div class="{{ 'media' if variant == 'detail' else 'compare-image' if variant == 'compare' else 'thumb' }}">
       <img src="{{ url_for('static', filename='images/' + p.image) }}"

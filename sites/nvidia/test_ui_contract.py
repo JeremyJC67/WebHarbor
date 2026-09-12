@@ -179,9 +179,14 @@ class UIContract(unittest.TestCase):
             self.assert_image_label(self.get(route), 'geforce-rtx-5070', labels['geforce-rtx-5070'])
         self.assert_image_label(self.get('/geforce/graphics-cards/40-series/'),
                                 'geforce-rtx-4080-super', labels['geforce-rtx-4080-super'])
-        for slug in ('rtx-6000-ada', 'rtx-4000-ada', 'rtx-5000-ada',
-                     'jetson-orin-nx', 'jetson-orin-nano-super', 'geforce-rtx-4090'):
-            self.assert_image_label(catalog, slug, None)
+        # Every product image carries a caption (repair002, L6); slugs outside the
+        # illustrations map get the generic wording.
+        generic = {'rtx-6000-ada': 'RTX 6000 Ada Generation', 'rtx-4000-ada': 'RTX 4000 Ada Generation',
+                   'rtx-5000-ada': 'RTX 5000 Ada Generation', 'jetson-orin-nx': 'Jetson Orin NX 16GB',
+                   'jetson-orin-nano-super': 'Jetson Orin Nano Super Developer Kit',
+                   'geforce-rtx-4090': 'GeForce RTX 4090'}
+        for slug, name in generic.items():
+            self.assert_image_label(catalog, slug, f'Local mirror illustration for {name}')
         self.login()
         self.assert_image_label(self.get('/account/wishlist'), 'geforce-rtx-4080-super',
                                 labels['geforce-rtx-4080-super'])
@@ -192,14 +197,11 @@ class UIContract(unittest.TestCase):
         figure = Markup(html[start:html.index('</figure>', start)])
         image = figure.attrs('img')[0]
         self.assertEqual(image['src'], f'/static/images/products/{slug}.png')
-        if label:
-            self.assertIn(label, image['alt'])
-            self.assertIn('not a photograph of this model', image['alt'])
-            self.assertIn(label + '; not a photograph of this model.', figure.text)
-            self.assertEqual(len(figure.attrs('figcaption')), 1)
-        else:
-            self.assertNotIn('not a photograph', image['alt'])
-            self.assertEqual(figure.attrs('figcaption'), [])
+        self.assertTrue(label, slug)
+        self.assertIn(label, image['alt'])
+        self.assertIn('not a photograph of this model', image['alt'])
+        self.assertIn(label + '; not a photograph of this model.', figure.text)
+        self.assertEqual(len(figure.attrs('figcaption')), 1)
 
     def test_02b_integer_bounds_and_error_pages(self):
         """Out-of-range ids are 404, not 500; 500 renders the custom page (repair002, M3)."""
