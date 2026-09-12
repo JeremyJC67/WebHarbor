@@ -80,9 +80,12 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message_category = "info"
 
+# Tier accent colours double as text colours (12.5px bold), so each is a dark shade
+# that reaches >=4.5:1 on white: Novice 6.45, Contributor 5.49, Expert 9.39,
+# Master 5.81, Grandmaster 7.41.
 TIER_COLORS = {
-    "Novice": "#5ac995", "Contributor": "#00aaff", "Expert": "#95319b",
-    "Master": "#f96517", "Grandmaster": "#dca917",
+    "Novice": "#146c43", "Contributor": "#0b6fa4", "Expert": "#6a1b9a",
+    "Master": "#a04f00", "Grandmaster": "#7a4b00",
 }
 MEDAL_EMOJI = {"gold": "🥇", "silver": "🥈", "bronze": "🥉"}
 
