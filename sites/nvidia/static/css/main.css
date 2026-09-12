@@ -31,6 +31,11 @@ img{max-width:100%;height:auto;display:block}
 .logo .eye{color:var(--nv-green);font-size:24px;line-height:1}
 .logo b{color:#fff}
 .nav{display:grid;gap:12px;padding:18px;background:#111;border:1px solid #555;border-radius:6px;position:absolute;left:24px;top:100%;width:min(360px,calc(100% - 48px));z-index:10}
+/* Desktop: a plain, always-visible navigation bar instead of the collapsed disclosure,
+   which cannot be revealed by CSS once the <details> is closed (repair002, M10). */
+.nav-desktop{display:none;gap:16px;align-items:center;flex-wrap:wrap}
+.nav-desktop a{color:#eaeaea;font-weight:500}
+.nav-desktop a:hover{color:var(--nv-green)}
 .site-menu summary{cursor:pointer;padding:8px 12px;border:1px solid #555;border-radius:4px;font-weight:600}
 .site-menu[open] summary{color:var(--nv-green)}
 .nav a{color:#eaeaea;font-weight:500}
@@ -210,6 +215,10 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,s
 .footer .news-signup input{flex:1 1 160px;min-width:0;border-radius:4px}
 .footer .news-signup button{border-radius:4px}
 
+@media(min-width:881px){
+  .site-menu{display:none}
+  .nav-desktop{display:flex}
+}
 @media(max-width:880px){
   .hero .container{flex-direction:column;padding:40px 24px}
   .hero-copy h1{font-size:36px}

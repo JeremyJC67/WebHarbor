@@ -14,18 +14,13 @@
     <a class="logo" href="{{ url_for('index') }}"><span class="eye">&#11041;</span><b>NVIDIA</b></a>
     <details class="site-menu">
       <summary>Menu</summary>
-    <nav class="nav" aria-label="Products and resources">
-      <a href="{{ url_for('geforce_series', series_slug='50-series') }}">GeForce RTX 50 Series</a>
-      <a href="{{ url_for('geforce_series', series_slug='40-series') }}">GeForce RTX 40 Series</a>
-      <a href="{{ url_for('products', category='geforce-gaming') }}">Gaming Catalog</a>
-      <a href="{{ url_for('products', category='studio-professional') }}">Studio</a>
-      <a href="{{ url_for('products', category='data-center') }}">Data Center</a>
-      <a href="{{ url_for('products', category='embedded') }}">Robotics</a>
-      <a href="{{ url_for('drivers') }}">Drivers</a>
-      <a href="{{ url_for('news') }}">News</a>
-      <a href="{{ url_for('buying_options') }}">Buying Options</a>
+    <nav class="nav" aria-label="Products and resources (menu)">
+      {% include "_nav_links.html" %}
     </nav>
     </details>
+    <nav class="nav-desktop" aria-label="Products and resources">
+      {% include "_nav_links.html" %}
+    </nav>
     <div class="actions">
       <form class="searchbox" action="{{ url_for('search') }}" method="get">
         <input type="search" name="q" placeholder="Search" value="{{ request.args.get('q','') }}" aria-label="Search">
