@@ -255,6 +255,7 @@ def t11(r: Recorder):
     r.select("#folder_id", "Work")
     r.fill("#size_kb", "640")
     r.fill("#description", "Notes and action items from the accessibility session.")
+    r.select("#visibility", "Private")
     r.click("button:has-text('Upload file')", "submit the upload")
     r.done("Uploaded accessibility-session-notes.pdf (640 KB, private) into the Work folder with the requested description.")
 
@@ -320,6 +321,7 @@ def t17(r: Recorder):
     r.select("#folder_id", "Workshop Handouts")
     r.fill("#size_kb", "384")
     r.fill("#description", "Draft outline for the spring neighborhood workshop.")
+    r.select("#visibility", "Private")
     r.click("button:has-text('Upload file')", "submit the upload")
     row = r.row("spring-workshop-outline.pdf")
     r.act("input", {"index": 0, "text": "final-spring-workshop-outline.pdf"}, lambda: row.locator("form[action$='/rename'] input[name='filename']").fill("final-spring-workshop-outline.pdf"))
