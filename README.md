@@ -169,6 +169,15 @@ archive, the repo-side steps of `fetch_assets.sh` run clean end to end
 what `_wh_review_tools/pr107-fixes/fixes/B2/after.txt` records. The replacement
 itself is an HF write and therefore a blocker for this repository.
 
+### Scope note: external references
+
+Several pages render links to `nvidia.com`, `marketplace.nvidia.com` and
+`store.nvidia.com` as dated source references. They are labelled as leaving the
+local mirror, no route fetches them (0 external requests over 114 routes at 1440,
+768, 390 and 320 px), and the site verifiers treat any navigation outside the
+mirror's loopback origin as a failure, so a run that follows one fails rather than
+silently grading against an unreachable page.
+
 ### Validation record for this review candidate
 
 The commands below are the ones actually run for the phase-1/phase-2 review; raw
