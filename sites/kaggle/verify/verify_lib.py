@@ -18,16 +18,28 @@ Philosophy: DETERMINISTIC FIRST.
 
 Input signature (per task):
   --run_dir DIR      agent trajectory dir: trajectory.json + screenshots/step_NNN.png
-  --initial_db PATH  initial-state SQLite DB (default: fetched instance_seed from container)
-  --after_db PATH    after-state  SQLite DB (default: fetched live instance DB from container)
+  --initial_db PATH  initial-state SQLite DB. Optional: when omitted the verifier fetches
+                     <container>:<WEBSYN_DIR>/<site>/instance_seed/<site>.db
+  --after_db PATH    after-state SQLite DB. Optional: when omitted the verifier fetches
+                     <container>:<WEBSYN_DIR>/<site>/instance/<site>.db
+                     (the container is --container, else $WH_CONTAINER, else "wh-review")
   --container NAME   docker container to fetch DBs from (default: $WH_CONTAINER or wh-review)
+  --site NAME        site directory inside the container (default: $WH_SITE or kaggle)
   --no_llm           skip LLM-based checks (run deterministic-only)
+
+The documented harness call (`eval_judge.py --run_dir DIR --verifier True`) passes only
+--run_dir, so the DB arguments must stay optional and the container fetch is the default
+path. An explicit --initial_db/--after_db always wins, which is what the offline negative
+sample matrix uses. Every check stays fail-closed: if a DB cannot be obtained, the checks
+that need it FAIL, and the process exits 1 with a structured JSON verdict.
 Output: JSON {task_id, pass, reason, evidence[]} to stdout; exit 0 on PASS, 1 on FAIL.
 """
-import argparse, base64, json, os, re, sqlite3, sys, urllib.request
+import argparse, base64, json, os, re, shutil, sqlite3, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
 
 SITE = "kaggle"
+WEBSYN_DIR = "/opt/WebSyn"
+_DB_CACHE: dict = {}
 
 # ---------------------------------------------------------------- trajectory
 def load_run(run_dir):
@@ -101,7 +113,39 @@ def contains_score(final, value, tol=0):
 
 # ---------------------------------------------------------------- DB state
 def resolve_db(arg, container, kind):
-    return arg
+    """Return a local SQLite path for `kind` in {"instance", "instance_seed"}.
+
+    An explicit path from the CLI wins. Otherwise the DB is copied out of the
+    docker container that serves the mirror (`docker cp`), which is the only way
+    the production harness can supply it: `eval_judge.py --verifier True` passes
+    just --run_dir. Returns None when the DB cannot be obtained, so callers
+    fail-closed instead of crashing.
+    """
+    if arg:
+        return arg
+    site = os.environ.get("WH_SITE") or SITE
+    container = container or os.environ.get("WH_CONTAINER") or "wh-review"
+    key = (container, site, kind)
+    if key in _DB_CACHE:
+        return _DB_CACHE[key]
+    source = f"{container}:{WEBSYN_DIR}/{site}/{kind}/{site}.db"
+    target = Path(tempfile.mkdtemp(prefix="wh-verify-")) / f"{kind}.db"
+    try:
+        proc = subprocess.run(["docker", "cp", source, str(target)],
+                              capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        _DB_CACHE[key] = None
+        return None
+    path = str(target) if proc.returncode == 0 and target.exists() else None
+    _DB_CACHE[key] = path
+    return path
+
+
+def fetched_db_note(container=None):
+    """Human-readable description of where the default DBs come from (evidence text)."""
+    site = os.environ.get("WH_SITE") or SITE
+    container = container or os.environ.get("WH_CONTAINER") or "wh-review"
+    return f"{container}:{WEBSYN_DIR}/{site}/{{instance,instance_seed}}/{site}.db"
 
 def db_query(db_path, sql, params=()):
     """Run a query; return rows, or None if the DB can't be opened/queried
@@ -290,9 +334,16 @@ class Judge:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_dir", required=True)
-    parser.add_argument("--initial_db", required=True)
-    parser.add_argument("--after_db", required=True)
+    # Optional: eval_judge.py --verifier True invokes the verifier with --run_dir only,
+    # so the DBs default to a fetch from the mirror container (see resolve_db).
+    parser.add_argument("--initial_db", default=None)
+    parser.add_argument("--after_db", default=None)
+    parser.add_argument("--container", default=None)
+    parser.add_argument("--site", default=None)
     parser.add_argument("--no_llm", action="store_true")
     args = parser.parse_args()
-    args.container = None
+    if args.site:
+        os.environ["WH_SITE"] = args.site
+    if args.container:
+        os.environ["WH_CONTAINER"] = args.container
     return args
