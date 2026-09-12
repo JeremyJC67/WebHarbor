@@ -3,7 +3,7 @@
 
 All consumed by the gated seed_*() functions in app.py. Prices are fixed mirror
 catalog values, not verified current official quotes. Reference repairs use the
-2026-09-10 cached official pages; see UI_REVIEW_NOTES.md for deltas and scope.
+2026-09-10 cached official pages; see sites/nvidia/verify/README.md for deltas and scope.
 Image paths are relative to static/images/.
 """
 from datetime import date

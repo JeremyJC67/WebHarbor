@@ -48,8 +48,12 @@ def digest(path):
 
 
 def source_files(source):
-    files = [source / name for name in ('app.py', 'seed_data.py', 'test_ui_contract.py',
-                                       'UI_REVIEW_NOTES.md')]
+    files = [source / name for name in ('app.py', 'seed_data.py', 'test_ui_contract.py')]
+    # The reviewer's private working note is not part of the shipped tree; hash it only
+    # when it is present so this suite runs on a clean checkout (repair002, H1).
+    notes = source / 'UI_REVIEW_NOTES.md'
+    if notes.is_file():
+        files.append(notes)
     for folder in ('templates', 'static/css', 'static/js', 'static/icons'):
         files.extend(p for p in (source / folder).rglob('*') if p.is_file())
     return sorted(files)
