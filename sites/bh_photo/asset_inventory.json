@@ -127,6 +127,14 @@
   "product": "Apple 14\" MacBook Pro (M5, Space Black)",
   "sha256": "f76fb22c4493327b9ef36a644958ba0abe46bb7c65e376a4ba22831c91de9b38"
  },
+ "apmcrgbwwfl": {
+  "archive_image_url": "https://web.archive.org/web/20250131004635im_/https://www.bhphotovideo.com/images/fb/aputure_mc_rgbww_led_light_1512600.jpg",
+  "bytes": 256584,
+  "file": "images/products/apmcrgbwwfl.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/aputure_mc_rgbww_led_light_1512600.jpg",
+  "product": "Aputure MC RGBWW LED Light",
+  "sha256": "d8d85729fc7ea0cab4fffed4fb268e005de11b32d297082f9f29970ac8fbec6a"
+ },
  "apmde04lla": {
   "archive_image_url": "https://web.archive.org/web/20260508162437im_/https://www.bhphotovideo.com/images/fb/apple_mde04ll_a_14_macbook_pro_m5_1925475.jpg",
   "bytes": 118887,
@@ -239,6 +247,14 @@
   "product": "Commlite Electronic Autofocus Lens Mount Adapter for Canon EF or EF-S-Mount Lens to Canon RF-Mount Camera",
   "sha256": "bcc888312512d5851f12517cf67fbf80c2d8294c3cc215cf02000519c915a532"
  },
+ "cocmenfe1pro": {
+  "archive_image_url": "https://web.archive.org/web/20250621223447im_/https://www.bhphotovideo.com/images/fb/commlite_cm_enf_e1_pro_electronic_af_lens_adapter_1504276.jpg",
+  "bytes": 89455,
+  "file": "images/products/cocmenfe1pro.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/commlite_cm_enf_e1_pro_electronic_af_lens_adapter_1504276.jpg",
+  "product": "Commlite Electronic Autofocus Lens Mount Adapter for Nikon F-Mount Lens to Sony E-Mount Camera",
+  "sha256": "a73aacfa62c27c3e642c12900319e1135ea79d89c1abf5f15dba3f3da78b0c73"
+ },
  "dedmpwv91t": {
   "archive_image_url": "https://web.archive.org/web/20260214132544im_/https://www.bhphotovideo.com/images/fb/delkin_devices_dmpwv91t_p_1tb_power_uhs_ii_microsdxc_1926844.jpg",
   "bytes": 88929,
@@ -303,6 +319,14 @@
   "product": "DZOFilm VESPID 125mm T2.1 Lens (PL & EF Mounts)",
   "sha256": "9a10b1a62a3cba03fef4a392326b18677309d9db85e3521c096d58f23937218e"
  },
+ "dz25vpl": {
+  "archive_image_url": "https://web.archive.org/web/20251013081641im_/https://www.bhphotovideo.com/images/fb/dzofilm_vespid_25mm_t2_1_lens_1601842.jpg",
+  "bytes": 465839,
+  "file": "images/products/dz25vpl.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dzofilm_vespid_25mm_t2_1_lens_1601842.jpg",
+  "product": "DZOFilm VESPID 25mm T2.1 Lens (PL & EF Mounts)",
+  "sha256": "b2d5a0b7920270dd7b04107e2b3aa2e07d655fca3f0d40f4095d467e69ba8b55"
+ },
  "epds770ii": {
   "archive_image_url": "https://web.archive.org/web/20250825134145im_/https://www.bhphotovideo.com/images/fb/epson_b11b262201_ds_770_ii_document_scanner_1601979.jpg",
   "bytes": 377286,
@@ -310,6 +334,14 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/epson_b11b262201_ds_770_ii_document_scanner_1601979.jpg",
   "product": "Epson DS-770 II Color Duplex Document Scanner",
   "sha256": "9f820ab0b818d6a22cebb599e9d44c911228ecd658dde809efb87f6d7e7f522b"
+ },
+ "epes500wii": {
+  "archive_image_url": "https://web.archive.org/web/20250427042835im_/https://www.bhphotovideo.com/images/fb/epson_b11b263201_es_500w_ii_document_scanner_1604010.jpg",
+  "bytes": 398135,
+  "file": "images/products/epes500wii.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/epson_b11b263201_es_500w_ii_document_scanner_1604010.jpg",
+  "product": "Epson ES-500W II Wireless Duplex Document Scanner",
+  "sha256": "07222dde74c0474317fc1e3ef673ac599b599f6e0e4311b0e67f680d1d1f7489"
  },
  "fibpk102cf": {
   "archive_image_url": "https://web.archive.org/web/20260212084502im_/https://www.bhphotovideo.com/images/fb/film_devices_bpk_102_cf_microphone_travel_boom_pole_1606651.jpg",
@@ -455,6 +487,14 @@
   "product": "ISOVOX Horizontal Mic Mount for Vocal Isolation Booth",
   "sha256": "6662493e97e45b4508393be890eaa4a32974f9d121cadf803b39b95df4653d04"
  },
+ "lasspc35pl": {
+  "archive_image_url": "https://web.archive.org/web/20250912100145im_/https://static.bhphoto.com/images/en/na500x500.jpg",
+  "bytes": 3763,
+  "file": "images/products/lasspc35pl.jpg",
+  "original_image_url": "https://static.bhphoto.com/images/en/na500x500.jpg",
+  "product": "Laird Digital Cinema Stage Systems Heavy Duty 15-Amp 14/3 AC Power Extension Cord with Quad Box & Light (35')",
+  "sha256": "4e3b19a088c9b214a0796704f74c4596c0c0180d20a2283e3e2f1ee3016237a1"
+ },
  "le21nys2wr00": {
   "archive_image_url": "https://web.archive.org/web/20260621174926im_/https://www.bhphotovideo.com/images/fb/lenovo_21nys2wr00_14_thinkpad_x1_carbon_1932808.jpg",
   "bytes": 136053,
@@ -519,6 +559,14 @@
   "product": "Lexar 2TB SL500 USB 3.2 Gen 2x2 Portable SSD",
   "sha256": "b79f192fd997290a3b4ab13b9950fbec661059e4a49aba70412977fa2b1ddeeb"
  },
+ "memg1896": {
+  "archive_image_url": "https://web.archive.org/web/20250422110112im_/https://www.bhphotovideo.com/images/fb/megagear_mg1896_ultra_light_neoprene_camera_1603793.jpg",
+  "bytes": 65306,
+  "file": "images/products/memg1896.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/megagear_mg1896_ultra_light_neoprene_camera_1603793.jpg",
+  "product": "MegaGear Ultralight Neoprene Camera Case for FUJIFILM X100VI (Black)",
+  "sha256": "b4491261c17bfa578771a33095f9104420ff8c72c99d2bbd968c9ed2ed0e7926"
+ },
  "memkrfaf1": {
   "archive_image_url": "https://web.archive.org/web/20260208090734im_/https://www.bhphotovideo.com/images/fb/meike_mk_rf_af1_for_canon_mirrorless_1502602.jpg",
   "bytes": 521860,
@@ -526,6 +574,14 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/meike_mk_rf_af1_for_canon_mirrorless_1502602.jpg",
   "product": "Meike MK-RF-AF1 13mm and 18mm Extension Tubes for Canon RF",
   "sha256": "c7f4c7fc06512ad3f3e4e2b798aac01da9857ef7d156126a04ad43b604dce5ff"
+ },
+ "mes35t21pl": {
+  "archive_image_url": "https://web.archive.org/web/20250614102555im_/https://www.bhphotovideo.com/images/fb/meike_mk_s35t21_pl_super35_cinema_prime_35mm_1600181.jpg",
+  "bytes": 186521,
+  "file": "images/products/mes35t21pl.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/meike_mk_s35t21_pl_super35_cinema_prime_35mm_1600181.jpg",
+  "product": "Meike 35mm T2.1 Cine Lens (PL Mount)",
+  "sha256": "3b02453ea16be2de43c115d1f653302674ce887760921b5a00570b16abe20f57"
  },
  "modilmi12p": {
   "archive_image_url": "https://web.archive.org/web/20260711121800im_/https://www.bhphotovideo.com/images/fb/moment_310_137_drop_in_lens_mount_for_1601649.jpg",
@@ -807,6 +863,14 @@
   "product": "Sony 1920GB CFexpress 4.0 Type A TOUGH Memory Card",
   "sha256": "8b909995448ef60aecee440e7a77b268170486dc8cecdb35fca523aaab2b65b9"
  },
+ "sofx6k": {
+  "archive_image_url": "https://web.archive.org/web/20250622185618im_/https://www.bhphotovideo.com/images/fb/sony_ilme_fx6vk_fx6_digital_cinema_camera_1600161.jpg",
+  "bytes": 310796,
+  "file": "images/products/sofx6k.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_ilme_fx6vk_fx6_digital_cinema_camera_1600161.jpg",
+  "product": "Sony FX6 Digital Cinema Camera Kit with 24-105mm Lens",
+  "sha256": "0cbe357d01ddec7e7312da24bd7b6d6591cf23e0bab3373f2fa83fb597a7b553"
+ },
  "sozve10kb": {
   "archive_image_url": "https://web.archive.org/web/20251121074739im_/https://www.bhphotovideo.com/images/fb/sony_zve10kb_zv_e10_mirrorless_camera_with_1912025.jpg",
   "bytes": 325741,
@@ -966,6 +1030,22 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/vocopro_usb_conference_8_8_user_wireless_microphone_usb_interface_1702058.jpg",
   "product": "VocoPro USB-CONFERENCE-8 8-Person Wireless Microphone/USB Interface Package",
   "sha256": "c83fd29117d434a9737c014f572ba9baba216077df4abdc7490be7bd8a339b81"
+ },
+ "wefj400s": {
+  "archive_image_url": "https://web.archive.org/web/20250118181909im_/https://www.bhphotovideo.com/images/fb/westcott_4700_fj400_400ws_strobe_with_1504932.jpg",
+  "bytes": 492584,
+  "file": "images/products/wefj400s.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/westcott_4700_fj400_400ws_strobe_with_1504932.jpg",
+  "product": "Westcott FJ400 400Ws Strobe with AC/DC Battery (US/No. America Plug)",
+  "sha256": "43dc910dbdc35d2c187be37b53207e582ab1909774674022ff964497363a978e"
+ },
+ "wesbc1lckt": {
+  "archive_image_url": "https://web.archive.org/web/20250414064446im_/https://www.bhphotovideo.com/images/fb/westcott_6350_solix_bi_color_1_light_compact_1508056.jpg",
+  "bytes": 94684,
+  "file": "images/products/wesbc1lckt.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/westcott_6350_solix_bi_color_1_light_compact_1508056.jpg",
+  "product": "Westcott Solix Bi-Color 1-Light Compact Kit",
+  "sha256": "8b41339a9e286aacf70b6b09d0c3035389c778f8c92d7628b78b3c29c7c362a0"
  },
  "wiw5695": {
   "archive_image_url": "https://web.archive.org/web/20251017010612im_/https://static.bhphoto.com/images/en/na500x500.jpg",

@@ -183,6 +183,65 @@ def benchmark_condition(product: dict, index: int) -> tuple[str, float | None]:
     return "New", None
 
 
+SUBCATEGORY_TITLES = {
+    "mirrorless-cameras": "Mirrorless", "dslr-cameras": "DSLR", "camera-lenses": "Lens",
+    "tripods-supports": "Support", "memory-cards-storage": "Storage",
+    "cinema-cameras": "Cinema", "monitors-recorders": "Monitoring",
+    "microphones": "Audio", "headphones": "Listening", "laptops": "Computing",
+    "monitors": "Display", "printers-scanners": "Print", "lighting-kits": "Lighting",
+    "drones": "Aerial",
+}
+
+
+def build_kits(members: list[tuple], wanted: int) -> list[tuple[str, list]]:
+    """Assemble kits from fixed themes rather than arbitrary groupings.
+
+    A shop sells a body with storage and support, or a microphone with
+    monitoring headphones. Each theme names the shelves it draws from, so a kit
+    is coherent instead of a laptop bundled with a softbox.
+    """
+    themes = [
+        ("Mirrorless Creator Kit", ["mirrorless-cameras", "memory-cards-storage", "tripods-supports"]),
+        ("DSLR Starter Kit", ["dslr-cameras", "camera-lenses", "memory-cards-storage"]),
+        ("Cinema Rig Kit", ["cinema-cameras", "monitors-recorders", "memory-cards-storage"]),
+        ("Podcast Kit", ["microphones", "headphones"]),
+        ("Studio Desk Kit", ["laptops", "monitors"]),
+        ("Office Kit", ["laptops", "printers-scanners"]),
+        ("Aerial Kit", ["drones", "memory-cards-storage"]),
+        ("Lighting Kit", ["lighting-kits", "tripods-supports"]),
+        ("Prime Lens Kit", ["camera-lenses", "tripods-supports"]),
+        ("Field Audio Kit", ["microphones", "memory-cards-storage"]),
+    ]
+    by_shelf: dict[str, list] = {}
+    for product, entry in sorted(members, key=lambda item: -item[0].price):
+        by_shelf.setdefault(entry["subcategory_slug"], []).append(product)
+
+    used: set[int] = set()
+    kits: list[tuple[str, list]] = []
+    for title, shelves in themes:
+        if len(kits) >= wanted:
+            break
+        for variant in range(2):
+            kit, prefixes = [], set()
+            for shelf in shelves:
+                for product in by_shelf.get(shelf, []):
+                    prefix = " ".join(product.name.split()[:4]).lower()
+                    if product.id in used or prefix in prefixes:
+                        continue
+                    kit.append(product)
+                    prefixes.add(prefix)
+                    used.add(product.id)
+                    break
+            if len(kit) == len(shelves):
+                suffix = "" if variant == 0 else f" {variant + 1}"
+                kits.append((f"{kit[0].name.split()[0]} {title}{suffix}", kit))
+            else:
+                for product in kit:
+                    used.discard(product.id)
+                break
+    return kits
+
+
 def seed_database(db, models, base_dir: str):
     Product = models["Product"]
     if Product.query.count() > 0:
@@ -377,28 +436,22 @@ def seed_database(db, models, base_dir: str):
 
     # Bundles group real products that share a department. The grouping, the
     # bundle names and the bundle price are benchmark state, not B&H offers.
-    by_department = {}
-    for product, entry in created:
-        by_department.setdefault(entry["department_slug"], []).append(product)
-    for department, members in sorted(by_department.items()):
-        members = sorted(members, key=lambda item: item.id)
-        for number in range(min(3, len(members) // 3)):
-            chosen = members[number * 3:number * 3 + 3]
-            if len(chosen) < 3:
-                break
+    # Kits are built across the whole catalog, the way a shop pairs a body with
+    # storage and support, rather than inside one department where small
+    # departments cannot fill three different shelves.
+    ordered_members = sorted(created, key=lambda item: item[0].id)
+    for number, (title, chosen) in enumerate(build_kits(ordered_members, wanted=14)):
             total = sum(item.price for item in chosen)
             if total <= 0:
                 continue
-            lead_brand = chosen[0].name.split()[0]
-            shelf_label = department.replace("-", " ").title()
-            title = f"{lead_brand} {shelf_label} Kit {number + 1}"
+            shelf_label = SUBCATEGORY_TITLES.get(chosen[0].subcategory_slug, "Gear")
             bundle = Bundle(
                 title=title, slug=slugify(title),
                 description=("A package of compatible items sold together at a kit price. "
                              "Each item in the kit is listed below."),
                 image_path=chosen[0].image_path,
                 bundle_price=round(total * 0.93, 2), list_price=round(total, 2),
-                badge="Kit price", audience=department.replace("-", " ").title(),
+                badge="Kit price", audience=shelf_label,
                 featured=number == 0,
             )
             db.session.add(bundle)
