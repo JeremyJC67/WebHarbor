@@ -1112,25 +1112,26 @@ def allocate_seat_or_room(trip, passenger_index, fare_slug, room_type):
     return f"Coach {row}{col}"
 
 
-def log_search(query, category, result_count):
-    if not query:
-        return
-    entry = SearchLog(
-        user_id=current_user.id if current_user.is_authenticated else None,
-        query=query[:240],
-        category=category[:80],
-        result_count=result_count,
-    )
-    db.session.add(entry)
-    db.session.commit()
+# NOTE: /search, /help?q= and /booking/results used to insert a SearchLog row here.
+# They are read-only pages, so writing on GET broke reset byte-identity and made every
+# read-only task look like it had mutated state. The table stays (the schema is part of
+# the seed contract); nothing writes to it during ordinary browsing.
 
 
-def dashboard_upcoming_trip(user_id):
-    return (
+def upcoming_bookings_for(user_id, limit=None):
+    """Confirmed, not-yet-departed bookings, soonest first.
+
+    Booking.is_upcoming is the single definition of "upcoming" (departure on or after
+    the mirror reference date, status not Cancelled/Completed); filtering has to happen
+    before the limit or completed trips crowd the list out.
+    """
+    bookings = (
         Booking.query.filter_by(user_id=user_id)
         .order_by(Booking.departure_date.asc(), Booking.created_at.desc())
-        .first()
+        .all()
     )
+    upcoming = [booking for booking in bookings if booking.is_upcoming]
+    return upcoming[:limit] if limit else upcoming
 
 
 def departures_for_station(station_code, target_date=None, limit=10):
@@ -1370,7 +1371,6 @@ def help_page():
     articles = HelpArticle.query.order_by(HelpArticle.popular.desc(), HelpArticle.title).all()
     if query:
         articles = help_search(query)
-        log_search(query, "help", len(articles))
     return render_template("help.html", articles=articles, query=query)
 
 
@@ -1391,8 +1391,6 @@ def search():
     alert_results = scored_search(query, ServiceAlert.query.all(), ["title", "message", "next_step", "severity"]) if query else []
     help_results = help_search(query) if query else []
     total = sum(len(bucket) for bucket in [route_results, station_results, destination_results, deal_results, alert_results, help_results])
-    if query:
-        log_search(query, "global", total)
     return render_template(
         "search.html",
         query=query,
@@ -1465,7 +1463,6 @@ def booking_results():
             time_window=params["time_window"],
             sort_key=params["sort"],
         )
-        log_search(f"{origin_station.code} {destination_station.code}", "booking", len(results))
 
     option_map = {}
     for index, option in enumerate(results):
@@ -1921,12 +1918,7 @@ def logout():
 @app.route("/account")
 @login_required
 def account():
-    upcoming = (
-        Booking.query.filter_by(user_id=current_user.id)
-        .order_by(Booking.departure_date.asc(), Booking.created_at.desc())
-        .limit(6)
-        .all()
-    )
+    upcoming = upcoming_bookings_for(current_user.id, limit=6)
     saved_profile = Passenger.query.filter_by(user_id=current_user.id, is_saved_profile=True).first()
     return render_template("account.html", upcoming=upcoming, saved_profile=saved_profile)
 
