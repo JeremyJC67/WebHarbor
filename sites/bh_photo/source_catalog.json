@@ -91,8 +91,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/asm1607kab75.jpg",
+   "image_sha256": "9b820b361a9253f568d05e09553edbffeee100eef4a579ffd13518b6396e797f",
    "specs": [
     {
      "group": "Key Specs",
@@ -416,8 +416,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmc6c4llaac.jpg",
+   "image_sha256": "3d88bbaf8f5f47c9a193c04df1ae58dd16609cd452d88132fec1fe42a27686ed",
    "specs": [
     {
      "group": "Key Specs",
@@ -1026,8 +1026,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/aisuk0aj.jpg",
+   "image_sha256": "d700a741b7be22fee492dc7c3ce0924ae6717abdd605fb716449995d50556310",
    "specs": [
     {
      "group": "Key Specs",
@@ -1346,8 +1346,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmde44lla.jpg",
+   "image_sha256": "f61d5594a2b942d2fe459aac95c64dce5b558030d3ce90909b329cee6660d2cb",
    "specs": [
     {
      "group": "Key Specs",
@@ -2281,8 +2281,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/aisyt2kg.jpg",
+   "image_sha256": "c4caa32ea8eed45042c5c9baa66f1ffed074ba5e6ef815a2eefcaae2ad7bacc4",
    "specs": [
     {
      "group": "Key Specs",
@@ -2586,8 +2586,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmc6l4llaac.jpg",
+   "image_sha256": "c6badbb35067c307f4593394aa565acdb2cd4a77f0e330123c729dbab513af8d",
    "specs": [
     {
      "group": "Key Specs",
@@ -2891,8 +2891,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/fastlaptop.jpg",
+   "image_sha256": "ab22babf11f3c2afed2735d333cdd492c9dc830b190ba001fe05ce242cbbc33d",
    "specs": [
     {
      "group": "Specifications",
@@ -3601,8 +3601,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/le21nys2wq00.jpg",
+   "image_sha256": "4eb85ebd6b560d35b0bc00a40a85e759b199f525722aae97b601777395ecb6e2",
    "specs": [
     {
      "group": "Key Specs",
@@ -5541,8 +5541,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/crhalotlite.jpg",
+   "image_sha256": "1ff8ebcae1e46af1836289bf2fade7be52531f0e764034d3ff757c393d65a2dc",
    "specs": [
     {
      "group": "Key Specs",
@@ -6066,8 +6066,8 @@
    "connectivity": "Wi-Fi",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/epes500wii.jpg",
+   "image_sha256": "07222dde74c0474317fc1e3ef673ac599b599f6e0e4311b0e67f680d1d1f7489",
    "specs": [
     {
      "group": "Key Specs",
@@ -7331,8 +7331,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmcrgbwwfl.jpg",
+   "image_sha256": "d8d85729fc7ea0cab4fffed4fb268e005de11b32d297082f9f29970ac8fbec6a",
    "specs": [
     {
      "group": "Key Specs",
@@ -9126,8 +9126,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/trlsb.jpg",
+   "image_sha256": "48fd42e88e2801466646604e1cf78ce1a9a545c3475a52f24380b63bb74267f5",
    "specs": [
     {
      "group": "Key Specs",
@@ -9266,8 +9266,8 @@
    "connectivity": "2.4 GHz Radio/RF",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/wefj400s.jpg",
+   "image_sha256": "43dc910dbdc35d2c187be37b53207e582ab1909774674022ff964497363a978e",
    "specs": [
     {
      "group": "Key Specs",
@@ -9736,8 +9736,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/cocpl80.jpg",
+   "image_sha256": "8065eae9e08ce73fe223effe500b32ed86b68104423fb91d6199e6b2c6692038",
    "specs": [
     {
      "group": "General",
@@ -10126,8 +10126,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dz25vpl.jpg",
+   "image_sha256": "b2d5a0b7920270dd7b04107e2b3aa2e07d655fca3f0d40f4095d467e69ba8b55",
    "specs": [
     {
      "group": "Key Specs",
@@ -10801,8 +10801,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/tt40ae.jpg",
+   "image_sha256": "287d5fb21d6544d309e862113cc492a10c4374588a4cced54098d1b4dd952919",
    "specs": [
     {
      "group": "Specifications",
@@ -25326,8 +25326,8 @@
    "connectivity": "2.4 / 5 GHz Wi-Fi 5 (802.11ac)",
    "megapixels": 10.2,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sofx6k.jpg",
+   "image_sha256": "0cbe357d01ddec7e7312da24bd7b6d6591cf23e0bab3373f2fa83fb597a7b553",
    "specs": [
     {
      "group": "Key Specs",
