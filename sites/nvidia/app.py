@@ -633,6 +633,9 @@ def local_return_path(value, fallback):
 @app.route('/wishlist/toggle/<int:product_id>', methods=['POST'])
 @login_required
 def wishlist_toggle(product_id):
+    """Compatibility toggle. Prefer /wishlist/add or /wishlist/remove: a toggle
+    reverses on a duplicated submit, while the explicit endpoints are idempotent
+    (repair002, M8)."""
     p = db.session.get(Product, product_id) or abort(404)
     item = WishlistItem.query.filter_by(user_id=current_user.id, product_id=p.id).first()
     if item:
@@ -643,6 +646,36 @@ def wishlist_toggle(product_id):
         db.session.add(WishlistItem(user_id=current_user.id, product_id=p.id))
         db.session.commit()
         flash(f'Saved {p.name} to your wishlist.', 'success')
+    return redirect(local_return_path(request.referrer, url_for('product_detail', slug=p.slug)))
+
+
+@app.route('/wishlist/add/<int:product_id>', methods=['POST'])
+@login_required
+def wishlist_add(product_id):
+    """Idempotent save: repeating the same request leaves exactly one row."""
+    p = db.session.get(Product, product_id) or abort(404)
+    item = WishlistItem.query.filter_by(user_id=current_user.id, product_id=p.id).first()
+    if item:
+        flash(f'{p.name} is already in your wishlist.', 'info')
+    else:
+        db.session.add(WishlistItem(user_id=current_user.id, product_id=p.id))
+        db.session.commit()
+        flash(f'Saved {p.name} to your wishlist.', 'success')
+    return redirect(local_return_path(request.referrer, url_for('product_detail', slug=p.slug)))
+
+
+@app.route('/wishlist/remove/<int:product_id>', methods=['POST'])
+@login_required
+def wishlist_remove(product_id):
+    """Idempotent removal: repeating the same request leaves no row."""
+    p = db.session.get(Product, product_id) or abort(404)
+    item = WishlistItem.query.filter_by(user_id=current_user.id, product_id=p.id).first()
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+        flash(f'Removed {p.name} from your wishlist.', 'info')
+    else:
+        flash(f'{p.name} is not in your wishlist.', 'info')
     return redirect(local_return_path(request.referrer, url_for('product_detail', slug=p.slug)))
 
 

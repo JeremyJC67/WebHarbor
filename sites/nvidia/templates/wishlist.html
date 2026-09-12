@@ -23,7 +23,7 @@
           <a class="name" href="{{ url_for('product_detail', slug=p.slug) }}">{{ p.name }}</a>
           <div class="price">{{ p.price_display }}</div>
           <a class="text-link" href="{{ url_for('where_to_buy', slug=p.slug) }}">Buying Options →</a>
-          <form method="post" action="{{ url_for('wishlist_toggle', product_id=p.id) }}" style="margin-top:8px">
+          <form method="post" action="{{ url_for('wishlist_remove', product_id=p.id) }}" style="margin-top:8px">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-dark btn-block" type="submit">Remove</button>
           </form>

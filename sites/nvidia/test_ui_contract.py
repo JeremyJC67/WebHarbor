@@ -222,33 +222,52 @@ class UIContract(unittest.TestCase):
 
     def test_04_wishlist_delta_identity_and_persistence(self):
         before = self.snapshot()
-        self.assertEqual(self.post('/wishlist/toggle/10', token=False).status_code, 400)
-        self.assertEqual(self.post('/wishlist/toggle/10').status_code, 302)
-        self.assertEqual(self.snapshot(), before)
+        # Every wishlist mutation is CSRF-protected and anonymous POSTs are rejected.
+        for path in ('/wishlist/add/10', '/wishlist/remove/10', '/wishlist/toggle/10'):
+            self.assertEqual(self.post(path, token=False).status_code, 400)
+            self.assertEqual(self.snapshot(), before)
         self.login()
-        for product_id, slug in ((10, 'geforce-rtx-4060'), (5, 'geforce-rtx-5060-ti')):
-            response = self.post(f'/wishlist/toggle/{product_id}',
-                                 headers={'Referer': f'http://localhost/where-to-buy/{slug}'})
-            self.assertEqual(response.location, f'/where-to-buy/{slug}')
+        # Idempotent endpoints (repair002, M8): repeating a save keeps exactly one row,
+        # repeating a removal leaves none, so a double submit cannot reverse the intent.
+        for _ in range(2):
+            self.assertEqual(self.post('/wishlist/add/10',
+                             headers={'Referer': 'http://localhost/where-to-buy/geforce-rtx-4060'}).status_code, 302)
+        added = self.snapshot()['wishlist_items']
+        self.assertEqual([row for row in added if row not in before['wishlist_items']],
+                         [(max(row[0] for row in added), 1, 10)])
+        for _ in range(2):
+            self.assertEqual(self.post('/wishlist/remove/10').status_code, 302)
+        self.assertEqual(self.snapshot(), before)
+        # Allowed product rows behave the same way on a different product.
+        for _ in range(2):
+            response = self.post('/wishlist/add/5',
+                                 headers={'Referer': 'http://localhost/where-to-buy/geforce-rtx-5060-ti'})
+            self.assertEqual(response.location, '/where-to-buy/geforce-rtx-5060-ti')
         after = self.snapshot()
         for name, rows in before.items():
             if name != 'wishlist_items':
                 self.assertEqual(after[name], rows, name)
         additions = [row for row in after['wishlist_items'] if row not in before['wishlist_items']]
-        self.assertEqual({(r[1], r[2]) for r in additions}, {(1, 10), (1, 5)})
+        self.assertEqual({(r[1], r[2]) for r in additions}, {(1, 5)})
         for _ in range(2):
             page = self.get('/account/wishlist')
-            self.assertIn('GeForce RTX 4060', page)
             self.assertIn('GeForce RTX 5060 Ti 16GB', page)
         self.get('/logout', 302)
         self.login('bob.c@test.com')
         self.assertIn('Your wishlist is empty', self.get('/account/wishlist'))
         self.get('/logout', 302)
         self.login()
+        self.post('/wishlist/add/10', headers={'Referer': 'http://localhost/'})
         self.assertIn('GeForce RTX 4060', self.get('/account/wishlist'))
+        # Compatibility toggle still flips exactly once per request.
         self.post('/wishlist/toggle/10')
         self.post('/wishlist/toggle/5')
         self.assertEqual(self.snapshot(), before)
+        # A non-local Referer never becomes the redirect target.
+        response = self.post('/wishlist/add/10', headers={'Referer': 'https://example.com/'})
+        self.assertEqual(urlsplit(response.location).netloc, '')
+        self.assertEqual(response.location, '/products/geforce-rtx-4060')
+        self.post('/wishlist/remove/10')
 
     def test_05_jetson_price_and_spec_contract(self):
         for slug, identity, memory in (('jetson-orin-nano-super', 'developer kit', '8 GB'),

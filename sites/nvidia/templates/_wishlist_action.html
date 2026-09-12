@@ -1,5 +1,6 @@
 {% if current_user.is_authenticated %}
-<form method="post" action="{{ url_for('wishlist_toggle', product_id=p.id) }}">
+{# Explicit, idempotent endpoints: repeating the same submit keeps the same state (repair002, M8). #}
+<form method="post" action="{{ url_for('wishlist_remove' if in_wishlist else 'wishlist_add', product_id=p.id) }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <button class="btn btn-dark" type="submit">{% if in_wishlist %}Remove from Local Wishlist{% else %}Save to Local Wishlist{% endif %}</button>
 </form>

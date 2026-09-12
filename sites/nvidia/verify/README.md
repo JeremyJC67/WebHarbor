@@ -44,6 +44,7 @@ stdout 始终是一份 JSON：`task_id` 为本题、`pass` 为严格 bool、`rea
 - T6题意指定comparison工具，必须同一比较包含5090/4090；T7未指定工具，可分别读两详情。T18相关news/search列表显示日期时可接受，不强制详情。T11必须技术页与5080购买页两类证据，最终停本地购买页，无固定浏览顺序。
 - 状态题：DB是完成结果的权威依据，不附加英文最终回答或登录页面访问要求。按新增/删除row ID绑定同一账号和目标，保护所有其他wishlist/users/reviews/orders等记录。仅模拟driver download计数非递减作为无害副作用允许；不把账号/收藏误操作或额外订单当无害。
 - Wishlist新增要求目标原先不存在、只新增一条；T16仅删Alice目标且保留所有其他条目。T14仅改Alice country，保留其他字段。T15同一新增row满足Alice/Jetson/5星/精确归一化标题/非空body；`Not Incredible`失败。T19仅新增指定邮箱subscription。
+- Wishlist写入端点（repair002, M8）：站点模板使用 `/wishlist/add/<id>` 与 `/wishlist/remove/<id>`，二者幂等（重复提交不改变状态）；旧的 `/wishlist/toggle/<id>` 仅为兼容保留。判分仍要求“恰好新增一条”，不因端点幂等而放宽。
 - T16历史校正：原版真实登录→account→详情移除路线本来会被原verifier接受；本修复不以简化URL fixture夸大原实际UI失败，改为直接按准确state判定。
 
 ## 任务变更与事实来源
