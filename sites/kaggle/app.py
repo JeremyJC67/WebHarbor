@@ -455,7 +455,11 @@ class JoinCompetitionForm(FlaskForm):
 
 class DiscussionForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=240)])
-    forum = SelectField("Forum", choices=[(f, f) for f in DISCUSSION_FORUMS], validators=[DataRequired()])
+    # An explicit empty first choice: without it the browser preselects the first
+    # real forum ("General"), so a submit that never touched the select silently
+    # posts into the wrong forum instead of failing validation.
+    forum = SelectField("Forum", choices=[("", "Select a forum")] + [(f, f) for f in DISCUSSION_FORUMS],
+                        validators=[DataRequired()])
     body = TextAreaField("Body", validators=[DataRequired(), Length(min=10)])
 
 
