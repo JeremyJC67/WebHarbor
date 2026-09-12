@@ -50,6 +50,16 @@
     });
   });
 
+  var navToggle = document.getElementById('nav-toggle');
+  var primaryNav = document.getElementById('primary-nav');
+  if (navToggle && primaryNav) {
+    navToggle.addEventListener('click', function () {
+      var open = primaryNav.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+  }
+
   var playBtn = document.querySelector('.sim-detail-play');
   if (playBtn) {
     playBtn.addEventListener('click', function () {
