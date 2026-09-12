@@ -19,6 +19,7 @@ Entity model (data-science competition platform):
 import json
 import os
 import re
+import secrets
 from datetime import datetime, date
 from pathlib import Path
 
@@ -63,7 +64,10 @@ from seed_data import (
 # ----------------------------------------------------------------------------
 ROOT = Path(__file__).parent
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "kaggle-mirror-dev-secret-key-change-me")
+# No shipped default: a constant secret lets anyone forge a Flask-Login session
+# cookie and read another account. KAGGLE_SECRET_KEY pins the key when one must
+# survive a restart; otherwise each process generates its own random key.
+app.config["SECRET_KEY"] = os.environ.get("KAGGLE_SECRET_KEY") or secrets.token_hex(32)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{ROOT / 'instance' / 'kaggle.db'}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 (ROOT / "instance").mkdir(exist_ok=True)
