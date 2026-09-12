@@ -39,6 +39,7 @@
     <div>
       {% if tab == 'leaderboard' %}
         <h2>Leaderboard</h2>
+        <p class="muted"><a href="{{ url_for('competition_leaderboard', slug=c.slug) }}">Open the full leaderboard page →</a></p>
         {% if leaderboard %}
         <table class="lb">
           <thead><tr><th>#</th><th>Team</th><th>Members</th><th>Score</th><th>Submitted</th></tr></thead>
