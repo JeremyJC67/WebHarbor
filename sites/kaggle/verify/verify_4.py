@@ -9,8 +9,8 @@ Checks: nav leaderboard/competition | answer names team + score | DB anchor | LL
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, contains_score, db_query, final_answer,
-                        llm_text_match, load_run, navigated_to, parse_args, resolve_db,
-                        shot_at, shot_distinct, shot_final, tables_unchanged)
+                        llm_text_match, load_run, navigated_to, origin_ok, parse_args,
+                        resolve_db, shot_at, shot_distinct, shot_final, tables_unchanged)
 
 SLUG = "credit-default-risk-2026"
 
@@ -27,6 +27,9 @@ def main():
         "SELECT s.team_name, s.score FROM submissions s JOIN competitions c ON c.id=s.competition_id "
         "WHERE c.slug=? ORDER BY s.rank LIMIT 1", (SLUG,))
     team, score = (rows[0][0], rows[0][1]) if rows else (None, None)
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_leaderboard", navigated_to(t, f"/competitions/{SLUG}"), "opened the competition/leaderboard")
     j.check("db_ground_truth", team is not None, f"top=({team!r},{score})")
     j.check("answer_team", team is not None and contains_any(fa, [team]), f"expected_team={team!r} final={fa!r}")

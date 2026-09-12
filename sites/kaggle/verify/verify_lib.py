@@ -59,6 +59,49 @@ def navigated_to(traj, substr, times=1):
 def navigated_any(traj, substrs):
     return any(navigated_to(traj, s) for s in substrs)
 
+
+# ---------------------------------------------------------------- origin binding
+# Evidence URLs must point at the mirror that is being graded, not at the live
+# upstream site or any other host with the same path layout. Deployments that
+# serve the mirrors on a LAN address can extend the set with WH_ALLOWED_HOSTS
+# (comma separated host[:port] entries).
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
+
+
+def url_host(url):
+    """Host[:port] of an absolute URL, else None."""
+    match = re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://([^/?#]+)", (url or "").strip())
+    return match.group(1).lower() if match else None
+
+
+def _host_only(host):
+    if not host:
+        return None
+    if host.startswith("["):
+        return host.split("]")[0] + "]"
+    return host.split(":")[0]
+
+
+def allowed_hosts():
+    extra = {h.strip().lower() for h in os.environ.get("WH_ALLOWED_HOSTS", "").split(",") if h.strip()}
+    return LOCAL_HOSTS | extra
+
+
+def origin_ok(traj, extra_hosts=()):
+    """(ok, note): every URL in the trajectory must belong to a local mirror origin."""
+    allowed = allowed_hosts() | {h.lower() for h in extra_hosts}
+    allowed_bare = {bare for bare in (_host_only(h) for h in allowed) if bare}
+    seen = []
+    for url in [traj.get("start_url", "")] + [s.get("url", "") for s in traj.get("steps", [])]:
+        host = url_host(url)
+        if host:
+            seen.append(host)
+    bad = sorted({h for h in seen if h not in allowed and _host_only(h) not in allowed_bare})
+    if bad:
+        return False, (f"trajectory URLs point outside the local mirror: {bad} "
+                       f"(allowed hosts: {sorted(allowed_bare)})")
+    return True, f"hosts={sorted(set(seen))}"
+
 def final_answer(traj):
     return (traj.get("final_answer") or "").strip()
 

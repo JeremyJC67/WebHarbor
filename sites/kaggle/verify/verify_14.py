@@ -9,8 +9,8 @@ Checks: nav the course page | answer states the lesson count | DB anchor | LLM.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, contains_number, final_answer, llm_text_match,
-                        load_run, navigated_to, parse_args, resolve_db, scalar, shot_at,
-                        shot_distinct, shot_final, tables_unchanged)
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db, scalar,
+                        shot_at, shot_distinct, shot_final, tables_unchanged)
 
 SLUG = "intro-to-machine-learning"
 _NUM_WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven",
@@ -26,6 +26,9 @@ def main():
     changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
     j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     lessons = scalar(ref, "courses", "lessons", SLUG)  # 7
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_course", navigated_to(t, f"/learn/{SLUG}"), "opened the Intro to ML course page")
     j.check("db_ground_truth", lessons is not None, f"lessons={lessons}")
     count_ok = lessons is not None and (contains_number(fa, lessons)

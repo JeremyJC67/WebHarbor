@@ -9,7 +9,7 @@ Checks: nav dataset detail | answer names the license | DB anchor | LLM.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, final_answer, llm_text_match, load_run,
-                        navigated_to, parse_args, resolve_db, scalar, shot_at,
+                        navigated_to, origin_ok, parse_args, resolve_db, scalar, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
 SLUG = "handwritten-digits-mnist"
@@ -24,6 +24,9 @@ def main():
     changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
     j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     lic = scalar(ref, "datasets", "license", SLUG)  # "CC0: Public Domain"
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_dataset", navigated_to(t, f"/datasets/{SLUG}"), "opened the MNIST dataset page")
     j.check("db_ground_truth", lic is not None, f"license={lic!r}")
     j.check("answer_license", contains_any(fa, ["cc0", "public domain"]), f"final={fa!r}")

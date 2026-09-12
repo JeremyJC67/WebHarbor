@@ -11,8 +11,8 @@ Checks: nav login + competition | DB after: entry with team name.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, competition_entry, last_shot, llm_screenshot_shows,
-                        load_run, navigated_to, norm, parse_args, resolve_db, shot_at,
-                        shot_distinct, shot_final)
+                        load_run, navigated_to, norm, origin_ok, parse_args, resolve_db,
+                        shot_at, shot_distinct, shot_final)
 
 EMAIL = "alice.j@test.com"
 SLUG = "llm-prompt-recovery"
@@ -23,6 +23,9 @@ def main():
     t = load_run(a.run_dir)
     after = resolve_db(a.after_db, a.container, "instance")
     init = resolve_db(a.initial_db, a.container, "instance_seed")
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_login", navigated_to(t, "/login"), f"login={navigated_to(t, '/login')}")
     j.check("nav_competition", navigated_to(t, f"/competitions/{SLUG}"), "opened the LLM Prompt Recovery page")
     j.check("db_available", after is not None, f"after_db={'ok' if after else None}")

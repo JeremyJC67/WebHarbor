@@ -9,7 +9,7 @@ Checks: nav competitions | answer names the comp + amount | DB anchor | LLM.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
-                        load_run, navigated_to, parse_args, resolve_db, shot_at,
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
 def main():
@@ -25,6 +25,9 @@ def main():
                          "WHERE category='Featured' AND reward_value>0 ORDER BY reward_value DESC")
     title = rows[0][0] if rows else None
     reward = rows[0][1] if rows else None
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_competitions", navigated_to(t, "/competitions"), "opened the competitions listing")
     j.check("db_ground_truth", title is not None and (len(rows) < 2 or rows[0][2] > rows[1][2]),
             f"top={title!r} reward={reward!r}")

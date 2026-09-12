@@ -10,8 +10,9 @@ Checks: nav dataset + the linked notebook | answer states the best score | DB an
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, contains_score, db_query, final_answer,
-                        llm_text_match, load_run, navigated_to, parse_args, resolve_db,
-                        scalar, shot_at, shot_distinct, shot_final, tables_unchanged)
+                        llm_text_match, load_run, navigated_to, origin_ok, parse_args,
+                        resolve_db, scalar, shot_at, shot_distinct, shot_final,
+                        tables_unchanged)
 
 DATASET = "credit-card-fraud-transactions"
 NOTEBOOK = "lgbm-baseline-fraud"
@@ -37,6 +38,9 @@ def main():
     changed = tables_unchanged(ref, resolve_db(a.after_db, a.container, "instance"))
     j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     best = scalar(ref, "notebooks", "best_score", NOTEBOOK)  # "0.91205"
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_dataset", navigated_to(t, f"/datasets/{DATASET}"), "opened the Credit Card Fraud dataset")
     j.check("nav_notebook", navigated_to(t, f"/code/{NOTEBOOK}"), "opened the linked notebook")
     j.check("db_ground_truth", best is not None, f"best_score={best!r}")

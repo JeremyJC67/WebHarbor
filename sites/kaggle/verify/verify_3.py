@@ -9,8 +9,8 @@ Checks: nav dataset + download route | DB after: downloads(after) > downloads(se
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (Judge, dataset_downloads, load_run, navigated_to, parse_args,
-                        resolve_db, shot_at, shot_distinct, shot_final)
+from verify_lib import (Judge, dataset_downloads, load_run, navigated_to, origin_ok,
+                        parse_args, resolve_db, shot_at, shot_distinct, shot_final)
 
 SLUG = "credit-card-fraud-transactions"
 
@@ -20,6 +20,9 @@ def main():
     t = load_run(a.run_dir)
     after = resolve_db(a.after_db, a.container, "instance")
     init = resolve_db(a.initial_db, a.container, "instance_seed")
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_dataset", navigated_to(t, f"/datasets/{SLUG}"), "opened the Credit Card Fraud dataset")
     # The download route 302-redirects back to the detail page, so a browser agent may not
     # record /download as its own step. The download counter increment (below) is the

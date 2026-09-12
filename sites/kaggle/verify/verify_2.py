@@ -9,7 +9,7 @@ Checks: nav the datasets listing | answer names the top dataset | DB anchor | LL
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_lib import (Judge, contains_any, db_query, final_answer, llm_text_match,
-                        load_run, navigated_to, parse_args, resolve_db, shot_at,
+                        load_run, navigated_to, origin_ok, parse_args, resolve_db, shot_at,
                         shot_distinct, shot_final, tables_unchanged)
 
 def main():
@@ -23,6 +23,9 @@ def main():
     j.check("db_read_only", changed == [], f"changed tables={changed!r}")
     rows = db_query(ref, "SELECT title, upvotes FROM datasets WHERE tags_json LIKE '%climate%' ORDER BY upvotes DESC")
     top = rows[0][0] if rows else None  # "Global Temperature Anomalies 1880–2025"
+    # Evidence binding: the graded mirror is a local origin, not the live upstream.
+    origin_note_ok, origin_note = origin_ok(t)
+    j.check("nav_origin_local", origin_note_ok, origin_note)
     j.check("nav_datasets", navigated_to(t, "/datasets"), "opened the datasets area")
     j.check("db_ground_truth", top is not None and (len(rows) < 2 or rows[0][1] > rows[1][1]),
             f"top={top!r} rows={[(r[0], r[1]) for r in (rows or [])][:3]}")
