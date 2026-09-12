@@ -2,86 +2,214 @@
 
 {% block content %}
 <section class="hero">
-    <h1>Y Combinator</h1>
-    <p class="tagline">YC created a new model for funding early stage startups.<br>
-        Four times a year we invest in a large number of startups.<br>
-        Our community has 4,500+ companies and 10,000+ founders.<br>
-        They have a combined valuation of $1.3 trillion.</p>
-</section>
-
-<section class="in-the-room" style="background: var(--bg-white); padding: 80px 20px; text-align: center; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
-    <h2 style="font-family: var(--font-serif); font-size: 2.5rem; margin-bottom: 40px;">In the Room with YC Founders</h2>
-    <div class="video-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
-        {% for video in in_the_room %}
-        <div class="video-card" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-            <div style="position: absolute; inset: 0; background: url('{{ video.poster }}') center/cover;"></div>
-            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-                <button style="background: var(--yc-orange); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; transition: transform 0.2s;">▶</button>
-            </div>
-            <div style="position: absolute; bottom: 15px; left: 15px; color: white; text-align: left;">
-                <div style="font-weight: bold; font-size: 1.1rem;">{{ video.name }}</div>
-                <div style="font-size: 0.9rem; opacity: 0.8;">{{ video.title }}</div>
-            </div>
-        </div>
-        {% endfor %}
+    <div class="shell">
+        <h1><span class="plain">{{ hero.headline_plain }}</span><br>{{ hero.headline_emphasis }}<sup>[1]</sup></h1>
+        {% if hero.footnote %}<p class="hero-note">[1] {{ hero.footnote }}</p>{% endif %}
+        <div class="scroll-cue">⌄</div>
     </div>
 </section>
 
-<section class="news-essays" style="padding: 80px 20px; background: var(--bg-beige);">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1200px; margin: 0 auto;">
-        <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; border-bottom: 2px solid var(--yc-orange); padding-bottom: 10px; margin-bottom: 25px;">Startup News</h3>
-            <ul style="list-style: none; padding: 0;">
-                {% for item in startup_news %}
-                <li style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px;">
-                    <a href="{{ item.url }}" style="text-decoration: none; color: #000; font-weight: 500; font-size: 1.1rem; display: block; margin-bottom: 5px; transition: color 0.2s;" onmouseover="this.style.color='var(--yc-orange)'" onmouseout="this.style.color='#000'">{{ item.title }}</a>
-                    <span style="color: #666; font-size: 0.85rem;">EXTERNAL LINK</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">Paul Graham's Essays</h3>
-            <ul style="list-style: none; padding: 0;">
-                {% for essay in pg_essays %}
-                <li style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px;">
-                    <a href="{{ essay.url }}" style="text-decoration: none; color: #000; font-weight: 500; font-size: 1.1rem; display: block; margin-bottom: 5px; transition: color 0.2s;" onmouseover="this.style.color='var(--yc-orange)'" onmouseout="this.style.color='#000'">{{ essay.title }}</a>
-                    <span style="color: #666; font-size: 0.85rem;">paulgraham.com</span>
-                </li>
-                {% endfor %}
-            </ul>
+{% if before_now %}
+<section class="reveal">
+    <div class="shell">
+        <ol class="reveal-names">
+            {% for story in before_now %}
+            <li class="reveal-on-scroll">
+                {% if story.company_slug %}<a href="{{ url_for('company_detail', slug=story.company_slug) }}">{{ story.name }}</a>
+                {% else %}<span>{{ story.name }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+        {% if hero.valuation_amount %}
+        <p class="reveal-total reveal-on-scroll">{{ hero.valuation_amount }}</p>
+        <p class="reveal-caption">{{ hero.valuation_caption }}</p>
+        {% endif %}
+        <p class="reveal-link"><a href="{{ url_for('companies') }}">All companies ›</a></p>
+
+        <div class="story-strip">
+            {% for story in before_now %}
+            <article class="story-card">
+                <h3>{{ story.name }}</h3>
+                <div class="story-pair">
+                    <figure>
+                        <div class="story-label">During YC</div>
+                        {% if story.images and story.images[0] %}
+                        <img src="{{ url_for('static', filename='images/' + story.images[0]) }}" alt="{{ story.name }} during YC" loading="lazy">
+                        {% endif %}
+                        <figcaption>{{ story.young }}</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="story-label">Now</div>
+                        {% if story.images and story.images|length > 1 and story.images[1] %}
+                        <img src="{{ url_for('static', filename='images/' + story.images[1]) }}" alt="{{ story.name }} now" loading="lazy">
+                        {% endif %}
+                        <figcaption>{{ story.now }}</figcaption>
+                    </figure>
+                </div>
+            </article>
+            {% endfor %}
         </div>
     </div>
 </section>
+{% endif %}
 
-<section class="quotes" style="padding: 100px 20px; background: #fff; text-align: center;">
-    <h2 style="font-family: var(--font-serif); font-size: 2.2rem; margin-bottom: 60px;">What founders say about YC</h2>
-    <div class="quotes-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto;">
-        {% for quote in about_quotes %}
-        <div class="quote-card" style="padding: 40px; background: var(--bg-beige); border-radius: 20px; text-align: left; position: relative;">
-            <div style="font-size: 3rem; color: var(--yc-orange); opacity: 0.3; position: absolute; top: 10px; left: 20px;">“</div>
-            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; position: relative; z-index: 1;">{{ quote.text }}</p>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <img src="{{ quote.img }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
-                <div>
-                    <div style="font-weight: bold;">{{ quote.author }}</div>
-                    <div style="font-size: 0.85rem; color: #666;">{{ quote.company }} ({{ quote.batch }})</div>
+{% if narrative or about_quotes %}
+<section class="section">
+    <div class="shell">
+        {% if narrative %}
+        <div class="reading">
+            {% for paragraph in narrative %}
+            <p{% if loop.first %} class="dropcap"{% endif %}>{{ paragraph.text }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if about_strip %}
+        <div class="about-strip">
+            {% for item in about_strip %}
+            <img src="{{ url_for('static', filename='images/' + item.image) }}" alt="Y Combinator founders during the batch" loading="lazy">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if about_quotes %}
+        <div class="reading founder-words">
+            <p class="eyebrow">In founders’ words</p>
+            {% for quote in about_quotes %}
+            <p class="founder-quote">
+                <q>{{ quote.text }}</q>
+                <span class="attrib">{{ quote.author }}{% if quote.company %}, {{ quote.company }}{% if quote.batch %} ({{ quote.batch }}){% endif %}{% endif %}</span>
+            </p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+{% if in_the_room %}
+<section class="section">
+    <div class="shell">
+        <h2 class="section-title">Be in the room with …</h2>
+        <div class="video-grid">
+            {% for video in in_the_room %}
+            <div class="video-card">
+                {% if video.poster %}<img src="{{ url_for('static', filename='images/' + video.poster) }}" alt="{{ video.name }}" loading="lazy">{% endif %}
+                <div class="play">▶</div>
+                <div class="label">
+                    <div class="name">{{ video.name }}</div>
+                    <div class="meta">{{ video.title }}</div>
                 </div>
             </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if featured_quote %}
+<section class="section">
+    <div class="shell featured-quote">
+        <blockquote>“{{ featured_quote.text }}”</blockquote>
+        <p class="attrib">{{ featured_quote.author }}{% if featured_quote.role %}, {{ featured_quote.role }}{% endif %}</p>
+    </div>
+</section>
+{% endif %}
+
+{% if partner_sections %}
+<section class="section">
+    <div class="shell">
+        <h2 class="section-title">All partners were YC founders first</h2>
+        {% for section in partner_sections %}
+        <div class="partner-grid" style="margin-bottom:56px">
+            {% for partner in section.partners %}
+            <a class="partner-card" href="{{ partner.url or '#' }}">
+                {% if partner.photo %}<img class="now" src="{{ url_for('static', filename='images/' + partner.photo) }}" alt="{{ partner.name }}" loading="lazy">{% endif %}
+                {% if partner.batch_photo %}<img class="batch" src="{{ url_for('static', filename='images/' + partner.batch_photo) }}" alt="{{ partner.name }} during their batch" loading="lazy">{% endif %}
+                <span class="body">
+                    <span class="name">{{ partner.name }}</span>
+                    <span class="batch-title">{{ partner.batch_title }}</span>
+                    <span class="bio">{{ partner.bio }}</span>
+                </span>
+            </a>
+            {% endfor %}
         </div>
         {% endfor %}
     </div>
 </section>
+{% endif %}
 
-<section class="logo-strip" style="background: white; padding: 40px 0; overflow: hidden; border-top: 1px solid #eee;">
-    <div class="logo-scroll" style="display: flex; align-items: center; gap: 60px; animation: scroll 60s linear infinite; width: max-content;">
+{% if knowledge_feature or startup_news %}
+<section class="section">
+    <div class="shell">
+        <h2 class="section-title">Knowledge &amp; News</h2>
+        <div class="knowledge">
+            {% if knowledge_feature %}
+            <a class="knowledge-feature" href="{{ knowledge_feature.href }}">
+                {% if knowledge_feature.image %}<img src="{{ url_for('static', filename='images/' + knowledge_feature.image) }}" alt="{{ knowledge_feature.title }}" loading="lazy">{% endif %}
+                <p class="eyebrow" style="margin-top:16px">{{ knowledge_feature.tag }}</p>
+                <h3>{{ knowledge_feature.title }}</h3>
+                <p class="muted">{{ knowledge_feature.description }}</p>
+            </a>
+            {% endif %}
+            <div class="knowledge-side">
+                {% for item in knowledge_thumbnails %}
+                <a class="knowledge-thumb" href="{{ item.href }}">
+                    {% if item.image %}<img src="{{ url_for('static', filename='images/' + item.image) }}" alt="{{ item.title }}" loading="lazy">{% endif %}
+                    <span>
+                        <span class="t">{{ item.title }}</span>
+                        <span class="more">{{ item.link_text }}</span>
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="news-columns">
+            <div>
+                <h3>Startup News</h3>
+                <ul>
+                    {% for item in startup_news %}
+                    <li><a href="{{ item.href }}">{{ item.title }}</a><span class="src">External link</span></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3>Paul Graham’s Essays</h3>
+                <ul>
+                    {% for item in pg_essays %}
+                    <li><a href="{{ item.href }}">{{ item.title }}</a><span class="src">paulgraham.com</span></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if logos %}
+<section class="section">
+    <div class="shell logo-wall">
         {% for logo in logos %}
-        <img src="{{ logo.logo_url }}" alt="{{ logo.name }}" style="height: 35px; filter: grayscale(1); opacity: 0.6; transition: all 0.3s; cursor: pointer;" onmouseover="this.style.opacity=1; this.style.filter='none'; this.style.transform='scale(1.1)'" onmouseout="this.style.opacity=0.6; this.style.filter='grayscale(1)'; this.style.transform='scale(1)'" onclick="window.location.href='/companies/{{ logo.slug }}'">
+        <a href="{{ logo.url }}" title="{{ logo.name }}">
+            {% if logo.logo %}<img src="{{ url_for('static', filename='images/' + logo.logo) }}" alt="{{ logo.name }}" loading="lazy">{% else %}<span class="muted">{{ logo.name }}</span>{% endif %}
+        </a>
         {% endfor %}
-        {# Duplicate logos for seamless loop #}
-        {% for logo in logos %}
-        <img src="{{ logo.logo_url }}" alt="{{ logo.name }}" style="height: 35px; filter: grayscale(1); opacity: 0.6; transition: all 0.3s; cursor: pointer;" onmouseover="this.style.opacity=1; this.style.filter='none'; this.style.transform='scale(1.1)'" onmouseout="this.style.opacity=0.6; this.style.filter='grayscale(1)'; this.style.transform='scale(1)'" onclick="window.location.href='/companies/{{ logo.slug }}'">
-        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="section cta">
+    <div class="shell">
+        <h2>It’s never too early to apply.</h2>
+        <p class="lede">We fund companies with no revenue, product, or fully baked idea.</p>
+        <p><a class="button" href="{{ url_for('static_page', page_slug='apply') }}">Apply</a></p>
+        {% if cta_strip %}
+        <div class="cta-strip">
+            {% for item in cta_strip %}
+            <img src="{{ url_for('static', filename='images/' + item.image) }}" alt="Y Combinator founders" loading="lazy">
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

@@ -70,6 +70,12 @@ RUN cd /opt/WebSyn/healthline && test -f instance_seed/healthline.db && \
     PYTHONHASHSEED=0 python3 migrate_seed.py && \
     python3 prune_unreferenced_images.py --apply && rm -rf instance
 
+# Y Combinator ships upstream-sourced media in the pinned asset bundle and
+# rebuilds its deterministic SQLite seed from the tracked source_data.json.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/y_combinator
+RUN cd /opt/WebSyn/y_combinator && rm -rf instance instance_seed && \
+    PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
+
 COPY websyn_start.sh    /opt/websyn_start.sh
 COPY control_server.py  /opt/control_server.py
 COPY site_runner.py     /opt/site_runner.py
