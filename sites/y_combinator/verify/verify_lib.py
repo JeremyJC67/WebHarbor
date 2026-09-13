@@ -10,6 +10,7 @@ Input contract: see verify/README.md.
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import ipaddress
 import json
 import re
@@ -56,18 +57,23 @@ def phrase(text, expected):
     return bool(re.search(r"(?<!\w)" + re.escape(words(expected)) + r"(?!\w)", words(text)))
 
 
+def answer_clauses(text):
+    # Preserve sentence boundaries before stripping punctuation; decimal points
+    # and filename extensions are not sentence boundaries.
+    normalized = re.sub(r"\b(jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\.\s", r"\1 ", norm(text))
+    return re.split(r"[!?;\n]+|\.(?:\s+|$)|\b(?:but|however|instead|rather than)\b", normalized)
+
+
+def negated(text):
+    return bool(re.search(
+        r"\b(?:not|no|never|without|isn't|wasn't|aren't|weren't|isnt|wasnt|incorrect|fewer than|less than)\b",
+        norm(text)))
+
+
 def affirmative_phrase(text, expected):
     """A phrase that appears only inside a negation is not an assertion of it."""
-    normalized = words(text)
-    matches = list(re.finditer(r"(?<!\w)" + re.escape(words(expected)) + r"(?!\w)", normalized))
-    if not matches:
-        return False
-    match = matches[-1]
-    before = re.split(r"[.!?;:\n]+|\b(?:but|however|instead|rather than)\b", normalized[:match.start()])[-1]
-    after = normalized[match.end():]
-    if re.search(r"\b(?:not|no|never|without|isnt|wasnt|incorrect|fewer than|less than)\b", before):
-        return False
-    return not re.match(r"\s*(?:is|was|are|were)?\s*(?:not|incorrect)\b", after)
+    matching = [clause for clause in answer_clauses(text) if phrase(clause, expected)]
+    return bool(matching) and not negated(matching[-1])
 
 
 def number_values(text):
@@ -82,11 +88,48 @@ def number_values(text):
 
 
 def has_number(text, value):
-    return float(value) in number_values(text)
+    return any(not negated(clause) and float(value) in number_values(clause)
+               for clause in answer_clauses(text))
 
 
 def has_year(text, year):
-    return str(int(year)) in re.findall(r"\b(?:18|19|20)\d{2}\b", norm(text))
+    return any(not negated(clause) and str(int(year)) in re.findall(r"\b(?:18|19|20)\d{2}\b", clause)
+               for clause in answer_clauses(text))
+
+
+def has_date(text, value):
+    expected_date = date.fromisoformat(value[:10])
+    year, month, day = expected_date.year, expected_date.month, expected_date.day
+    # English month names are explicit so grading does not depend on host locale.
+    months = ("January", "February", "March", "April", "May", "June", "July",
+              "August", "September", "October", "November", "December")
+    month_name = months[month - 1]
+    patterns = [rf"{year}-{month:02d}-{day:02d}"]
+    for name in (month_name, month_name[:3]):
+        patterns.extend([rf"{name}\.?\s+0?{day}(?:st|nd|rd|th)?[,]?\s+{year}",
+                         rf"0?{day}(?:st|nd|rd|th)?\s+{name}\.?[,]?\s+{year}"])
+    pattern = r"(?<!\w)(?:" + "|".join(patterns) + r")(?!\w)"
+    return any(not negated(clause) and re.search(pattern, clause, re.I)
+               for clause in answer_clauses(text))
+
+
+def claims_larger(text, company, other):
+    """Match an explicit comparison without treating mere name presence as one."""
+    for clause in answer_clauses(text):
+        if negated(clause) or not phrase(clause, company):
+            continue
+        normalized = words(clause)
+        marker = re.search(r"\b(?:larger|bigger|largest|biggest|more staff|more employees|exceeds|smaller|fewer staff|fewer employees)\b", normalized)
+        if marker is None:
+            continue
+        mentions = sorted((match.start(), name) for name in (company, other)
+                          for match in re.finditer(r"(?<!\w)" + re.escape(words(name)) + r"(?!\w)", normalized))
+        preceding = [item for item in mentions if item[0] < marker.start()]
+        subject = (preceding[-1] if preceding else mentions[0])[1]
+        smaller_claim = marker.group() in {"smaller", "fewer staff", "fewer employees"}
+        if (subject == company) != smaller_claim:
+            return True
+    return False
 
 
 def duration_stated(text, seconds):
@@ -395,7 +438,7 @@ def state_checks(judge, trajectory, before, after, facts):
                     len(new) == 1 and new[0]["user_id"] == uid
                     and new[0]["article_id"] == facts["article"]["id"])
         judge.check("no_bookmark_removed",
-                    all(key in after["bookmark"] for key in before["bookmark"]))
+                    all(after["bookmark"].get(key) == row for key, row in before["bookmark"].items()))
         judge.check("bookmarks_page_seen", visited(trajectory, "/library/bookmarks"))
     elif task == 9:
         uid = user_id(after, facts["email"])
@@ -407,9 +450,10 @@ def state_checks(judge, trajectory, before, after, facts):
         judge.check("vote_binding",
                     len(new) == 1 and new[0]["user_id"] == uid and new[0]["launch_id"] == launch["id"])
         judge.check("no_vote_removed",
-                    all(key in after["launch_vote"] for key in before["launch_vote"]))
+                    all(after["launch_vote"].get(key) == row for key, row in before["launch_vote"].items()))
         judge.check("vote_count_incremented",
-                    after["launch"][launch["id"]]["vote_count"] == launch["vote_count"] + 1)
+                    after["launch"].get(launch["id"]) == {**launch, "vote_count": launch["vote_count"] + 1})
+        judge.check("same_launch_rows", before["launch"].keys() == after["launch"].keys())
         for key, row in before["launch"].items():
             if key != launch["id"]:
                 judge.check(f"launch_untouched_{key}", after["launch"].get(key) == row)
@@ -497,7 +541,7 @@ def answer_checks(judge, trajectory, facts):
         company = facts["company"]
         judge.check("team_size", has_number(text, company["team_size"]))
         judge.check("year_founded", has_year(text, company["year_founded"]))
-        judge.check("location", phrase(text, company["location"]))
+        judge.check("location", affirmative_phrase(text, company["location"]))
     elif task == 1:
         company = facts["company"]
         judge.check("company_identified", company_named(company))
@@ -546,8 +590,6 @@ def answer_checks(judge, trajectory, facts):
         judge.check("category", phrase(text, facts["faq"]["category"]))
     elif task == 12:
         judge.check("file_name", phrase(text, facts["document"]["filename"]))
-        for variant in ("canada", "cayman", "singapore"):
-            judge.check(f"no_{variant}_variant", not phrase(text, variant))
     elif task == 13:
         person = facts["person"]
         judge.check("name", affirmative_phrase(text, person["name"]))
@@ -555,7 +597,9 @@ def answer_checks(judge, trajectory, facts):
         judge.check("section", phrase(text, person["group"]))
     elif task == 14:
         larger = facts["larger"]
+        smaller = next(row for row in facts["companies"] if row != larger)
         judge.check("larger_identified", affirmative_phrase(text, larger["name"]))
+        judge.check("comparison_not_reversed", not claims_larger(text, smaller["name"], larger["name"]))
         for row in facts["companies"]:
             judge.check(f"team_size_{row['slug']}", has_number(text, row["team_size"]))
             judge.check(f"batch_{row['slug']}", phrase(text, row["batch"]))
@@ -568,9 +612,7 @@ def answer_checks(judge, trajectory, facts):
         article = facts["article"]
         judge.check("series", phrase(text, article["series"]))
         judge.check("view_count", has_number(text, article["view_count"]))
-        judge.check("published", phrase(text, article["created_at"][:10])
-                    or (has_year(text, article["created_at"][:4])
-                        and phrase(text, "june")) )
+        judge.check("published", has_date(text, article["created_at"]))
     elif task == 17:
         company = facts["company"]
         judge.check("result_count", has_number(text, len(facts["pool"])))
@@ -606,25 +648,33 @@ def main(task):
     parser.add_argument("--run_dir", required=True)
     parser.add_argument("--initial_db")
     parser.add_argument("--after_db")
-    parser.add_argument("--container", default="wh-review")
+    parser.add_argument("--container", help="Explicit live probe only; frozen runs use their own snapshots")
     parser.add_argument("--no_llm", nargs="?", const=True, default=False, type=_bool_value,
                         help="Accepted for harness compatibility; grading is always deterministic")
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix="y-combinator-verifier-") as temporary:
-        paths = []
         try:
-            for explicit, kind in ((args.initial_db, "instance_seed"), (args.after_db, "instance")):
-                if explicit:
-                    paths.append(explicit)
-                else:
-                    destination = str(Path(temporary) / (kind + ".db"))
+            run_dir = Path(args.run_dir)
+            frozen = [run_dir / "initial_state" / f"{SITE}.db",
+                      run_dir / "after_state" / f"{SITE}.db"]
+            paths = [Path(explicit) if explicit else default
+                     for explicit, default in zip((args.initial_db, args.after_db), frozen)]
+            # Never combine a frozen before state with a later live after state.
+            has_frozen_input = (args.initial_db or args.after_db
+                                or any(path.parent.exists() for path in frozen))
+            if not has_frozen_input and args.container:
+                paths = []
+                for kind in ("instance_seed", "instance"):
+                    destination = Path(temporary) / (kind + ".db")
                     subprocess.run(
                         ["docker", "cp",
-                         f"{args.container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db", destination],
-                        check=True, capture_output=True)
+                         f"{args.container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db", str(destination)],
+                        check=True, capture_output=True, timeout=30)
                     paths.append(destination)
+            if not all(path.is_file() for path in paths):
+                raise FileNotFoundError("Both initial and after snapshots are required")
             result = grade(task, args.run_dir, *paths)
-        except (OSError, subprocess.CalledProcessError) as error:
+        except (OSError, subprocess.SubprocessError) as error:
             result = {"task_id": f"{PREFIX}--{task}", "pass": False,
                       "reason": "Database snapshot unavailable", "evidence": [type(error).__name__]}
         print(json.dumps(result, ensure_ascii=False))

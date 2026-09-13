@@ -12,8 +12,8 @@ Each verifier grades a frozen run signature:
 |---|---|
 | `trajectory.json` | `<run_dir>/trajectory.json` — `task_id`, `start_url`, `steps[]`, `final_answer`, `terminated`, `termination_reason` |
 | step screenshots | `<run_dir>/screenshots/<name>.png`, referenced by each step's `screenshot_before` / `screenshot_after` |
-| initial state | `--initial_db`, or `docker cp` from `<container>:/opt/WebSyn/y_combinator/instance_seed/y_combinator.db` |
-| after state | `--after_db`, or `docker cp` from `<container>:/opt/WebSyn/y_combinator/instance/y_combinator.db` |
+| initial state | `--initial_db`, otherwise `<run_dir>/initial_state/y_combinator.db` |
+| after state | `--after_db`, otherwise `<run_dir>/after_state/y_combinator.db` |
 
 ```bash
 python3 sites/y_combinator/verify/verify_9.py \
@@ -23,8 +23,22 @@ python3 sites/y_combinator/verify/verify_9.py \
 ```
 
 Prints `{task_id, pass, reason, evidence[]}` and exits 0 on PASS, 1 on FAIL.
-Pass the snapshots explicitly when grading a frozen run: the container's live
-database is whatever the last run left behind, not that run's after state.
+The standard `eval_judge.py --verifier True` entry point passes only `--run_dir`,
+so save both snapshots at the conventional paths above for frozen grading.
+Explicit snapshot arguments take precedence. Missing snapshots return a
+structured FAIL without inspecting Docker.
+
+For an immediate live diagnostic only, `--container <name>` explicitly opts into
+copying `instance_seed/y_combinator.db` and `instance/y_combinator.db` from that
+container. This fallback is available only when neither snapshot directory nor
+an explicit snapshot argument exists; partial frozen runs must fail rather than
+mix their state with a later live database. Each copy has a 30-second timeout.
+
+Run the snapshot-entry regression checks with:
+
+```bash
+python3 -m unittest discover -s sites/y_combinator/verify/tests -v
+```
 
 ## How grading works
 
