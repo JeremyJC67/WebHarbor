@@ -843,9 +843,17 @@ def inject_globals():
             args["page"] = number
         return url_for(request.endpoint, **{**(request.view_args or {}), **args})
 
+    def view_url(mode: str) -> str:
+        """Switch the listing between the list and grid layouts upstream offers."""
+        args = {key: value for key, value in request.args.items(multi=False)}
+        args["view"] = mode
+        return url_for(request.endpoint, **{**(request.view_args or {}), **args})
+
     metrics = cart_metrics()
     return {
         "page_url": page_url,
+        "view_url": view_url,
+        "view_mode": request.args.get("view", "list"),
         "top_categories": top_categories,
         "featured_brands": featured_brands,
         "cart_count": metrics["count"],

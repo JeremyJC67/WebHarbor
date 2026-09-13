@@ -152,6 +152,26 @@
     </aside>
 
     <div class="listing-content">
+        <div class="listing-toolbar">
+            <span class="toolbar-label">Sort by</span>
+            <form method="get" class="inline-sort">
+                {% for key, value in request.args.items() %}
+                    {% if key not in ('sort', 'page') %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
+                {% endfor %}
+                <select name="sort" onchange="this.form.submit()">
+                    <option value="relevance" {% if request.args.get('sort', 'relevance') == 'relevance' %}selected{% endif %}>Featured</option>
+                    <option value="price_asc" {% if request.args.get('sort') == 'price_asc' %}selected{% endif %}>Price low to high</option>
+                    <option value="price_desc" {% if request.args.get('sort') == 'price_desc' %}selected{% endif %}>Price high to low</option>
+                    <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest</option>
+                    <option value="rating" {% if request.args.get('sort') == 'rating' %}selected{% endif %}>Top rated</option>
+                    <option value="bestsellers" {% if request.args.get('sort') == 'bestsellers' %}selected{% endif %}>Best sellers</option>
+                </select>
+                <noscript><button type="submit" class="quiet-btn">Apply</button></noscript>
+            </form>
+            <span class="toolbar-label">View</span>
+            <a class="view-toggle {{ 'active' if view_mode == 'list' else '' }}" href="{{ view_url('list') }}" aria-label="List view">&#9776;</a>
+            <a class="view-toggle {{ 'active' if view_mode == 'grid' else '' }}" href="{{ view_url('grid') }}" aria-label="Grid view">&#9635;</a>
+        </div>
         <div class="listing-head">
             <div>
                 {% if pagination and pagination.total %}
@@ -169,7 +189,7 @@
                 {% if request.args.get('availability') %}<span class="filter-chip">{{ request.args.get('availability') }}</span>{% endif %}
             </div>
         </div>
-        <div class="product-grid dense">
+        <div class="product-grid dense {{ 'list-view' if view_mode == 'list' else '' }}">
             {% for product in products %}
                 {% include "_product_card.html" %}
             {% else %}

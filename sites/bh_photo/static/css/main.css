@@ -1369,3 +1369,59 @@ textarea {
     margin-left: 8px;
     color: var(--muted);
 }
+
+/* Listing toolbar: upstream puts sort and a list/grid switch above the rows,
+   and defaults to the list layout. */
+.listing-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.listing-toolbar .toolbar-label {
+    color: var(--muted);
+}
+
+.inline-sort {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.view-toggle {
+    display: inline-block;
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+    line-height: 1.2;
+}
+
+.view-toggle.active {
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+}
+
+/* list layout: one wide row per product, image beside the details */
+.product-grid.list-view {
+    grid-template-columns: 1fr;
+}
+
+.product-grid.list-view .product-card {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+}
+
+.product-grid.list-view .product-card-media {
+    min-height: auto;
+}
+
+@media (max-width: 760px) {
+    .product-grid.list-view .product-card {
+        grid-template-columns: 1fr;
+    }
+}
