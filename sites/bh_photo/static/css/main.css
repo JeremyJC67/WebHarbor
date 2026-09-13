@@ -1255,3 +1255,84 @@ textarea {
 .department-tile:hover strong {
     text-decoration: underline;
 }
+
+
+/* Listing chrome. Upstream puts a breadcrumb and an item count above the grid,
+   and groups its left-rail facets into collapsible sections. */
+.listing-title {
+    padding: 14px 0 6px;
+}
+
+.listing-title h1 {
+    margin: 0 0 4px;
+    font-size: 2rem;
+}
+
+.result-count {
+    margin: 0;
+    color: var(--muted);
+}
+
+.facet-group {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+}
+
+.facet-group > summary {
+    cursor: pointer;
+    font-weight: 700;
+    list-style: none;
+    padding: 4px 0;
+}
+
+.facet-group > summary::-webkit-details-marker {
+    display: none;
+}
+
+.facet-group > summary::after {
+    content: "+";
+    float: right;
+    color: var(--muted);
+}
+
+.facet-group[open] > summary::after {
+    content: "\2013";
+}
+
+.sort-control {
+    display: block;
+    margin-top: 14px;
+}
+
+/* listing row: identifiers and the short feature list upstream prints */
+.card-ids {
+    margin: 2px 0 8px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.key-features {
+    margin: 6px 0 10px;
+    font-size: 13px;
+}
+
+.key-features strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.key-features ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+}
+
+.key-features .show-more {
+    display: inline-block;
+    margin-top: 6px;
+    color: var(--brand-blue);
+}
+
+.card-actions form {
+    display: inline-block;
+}

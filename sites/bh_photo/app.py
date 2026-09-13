@@ -157,6 +157,8 @@ class Product(db.Model):
     name = db.Column(db.String(200), nullable=False)
     slug = db.Column(db.String(220), unique=True, nullable=False, index=True)
     sku = db.Column(db.String(32), unique=True, nullable=False)
+    # upstream prints both the B&H SKU and the manufacturer part number
+    mpn = db.Column(db.String(64), default="")
     short_description = db.Column(db.String(220), default="")
     description = db.Column(db.Text, default="")
     search_blob = db.Column(db.Text, default="")
@@ -236,6 +238,32 @@ class Product(db.Model):
             for spec in group.specs:
                 spec_map[spec.name] = spec.value
         return spec_map
+
+    # packaging rows are the last thing a shopper wants summarised on a listing
+    SKIP_FEATURE_GROUPS = {"packaging info", "shipping"}
+    SKIP_FEATURE_LABELS = {"box dimensions (lxwxh)", "package weight", "box dimensions"}
+
+    @property
+    def key_features(self) -> list[tuple[str, str]]:
+        """The short specification list upstream prints on a listing row."""
+        preferred, fallback = [], []
+        for group in self.spec_groups:
+            skip_group = (group.title or "").strip().lower() in self.SKIP_FEATURE_GROUPS
+            for spec in group.specs:
+                entry = (spec.name, spec.value)
+                if skip_group or (spec.name or "").strip().lower() in self.SKIP_FEATURE_LABELS:
+                    fallback.append(entry)
+                else:
+                    preferred.append(entry)
+                    if len(preferred) == 4:
+                        return preferred
+        return (preferred + fallback)[:4]
+
+    @property
+    def savings_amount(self) -> float:
+        if self.list_price and self.list_price > self.display_price:
+            return round(self.list_price - self.display_price, 2)
+        return 0.0
 
     @property
     def average_review_label(self) -> str:
@@ -594,6 +622,13 @@ def apply_product_filters(products: list[Product], args, *, query_text: str = ""
     condition = args.get("condition", "").strip()
     if condition:
         filtered = [product for product in filtered if product.condition.lower() == condition.lower()]
+
+    within = args.get("within", "").strip()
+    if within:
+        needle = within.lower()
+        filtered = [product for product in filtered
+                    if needle in (product.name or "").lower()
+                    or needle in (product.search_blob or "").lower()]
 
     sensor_size = args.get("sensor_size", "").strip()
     if sensor_size:

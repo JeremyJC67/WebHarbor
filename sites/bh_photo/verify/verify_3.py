@@ -1,25 +1,20 @@
 #!/usr/bin/env python3
-"""Verifier for B&H Photo--3: report the processor of the 16-inch ThinkPad T1g Gen 8.
+"""Verifier for B&H Photo--3: two detail-only rows from the 16-inch ThinkPad T1g."""
+import re
 
-Ground truth is read from the shipped seed database at verify time, so the
-answer key lives here and never in the agent-facing task file.
-"""
-from verify_lib import (Judge, changed_tables_excluding, check_common, contains_any,
-                        final_answer, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, visited_path)
+from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
+                        resolve_db, row_dicts, visited_path)
 
 TASK_ID = 'B&H Photo--3'
 SLUG = 'lenovo-16-thinkpad-t1g-gen-8-multi-touch-laptop'
-SPEC_LABEL = 'Processor'
 
 
-def spec_value(db_path):
+def spec(db_path, label):
     rows = row_dicts(db_path, """
-        SELECT s.value FROM product_specs s
-        JOIN product_spec_groups g ON g.id = s.group_id
-        JOIN products p ON p.id = g.product_id
-        WHERE p.slug = ? AND s.name = ?
-    """, (SLUG, SPEC_LABEL))
+        SELECT s.value FROM product_specs s JOIN product_spec_groups g ON g.id = s.group_id
+        JOIN products p ON p.id = g.product_id WHERE p.slug = ? AND s.name = ?
+    """, (SLUG, label))
     return rows[0]['value'] if rows else ''
 
 
@@ -33,24 +28,30 @@ def main():
     initial = resolve_db(args.initial_db, args.container, 'instance_seed')
     after = resolve_db(args.after_db, args.container, 'instance')
     judge.check('databases_readable', bool(initial and after), f'initial={initial} after={after}')
-    value = spec_value(initial) if initial else ''
-    judge.check('ground_truth_readable', bool(value), f'spec={value!r}')
+    if not initial:
+        judge.emit()
 
-    judge.check('opened_product_page', visited_path(trajectory, '/product/' + SLUG),
-                f'slug={SLUG}')
-    # value reads "Intel Core Ultra 9 285H" (with a non-breaking space before the model)
-    tokens = [token for token in value.replace('\xa0', ' ').split() if token]
-    judge.check('ground_truth_readable_tokens', len(tokens) >= 2, f'spec={value!r}')
-    normalized_answer = normalize_text(answer).replace('\xa0', ' ')
-    judge.check('answer_names_full_processor',
-                all(normalize_text(token) in normalized_answer for token in tokens),
-                f'expected={value!r} answer={answer!r}')
-    judge.check('answer_is_more_than_the_vendor',
-                normalized_answer.strip() not in {'intel', 'lenovo'},
-                f'answer={answer!r}')
+    resolution = spec(initial, 'Native Resolution')
+    weight = spec(initial, 'Weight')
+    judge.check('ground_truth_readable', bool(resolution and weight),
+                f'resolution={resolution!r} weight={weight!r}')
+
+    judge.check('opened_the_product_page', visited_path(trajectory, '/product/' + SLUG), SLUG)
+    normalized = normalize_text(answer)
+
+    numbers = re.findall(r'\d+', resolution)
+    judge.check('answer_gives_native_resolution',
+                bool(numbers) and all(number in normalized for number in numbers[:2]),
+                f'expected={resolution!r} answer={answer!r}')
+
+    pounds = re.search(r'([\d.]+)\s*lb', weight)
+    judge.check('ground_truth_weight_in_pounds', bool(pounds), f'weight={weight!r}')
+    if pounds:
+        judge.check('answer_gives_weight_in_pounds', pounds.group(1) in normalized,
+                    f'expected={pounds.group(1)} answer={answer!r}')
+
     if initial and after:
-        judge.check('no_state_written',
-                    only_allowed_tables_changed(initial, after, ['search_logs']),
+        judge.check('no_state_written', only_allowed_tables_changed(initial, after, ['search_logs']),
                     f'changed={sorted(changed_tables_excluding(initial, after, ["search_logs"]))}')
     judge.emit()
 

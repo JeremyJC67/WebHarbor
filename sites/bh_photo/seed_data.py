@@ -323,6 +323,7 @@ def seed_database(db, models, base_dir: str):
             brand_id=brand_by_name[entry["brand"]].id,
             name=entry["name"], slug=entry["slug"],
             sku=entry.get("bh_sku") or f"BH{index:05d}",
+            mpn=entry.get("mpn") or "",
             short_description=short_description(entry),
             description=entry.get("description") or "",
             search_blob=search_blob(entry),

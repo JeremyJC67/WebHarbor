@@ -1,17 +1,36 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title }} | B&H{% endblock %}
 {% block content %}
-<section class="shell page-hero simple">
-    <p class="kicker">{% if category %}{{ category.parent.name if category.parent else 'Department' }}{% elif brand %}Brand store{% else %}Catalog{% endif %}</p>
+<section class="shell breadcrumb-row">
+    <a href="{{ url_for('index') }}">Home</a>
+    {% if category and category.parent %}
+        <span>/</span>
+        <a href="{{ url_for('category_view', slug=category.parent.slug) }}">{{ category.parent.name }}</a>
+    {% elif brand %}
+        <span>/</span>
+        <a href="{{ url_for('categories') }}">Brands</a>
+    {% endif %}
+    <span>/</span>
+    <span>{{ page_heading }}</span>
+</section>
+
+<section class="shell listing-title">
     <h1>{{ page_heading }}</h1>
-    <p>{{ page_description }}</p>
+    <p class="result-count">{{ products|length }} Items</p>
 </section>
 
 <section class="shell listing-layout">
     <aside class="filters">
-        <h3>Filter & sort</h3>
         <form method="get">
             {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+            <details class="facet-group" open>
+                <summary>Search Within Results</summary>
+                <label>Keywords
+                    <input type="search" name="within" value="{{ request.args.get('within', '') }}" placeholder="Type Keywords">
+                </label>
+            </details>
+            <details class="facet-group">
+                <summary>Brand</summary>
             <label>Brand
                 <select name="brand">
                     <option value="">All brands</option>
@@ -20,6 +39,9 @@
                     {% endfor %}
                 </select>
             </label>
+            </details>
+            <details class="facet-group">
+                <summary>Price</summary>
             <div class="range-row">
                 <label>Min price
                     <input type="number" step="1" name="min_price" value="{{ request.args.get('min_price', '') }}">
@@ -28,6 +50,9 @@
                     <input type="number" step="1" name="max_price" value="{{ request.args.get('max_price', '') }}">
                 </label>
             </div>
+            </details>
+            <details class="facet-group">
+                <summary>Customer Rating</summary>
             <label>Rating
                 <select name="rating">
                     <option value="">Any rating</option>
@@ -36,6 +61,9 @@
                     <option value="4.8" {% if request.args.get('rating') == '4.8' %}selected{% endif %}>4.8 and up</option>
                 </select>
             </label>
+            </details>
+            <details class="facet-group">
+                <summary>Savings &amp; Stock</summary>
             <label>Availability
                 <select name="availability">
                     <option value="">Any</option>
@@ -52,6 +80,9 @@
                     <option value="Open-Box" {% if request.args.get('condition') == 'Open-Box' %}selected{% endif %}>Open-box</option>
                 </select>
             </label>
+            </details>
+            <details class="facet-group">
+                <summary>Product Features</summary>
             <label>Sensor size
                 <select name="sensor_size">
                     <option value="">Any sensor</option>
@@ -105,7 +136,8 @@
                     <option value="yes" {% if request.args.get('pickup') == 'yes' %}selected{% endif %}>Pickup available</option>
                 </select>
             </label>
-            <label>Sort by
+            </details>
+            <label class="sort-control">Sort by
                 <select name="sort">
                     <option value="relevance" {% if request.args.get('sort', 'relevance') == 'relevance' %}selected{% endif %}>Relevance</option>
                     <option value="price_asc" {% if request.args.get('sort') == 'price_asc' %}selected{% endif %}>Price low to high</option>
