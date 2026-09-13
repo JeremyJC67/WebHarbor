@@ -19,6 +19,23 @@
     <p class="result-count">{{ pagination.total if pagination else products|length }} Items</p>
 </section>
 
+{% if subcategories %}
+    <section class="shell subcategory-strip">
+        <h2>Shop {{ page_heading }}</h2>
+        <div class="subcategory-row">
+            {% for tile in subcategories %}
+                <a class="subcategory-tile" href="{{ url_for('category_view', slug=tile.category.slug) }}">
+                    <span class="subcategory-thumb">
+                        <img src="{{ url_for('static', filename=tile.image) }}" alt="{{ tile.category.name }}" loading="lazy">
+                    </span>
+                    <strong>{{ tile.category.name }}</strong>
+                    <small>{{ tile.count }} items</small>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
 <section class="shell listing-layout">
     <aside class="filters">
         <form method="get">

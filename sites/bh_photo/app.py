@@ -930,8 +930,20 @@ def category_view(slug: str, page: int = 1):
     products = [product for product in all_products() if product.category_id in ids]
     results = apply_product_filters(products, request.args)
     window = paginate(results, page)
+    # upstream fronts a department with its subcategories before the product rows
+    children = Category.query.filter_by(parent_id=category.id).order_by(Category.nav_order).all()
+    child_tiles = []
+    for child in children:
+        members = [product for product in products if product.subcategory_slug == child.slug]
+        sample = next((p for p in members if p.image_path.startswith("images/products/")), None)
+        child_tiles.append({
+            "category": child,
+            "count": len(members),
+            "image": sample.image_path if sample else "icons/product-placeholder.svg",
+        })
     return render_template(
         "category_listing.html",
+        subcategories=child_tiles,
         page_title=category.name,
         page_heading=category.name,
         page_description=category.hero_copy or category.description,
