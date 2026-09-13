@@ -324,8 +324,13 @@ def news():
 @app.route('/news/<slug>')
 def news_article(slug):
     article = NewsArticle.query.filter_by(slug=slug).first_or_404()
-    article.view_count = (article.view_count or 0) + 1
-    db.session.commit()
+    # Deliberately no view_count increment: this GET is a pure read. Bumping the
+    # counter made every article visit a DB write, which broke the read-only grading
+    # contract (a read-only task's after-state could never equal its initial snapshot)
+    # and the byte-identical reset invariant (instance/ diverges from instance_seed
+    # as soon as an agent opens one article). The column is kept and is displayed as
+    # "N views" on /news and the article page; those numbers are the frozen seed
+    # values, and nothing orders or filters by them.
     related = NewsArticle.query.filter(
         NewsArticle.category == article.category,
         NewsArticle.id != article.id
