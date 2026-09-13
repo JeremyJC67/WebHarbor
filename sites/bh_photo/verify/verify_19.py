@@ -4,7 +4,7 @@
 The target is derived from the seed at verify time rather than named here, so a
 catalogue change moves the answer instead of breaking the task.
 """
-from verify_lib import (Judge, cart_for, changed_tables_excluding, check_common,
+from verify_lib import (names_product, Judge, cart_for, changed_tables_excluding, check_common,
                         final_answer, has_number, load_run, login_submitted_as,
                         normalize_text, only_allowed_tables_changed, parse_args,
                         resolve_db, row_dicts, visited_path)
@@ -53,7 +53,7 @@ def main():
                 f"expected={cheaper['name'][:40]!r} after={sorted(now)}")
     judge.check('cart_was_not_emptied', bool(now), f'after={sorted(now)}')
     judge.check('answer_names_the_remaining_item',
-                normalize_text(cheaper['name']) in normalize_text(answer),
+                names_product(answer, cheaper['name']),
                 f"expected={cheaper['name']!r} answer={answer!r}")
 
     remaining_total = round(cheaper['price'] * cheaper['quantity'], 2)

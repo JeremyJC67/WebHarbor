@@ -4,7 +4,7 @@
 Ground truth is read from the shipped seed at verify time, so the answer key
 lives here and never in the agent-facing task file.
 """
-from verify_lib import (Judge, changed_tables_excluding, check_common, contains_all,
+from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, contains_all,
                         final_answer, has_number, load_run, normalize_text,
                         only_allowed_tables_changed, parse_args, resolve_db, row_dicts,
                         visited_path)
@@ -36,7 +36,7 @@ def main():
 
     judge.check('opened_used_listing', visited_path(trajectory, '/used'), 'used and open-box listing')
     judge.check('answer_names_cheapest_item',
-                normalize_text(cheapest['name']) in normalize_text(answer),
+                names_product(answer, cheapest['name']),
                 f"expected={cheapest['name']!r} answer={answer!r}")
     judge.check('answer_states_condition',
                 normalize_text(cheapest['condition']) in normalize_text(answer),

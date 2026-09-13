@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--12: the more expensive of the two carbon fibre monopods."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
                         parse_args, resolve_db, row_dicts, trajectory_urls, visited_path)
 
@@ -31,7 +31,7 @@ def main():
                 visited_path(trajectory, '/search') or any('/search' in url for url in trajectory_urls(trajectory)),
                 'search page')
     judge.check('answer_names_the_dearer_monopod',
-                normalize_text(dearer['name']) in normalize_text(answer),
+                names_product(answer, dearer['name']),
                 f"expected={dearer['name']!r} answer={answer!r}")
     judge.check('answer_states_its_price', has_number(answer, dearer['price']),
                 f"expected={dearer['price']} answer={answer!r}")

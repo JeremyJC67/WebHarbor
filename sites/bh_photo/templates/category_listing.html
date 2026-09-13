@@ -154,16 +154,8 @@
                 </select>
             </label>
             </details>
-            <label class="sort-control">Sort by
-                <select name="sort">
-                    <option value="relevance" {% if request.args.get('sort', 'relevance') == 'relevance' %}selected{% endif %}>Relevance</option>
-                    <option value="price_asc" {% if request.args.get('sort') == 'price_asc' %}selected{% endif %}>Price low to high</option>
-                    <option value="price_desc" {% if request.args.get('sort') == 'price_desc' %}selected{% endif %}>Price high to low</option>
-                    <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest</option>
-                    <option value="rating" {% if request.args.get('sort') == 'rating' %}selected{% endif %}>Top rated</option>
-                    <option value="bestsellers" {% if request.args.get('sort') == 'bestsellers' %}selected{% endif %}>Best sellers</option>
-                </select>
-            </label>
+            {# sort lives in the toolbar above the rows, as it does upstream; a second
+               control in the rail duplicated it and made the page ambiguous #}
             <button type="submit" class="cta block">Apply filters</button>
         </form>
     </aside>

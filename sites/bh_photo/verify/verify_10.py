@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--10: the kit containing the Canon EOS C80 cinema camera."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
                         parse_args, resolve_db, row_dicts, visited_path)
 
@@ -38,7 +38,7 @@ def main():
     judge.check('opened_kit_listing', visited_path(trajectory, '/bundles'), 'kit listing')
     judge.check('answer_states_kit_price', has_number(answer, kit['bundle_price']),
                 f"expected={kit['bundle_price']} answer={answer!r}")
-    missing = [name for name in others if normalize_text(name) not in normalize_text(answer)]
+    missing = [name for name in others if not names_product(answer, name)]
     judge.check('answer_names_both_other_items', not missing, f'missing={missing}')
 
     if initial and after:

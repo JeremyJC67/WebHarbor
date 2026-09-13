@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--7: which of three laptops lists an Intel processor."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         load_run, normalize_text, only_allowed_tables_changed, parse_args,
                         resolve_db, row_dicts, visited_path)
 
@@ -46,7 +46,7 @@ def main():
                 or visited_path(trajectory, '/compare'),
                 'three product pages or the compare page')
     judge.check('answer_names_the_intel_laptop',
-                normalize_text(winner) in normalize_text(answer),
+                names_product(answer, winner),
                 f'expected={winner!r} answer={answer!r}')
     named_losers = [name for name in losers if normalize_text(name) in normalize_text(answer)]
     judge.check('answer_names_only_one_laptop', not named_losers, f'also named={named_losers}')

@@ -2,7 +2,7 @@
 """Verifier for B&H Photo--6: carry a card format from a camera page to a card page."""
 import re
 
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
                         parse_args, resolve_db, row_dicts, visited_path)
 
@@ -47,7 +47,7 @@ def main():
     judge.check('answer_states_card_format', FORMAT_TOKEN in normalize_text(answer),
                 f'answer={answer!r}')
 
-    named = [card for card in cards if normalize_text(card['name']) in normalize_text(answer)]
+    named = [card for card in cards if names_product(answer, card['name'])]
     judge.check('answer_names_a_catalogue_card', bool(named),
                 f'expected one of {[card["name"] for card in cards]} answer={answer!r}')
     judge.check('answer_states_that_card_price',

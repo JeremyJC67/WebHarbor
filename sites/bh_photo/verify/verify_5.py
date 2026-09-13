@@ -4,7 +4,7 @@
 The agent must reach the filtered listing rather than guess; the answer must
 carry both the match count and the cheapest match.
 """
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
                         parse_args, resolve_db, row_dicts, trajectory_urls, visited_path)
 
@@ -53,7 +53,7 @@ def main():
     judge.check('answer_gives_match_count', has_number(answer, len(matches)),
                 f'expected={len(matches)} answer={answer!r}')
     judge.check('answer_names_cheapest_match',
-                normalize_text(cheapest['name']) in normalize_text(answer),
+                names_product(answer, cheapest['name']),
                 f"expected={cheapest['name']!r} answer={answer!r}")
 
     excluded = row_dicts(initial, """

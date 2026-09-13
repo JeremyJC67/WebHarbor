@@ -291,6 +291,26 @@ def affirmative_contains(text: Any, expected: Any) -> bool:
     return not _negated_before(normalized, match.start()) and not _negated_after(normalized, match.end())
 
 
+def names_product(text: Any, product_name: str) -> bool:
+    """True when the answer identifies this product, allowing natural phrasing.
+
+    A run that writes `Lenovo 16-inch ThinkPad T1g Gen 8` has named the product
+    the catalogue calls `Lenovo 16" ThinkPad T1g Gen 8 Multi-Touch Laptop`. The
+    check therefore looks for the distinctive tokens - the brand and the model
+    designators - rather than the catalogue string verbatim.
+    """
+    haystack = re.sub(r"[^a-z0-9]+", " ", normalize_text(text))
+    generic = {"the", "and", "with", "for", "kit", "camera", "lens", "laptop", "mirrorless",
+               "memory", "card", "monitor", "inch", "black", "silver", "multi", "touch",
+               "digital", "in", "line", "pc", "gen", "series", "photo", "video"}
+    tokens = [token for token in re.sub(r"[^a-z0-9]+", " ", normalize_text(product_name)).split()
+              if token and token not in generic]
+    if not tokens:
+        tokens = re.sub(r"[^a-z0-9]+", " ", normalize_text(product_name)).split()[:3]
+    hits = sum(1 for token in tokens if re.search(rf"\b{re.escape(token)}\b", haystack))
+    return hits >= max(2, (len(tokens) + 1) // 2)
+
+
 def contains_all(text: Any, expected: Iterable[Any]) -> bool:
     return all(affirmative_contains(text, value) for value in expected)
 
