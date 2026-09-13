@@ -136,7 +136,6 @@
         <div class="card-body">
           <h3 class="card-title" style="font-size: 16px;"><a href="{{ url_for('research_center', slug=center.slug) }}">{{ center.name }}</a></h3>
           <p class="card-text">{{ center.description[:140] }}{% if center.description|length > 140 %}...{% endif %}</p>
-          <p class="card-meta mt-2">Director: {{ center.director }}</p>
         </div>
       </div>
       {% endfor %}

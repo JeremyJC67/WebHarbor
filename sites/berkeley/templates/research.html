@@ -36,15 +36,9 @@
         <p style="font-family: Arial, sans-serif; font-size: 13px; color: var(--light-blue); margin-bottom: 8px;">{{ center.college.name }}</p>
         {% endif %}
         <p class="card-text">{{ center.description[:160] }}{% if center.description|length > 160 %}...{% endif %}</p>
-        <div class="card-meta mt-2">
-          <div>Director: {{ center.director }}</div>
-          <div>Founded: {{ center.founded_year }}</div>
-          <div style="margin-top: 6px;">
-            {% for area in center.focus_areas.split(',')[:3] %}
-            <span class="tag">{{ area.strip() }}</span>
-            {% endfor %}
-          </div>
-        </div>
+        {# Director, founding year and focus areas live on the centre's own page:
+           rendering them on the listing would show task answers before the
+           required detail-page visit. #}
         <div class="mt-2">
           <a href="{{ url_for('research_center', slug=center.slug) }}" class="btn btn-primary btn-sm">Learn More</a>
         </div>

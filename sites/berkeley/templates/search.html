@@ -138,7 +138,9 @@
       <div class="card">
         <div class="card-body">
           <h3 class="card-title" style="font-size: 15px;"><a href="{{ url_for('research_center', slug=center.slug) }}">{{ center.name }}</a></h3>
-          <p class="card-text">Director: {{ center.director }}</p>
+          {# Director and focus areas stay on the centre's own page: the results
+             card must not hand over a task answer before the required visit. #}
+          {% if center.college %}<p class="card-text" style="font-size: 13px; color: var(--light-blue);">{{ center.college.name }}</p>{% endif %}
         </div>
       </div>
       {% endfor %}
