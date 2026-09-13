@@ -83,7 +83,7 @@ WORKFLOWS: dict[int, dict[str, Any]] = {
     12: {"steps": [{"goto": "/"}, {"goto": "/programs?college=haas-business"}]},
     13: {"steps": [{"goto": "/"}, {"goto": "/departments"}, {"goto": "/departments/eecs"}]},
     14: {"steps": [{"goto": "/"}, {"goto": "/academics"}]},
-    16: {"steps": [{"goto": "/"}, {"goto": "/programs?page=3"},
+    16: {"steps": [{"goto": "/"}, {"goto": "/programs?page=2"},
                    {"goto": "/programs/data-science-ms"}]},
     17: {"steps": [{"goto": "/"}, {"goto": "/about"}]},
     19: {"steps": [{"goto": "/"}, {"goto": "/news?category=Athletics"},
