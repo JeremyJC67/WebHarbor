@@ -206,15 +206,32 @@ def build_companies(cache: Path, assets: Assets) -> tuple[list[dict], list[dict]
     companies: list[dict] = []
     founders: list[dict] = []
     founder_slugs: set[str] = set()
+    company_ids: set[int] = set()
+    company_slugs: set[str] = set()
     for path in sorted((cache / "companies").glob("*.json")):
         payload = json.loads(path.read_text(encoding="utf-8"))
         c = payload.get("company") or {}
-        slug = payload.get("slug")
+        source_slug = payload.get("slug")
+        canonical_slug = c.get("slug")
+        canonical_capture = cache / "companies" / f"{canonical_slug}.json"
+        # Some legacy directory URLs redirect to a renamed company. Switch to
+        # the canonical slug only when that canonical page was also captured;
+        # otherwise preserving the captured URL keeps the dataset reproducible.
+        slug = canonical_slug if canonical_slug and canonical_capture.is_file() else source_slug
         name = c.get("name")
         if not slug or not name:
             continue
-        facet = facets.get(slug) or {}
-        fallback = from_launches.get(slug) or {}
+        company_id = c.get("id")
+        if slug in company_slugs or (company_id is not None and company_id in company_ids):
+            continue
+        company_slugs.add(slug)
+        if company_id is not None:
+            company_ids.add(company_id)
+        # Old directory URLs can redirect to a renamed company's canonical slug.
+        # Prefer the alias's richer Algolia facets while storing only the canonical
+        # company identity returned by the detail payload.
+        facet = facets.get(source_slug) or facets.get(slug) or {}
+        fallback = from_launches.get(source_slug) or from_launches.get(slug) or {}
         row = {
             "slug": slug,
             "name": name,
@@ -243,7 +260,7 @@ def build_companies(cache: Path, assets: Assets) -> tuple[list[dict], list[dict]
             "crunchbase_url": none_str(c.get("cb_url")),
             "group_partner": (literal(c.get("primary_group_partner")) or {}).get("full_name")
             if isinstance(literal(c.get("primary_group_partner")), dict) else None,
-            "logo": assets.add(c.get("small_logo_url") or c.get("logo_url"), "logo", slug),
+            "logo": assets.add(c.get("small_logo_url") or c.get("logo_url"), "logo", source_slug),
             "upstream_url": f"{UPSTREAM}/companies/{slug}",
             "news": [
                 {"title": n.get("title"), "url": n.get("url"), "date": n.get("date")}

@@ -1,7 +1,7 @@
 {
  "meta": {
   "upstream": "https://www.ycombinator.com",
-  "generated_at": "2026-09-13T04:31:57Z",
+  "generated_at": "2026-09-13T15:04:57Z",
   "note": "Every record is extracted from a captured ycombinator.com response; absent upstream values are omitted rather than generated."
  },
  "home": {
@@ -5009,43 +5009,6 @@
    "news": []
   },
   {
-   "slug": "bear",
-   "name": "Specific Labs",
-   "batch": "Fall 2025",
-   "batch_code": "F25",
-   "industry": "B2B",
-   "subindustry": "B2B -> Marketing",
-   "stage": "Early",
-   "regions": [
-    "United States of America",
-    "America / Canada"
-   ],
-   "top_company": false,
-   "is_hiring": false,
-   "tags": [
-    "Generative AI",
-    "SaaS",
-    "B2B"
-   ],
-   "one_liner": "Real World Environments and Data for AI",
-   "long_description": "Specific builds enterprise environments and datasets representative of work inside real-world businesses. The next frontier of AGI is bottlenecked by data that is hard to access, and we make that easier.",
-   "website": "https://withspecific.com",
-   "year_founded": 2025,
-   "team_size": 6,
-   "location": "San Francisco",
-   "city": "San Francisco",
-   "country": "US",
-   "status": "Active",
-   "linkedin_url": "https://www.linkedin.com/company/specificlabs",
-   "twitter_url": "https://x.com/usebearai",
-   "github_url": null,
-   "crunchbase_url": null,
-   "group_partner": "Pete Koomen",
-   "logo": "logo_bear.png",
-   "upstream_url": "https://www.ycombinator.com/companies/bear",
-   "news": []
-  },
-  {
    "slug": "bear-flag-robotics",
    "name": "Bear Flag Robotics",
    "batch": "Winter 2018",
@@ -7268,41 +7231,6 @@
    "group_partner": "Brad Flora",
    "logo": "logo_carsignal.png",
    "upstream_url": "https://www.ycombinator.com/companies/carsignal",
-   "news": []
-  },
-  {
-   "slug": "carson",
-   "name": "/dev/fast",
-   "batch": "Winter 2026",
-   "batch_code": "W26",
-   "industry": "B2B",
-   "subindustry": "B2B",
-   "stage": "Early",
-   "regions": [
-    "United States of America",
-    "America / Canada"
-   ],
-   "top_company": false,
-   "is_hiring": false,
-   "tags": [
-    "Developer Tools"
-   ],
-   "one_liner": "/dev/fast is the AI-native code forge",
-   "long_description": "/dev/fast is the AI-native code forge. We're building 'Review', an open-source Cursor for code review.\r\n\r\nThe Review app is designed to give you confidence in your code. Critique interactive visualizations, diffs, and agent traces, all from one interface. \r\n\r\nLearn more at https://dev.fast",
-   "website": "https://dev.fast",
-   "year_founded": 2025,
-   "team_size": 4,
-   "location": "San Francisco",
-   "city": "San Francisco",
-   "country": "US",
-   "status": "Active",
-   "linkedin_url": null,
-   "twitter_url": null,
-   "github_url": null,
-   "crunchbase_url": null,
-   "group_partner": "Gustaf Alstromer",
-   "logo": "logo_carson.png",
-   "upstream_url": "https://www.ycombinator.com/companies/carson",
    "news": []
   },
   {
@@ -11791,9 +11719,12 @@
    "batch": "Winter 2026",
    "batch_code": "W26",
    "industry": "B2B",
-   "subindustry": null,
-   "stage": null,
-   "regions": [],
+   "subindustry": "B2B",
+   "stage": "Early",
+   "regions": [
+    "United States of America",
+    "America / Canada"
+   ],
    "top_company": false,
    "is_hiring": false,
    "tags": [
@@ -21531,41 +21462,6 @@
    "batch": "Spring 2026",
    "batch_code": "P26",
    "industry": "Fintech",
-   "subindustry": null,
-   "stage": null,
-   "regions": [],
-   "top_company": false,
-   "is_hiring": false,
-   "tags": [
-    "Artificial Intelligence",
-    "B2B",
-    "Investments",
-    "Trading"
-   ],
-   "one_liner": "Live Evaluation Arenas for Financial Work",
-   "long_description": "In investment management, every decision gets graded. The market prints the answer on a date known in advance, and nobody gets to argue with it.\r\n\r\nKimpton is financial AI that answers to reality. Kimpton OS is the AI-native operating system for investment teams: it does the research and hands PMs structured trades. EarningsBench is a public benchmark where models forecast quarterly earnings before companies report and the reported numbers do the scoring. Koliseum is the set of point-in-time financial environments we build from that work, for labs to train and evaluate models on.\r\n\r\nThe whole industry is fighting underperformance. Active managers trail their benchmarks, and capital keeps bleeding into passive. AI was supposed to fix that, but it hasn't. Funds either stitch together a dozen point tools or babysit general agents all day, and neither gets them to the trade.\r\n\r\nKimpton OS goes straight to it. It ingests a fund's mandate, strategy, and positions, connects to the institutional data the fund already runs on, and returns a structured trade proposal built for that fund. It's built to disagree, because consensus is poison for investment decisions. Instead of telling a PM what they want to hear, it surfaces the breaches and risks they'd otherwise miss.\r\n\r\nThat same work is how we grade AI. Static benchmarks leak into training data. Simulations reward what their authors imagined. A forecast sealed before the outcome exists and scored when the company reports can't be rehearsed or backdated. We started in markets because they're the one place reality answers on schedule.\r\n\r\nWe're two ex-Goldman engineers and an ex-SpaceX engineer. We left to start our own quantitative systematic hedge fund, raised $10M from a family office at 21 and 22, and scaled it to $35M over four years. We learned to trust live results over historical fit. We built Kimpton inside that fund, then productized the stack.\r\n\r\nWe're live with our first institutional client, a $3.3B manager. Our first market is fundamental equity funds from $1B to $10B, and the labs that need to know whether their models can do this work.",
-   "website": "https://kimpton.ai",
-   "year_founded": 2025,
-   "team_size": 5,
-   "location": "New York City, NY",
-   "city": "New York City",
-   "country": "US",
-   "status": "Active",
-   "linkedin_url": "https://www.linkedin.com/company/kimptonai/",
-   "twitter_url": "https://x.com/KimptonAI",
-   "github_url": null,
-   "crunchbase_url": null,
-   "group_partner": "Aaron Epstein",
-   "logo": "logo_kimpton-ai.png",
-   "upstream_url": "https://www.ycombinator.com/companies/kimpton",
-   "news": []
-  },
-  {
-   "slug": "kimpton-ai",
-   "name": "Kimpton",
-   "batch": "Spring 2026",
-   "batch_code": "P26",
-   "industry": "Fintech",
    "subindustry": "Fintech -> Asset Management",
    "stage": "Early",
    "regions": [
@@ -21597,7 +21493,7 @@
    "crunchbase_url": null,
    "group_partner": "Aaron Epstein",
    "logo": "logo_kimpton-ai.png",
-   "upstream_url": "https://www.ycombinator.com/companies/kimpton-ai",
+   "upstream_url": "https://www.ycombinator.com/companies/kimpton",
    "news": []
   },
   {
@@ -38547,42 +38443,6 @@
    "news": []
   },
   {
-   "slug": "skope",
-   "name": "Async",
-   "batch": "Summer 2026",
-   "batch_code": "S26",
-   "industry": "B2B",
-   "subindustry": "B2B",
-   "stage": "Early",
-   "regions": [
-    "United States of America",
-    "America / Canada"
-   ],
-   "top_company": false,
-   "is_hiring": false,
-   "tags": [
-    "B2B",
-    "AI"
-   ],
-   "one_liner": "AI agents that run small businesses",
-   "long_description": "Async builds AI agents that run small businesses. Law firms, healthcare clinics and real estate companies hire our AI agents to automate complex work that's never been economical to staff with humans, letting us capture labor spend that didn't previously exist.",
-   "website": "https://withasync.com",
-   "year_founded": 2025,
-   "team_size": 2,
-   "location": "New York City, NY",
-   "city": "New York City",
-   "country": "US",
-   "status": "Active",
-   "linkedin_url": "https://www.linkedin.com/company/useskope/",
-   "twitter_url": null,
-   "github_url": null,
-   "crunchbase_url": null,
-   "group_partner": "Brad Flora",
-   "logo": "logo_skope.png",
-   "upstream_url": "https://www.ycombinator.com/companies/skope",
-   "news": []
-  },
-  {
    "slug": "skymerse",
    "name": "Skymerse",
    "batch": "Summer 2026",
@@ -39261,9 +39121,12 @@
    "batch": "Fall 2025",
    "batch_code": "F25",
    "industry": "B2B",
-   "subindustry": null,
-   "stage": null,
-   "regions": [],
+   "subindustry": "B2B -> Marketing",
+   "stage": "Early",
+   "regions": [
+    "United States of America",
+    "America / Canada"
+   ],
    "top_company": false,
    "is_hiring": false,
    "tags": [
@@ -46003,9 +45866,12 @@
    "batch": "Summer 2026",
    "batch_code": "S26",
    "industry": "B2B",
-   "subindustry": null,
-   "stage": null,
-   "regions": [],
+   "subindustry": "B2B",
+   "stage": "Early",
+   "regions": [
+    "United States of America",
+    "America / Canada"
+   ],
    "top_company": false,
    "is_hiring": false,
    "tags": [
@@ -47635,15 +47501,6 @@
    "name": "Adrian Del Bosque",
    "title": "Founder/Founding Engineer",
    "bio": "Co-founder, Founding Engineer @ Kimpton AI (YC P26). Building live evaluation arenas for financial work.\n\nAdrian was a founding engineer at Level III Capital, a quantitative systematic trading firm, where he built the trading infrastructure. Prior to that, he was a Senior Cloud & Platform Engineer at Vistra, managing the cloud infrastructure behind the monitoring application for its 44,000 megawatt power generation fleet. He began his career at SpaceX as part of the Automation & Controls team.",
-   "company_slug": "kimpton-ai",
-   "avatar": "founder_adrian-del-bosque.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/kimpton-ai"
-  },
-  {
-   "slug": "adrian-del-bosque-2",
-   "name": "Adrian Del Bosque",
-   "title": "Founder/Founding Engineer",
-   "bio": "Co-founder, Founding Engineer @ Kimpton AI (YC P26). Building live evaluation arenas for financial work.\n\nAdrian was a founding engineer at Level III Capital, a quantitative systematic trading firm, where he built the trading infrastructure. Prior to that, he was a Senior Cloud & Platform Engineer at Vistra, managing the cloud infrastructure behind the monitoring application for its 44,000 megawatt power generation fleet. He began his career at SpaceX as part of the Automation & Controls team.",
    "company_slug": "kimpton",
    "avatar": "founder_adrian-del-bosque.jpg",
    "upstream_url": "https://www.ycombinator.com/companies/kimpton"
@@ -48145,15 +48002,6 @@
   },
   {
    "slug": "alex-iansiti",
-   "name": "Alex Iansiti",
-   "title": "Founder/CPO",
-   "bio": "rethinking dev tools for the era of slop code. Prev: Flowcode, Pinterest, Harvard CS '21",
-   "company_slug": "carson",
-   "avatar": "founder_alex-iansiti.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/carson"
-  },
-  {
-   "slug": "alex-iansiti-2",
    "name": "Alex Iansiti",
    "title": "Founder/CPO",
    "bio": "rethinking dev tools for the era of slop code. Prev: Flowcode, Pinterest, Harvard CS '21",
@@ -50164,15 +50012,6 @@
    "name": "Ben Smith",
    "title": "Founder/CEO",
    "bio": "Co-Founder of Async. Used to sell shoes, trading cards and collectibles. Dropped out of college at 20 to build software. ",
-   "company_slug": "skope",
-   "avatar": "founder_ben-smith.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/skope"
-  },
-  {
-   "slug": "ben-smith-2",
-   "name": "Ben Smith",
-   "title": "Founder/CEO",
-   "bio": "Co-Founder of Async. Used to sell shoes, trading cards and collectibles. Dropped out of college at 20 to build software. ",
    "company_slug": "withasync",
    "avatar": "founder_ben-smith.jpg",
    "upstream_url": "https://www.ycombinator.com/companies/withasync"
@@ -51799,15 +51638,6 @@
   },
   {
    "slug": "connor-park",
-   "name": "Connor Park",
-   "title": "Founder/CTO",
-   "bio": "Previously studied Computer Science at the University of Michigan, Ann Arbor. Building since 7 years old. ",
-   "company_slug": "skope",
-   "avatar": "founder_connor-park.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/skope"
-  },
-  {
-   "slug": "connor-park-2",
    "name": "Connor Park",
    "title": "Founder/CTO",
    "bio": "Previously studied Computer Science at the University of Michigan, Ann Arbor. Building since 7 years old. ",
@@ -55699,15 +55529,6 @@
    "name": "Jack Zumwalt",
    "title": "Founder/CEO",
    "bio": "Co-founder, CEO @ Kimpton AI (YC P26). Building live evaluation arenas for financial work.\n\nJack ran systematic strategies and managed daily operations of Level III Capital, a quantitative systematic trading firm he co-founded after raising $10M to seed the fund at the age of 22.\n\nPrior to that, he was a detection engineer at Goldman Sachs, writing algorithms to detect malicious threat actors who were trying to cyber attack the investment bank. ",
-   "company_slug": "kimpton-ai",
-   "avatar": "founder_jack-zumwalt.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/kimpton-ai"
-  },
-  {
-   "slug": "jack-zumwalt-2",
-   "name": "Jack Zumwalt",
-   "title": "Founder/CEO",
-   "bio": "Co-founder, CEO @ Kimpton AI (YC P26). Building live evaluation arenas for financial work.\n\nJack ran systematic strategies and managed daily operations of Level III Capital, a quantitative systematic trading firm he co-founded after raising $10M to seed the fund at the age of 22.\n\nPrior to that, he was a detection engineer at Goldman Sachs, writing algorithms to detect malicious threat actors who were trying to cyber attack the investment bank. ",
    "company_slug": "kimpton",
    "avatar": "founder_jack-zumwalt.jpg",
    "upstream_url": "https://www.ycombinator.com/companies/kimpton"
@@ -56083,15 +55904,6 @@
   },
   {
    "slug": "janak-sunil",
-   "name": "Janak Sunil",
-   "title": "Founder/CEO",
-   "bio": "Co-Founder and CEO @ Specific\n\nPrev @ Coinbase",
-   "company_slug": "bear",
-   "avatar": "founder_janak-sunil.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/bear"
-  },
-  {
-   "slug": "janak-sunil-2",
    "name": "Janak Sunil",
    "title": "Founder/CEO",
    "bio": "Co-Founder and CEO @ Specific\n\nPrev @ Coinbase",
@@ -57931,15 +57743,6 @@
    "name": "Ketan Agrawal",
    "title": "Founder",
    "bio": "Building an AI-native Github. prev: AI/ML engineering at Snowflake, Robust Intelligence, Stanford Symbolic Systems/CS",
-   "company_slug": "carson",
-   "avatar": "founder_ketan-agrawal.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/carson"
-  },
-  {
-   "slug": "ketan-agrawal-2",
-   "name": "Ketan Agrawal",
-   "title": "Founder",
-   "bio": "Building an AI-native Github. prev: AI/ML engineering at Snowflake, Robust Intelligence, Stanford Symbolic Systems/CS",
    "company_slug": "devfast",
    "avatar": "founder_ketan-agrawal.jpg",
    "upstream_url": "https://www.ycombinator.com/companies/devfast"
@@ -59632,15 +59435,6 @@
    "name": "Mauricio Ortiz",
    "title": "Founder/CTO",
    "bio": "Co-founder, CEO @ Kimpton AI (YC P26). Building live evaluation readings for financial work.\n\nMauricio oversaw the entire technical implementation of the investment process, from research to trade execution, at Level III Capital, a quantitative systematic trading firm he co-founded after raising $10M to seed the fund at the age of 21.\n\nPrior to that, he was part of the critical infrastructure team at Goldman Sachs which handled systems for its consumer bank and the Apple Card. ",
-   "company_slug": "kimpton-ai",
-   "avatar": "founder_mauricio-ortiz.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/kimpton-ai"
-  },
-  {
-   "slug": "mauricio-ortiz-2",
-   "name": "Mauricio Ortiz",
-   "title": "Founder/CTO",
-   "bio": "Co-founder, CEO @ Kimpton AI (YC P26). Building live evaluation readings for financial work.\n\nMauricio oversaw the entire technical implementation of the investment process, from research to trade execution, at Level III Capital, a quantitative systematic trading firm he co-founded after raising $10M to seed the fund at the age of 21.\n\nPrior to that, he was part of the critical infrastructure team at Goldman Sachs which handled systems for its consumer bank and the Apple Card. ",
    "company_slug": "kimpton",
    "avatar": "founder_mauricio-ortiz.jpg",
    "upstream_url": "https://www.ycombinator.com/companies/kimpton"
@@ -60286,15 +60080,6 @@
   },
   {
    "slug": "milan-bhandari",
-   "name": "Milan Bhandari",
-   "title": "Founder/CTO",
-   "bio": "Building the next GitHub. Prev: Bolto (YC S23), Palantir, Harvard CS '21",
-   "company_slug": "carson",
-   "avatar": "founder_milan-bhandari.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/carson"
-  },
-  {
-   "slug": "milan-bhandari-2",
    "name": "Milan Bhandari",
    "title": "Founder/CTO",
    "bio": "Building the next GitHub. Prev: Bolto (YC S23), Palantir, Harvard CS '21",
@@ -64924,15 +64709,6 @@
    "name": "Sid Menon",
    "title": "Founder/CEO",
    "bio": "building the next github | prev @ Palantir, Harvard.",
-   "company_slug": "carson",
-   "avatar": "founder_sid-menon.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/carson"
-  },
-  {
-   "slug": "sid-menon-2",
-   "name": "Sid Menon",
-   "title": "Founder/CEO",
-   "bio": "building the next github | prev @ Palantir, Harvard.",
    "company_slug": "devfast",
    "avatar": "founder_sid-menon.jpg",
    "upstream_url": "https://www.ycombinator.com/companies/devfast"
@@ -64975,15 +64751,6 @@
   },
   {
    "slug": "siddhant-paliwal",
-   "name": "Siddhant Paliwal",
-   "title": "Founder/CTO",
-   "bio": "Co-Founder and CTO @ Specific \n\nPrev @ Third Chair (YC X25), Intel. Founded my first company at 15, invited to the UN.",
-   "company_slug": "bear",
-   "avatar": "founder_siddhant-paliwal.jpg",
-   "upstream_url": "https://www.ycombinator.com/companies/bear"
-  },
-  {
-   "slug": "siddhant-paliwal-2",
    "name": "Siddhant Paliwal",
    "title": "Founder/CTO",
    "bio": "Co-Founder and CTO @ Specific \n\nPrev @ Third Chair (YC X25), Intel. Founded my first company at 15, invited to the UN.",

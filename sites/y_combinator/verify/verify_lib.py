@@ -296,11 +296,11 @@ def expected(task, before):
         return {"pool": pool, "company": unique_extreme(pool, "team_size", reverse=True)}
     if task == 2:
         hits = [row for row in before["company"].values()
-                if "grocery" in norm(" ".join(filter(None, [row["name"], row["one_liner"],
+                if "delivery" in norm(" ".join(filter(None, [row["name"], row["one_liner"],
                                                             row["long_description"]])))]
         founded = [row for row in hits if row["year_founded"] == 2020]
         if len(founded) != 1:
-            raise ValueError("grocery search does not have exactly one 2020 company")
+            raise ValueError("delivery search does not have exactly one 2020 company")
         return {"pool": hits, "company": founded[0]}
     if task == 3:
         pool = rows(before, "company", industry="Industrials", status="Public")
@@ -481,16 +481,17 @@ def state_checks(judge, trajectory, before, after, facts):
 def navigation_checks(judge, trajectory, facts):
     task = judge.task
     if task == 0:
+        judge.check("biology_search_used", visited_query(trajectory, "/companies", {"q": "biology"}))
         judge.check("company_page_opened", visited(trajectory, f"/companies/{facts['company']['slug']}"))
     elif task in {1, 3}:
         judge.check("directory_used", visited(trajectory, "/companies"))
         judge.check("candidates_opened",
                     all(visited(trajectory, f"/companies/{row['slug']}") for row in facts["pool"]))
     elif task == 2:
-        judge.check("directory_used", visited(trajectory, "/companies"))
+        judge.check("delivery_search_used", visited_query(trajectory, "/companies", {"q": "delivery"}))
         judge.check("company_page_opened", visited(trajectory, f"/companies/{facts['company']['slug']}"))
     elif task == 4:
-        judge.check("founder_directory_used", visited(trajectory, "/founders"))
+        judge.check("quantum_search_used", visited_query(trajectory, "/founders", {"q": "quantum"}))
         judge.check("founder_profile_reached",
                     visited(trajectory, f"/founders/{facts['founder']['slug']}")
                     or visited(trajectory, f"/companies/{facts['company']['slug']}"))
@@ -523,7 +524,7 @@ def navigation_checks(judge, trajectory, facts):
         judge.check("results_opened",
                     all(visited(trajectory, f"/companies/{row['slug']}") for row in facts["pool"]))
     elif task == 16:
-        judge.check("library_used", visited(trajectory, "/library"))
+        judge.check("software_search_used", visited_query(trajectory, "/library", {"q": "software"}))
         judge.check("article_opened", visited(trajectory, f"/library/{facts['article']['slug']}"))
     elif task == 17:
         judge.check("directory_used", visited(trajectory, "/companies"))
@@ -563,8 +564,9 @@ def answer_checks(judge, trajectory, facts):
         judge.check("year_founded", has_year(text, company["year_founded"]))
     elif task == 4:
         judge.check("company_identified", company_named(facts["company"]))
-        judge.check("batch", phrase(text, facts["company"]["batch"]))
-        judge.check("title", phrase(text, facts["founder"]["title"]))
+        judge.check("team_size", has_number(text, facts["company"]["team_size"]))
+        judge.check("industry", phrase(text, facts["company"]["industry"]))
+        judge.check("location", affirmative_phrase(text, facts["company"]["location"]))
     elif task == 5:
         article = facts["article"]
         judge.check("article_identified", affirmative_phrase(text, article["title"]))
@@ -615,7 +617,6 @@ def answer_checks(judge, trajectory, facts):
         judge.check("published", has_date(text, article["created_at"]))
     elif task == 17:
         company = facts["company"]
-        judge.check("result_count", has_number(text, len(facts["pool"])))
         judge.check("company_identified", company_named(company))
         judge.check("batch", phrase(text, company["batch"]))
         judge.check("team_size", has_number(text, company["team_size"]))

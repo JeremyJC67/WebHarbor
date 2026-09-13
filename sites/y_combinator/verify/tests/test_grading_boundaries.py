@@ -31,6 +31,18 @@ class AnswerBoundaries(unittest.TestCase):
         for date in ('June 19, 2025', '19 June 2025', 'Jun 19, 2025', 'Jun. 19, 2025', '2025-06-19'):
             self.assertTrue(self.answer(16, f'AI Startup School; 2,535,910 views; {date}.', facts))
 
+    def test_founder_task_requires_company_page_facts(self):
+        facts = {'company': {'name': 'Rigetti Computing', 'team_size': 51,
+                             'industry': 'Industrials', 'location': 'San Francisco'}}
+        self.assertFalse(self.answer(
+            4, 'Rigetti Computing, Summer 2014; Chad Rigetti is Founder/CEO.', facts))
+        self.assertTrue(self.answer(
+            4, 'Rigetti Computing has 51 people in Industrials and is in San Francisco.', facts))
+
+    def test_government_task_does_not_require_the_visible_result_count(self):
+        facts = {'company': {'name': 'Verdant', 'batch': 'Summer 2026', 'team_size': 2}}
+        self.assertTrue(self.answer(17, 'Verdant — Summer 2026, team size 2.', facts))
+
     def test_comparison_reversal_fails(self):
         a = {'name': 'Codecademy', 'slug': 'codecademy', 'team_size': 225, 'batch': 'Summer 2011'}
         b = {'name': 'Panorama Education', 'slug': 'panorama-education', 'team_size': 350, 'batch': 'Summer 2013'}
