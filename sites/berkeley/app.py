@@ -38,6 +38,26 @@ csrf = CSRFProtect(app)
 
 PER_PAGE = 20
 
+# ─── Benchmark clock ──────────────────────────────────────────────────────────
+# The site must render identically on every run and on every day. The seeded
+# event calendar is pinned (seed_data.py: `now = datetime(2026, 5, 12)`), so the
+# app compares against that same frozen instant instead of the wall clock —
+# otherwise every "upcoming" filter drains as the image ages (the seed's last
+# event is 2026-07-16, after which /events rendered 0 of 0) and the task
+# ground truth rots. Same pattern as sites/osu/app.py: BENCHMARK_NOW.
+BENCHMARK_NOW = datetime(2026, 5, 12)
+
+
+def utcnow():
+    """Frozen stand-in for datetime.utcnow() — see BENCHMARK_NOW.
+
+    Used as the column default for created_at / published_date so no request
+    path (register, bookmark_add) or seed path can stamp the wall clock into a
+    row, which would break byte-reproducibility of instance_seed.
+    """
+    return BENCHMARK_NOW
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def slugify(text):
@@ -64,7 +84,7 @@ class User(db.Model, UserMixin):
     full_name = db.Column(db.String(150), nullable=False, default='')
     role = db.Column(db.String(30), default='student')
     bio = db.Column(db.Text, default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
     bookmarks = db.relationship('Bookmark', backref='user', lazy=True,
                                 cascade='all, delete-orphan')
@@ -132,7 +152,7 @@ class NewsArticle(db.Model):
     slug = db.Column(db.String(300), unique=True, nullable=False, index=True)
     category = db.Column(db.String(50), default='Campus Life')
     author = db.Column(db.String(150), default='Berkeley News Staff')
-    published_date = db.Column(db.DateTime, default=datetime.utcnow)
+    published_date = db.Column(db.DateTime, default=utcnow)
     content = db.Column(db.Text, default='')
     summary = db.Column(db.Text, default='')
     tags = db.Column(db.String(500), default='')
@@ -191,7 +211,7 @@ class Bookmark(db.Model):
     item_type = db.Column(db.String(50), nullable=False)
     item_id = db.Column(db.Integer, nullable=False)
     note = db.Column(db.Text, default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow)
 
 
 # ─── Forms ────────────────────────────────────────────────────────────────────
@@ -228,7 +248,7 @@ def load_user(user_id):
 @app.context_processor
 def inject_globals():
     return {
-        'now': datetime.utcnow(),
+        'now': BENCHMARK_NOW,
         'colleges': College.query.order_by(College.name).all(),
     }
 
@@ -242,7 +262,7 @@ def index():
         featured_news = NewsArticle.query.order_by(
             NewsArticle.published_date.desc()).limit(6).all()
     upcoming_events = Event.query.filter(
-        Event.start_datetime >= datetime.utcnow()
+        Event.start_datetime >= BENCHMARK_NOW
     ).order_by(Event.start_datetime).limit(4).all()
     recent_research = ResearchCenter.query.limit(4).all()
     stats = {
@@ -380,7 +400,7 @@ def events():
     category = request.args.get('category', '')
     date_filter = request.args.get('date', 'upcoming')
     page = request.args.get('page', 1, type=int)
-    now = datetime.utcnow()
+    now = BENCHMARK_NOW
 
     query = Event.query
     if q:
@@ -431,7 +451,7 @@ def event_detail(event_id):
     related = Event.query.filter(
         Event.category == event.category,
         Event.id != event.id,
-        Event.start_datetime >= datetime.utcnow()
+        Event.start_datetime >= BENCHMARK_NOW
     ).order_by(Event.start_datetime).limit(3).all()
     return render_template('event_detail.html', event=event, related=related)
 
