@@ -4,6 +4,14 @@
 The task now asks for the two exact durations printed on the two detail pages
 (MEng vs Computer Science MS), which is deterministic; both detail visits are
 gated and the department is accepted by name or by its acronym.
+
+The search gate follows the ques text: "Search the Berkeley site for 'Master of
+Engineering'". The site search (``/search?q=…``) and the programme catalogue
+filters (``/programs?q=…``, ``/programs?degree=MEng``) are all routes the task
+permits, so any of them satisfies the gate as long as the query names the MEng
+term — a catalog-wide search (``/search?q=california``) does not. MINOR
+loosening under PIPELINE §0.4: the two detail-page gates and every answer check
+are unchanged, and both remain the binding anti-shortcut anchors.
 """
 from __future__ import annotations
 
@@ -13,7 +21,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
-    check_params_visited,
     check_read_only,
     check_trajectory_identity,
     check_visited_detail,
@@ -23,6 +30,7 @@ from verify_lib import (  # noqa: E402
     final_answer,
     Judge,
     load_run,
+    params_visited,
     parse_args,
     resolve_snapshots,
 )
@@ -38,9 +46,16 @@ def run_checks(judge: Judge, trajectory: dict, initial_db: str, after_db: str) -
     answer = final_answer(trajectory)
     meng_duration, ms_duration = facts["durations"]
 
-    check_params_visited(
-        judge, trajectory, "visited_program_search", "/programs",
-        {"q": "master of engineering"}, {"degree": "MEng"},
+    search_ok = (
+        params_visited(trajectory, "/programs", q="master of engineering")
+        or params_visited(trajectory, "/programs", degree="MEng")
+        or params_visited(trajectory, "/search", q="master of engineering")
+    )
+    judge.check(
+        "visited_program_search",
+        search_ok,
+        "required: /programs?q~'master of engineering', /programs?degree~'MEng', or the site "
+        "search /search?q~'master of engineering'; the query must name the MEng term",
     )
     check_visited_detail(judge, trajectory, "program", facts["meng"]["slug"])
     check_visited_detail(judge, trajectory, "program", facts["ms"]["slug"])

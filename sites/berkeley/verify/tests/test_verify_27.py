@@ -37,6 +37,27 @@ class VerifyTask27Tests(SharedVerifierTests, VerifierTestCase):
                  step("/programs/computer-science-ms", "done")]
         self.assertPasses(self.verdict(steps, ANSWER))
 
+    def test_site_search_route_also_satisfies_search_gate(self) -> None:
+        """§0.4 loosening: the ques says "Search the Berkeley site for …", so the site search counts."""
+        steps = [step("/"), step("/search?q=Master+of+Engineering"),
+                 step("/programs/master-of-engineering-meng"),
+                 step("/programs/computer-science-ms", "done")]
+        self.assertPasses(self.verdict(steps, ANSWER))
+
+    def test_catalog_wide_search_still_fails_search_gate(self) -> None:
+        """The loosening must not admit a search that does not name the MEng term."""
+        steps = [step("/"), step("/search?q=california"),
+                 step("/programs/master-of-engineering-meng"),
+                 step("/programs/computer-science-ms", "done")]
+        self.assertFailsOn(self.verdict(steps, ANSWER), "visited_program_search")
+
+    def test_site_search_alone_without_detail_pages_still_fails(self) -> None:
+        """The detail gates, not the search gate, stay the binding anti-shortcut anchors."""
+        steps = [step("/"), step("/search?q=Master+of+Engineering", "done")]
+        self.assertFailsOn(
+            self.verdict(steps, ANSWER), "visited_program_detail_master-of-engineering-meng"
+        )
+
     def test_missing_ms_hop_fails(self) -> None:
         steps = [
             step("/"), step("/programs?q=Master%20of%20Engineering"),
