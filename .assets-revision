@@ -4,5 +4,34 @@
 # fetch_assets.sh uses the `hf download` CLI. The pin below
 # is a git revision (branch name like `main`, a tag, or a specific commit
 # sha). Override at runtime with the ASSETS_REVISION env var.
+#
+# The revision is a commit sha, never a moving branch name.
+#
+# Current pin = the resolved commit of HF dataset PR #74
+# ("Upload kaggle.tar.gz with huggingface_hub"). That PR is still open,
+# so this sha is not on HF `main`.
+#
+# Why this sha and not the other candidate (refs/pr/37, resolved
+# 600a3e1de158ae56dc82a5fab56c2ca25acb1e27):
+#   * this revision carries an archive for all 25 registered sites, and the
+#     kaggle seed DB it ships is identical to what sites/kaggle/seed_data.py
+#     generates (13/13 tables, row by row);
+#   * refs/pr/37 ships an older kaggle seed (models table has 10 rows instead of
+#     11: densenet121-chestxray is absent) and has archives for only 17 of the 25
+#     registered sites, so pinning there would break fetch_assets.sh for eight
+#     other sites.
+#   * this revision's kaggle.tar.gz (sha256
+#     c533c283fb68f924989523b6fb686beecf66846cb13579ca0eae32b524c99343,
+#     11278264 bytes) is currently REJECTED by the repository's own
+#     scripts/validate_asset_archive.py:
+#         ValueError: unexpected managed path: 'kaggle/static'
+#     because the tarball includes the bare directory member `kaggle/static`.
+#     Until that archive is re-packed without the bare directory entry and
+#     uploaded (then this pin moves to the HF main sha containing it),
+#     `scripts/fetch_assets.sh` cannot install sites/kaggle's assets.
+#     See review-reports/PR-106-FINAL-AUDIT.md "Open blocker".
+#
+# Every pre-existing archive is byte-identical between this revision and
+# HF main, so pinning here does not change any other site's assets.
 repo: ChilleD/WebHarbor
 revision: 64264d065cdb0b7755ee99dab356be5733d9ddef
