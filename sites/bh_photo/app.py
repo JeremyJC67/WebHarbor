@@ -804,16 +804,26 @@ def build_compare_rows(products: list[Product]) -> dict:
 
 
 def log_search(query: str, scope: str, result_count: int) -> None:
+    """Record the search without disturbing what this request already loaded.
+
+    Committing on db.session expires every instance in the identity map. The
+    search page has just loaded the whole catalogue eagerly, so the next
+    attribute read after such a commit reloads all 296 products one row at a
+    time - twenty seconds of the request, spent re-fetching rows it already had.
+    The log is append-only and nothing in the request reads it back, so it goes
+    out on its own connection and leaves the session alone.
+    """
     if not query:
         return
-    entry = SearchLog(
-        user_id=current_user.id if current_user.is_authenticated else None,
-        query=query[:220],
-        scope=scope[:80],
-        result_count=result_count,
-    )
-    db.session.add(entry)
-    db.session.commit()
+    with db.engine.begin() as connection:
+        connection.execute(
+            SearchLog.__table__.insert().values(
+                user_id=current_user.id if current_user.is_authenticated else None,
+                query=query[:220],
+                scope=scope[:80],
+                result_count=result_count,
+            )
+        )
 
 
 @app.template_filter("currency")
