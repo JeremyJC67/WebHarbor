@@ -86,6 +86,15 @@ os.makedirs('instance_seed', exist_ok=True); \
 shutil.copy2('instance/rotten_tomatoes.db', 'instance_seed/rotten_tomatoes.db'); \
 print('Rotten Tomatoes seed DB generated at build time.')" && rm -rf /opt/WebSyn/rotten_tomatoes/instance
 
+# AccuWeather uses genuine captured UI assets and freezes its deterministic seed.
+RUN test -n "$(ls -A /opt/WebSyn/accuweather/static/images)" && \
+    cd /opt/WebSyn/accuweather && rm -rf instance instance_seed && python3 -c "\
+import app; \
+import os, shutil; \
+os.makedirs('instance_seed', exist_ok=True); \
+shutil.copy2('instance/accuweather.db', 'instance_seed/accuweather.db'); \
+print('AccuWeather seed DB generated at build time.')" && rm -rf /opt/WebSyn/accuweather/instance
+
 EXPOSE 8101 40000-40026
 
 CMD ["/opt/websyn_start.sh"]
