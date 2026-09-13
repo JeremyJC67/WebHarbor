@@ -64,11 +64,12 @@ RUN python3 /opt/WebSyn/webmd_doctor/check_generated_assets.py
 RUN cd /opt/WebSyn/webmd_doctor && rm -rf instance instance_seed && \
     PYTHONHASHSEED=0 python seed_data.py && rm -rf instance __pycache__
 
-# Berkeley: all data is code-generated (no scraped images → no HF asset).
-# Build the seed DB once at image-build time so websyn_start.sh can copy it on boot.
-RUN cd /opt/WebSyn/berkeley && \
-    python3 -c "from app import app" && \
-    cp instance/berkeley.db instance_seed/berkeley.db
+# Berkeley: all data is code-generated (no scraped images → no HF asset), so the
+# seed DB is generated here from tracked source — see .build-generated-seed. No
+# wall clock and no random salt reaches a row, so the artifact is byte-reproducible;
+# websyn_start.sh copies it into instance/ at boot.
+RUN cd /opt/WebSyn/berkeley && rm -rf instance instance_seed && \
+    PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
 
 COPY websyn_start.sh    /opt/websyn_start.sh
 COPY control_server.py  /opt/control_server.py

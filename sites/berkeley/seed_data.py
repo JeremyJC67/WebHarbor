@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
-"""Seed data for UC Berkeley mirror site. Idempotent — safe to call multiple times."""
+"""Seed data for UC Berkeley mirror site. Idempotent — safe to call multiple times.
+
+`python seed_data.py` regenerates instance_seed/berkeley.db from this file alone
+(see build_seed_database); the Dockerfile runs exactly that, and the artifact is
+byte-reproducible across runs and PYTHONHASHSEED values.
+"""
+import os
 import re
+import shutil
 from datetime import datetime, timedelta
 
 
@@ -2220,29 +2227,70 @@ def seed():
     db.session.flush()
 
     # ── Users ─────────────────────────────────────────────────────────────────
+    # Frozen bcrypt hashes. bcrypt salts are random, so calling set_password()
+    # here would hand every build a different instance_seed DB and break
+    # byte-reproducibility. Plaintext for all four demo accounts: test1234.
+    HASH_ALICE = '$2b$12$aPotHbRbf3bmNywOvraONepBximmqdBjCvQ2m.3Lp.jbVe4TASwLG'
+    HASH_BOB = '$2b$12$Xnr74O7t/536BADyIjRfl.hn6Pre60g.PorUrIFPvdtC2FxQUwu5u'
+    HASH_CAROL = '$2b$12$JoA.NeTqa75gRfG0M4ibGuBSSOk.0YCJCNRPKXvVkDETJk3G9iE/q'
+    HASH_DAVE = '$2b$12$I28Ak4TXObXODGiuwv0qEuduaZXVfyh5/W3X0S/fjZ.C/dJe6reYW'
+    # Seed-time timestamps are pinned too: the created_at column default reads
+    # the wall clock, so leaving it unset would stamp the build date into the DB.
+    BENCHMARK_CREATED_AT = datetime(2026, 5, 12)
+
     benchmark_users = [
-        ('alice', 'alice@berkeley.edu', 'test1234', 'Alice Chen', 'student'),
-        ('bob', 'bob@berkeley.edu', 'test1234', 'Bob Martinez', 'student'),
-        ('carol', 'carol@berkeley.edu', 'test1234', 'Carol Johnson', 'faculty'),
-        ('dave', 'dave@berkeley.edu', 'test1234', 'Dave Williams', 'student'),
+        ('alice', 'alice@berkeley.edu', HASH_ALICE, 'Alice Chen', 'student'),
+        ('bob', 'bob@berkeley.edu', HASH_BOB, 'Bob Martinez', 'student'),
+        ('carol', 'carol@berkeley.edu', HASH_CAROL, 'Carol Johnson', 'faculty'),
+        ('dave', 'dave@berkeley.edu', HASH_DAVE, 'Dave Williams', 'student'),
     ]
 
-    for (username, email, password, full_name, role) in benchmark_users:
+    for (username, email, password_hash, full_name, role) in benchmark_users:
         if not User.query.filter_by(email=email).first():
             u = User(
                 email=email,
                 username=username,
                 full_name=full_name,
                 role=role,
+                password_hash=password_hash,
+                created_at=BENCHMARK_CREATED_AT,
             )
-            u.set_password(password)
             db.session.add(u)
 
     db.session.commit()
 
 
-if __name__ == '__main__':
-    from app import app
+def build_seed_database():
+    """Materialize instance_seed/berkeley.db from this file (build-time only).
+
+    The Dockerfile runs this instead of importing the app, so the shipped seed is
+    produced by the documented command. Deterministic by construction: no wall
+    clock and no random salt reaches the rows, so repeated runs over the same
+    source produce identical bytes.
+    """
+    from app import app, db
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    instance_dir = os.path.join(base_dir, 'instance')
+    seed_dir = os.path.join(base_dir, 'instance_seed')
+    db_path = os.path.join(instance_dir, 'berkeley.db')
+    seed_path = os.path.join(seed_dir, 'berkeley.db')
+    os.makedirs(instance_dir, exist_ok=True)
+    os.makedirs(seed_dir, exist_ok=True)
+
     with app.app_context():
+        db.session.remove()
+        db.engine.dispose()
+        if os.path.exists(db_path):
+            os.unlink(db_path)
+        db.create_all()
         seed()
-        print("Seeding complete.")
+        db.session.remove()
+        db.engine.dispose()
+
+    shutil.copyfile(db_path, seed_path)
+    return seed_path
+
+
+if __name__ == '__main__':
+    print(f"Seed database generated: {build_seed_database()}")

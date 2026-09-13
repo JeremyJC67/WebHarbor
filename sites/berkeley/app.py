@@ -2,6 +2,7 @@
 """UC Berkeley mirror — Flask application."""
 import os
 import re
+import sys
 from datetime import datetime
 from math import ceil
 
@@ -51,8 +52,14 @@ def slugify(text):
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    # Deliberately no `index=True` here. SQLAlchemy emits a table's named indexes
+    # in set-iteration order, so two indexes on one table are assigned different
+    # root pages from run to run (observed: ix_users_email / ix_users_username
+    # swapping pages 3 and 4), which breaks byte-reproducibility of the seed DB.
+    # unique=True already gives each column SQLite's implicit index, created in
+    # declaration order as part of CREATE TABLE.
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     full_name = db.Column(db.String(150), nullable=False, default='')
     role = db.Column(db.String(30), default='student')
@@ -738,10 +745,29 @@ def server_error(e):
 
 # ─── Startup ──────────────────────────────────────────────────────────────────
 
-with app.app_context():
-    db.create_all()
+def bootstrap_site():
+    """Create the DB and seed it if it is empty.
+
+    Importing this module seeds, so `from app import app` still materializes an
+    empty instance/ (site_runner.py and the Dockerfile's generator both rely on
+    that). On a populated DB — the shipped instance_seed copy, i.e. every boot
+    and every /reset — seed() returns at its College gate before touching a
+    session, leaving the file byte-identical.
+    """
     from seed_data import seed
-    seed()
+    with app.app_context():
+        db.create_all()
+        seed()
+
+
+# `python app.py` loads this file as __main__; register it under its import name
+# too so seed_data's `from app import ...` reuses this module instead of building
+# a second Flask app + SQLAlchemy instance.
+sys.modules.setdefault('app', sys.modules[__name__])
+
+if os.environ.get('WEBSYN_SKIP_BOOTSTRAP') != '1':
+    bootstrap_site()
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', '40026'))
