@@ -168,9 +168,14 @@
       transition: border-color 0.2s;
     }
     .form-control:focus { outline: none; border-color: var(--light-blue); box-shadow: 0 0 0 3px rgba(59,126,161,0.15); }
-    /* Visible keyboard focus for every interactive element (WCAG 2.4.7/1.4.11) */
+    /* Visible keyboard focus for every interactive element (WCAG 2.4.7/1.4.11).
+       Two-tone ring: the blue outline reads on light surfaces (6.7:1 on white)
+       and the white halo reads on the navy top bar / header (12.6:1), so the
+       indicator stays >= 3:1 on every background it can be drawn over — a lone
+       #0b5cab outline is only 1.92:1 where it crosses the navy band. */
     a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
-    textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid #0b5cab; outline-offset: 2px; }
+    textarea:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid #0b5cab; outline-offset: 2px; box-shadow: 0 0 0 6px #ffffff; }
     .top-bar a:focus-visible, header a:focus-visible, footer a:focus-visible,
     nav.main-nav a:focus-visible { outline-color: var(--gold); }
     /* Long unbreakable strings (emails, room codes) must not widen a grid column */
