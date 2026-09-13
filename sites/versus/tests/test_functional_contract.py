@@ -208,6 +208,45 @@ class GeneratedArt(unittest.TestCase):
         self.assertEqual(slugs, listed, "product catalogue and tile inventory disagree")
 
 
+class VerifierTerminalState(unittest.TestCase):
+    """An independent reviewer caught a run that answered from a crash page.
+
+    Every other check passed it: the facts had been read, the answer was right,
+    and nothing in the bundle said the browser had failed. Evidence that hides
+    its own failure must not grade as clean.
+    """
+
+    def _lib(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "versus_verify_lib", SITE_DIR / "verify" / "verify_lib.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_answer_from_an_error_page_is_not_on_site(self):
+        V = self._lib()
+        ok = {"steps": [{"step": 0, "action": "click", "url": "http://localhost:40026/"},
+                        {"step": 1, "action": "done",
+                         "url": "http://localhost:40026/item/nikon-z8"}]}
+        crashed = {"steps": [{"step": 0, "action": "click", "url": "http://localhost:40026/"},
+                             {"step": 1, "action": "done",
+                              "url": "chrome-error://chromewebdata/"}]}
+        self.assertTrue(V.answered_on_site(ok))
+        self.assertFalse(V.answered_on_site(crashed),
+                         "a final answer emitted from a browser error page counted as on-site")
+        self.assertFalse(V.answered_on_site({"steps": []}))
+
+    def test_every_verifier_checks_the_terminal_state(self):
+        for path in sorted((SITE_DIR / "verify").glob("verify_*.py")):
+            if path.name == "verify_lib.py":
+                continue
+            src = path.read_text()
+            self.assertTrue(
+                "terminal_state_is_sound" in src or "answered_on_site" in src,
+                f"{path.name} does not check where the answer was emitted from")
+
+
 class SyntheticDisclosure(unittest.TestCase):
     """The synthetic parts must be stated in the UI, not only in the repo."""
 

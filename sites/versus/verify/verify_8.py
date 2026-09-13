@@ -22,8 +22,7 @@ def body(j, traj, initial, after):
     j.check("opened the fact-bearing page for the product",
             V.opened_detail_or_compare(traj, SLUG),
             f"steps={V.step_urls(traj)[-6:]}")
-    j.check("answer is non-empty and not a denial",
-            bool(ans) and not V.looks_negated(ans), f"answer={ans!r}")
+    V.terminal_state_is_sound(j, traj)
     j.check("answer states the derived battery life",
             V.mentions_number(ans, expected),
             f"expected={expected} {target['unit_2']} from initial_db")

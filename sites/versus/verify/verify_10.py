@@ -21,8 +21,7 @@ def body(j, traj, initial, after):
     j.check("opened the fact-bearing page for the target product",
             V.opened_detail_or_compare(traj, target["slug"]),
             f"slug={target['slug']} steps={V.step_urls(traj)[-6:]}")
-    j.check("answer is non-empty and not a denial",
-            bool(ans) and not V.looks_negated(ans), f"answer={ans!r}")
+    V.terminal_state_is_sound(j, traj)
     j.check("answer names the right product",
             V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
     j.check("answer states the derived value",

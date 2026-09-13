@@ -114,6 +114,32 @@ def final_answer(traj):
     return (traj.get("final_answer") or "").strip()
 
 
+def answered_on_site(traj):
+    """The step carrying the final answer must sit on this site.
+
+    A failed navigation gets recorded as an ordinary step, so without this a run
+    that crashed and then emitted its answer from chrome-error://chromewebdata/
+    is indistinguishable from a clean one. Found by an independent reviewer on a
+    run every other check passed.
+    """
+    steps = traj.get("steps") or []
+    if not steps:
+        return False
+    done = [s for s in steps if s.get("action") == "done"] or [steps[-1]]
+    return (done[-1].get("url") or "").startswith(site_origins())
+
+
+def terminal_state_is_sound(j, traj):
+    """Shared gate: non-empty, non-negated answer emitted from a real page."""
+    ans = final_answer(traj)
+    j.check("answer is non-empty and not a denial",
+            bool(ans) and not looks_negated(ans), f"answer={ans!r}")
+    j.check("the answer was emitted from a page on this site",
+            answered_on_site(traj),
+            f"terminal url={(traj.get('steps') or [{}])[-1].get('url')!r}")
+    return ans
+
+
 def _shot(traj, name):
     if not name:
         return None

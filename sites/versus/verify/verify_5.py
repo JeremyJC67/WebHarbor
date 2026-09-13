@@ -22,8 +22,7 @@ def body(j, traj, initial, after):
             f"steps={V.step_urls(traj)[:6]}")
     j.check("opened the account page", V.navigated_to(traj, "/account"),
             f"steps={V.step_urls(traj)}")
-    j.check("answer is non-empty and not a denial",
-            bool(ans) and not V.looks_negated(ans), f"answer={ans!r}")
+    V.terminal_state_is_sound(j, traj)
 
     # Which seeded pair does the answer name? Both product names must appear.
     matched = [pair for pair in before

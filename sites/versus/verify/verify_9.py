@@ -28,8 +28,7 @@ def body(j, traj, initial, after):
             V.navigated_to(traj, f"/compare/{LEFT}-vs-{RIGHT}")
             or V.navigated_to(traj, f"/compare/{RIGHT}-vs-{LEFT}"),
             f"steps={V.step_urls(traj)[-6:]}")
-    j.check("answer is non-empty and not a denial",
-            bool(ans) and not V.looks_negated(ans), f"answer={ans!r}")
+    V.terminal_state_is_sound(j, traj)
     j.check("answer names the product the site declares the winner",
             V.mentions_product(ans, target["name"]),
             f"expected={target['name']!r} (score {target['score']} vs {loser['score']})")

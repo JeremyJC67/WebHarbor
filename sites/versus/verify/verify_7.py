@@ -23,6 +23,9 @@ def body(j, traj, initial, after):
                       "after state would be identical whether or not the agent acted")
 
     ans = V.final_answer(traj)
+    j.check("the answer was emitted from a page on this site",
+            V.answered_on_site(traj),
+            f"terminal url={(traj.get('steps') or [{}])[-1].get('url')!r}")
     j.check("reported what it did, without denying it",
             bool(ans) and not V.looks_negated(ans),
             f"answer={ans!r} (this task is graded on the state change; the report "
