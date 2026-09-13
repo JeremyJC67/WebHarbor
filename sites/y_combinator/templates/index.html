@@ -1,66 +1,71 @@
 {% extends "base.html" %}
 
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/home.js') }}" defer></script>{% endblock %}
 {% block content %}
+<div class="homepage">
 <section class="hero">
     <div class="shell">
         <h1><span>{{ hero.line_one }}</span><br>
             <span>{{ hero.line_two_lead }} <em>{{ hero.headline_emphasis }}</em></span><sup>[1]</sup></h1>
+        <div class="mobile-stories" aria-label="YC founder stories">
+            {% set mobile_stories = (before_now|selectattr('key', 'equalto', 'airbnb')|list) + (before_now|selectattr('key', 'equalto', 'openai')|list) + (before_now|rejectattr('key', 'equalto', 'airbnb')|rejectattr('key', 'equalto', 'openai')|list) %}
+            {% for story in mobile_stories %}
+            <button class="mobile-story" type="button" aria-label="{{ story.name }}: switch between YC and now" aria-pressed="false">
+                {% for photo in story.images %}<img class="{{ 'young' if loop.first else 'now' }}" src="{{ url_for('static', filename='images/' + photo) }}" alt="{{ story.name }} {{ 'during YC' if loop.first else 'now' }}" {{ 'loading=lazy' if not loop.first else '' }}>{% endfor %}
+                <span class="mobile-story-body">
+                    <strong>{{ story.name }}</strong>
+                    <span class="mobile-story-description"><span class="young">{{ story.young }}</span><span class="now">{{ story.now }}</span></span>
+                    <span class="story-progress"><span>YC</span><span class="track"><i class="progress-young"></i></span><span class="track"><i class="progress-now"></i></span><span>Now</span></span>
+                </span>
+            </button>
+            {% endfor %}
+        </div>
         {% if hero.footnote %}
         <div class="hero-note">
             <p>[1] {{ hero.footnote }}</p>
             {% if hero.footnote_attribution %}<p class="attrib">{{ hero.footnote_attribution }}</p>{% endif %}
         </div>
         {% endif %}
-        <div class="scroll-cue">⌄</div>
+        <div class="scroll-cue" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="M6 8L10 12L14 8" stroke-width="2"/></svg></div>
     </div>
 </section>
 
 {% if before_now %}
-<section class="reveal">
-    <div class="shell">
-        <ol class="reveal-names">
-            {% for story in before_now %}
-            <li class="reveal-on-scroll">
-                {% if story.company_slug %}<a href="{{ url_for('company_detail', slug=story.company_slug) }}">{{ story.name }}</a>
-                {% else %}<span>{{ story.name }}</span>{% endif %}
-            </li>
-            {% endfor %}
-        </ol>
-        {% if hero.valuation_amount %}
-        <p class="reveal-total reveal-on-scroll">{{ hero.valuation_amount }}</p>
-        <p class="reveal-caption">{{ hero.valuation_caption }}</p>
-        {% endif %}
-        <p class="reveal-link"><a href="{{ url_for('companies') }}">All companies ›</a></p>
-
-        <div class="story-strip">
-            {% for story in before_now %}
-            <article class="story-card">
-                <h3>{{ story.name }}</h3>
-                <div class="story-pair">
-                    <figure>
-                        <div class="story-label">During YC</div>
-                        {% if story.images and story.images[0] %}
-                        <img src="{{ url_for('static', filename='images/' + story.images[0]) }}" alt="{{ story.name }} during YC" loading="lazy">
-                        {% endif %}
-                        <figcaption>{{ story.young }}</figcaption>
-                    </figure>
-                    <figure>
-                        <div class="story-label">Now</div>
-                        {% if story.images and story.images|length > 1 and story.images[1] %}
-                        <img src="{{ url_for('static', filename='images/' + story.images[1]) }}" alt="{{ story.name }} now" loading="lazy">
-                        {% endif %}
-                        <figcaption>{{ story.now }}</figcaption>
-                    </figure>
-                </div>
-            </article>
+<section class="reveal" aria-label="YC companies then and now">
+    {% for side in ['young', 'now'] %}
+    <div class="story-stage story-stage-{{ side }}">
+        {% for story in before_now %}
+        <figure class="story-frame" data-story-frame="{{ loop.index0 }}" aria-hidden="true">
+            <div class="story-label">{{ 'During YC' if side == 'young' else 'Now' }}</div>
+            <img src="{{ url_for('static', filename='images/' + story.images[0 if side == 'young' else 1]) }}" alt="{{ story.name }} {{ 'during YC' if side == 'young' else 'now' }}" loading="lazy">
+            <figcaption>{{ story.young if side == 'young' else story.now }}</figcaption>
+        </figure>
+        {% endfor %}
+        <div class="story-logos" aria-hidden="true">
+            {% set midpoint = (logos|length + 1) // 2 %}
+            {% for logo in (logos[:midpoint] if side == 'young' else logos[midpoint:]) %}
+            <div>{% if logo.logo %}<img src="{{ url_for('static', filename='images/' + logo.logo) }}" alt="{{ logo.name }}" loading="lazy">{% endif %}</div>
             {% endfor %}
         </div>
+    </div>
+    {% endfor %}
+    <div class="reveal-center">
+        <ol class="reveal-names">
+            {% for story in before_now %}
+            <li><button type="button" data-story-index="{{ loop.index0 }}">{{ story.name }}</button></li>
+            {% endfor %}
+        </ol>
+        <button type="button" class="reveal-total" data-story-index="{{ before_now|length }}">
+            {{ hero.valuation_amount }}<span class="reveal-caption">{{ hero.valuation_caption }}</span>
+        </button>
+        <p class="reveal-link"><a href="{{ url_for('companies') }}">All companies <span>›</span></a></p>
     </div>
 </section>
 {% endif %}
 
 {% if narrative or about_quotes %}
-<section class="section">
+<section class="section home-about">
     <div class="shell">
         {% if narrative %}
         <div class="reading">
@@ -81,10 +86,19 @@
         {% if about_quotes %}
         <div class="reading founder-words">
             <p class="eyebrow">In founders’ words</p>
-            {% for quote in about_quotes %}
+            {% for pair in about_quotes|batch(2) %}
             <p class="founder-quote">
-                <q>{{ quote.text }}</q>
-                <span class="attrib">{{ quote.author }}{% if quote.company %}, {{ quote.company }}{% if quote.batch %} ({{ quote.batch }}){% endif %}{% endif %}</span>
+                {% for quote in pair %}
+                <span class="quote-reference">
+                    <span class="quote-trigger" role="button" tabindex="0" aria-expanded="false">
+                        <span>{{ quote.text }}</span>{% if quote.avatar %}<img src="{{ url_for('static', filename='images/' + quote.avatar) }}" alt="{{ quote.author }}" loading="lazy">{% endif %}
+                    </span>
+                    <span class="quote-profile" role="tooltip">
+                        {% if quote.avatar %}<img src="{{ url_for('static', filename='images/' + quote.avatar) }}" alt="" loading="lazy">{% endif %}
+                        <span><strong>{{ quote.author }}</strong><small>Founder of {{ quote.company }} ({{ quote.batch }})</small></span>
+                    </span>
+                </span>
+                {% endfor %}
             </p>
             {% endfor %}
         </div>
@@ -99,9 +113,10 @@
         <h2 class="section-title">Be in the room with …</h2>
         <div class="video-grid">
             {% for video in in_the_room %}
-            <div class="video-card">
-                {% if video.poster %}<img src="{{ url_for('static', filename='images/' + video.poster) }}" alt="{{ video.name }}" loading="lazy">{% endif %}
-                <div class="play">▶</div>
+            <div class="video-card" tabindex="0" aria-label="Preview {{ video.name }}, {{ video.title }}">
+                {% if video.video %}
+                <video src="{{ url_for('static', filename='external_cache/' + video.video) }}" poster="{{ url_for('static', filename='images/' + video.poster) }}" data-start-time="{{ video.start_time or 0 }}" muted loop playsinline preload="metadata" aria-label="{{ video.name }}"></video>
+                {% elif video.poster %}<img src="{{ url_for('static', filename='images/' + video.poster) }}" alt="{{ video.name }}" loading="lazy">{% endif %}
                 <div class="label">
                     <div class="name">{{ video.name }}</div>
                     <div class="meta">{{ video.title }}</div>
@@ -117,7 +132,7 @@
 <section class="section">
     <div class="shell featured-quote">
         <blockquote>“{{ featured_quote.text }}”</blockquote>
-        <p class="attrib">{{ featured_quote.author }}{% if featured_quote.role %}, {{ featured_quote.role }}{% endif %}</p>
+        <p class="attrib">{% if featured_quote.avatar %}<img src="{{ url_for('static', filename='images/' + featured_quote.avatar) }}" alt="" loading="lazy">{% endif %}{{ featured_quote.author }}{% if featured_quote.role %}, {{ featured_quote.role }}{% endif %}</p>
     </div>
 </section>
 {% endif %}
@@ -126,8 +141,8 @@
 <section class="section">
     <div class="shell">
         <h2 class="section-title">All partners were YC founders first</h2>
+        <div class="partner-grid">
         {% for section in partner_sections %}
-        <div class="partner-grid" style="margin-bottom:56px">
             {% for partner in section.partners %}
             <a class="partner-card" href="{{ partner.url or '#' }}">
                 {% if partner.photo %}<img class="now" src="{{ url_for('static', filename='images/' + partner.photo) }}" alt="{{ partner.name }}" loading="lazy">{% endif %}
@@ -139,8 +154,8 @@
                 </span>
             </a>
             {% endfor %}
-        </div>
         {% endfor %}
+        </div>
     </div>
 </section>
 {% endif %}
@@ -169,13 +184,12 @@
                 </a>
                 {% endfor %}
             </div>
-        </div>
         <div class="news-columns">
             <div>
                 <h3>Startup News</h3>
                 <ul>
                     {% for item in startup_news %}
-                    <li><a href="{{ item.href }}">{{ item.title }}</a><span class="src">External link</span></li>
+                    <li><a href="{{ item.href }}">{{ item.title }} ›</a></li>
                     {% endfor %}
                 </ul>
             </div>
@@ -183,23 +197,12 @@
                 <h3>Paul Graham’s Essays</h3>
                 <ul>
                     {% for item in pg_essays %}
-                    <li><a href="{{ item.href }}">{{ item.title }}</a><span class="src">paulgraham.com</span></li>
+                    <li><a href="{{ item.href }}">{{ item.title }} ›</a></li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
-    </div>
-</section>
-{% endif %}
-
-{% if logos %}
-<section class="section">
-    <div class="shell logo-wall">
-        {% for logo in logos %}
-        <a href="{{ logo.url }}" title="{{ logo.name }}">
-            {% if logo.logo %}<img src="{{ url_for('static', filename='images/' + logo.logo) }}" alt="{{ logo.name }}" loading="lazy">{% else %}<span class="muted">{{ logo.name }}</span>{% endif %}
-        </a>
-        {% endfor %}
+        </div>
     </div>
 </section>
 {% endif %}
@@ -218,4 +221,5 @@
         {% endif %}
     </div>
 </section>
+</div>
 {% endblock %}

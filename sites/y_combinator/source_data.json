@@ -13,53 +13,72 @@
   "hero_footnote": "“A formidable person is one who seems like they’ll get what they want, regardless of whatever obstacles are in the way.”",
   "hero_footnote_attribution": "— Paul Graham",
   "narrative": [
-   "In 2005, Y Combinator developed a new model of startup funding. Four times a year we invest $500k in a select group of startups. They move to San Francisco for three months, where we work intensively with them to get the company into the best possible shape, before they present to a large audience of investors on Demo Day."
+   "In 2005, Y Combinator developed a new model of startup funding. Four times a year we invest $500k in a select group of startups. They move to San Francisco for three months, where we work intensively with them to get the company into the best possible shape, before they present to a large audience of investors on Demo Day.",
+   "But YC doesn’t end on Demo Day. We and the YC alumni network continue to help founders for the life of their company, and beyond."
   ],
   "in_the_room": [
    {
     "name": "Brian Chesky",
     "title": "Airbnb",
-    "poster": "room_brian-chesky.jpg"
+    "poster": "room_brian-chesky.jpg",
+    "video": "roomvideo_brian-chesky.mp4",
+    "start_time": 0
    },
    {
     "name": "Sam Altman",
     "title": "OpenAI",
-    "poster": "room_sam-altman.jpg"
+    "poster": "room_sam-altman.jpg",
+    "video": "roomvideo_sam-altman.mp4",
+    "start_time": 2
    },
    {
     "name": "Greg Brockman",
     "title": "OpenAI",
-    "poster": "room_greg-brockman.jpg"
+    "poster": "room_greg-brockman.jpg",
+    "video": "roomvideo_greg-brockman.mp4",
+    "start_time": 0
    },
    {
     "name": "Michael Truell",
     "title": "Cursor",
-    "poster": "room_michael-truell.jpg"
+    "poster": "room_michael-truell.jpg",
+    "video": "roomvideo_michael-truell.mp4",
+    "start_time": 0
    },
    {
     "name": "Paul Graham",
     "title": "Y Combinator",
-    "poster": "room_paul-graham.jpg"
+    "poster": "room_paul-graham.jpg",
+    "video": "roomvideo_paul-graham.mp4",
+    "start_time": 0
    },
    {
     "name": "Guillermo Rauch",
     "title": "Vercel",
-    "poster": "room_guillermo-rauch.jpg"
+    "poster": "room_guillermo-rauch.jpg",
+    "video": "roomvideo_guillermo-rauch.mp4",
+    "start_time": 0
    },
    {
     "name": "Dylan Field",
     "title": "Figma",
-    "poster": "room_dylan-field.jpg"
+    "poster": "room_dylan-field.jpg",
+    "video": "roomvideo_dylan-field.mp4",
+    "start_time": 0
    },
    {
     "name": "Emmett Shear",
     "title": "Twitch",
-    "poster": "room_emmett-shear.jpg"
+    "poster": "room_emmett-shear.jpg",
+    "video": "roomvideo_emmett-shear.mp4",
+    "start_time": 0
    },
    {
     "name": "Tony Xu",
     "title": "DoorDash",
-    "poster": "room_tony-xu.jpg"
+    "poster": "room_tony-xu.jpg",
+    "video": "roomvideo_tony-xu.mp4",
+    "start_time": 0
    }
   ],
   "before_now": [

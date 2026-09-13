@@ -48,6 +48,8 @@ def valid_format(path: Path, data: bytes) -> bool:
         return "<svg" in text and "<script" not in text.casefold()
     if suffix == ".gif":
         return data[:3] == b"GIF"
+    if suffix == ".mp4":
+        return data[4:8] == b"ftyp"
     return True
 
 

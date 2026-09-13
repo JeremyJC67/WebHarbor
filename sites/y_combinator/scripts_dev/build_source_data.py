@@ -157,11 +157,12 @@ class Assets:
         if url in self.by_url:
             return self.by_url[url]
         ext = self.type_fixes.get(url) or Path(url.split("?", 1)[0]).suffix.lower()
-        if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"}:
+        if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".mp4"}:
             ext = ".jpg"
         filename = unique_slug(f"{kind}_{slugify(name)}", self.used) + ext
         self.by_url[url] = filename
-        self.rows.append({"file": filename, "url": url, "kind": kind})
+        self.rows.append({"file": filename, "url": url, "kind": kind,
+                          **({"root": "external_cache"} if ext == ".mp4" else {})})
         return filename
 
 
@@ -496,7 +497,7 @@ def build_home(cache: Path, assets: Assets) -> dict:
     props = data_page(cache / "home.html")["props"]
     raw = (cache / "home.html").read_text(encoding="utf-8", errors="ignore")
     narrative = []
-    for match in re.finditer(r"In 2005, Y Combinator developed.{0,1800}?</p>", raw, re.S):
+    for match in re.finditer(r"(?:In 2005, Y Combinator developed|But YC doesn).{0,1800}?</p>", raw, re.S):
         narrative.append(strip_tags(match.group(0)))
     plain_text = strip_tags(raw)
     footnote = attribution = None
@@ -525,7 +526,9 @@ def build_home(cache: Path, assets: Assets) -> dict:
         "narrative": narrative,
         "in_the_room": [
             {"name": v.get("name"), "title": v.get("title"),
-             "poster": assets.add(v.get("poster"), "room", v.get("name") or "")}
+             "poster": assets.add(v.get("poster"), "room", v.get("name") or ""),
+             "video": assets.add(v.get("video"), "roomvideo", v.get("name") or ""),
+             "start_time": v.get("startTime", 0)}
             for v in props.get("inTheRoom", [])
         ],
         # The band's last tile upstream is the combined-valuation total rather

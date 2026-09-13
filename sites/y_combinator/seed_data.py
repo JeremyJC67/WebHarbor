@@ -185,7 +185,8 @@ def seed(data: dict) -> None:
     for i, paragraph in enumerate(home.get("narrative") or []):
         block("narrative", i, {"text": paragraph})
     for i, item in enumerate(home.get("in_the_room") or []):
-        block("in_the_room", i, {**item, "poster": image(item.get("poster"))})
+        block("in_the_room", i, {**item, "poster": image(item.get("poster")),
+                                 "video": image(item.get("video"))})
     for i, item in enumerate(home.get("before_now") or []):
         # Several band names (OpenAI, for one) are not in the public directory
         # upstream either, so only link the ones this mirror actually serves.

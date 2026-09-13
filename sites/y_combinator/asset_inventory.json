@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "asset_count": 3962,
+  "asset_count": 3971,
   "assets": [
     {
       "path": "static/images/aboutstrip_strip-0.jpg",
@@ -12162,7 +12162,7 @@
       "retrieved_at": "2026-09-12T17:21:12Z"
     },
     {
-      "path": "static/images/founder_lars-gjardar-mus\u00e6us.jpg",
+      "path": "static/images/founder_lars-gjardar-musæus.jpg",
       "sha256": "c75991aa792d6e5155451939a30b38a6a5e291671cd5780e1c7cce49d7b3579e",
       "bytes": 8869,
       "source_url": "https://bookface-images.s3.us-west-2.amazonaws.com/avatars/a3d07ff05f546de95769f47cf3b56f56ebe70f68.jpg",
@@ -13152,7 +13152,7 @@
       "retrieved_at": "2026-09-12T17:21:12Z"
     },
     {
-      "path": "static/images/founder_mathias-l\u00f8vring.jpg",
+      "path": "static/images/founder_mathias-løvring.jpg",
       "sha256": "7b986f860084d224fa44b7f98930653d7cb25a7591e0650b942cae04bc1de0eb",
       "bytes": 17902,
       "source_url": "https://bookface-images.s3.us-west-2.amazonaws.com/avatars/f71480df0c801d8456db9eccaf292e134e86a1fe.jpg",
@@ -35659,6 +35659,87 @@
       "source_page": "https://www.ycombinator.com/",
       "source_kind": "staff",
       "retrieved_at": "2026-09-12T17:21:12Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_brian-chesky.mp4",
+      "sha256": "95c27ddfebfa455398ade69b39259b1141e5894f3e36f34f88a467dc5b08fb93",
+      "bytes": 431534,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/brian-chesky-video-compressed-7ea6a6ca9593fabb400850744540405287fe91ae08ddfbf4824ab95d5f632875.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:34Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_dylan-field.mp4",
+      "sha256": "4d6e2e44152bc9748780a77a2e6161f7e6655519430b252ad49406ba13e29573",
+      "bytes": 385439,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/dylan-field-video-compressed-7541fe3e6c730507b8b8789c18f6139465733285eeff9330423158d5cd315b38.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:35Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_emmett-shear.mp4",
+      "sha256": "19a4a90c96b99cbd92ae21412687ed70ee801504586268c27fb1197cadf65920",
+      "bytes": 541980,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/emmett-shear-video-compressed-e639d24c15750fb7ac160f77b63504bafef74929c23f8bb4b82112a84900bb97.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:35Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_greg-brockman.mp4",
+      "sha256": "0484124a4c59396cb5d33898caf5c4371e2107a95f010e249be6108ea1fe25d7",
+      "bytes": 495004,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/greg-brockman-video-compressed-cb96007824e30f1ad95d2f0baa819b9ca35a8df56d38373c15f0e9e24c23e4b1.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:34Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_guillermo-rauch.mp4",
+      "sha256": "3b9b2b235a4e84d835a1369abb06af273cdfe49983d929f5c2fdf1408688c3d8",
+      "bytes": 482532,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/guillermo-rauch-video-compressed-66c9a0d2ddcc5eb02e84b0714c70b1332f37ffff031ad759cc4dbb2d0f78991d.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:35Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_michael-truell.mp4",
+      "sha256": "f225ed0573f38dce2e36fd58fb06cfbb32d86aa802a9bd8fcc27c819d5c6d873",
+      "bytes": 500235,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/michael-truell-video-compressed-523ea9b5330b3d117b97e9404e3b017f2a126bea2e096518c276520521bf8c11.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:34Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_paul-graham.mp4",
+      "sha256": "1fb1d105b1f2067d85b3005951e99d0ac0eea243a10210d3a97ec2aaf313cf49",
+      "bytes": 479400,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/paul-graham-video-compressed-147746c0944f23ac3ba13f41a213a63fe773fb3e1b261ea824d0784e0c0242e4.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:35Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_sam-altman.mp4",
+      "sha256": "b623742dc40f99386ca740df5181e1c3b673b138d653293cbfa99713f0b15f99",
+      "bytes": 560511,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/sam-altman-video-compressed-6e99f4927d081ecef3e4430e36b6ec23ac595e8da186216f30b7d7dc5129dc4a.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:34Z"
+    },
+    {
+      "path": "static/external_cache/roomvideo_tony-xu.mp4",
+      "sha256": "d98910cb98bee05f71f8a59b612b4eea586096dffd39bd3e7db5efc8e4786145",
+      "bytes": 709232,
+      "source_url": "https://bookface-static.ycombinator.com/assets/ycdc/intheroomwith/tony-xu-video-compressed-cfaffb21fca0c9e88fb50f8057d669c84b98d71695c3c943f86b2cc2b6d33d8d.mp4",
+      "source_page": "https://www.ycombinator.com/",
+      "source_kind": "roomvideo",
+      "retrieved_at": "2026-09-13T14:08:35Z"
     }
   ]
 }

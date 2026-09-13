@@ -6,6 +6,7 @@
     <title>{% block title %}Y Combinator{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}">
+    {% block styles %}{% endblock %}
 </head>
 <body>
 <header class="nav">
@@ -46,14 +47,14 @@
                 <a class="nav-apply" href="{{ url_for('static_page', page_slug='apply') }}">Apply</a>
             </span>
             <button class="nav-toggle" type="button" aria-label="Open menu"
-                    onclick="document.getElementById('nav-drawer').classList.toggle('open')">☰</button>
+                    aria-controls="nav-drawer" aria-expanded="false">☰</button>
         </div>
     </div>
 </header>
 <nav class="nav-drawer" id="nav-drawer">
     <ul>
         {% for label, href, items in nav_sections + nav_right %}
-        <li><a href="{{ href }}">{{ label }}</a></li>
+        <li>{% if items %}<details><summary>{{ label }}</summary><ul>{% for text, link in items %}<li><a href="{{ link }}">{{ text }}</a></li>{% endfor %}</ul></details>{% else %}<a href="{{ href }}">{{ label }}</a>{% endif %}</li>
         {% endfor %}
         <li><a href="{{ url_for('faq') }}">FAQ</a></li>
         <li><a href="{{ url_for('blog') }}">YC Blog</a></li>
@@ -129,6 +130,7 @@
         </div>
     </div>
 </footer>
-<script src="{{ url_for('static', filename='js/reveal.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/navigation.js') }}" defer></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

@@ -52,7 +52,7 @@ h3 { font-size: 1.25rem; }
 /* ---------------------------------------------------------------- nav */
 .nav {
   height: 64px; background: var(--bg);
-  border-bottom: 1px solid transparent; position: relative; z-index: 30;
+  border-bottom: 1px solid transparent; position: sticky; top: 0; z-index: 100;
 }
 .nav-inner {
   max-width: var(--shell); margin: 0 auto; padding: 0 24px; height: 64px;
@@ -122,49 +122,6 @@ h3 { font-size: 1.25rem; }
 .hero-note p { margin: 0; }
 .hero-note .attrib { text-align: right; margin-top: 10px; }
 .scroll-cue { margin-top: 88px; font-size: 1.5rem; color: var(--muted); }
-
-/* Company reveal band */
-.reveal { text-align: center; padding: 96px 0; }
-.reveal-names { list-style: none; margin: 0; padding: 0; }
-.reveal-names li { padding: 20px 0; }
-.reveal-names a, .reveal-names span {
-  display: inline-block;
-  font-family: var(--font-serif); font-size: 48px; line-height: 1.5;
-  color: var(--taupe); text-decoration: none; transition: color .3s var(--ease);
-}
-.reveal-names a:hover { color: var(--ink); }
-.reveal-total {
-  font-family: var(--font-serif); font-size: 48px; line-height: 1.5;
-  color: var(--taupe); margin: 40px 0 0;
-}
-.reveal-caption {
-  font-family: var(--font-serif); font-style: italic; font-size: 18px;
-  color: var(--taupe); margin: 0 0 28px;
-}
-.reveal-link a {
-  font-family: var(--font-serif); font-size: 16px; font-weight: 200;
-  text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px;
-}
-
-/* During-YC / now pairs. Upstream reveals these on scroll inside the band
-   above; a static mirror keeps them reachable as a horizontal strip. */
-.story-strip {
-  display: grid; grid-auto-flow: column; grid-auto-columns: 405px;
-  gap: 24px; overflow-x: auto; padding: 56px 4px 8px; text-align: left;
-  scroll-snap-type: x mandatory;
-}
-.story-card { scroll-snap-align: start; }
-.story-card h3 { font-family: var(--font-serif); font-size: 20px; margin-bottom: 12px; }
-.story-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.story-pair figure { margin: 0; }
-.story-pair img {
-  width: 100%; border-radius: 12px; display: block; aspect-ratio: 4/3; object-fit: cover;
-}
-.story-pair figcaption { margin-top: 10px; font-size: 14px; line-height: 1.5; color: var(--muted); }
-.story-label {
-  font-size: 11.2px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--taupe); margin-bottom: 8px;
-}
 
 /* Reading column: narrative + founder quotes, no card chrome */
 .reading { max-width: 510px; margin: 0 auto; }
@@ -289,16 +246,6 @@ h3 { font-size: 1.25rem; }
 .button:hover { opacity: .82; }
 .button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
 
-/* Scroll reveal — upstream animates opacity/transform at 0.3s cubic-bezier(.4,0,.2,1) */
-.reveal-on-scroll { opacity: 0; transform: translateY(16px); }
-.reveal-on-scroll.shown {
-  opacity: 1; transform: none;
-  transition: opacity .7s var(--ease), transform .7s var(--ease);
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal-on-scroll { opacity: 1; transform: none; transition: none; }
-}
-
 /* ---------------------------------------------------------------- listings */
 .page-head { padding: 48px 0 24px; }
 .layout { display: grid; grid-template-columns: 260px 1fr; gap: 40px; align-items: start; }
@@ -399,7 +346,7 @@ form.inline { display: inline; }
   border-top: 1px solid #2a2722; margin-top: 44px; padding-top: 22px;
   font-size: .85rem; color: #9b968c; flex-wrap: wrap;
 }
-.footer-social { display: flex; gap: 18px; }
+.footer-social { display: flex; flex-wrap: wrap; gap: 18px; }
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width: 1024px) {
@@ -446,3 +393,17 @@ form.inline { display: inline; }
   .footer-grid { grid-template-columns: 1fr; }
   .card { flex-direction: column; }
 }
+
+/* The source keeps navigation available while the page scrolls. */
+.nav-menu { display: block; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .2s, transform .2s, visibility .2s; }
+.nav-item:hover .nav-menu, .nav-item:focus-within .nav-menu { opacity: 1; visibility: visible; transform: none; }
+.nav-drawer { position: fixed; top: 64px; left: 0; right: 0; z-index: 99; max-height: calc(100dvh - 64px); overflow-y: auto; }
+.nav-drawer summary { cursor: pointer; }
+@media (max-width: 1023px) {
+  .nav-inner { display: flex; justify-content: center; position: relative; }
+  .nav-group.left, .nav-group.right .nav-item, .nav-actions { display: none; }
+  .nav-group.right { display: block; position: absolute; right: 20px; padding: 0; }
+  .nav-toggle { display: inline-flex; background: none; border: 0; font: 24px var(--font-sans); padding: 4px 8px; cursor: pointer; }
+  .nav-drawer.open { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { .nav-menu { transition: none; } }
