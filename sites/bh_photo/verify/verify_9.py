@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--9: report the review headline and its star rating."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (number_labelled, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
                         parse_args, resolve_db, row_dicts, visited_path)
 
@@ -33,7 +33,10 @@ def main():
     judge.check('answer_gives_review_headline',
                 normalize_text(review['headline']) in normalize_text(answer),
                 f"expected={review['headline']!r} answer={answer!r}")
-    judge.check('answer_gives_review_rating', has_number(answer, review['rating']),
+    judge.check('answer_gives_review_rating',
+                number_labelled(answer, review['rating'],
+                                follows=['star', 'stars', 'out of 5', '/5'],
+                                precedes=['rating of', 'rated', 'rating']),
                 f"expected={review['rating']} answer={answer!r}")
 
     product = row_dicts(initial, 'SELECT rating FROM products WHERE slug = ?', (SLUG,))

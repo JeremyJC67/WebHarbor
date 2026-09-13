@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--11: the mirrorless camera with the highest effective megapixels."""
-from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
+from verify_lib import (number_labelled, names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
                         parse_args, resolve_db, row_dicts, visited_path)
 
@@ -37,7 +37,10 @@ def main():
                 'mirrorless listing or the winning product page')
     judge.check('answer_names_the_camera', names_product(answer, winner['name']),
                 f"expected={winner['name']!r} answer={answer!r}")
-    judge.check('answer_states_the_figure', has_number(answer, winner['megapixels']),
+    judge.check('answer_states_the_figure',
+                number_labelled(answer, winner['megapixels'],
+                                follows=['megapixels', 'megapixel', 'mp', 'effective'],
+                                precedes=['resolution of']),
                 f"expected={winner['megapixels']} answer={answer!r}")
 
     if initial and after:

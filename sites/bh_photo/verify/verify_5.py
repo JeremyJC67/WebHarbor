@@ -5,8 +5,8 @@ The agent must reach the filtered listing rather than guess; the answer must
 carry both the match count and the cheapest match.
 """
 from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
-                        has_number, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, trajectory_urls, visited_path)
+                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
+                        resolve_db, row_dicts, states_count, trajectory_urls, visited_path)
 
 TASK_ID = 'B&H Photo--5'
 PRICE_CAP = 150.0
@@ -50,7 +50,12 @@ def main():
                 'lens or photography listing')
     judge.check('applied_mount_filter', used_mount_filter(trajectory), 'mount=Sony E in a listing URL')
     judge.check('applied_price_filter', used_price_filter(trajectory), 'max_price in a listing URL')
-    judge.check('answer_gives_match_count', has_number(answer, len(matches)),
+    judge.check('answer_gives_match_count',
+                # plural forms only: the count here is two, and the singular
+                # "lens" collides with the aperture in a product name - "f/2
+                # Lens" would otherwise read as a claim that two matched
+                states_count(answer, len(matches),
+                             ['products', 'matches', 'results', 'items', 'lenses']),
                 f'expected={len(matches)} answer={answer!r}')
     judge.check('answer_names_cheapest_match',
                 names_product(answer, cheapest['name']),

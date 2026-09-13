@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared deterministic helpers for Rotten Tomatoes task verifiers."""
+"""Shared deterministic helpers for the B&H Photo task verifiers."""
 
 from __future__ import annotations
 
@@ -143,6 +143,11 @@ def normalized_path(url: str) -> str:
 def query_matches(url: str, expected: dict[str, str]) -> bool:
     params = parse_qs(urlparse(url).query)
     return all(normalize_text((params.get(key) or [""])[0]) == normalize_text(value) for key, value in expected.items())
+
+
+def query_matches_nonempty(url: str, key: str) -> bool:
+    """True when the URL carries this query parameter with a non-empty value."""
+    return bool((parse_qs(urlparse(str(url or "")).query).get(key) or [""])[0].strip())
 
 
 def visited_path(trajectory: dict[str, Any], path: str) -> bool:
@@ -298,17 +303,24 @@ def names_product(text: Any, product_name: str) -> bool:
     the catalogue calls `Lenovo 16" ThinkPad T1g Gen 8 Multi-Touch Laptop`. The
     check therefore looks for the distinctive tokens - the brand and the model
     designators - rather than the catalogue string verbatim.
+
+    Single letters and bare digits are dropped before the tokens are counted.
+    A whole family of products shares them: `f`, `2` and `e` all appear in both
+    `TTArtisan AF 40mm f/2 Lens (Sony E)` and `Rokinon 12mm f/2.0 NCS CS Lens
+    (Sony E)`, which let a rival lens clear the threshold without ever naming
+    the brand or the focal length.
     """
     haystack = re.sub(r"[^a-z0-9]+", " ", normalize_text(text))
     generic = {"the", "and", "with", "for", "kit", "camera", "lens", "laptop", "mirrorless",
                "memory", "card", "monitor", "inch", "black", "silver", "multi", "touch",
                "digital", "in", "line", "pc", "gen", "series", "photo", "video"}
-    tokens = [token for token in re.sub(r"[^a-z0-9]+", " ", normalize_text(product_name)).split()
-              if token and token not in generic]
-    if not tokens:
-        tokens = re.sub(r"[^a-z0-9]+", " ", normalize_text(product_name)).split()[:3]
-    hits = sum(1 for token in tokens if re.search(rf"\b{re.escape(token)}\b", haystack))
-    return hits >= max(2, (len(tokens) + 1) // 2)
+    words = re.sub(r"[^a-z0-9]+", " ", normalize_text(product_name)).split()
+    tokens = [token for token in words if token and token not in generic]
+    distinctive = [token for token in tokens if len(token) >= 3 and not token.isdigit()]
+    if not distinctive:
+        distinctive = tokens or words[:3]
+    hits = sum(1 for token in distinctive if re.search(rf"\b{re.escape(token)}\b", haystack))
+    return hits >= min(len(distinctive), max(2, (len(distinctive) + 1) // 2))
 
 
 def contains_all(text: Any, expected: Iterable[Any]) -> bool:
@@ -334,8 +346,52 @@ def number_matches(text: Any, value: int | float, tolerance: float = 0.001) -> l
     return matches
 
 
+NUMBER_WORDS = {0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+                7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve"}
+
+
+def states_count(text: Any, value: int, nouns: Sequence[str]) -> bool:
+    """True when the answer actually claims "<value> <things>".
+
+    `has_number` is wrong for a count: any digit anywhere in the sentence
+    satisfies it, so an answer reporting six matches still passes a check for
+    two the moment it quotes an aperture of f/2.0. The count has to sit in
+    front of the thing being counted, spelled either way. Pass noun forms that
+    agree with the count: a singular noun next to a count of two is far more
+    likely to be part of a product name than a claim about how many matched.
+    """
+    normalized = re.sub(r"[^a-z0-9]+", " ", normalize_text(text))
+    forms = [str(value)] + ([NUMBER_WORDS[value]] if value in NUMBER_WORDS else [])
+    quantity = "|".join(re.escape(form) for form in forms)
+    thing = "|".join(re.escape(normalize_text(noun)) for noun in nouns)
+    return bool(re.search(rf"\b(?:{quantity})\s+(?:\w+\s+)?(?:{thing})\b", normalized))
+
+
 def has_number(text: Any, value: int | float) -> bool:
     return bool(number_matches(text, value))
+
+
+def number_labelled(text: Any, value: int | float, follows: Sequence[str] = (),
+                    precedes: Sequence[str] = (), gap: int = 2) -> bool:
+    """True when the figure sits next to the thing it measures.
+
+    `has_number` accepts the value anywhere in the answer, so a wrong figure
+    still passes the moment the right digits turn up elsewhere in the sentence:
+    "gives 5 stars after 3 months" satisfies a check for 3, and "40.2
+    megapixels (reference 26.1 series)" satisfies a check for 26.1. The value
+    has to be within `gap` words of a label - `follows` for labels that come
+    after the number, `precedes` for labels that come before it.
+    """
+    normalized = normalize_text(text)
+    after_labels = "|".join(re.escape(normalize_text(label)) for label in follows)
+    before_labels = "|".join(re.escape(normalize_text(label)) for label in precedes)
+    for match in number_matches(normalized, value):
+        tail, head = normalized[match.end():], normalized[:match.start()]
+        if after_labels and re.match(rf"^(?:\s+\S+){{0,{gap}}}\s*(?:{after_labels})\b", tail):
+            return True
+        if before_labels and re.search(rf"\b(?:{before_labels})(?:\s+\S+){{0,{gap}}}\s*$", head):
+            return True
+    return False
 
 
 def number_bound_to(text: Any, value: int | float, labels: Sequence[str], distance: int = 140) -> bool:

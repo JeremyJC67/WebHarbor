@@ -2,9 +2,26 @@
 """Verifier for B&H Photo--12: the more expensive of the two carbon fibre monopods."""
 from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
                         has_number, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, trajectory_urls, visited_path)
+                        parse_args, query_matches_nonempty, resolve_db, row_dicts,
+                        trajectory_urls)
 
 TASK_ID = 'B&H Photo--12'
+
+
+def used_catalogue_search(trajectory) -> bool:
+    """True when the run searched the catalogue by keyword, by either control.
+
+    The mirror offers two: the header search box, which lands on /search, and
+    Search Within Results on a listing, which re-requests the same listing with
+    a `within` term. Both are keyword searches of the catalogue, so a check that
+    only recognises /search grades the route rather than the requirement.
+    """
+    for url in trajectory_urls(trajectory):
+        if '/search' in url:
+            return True
+        if query_matches_nonempty(url, 'within'):
+            return True
+    return False
 
 
 def main():
@@ -27,9 +44,8 @@ def main():
         judge.emit()
     dearer, cheaper = rows[0], rows[1]
 
-    judge.check('used_site_search',
-                visited_path(trajectory, '/search') or any('/search' in url for url in trajectory_urls(trajectory)),
-                'search page')
+    judge.check('used_catalogue_search', used_catalogue_search(trajectory),
+                'the header search, or Search Within Results on a listing')
     judge.check('answer_names_the_dearer_monopod',
                 names_product(answer, dearer['name']),
                 f"expected={dearer['name']!r} answer={answer!r}")
