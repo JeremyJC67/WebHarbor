@@ -230,6 +230,17 @@ class MatcherTests(unittest.TestCase):
         self.assertTrue(lib.contains_count("1 year, not 2 years", 1))
         # Negation after the value still rejects it.
         self.assertFalse(lib.contains_year("2013 was not the founding year", 2013))
+        # An honorific's period must not split the clause and hide a negation
+        # (C2 mutation rows on tasks 13/23/24).
+        self.assertFalse(lib.contains_person(
+            "The chair of EECS is not Prof. James Demmel, and the department is located at 253 Cory Hall.",
+            "Prof. James Demmel",
+        ))
+        self.assertTrue(lib.contains_person(
+            "The chair of EECS is Prof. James Demmel, located at 253 Cory Hall.", "Prof. James Demmel"))
+        self.assertFalse(lib.contains_phrase(
+            "BIDS is not directed by Prof. David Culler.", "The Berkeley Institute"))
+        self.assertFalse(lib.contains_phrase("holds a Ph.D. It is not the largest college.", "largest college"))
 
     def test_contains_count_as_pins_the_label(self) -> None:
         self.assertTrue(lib.contains_count_as("107 Nobel Laureates on the faculty", 107, "laureates"))

@@ -69,6 +69,16 @@ class VerifyTask24Tests(SharedVerifierTests, VerifierTestCase):
         )
         self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_chair")
 
+    def test_negated_titled_chair_fails(self) -> None:
+        """C2 regression: "is not chaired by Prof. X" — the title's period must
+        not hide the negation from the chair matcher."""
+        answer = (
+            "The Economics department is not chaired by Prof. Ulrike Malmendier and offers the "
+            "BA and PhD in Economics; Emmanuel Saez works on Public economics, inequality, "
+            "taxation, labor economics."
+        )
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_chair")
+
     def test_alternative_phrasing_passes(self) -> None:
         answer = (
             "Prof. Ulrike Malmendier chairs the Department of Economics, which offers a BA and a "

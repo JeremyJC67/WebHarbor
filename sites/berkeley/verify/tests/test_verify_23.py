@@ -59,6 +59,15 @@ class VerifyTask23Tests(SharedVerifierTests, VerifierTestCase):
         )
         self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_director")
 
+    def test_negated_director_with_title_fails(self) -> None:
+        """C2 regression: "is not directed by Prof. X" — the title's period must
+        not hide the negation from the director matcher."""
+        answer = (
+            "Berkeley Institute for Data Science is not directed by Prof. David Culler; its "
+            "focus areas are Data Science, Statistics, Computational Methods, Open Science."
+        )
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_director")
+
     def test_alternative_phrasing_passes(self) -> None:
         answer = (
             "The Berkeley Institute for Data Science, led by David Culler, works across Data "

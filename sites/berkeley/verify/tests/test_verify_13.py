@@ -38,6 +38,13 @@ class VerifyTask13Tests(SharedVerifierTests, VerifierTestCase):
         answer = "James Demmel is not the chair of EECS."
         self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_chair")
 
+    def test_negated_titled_chair_fails(self) -> None:
+        """C2 regression: the negation sits before the name, after "is" and the
+        title's period — the abbreviation must not hide it."""
+        answer = ("The chair of EECS is not Prof. James Demmel, and the department is "
+                  "located at 253 Cory Hall.")
+        self.assertFailsOn(self.verdict(GENUINE_STEPS, answer), "answer_has_chair")
+
     def test_alternative_phrasing_passes(self) -> None:
         answer = "EECS is chaired by James Demmel; its location is Cory Hall."
         self.assertPasses(self.verdict(GENUINE_STEPS, answer))

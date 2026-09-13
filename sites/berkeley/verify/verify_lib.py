@@ -438,21 +438,35 @@ _CLAUSE_SPLIT_RE = re.compile(r"[.!?;:\n]+|\b(?:but|however|instead)\b", re.I)
 
 _AFTER_NEGATION_WINDOW = 15
 _CONTRAST_CHARS = ",;–—("
+# Honorific / degree abbreviations whose period must not be read as a sentence
+# end. Without this a name that follows "Prof." starts a fresh clause, so the
+# negation in front of it is invisible: "The chair of EECS is not Prof. James
+# Demmel" graded as an affirmative chair answer (found by the C2 mutation rows
+# on tasks 13, 23 and 24).
+_ABBREV_RE = re.compile(r"\b(?:prof|dr|mr|mrs|ms|miss|mx|rev|fr|sr|jr|ph\.?\s?d)\.", re.I)
+_ABBREV_MASK = "\x00"
+
+
+def _mask_abbreviations(text: str) -> str:
+    """Length-preserving mask of abbreviation periods (match indices stay valid)."""
+    return _ABBREV_RE.sub(lambda match: match.group(0).replace(".", _ABBREV_MASK), text)
 
 
 def _match_is_affirmative(text: str, match: re.Match[str]) -> bool:
     """Reject a match when a negation token contradicts it.
 
     Negation *before* the match (anywhere in the clause) rejects it — "did not
-    receive the National Medal of Science", "does not have 12". Negation *after*
-    the match rejects it only inside a short window that a contrastive comma has
-    not already closed, so a confirming contrast ("founded in 2013, not 2017")
-    stays affirmative while "2013 was not the founding year" does not.
+    receive the National Medal of Science", "does not have 12", "is not Prof.
+    James Demmel". Negation *after* the match rejects it only inside a short
+    window that a contrastive comma has not already closed, so a confirming
+    contrast ("founded in 2013, not 2017") stays affirmative while "2013 was not
+    the founding year" does not. Abbreviation periods do not split clauses.
     """
-    starts = [m.end() for m in _CLAUSE_SPLIT_RE.finditer(text[:match.start()])]
+    view = _mask_abbreviations(text)
+    starts = [m.end() for m in _CLAUSE_SPLIT_RE.finditer(view[:match.start()])]
     clause_start = starts[-1] if starts else 0
-    end_match = _CLAUSE_SPLIT_RE.search(text, match.end())
-    clause_end = end_match.start() if end_match else len(text)
+    end_match = _CLAUSE_SPLIT_RE.search(view, match.end())
+    clause_end = end_match.start() if end_match else len(view)
     before = text[clause_start:match.start()]
     if _NEGATION_RE.search(before):
         return False
