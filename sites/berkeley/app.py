@@ -335,7 +335,7 @@ def index():
     upcoming_events = Event.query.filter(
         Event.start_datetime >= BENCHMARK_NOW
     ).order_by(Event.start_datetime).limit(4).all()
-    recent_research = ResearchCenter.query.limit(4).all()
+    recent_research = ResearchCenter.query.order_by(ResearchCenter.name).limit(4).all()
     stats = {
         'nobel_laureates': 12,
         'top_10_programs': 50,
@@ -466,7 +466,7 @@ def program_detail(slug):
     related = Program.query.filter(
         Program.college_id == program.college_id,
         Program.id != program.id
-    ).limit(4).all()
+    ).order_by(Program.name).limit(4).all()
     return render_template('program_detail.html', program=program, related=related)
 
 
@@ -548,7 +548,7 @@ def research_center(slug):
     related = ResearchCenter.query.filter(
         ResearchCenter.college_id == center.college_id,
         ResearchCenter.id != center.id
-    ).limit(3).all()
+    ).order_by(ResearchCenter.name).limit(3).all()
     return render_template('research_center.html', center=center, related=related)
 
 
@@ -566,7 +566,8 @@ def departments():
 def department_detail(slug):
     dept = Department.query.filter_by(slug=slug).first_or_404()
     faculty_list = Faculty.query.filter_by(department_id=dept.id).order_by(Faculty.name).all()
-    programs = Program.query.filter_by(department_id=dept.id).all()
+    programs = Program.query.filter_by(
+        department_id=dept.id).order_by(Program.name).all()
     return render_template('department_detail.html',
                            dept=dept,
                            faculty_list=faculty_list,
@@ -616,30 +617,34 @@ def search():
             db.or_(
                 Program.name.ilike(f'%{q}%'),
                 Program.description.ilike(f'%{q}%'),
-            )).limit(10).all()
+            )).order_by(Program.name).limit(10).all()
         results['news'] = NewsArticle.query.filter(
             db.or_(
                 NewsArticle.title.ilike(f'%{q}%'),
                 NewsArticle.summary.ilike(f'%{q}%'),
+                NewsArticle.content.ilike(f'%{q}%'),
                 NewsArticle.tags.ilike(f'%{q}%'),
             )).order_by(NewsArticle.published_date.desc()).limit(10).all()
         results['events'] = Event.query.filter(
             db.or_(
                 Event.title.ilike(f'%{q}%'),
                 Event.description.ilike(f'%{q}%'),
-            )).limit(10).all()
+                Event.location.ilike(f'%{q}%'),
+                Event.organizer.ilike(f'%{q}%'),
+            )).order_by(Event.start_datetime).limit(10).all()
         results['faculty'] = Faculty.query.filter(
             db.or_(
                 Faculty.name.ilike(f'%{q}%'),
                 Faculty.research_interests.ilike(f'%{q}%'),
+                Faculty.title.ilike(f'%{q}%'),
                 Faculty.bio.ilike(f'%{q}%'),
-            )).limit(10).all()
+            )).order_by(Faculty.name).limit(10).all()
         results['research'] = ResearchCenter.query.filter(
             db.or_(
                 ResearchCenter.name.ilike(f'%{q}%'),
                 ResearchCenter.description.ilike(f'%{q}%'),
                 ResearchCenter.focus_areas.ilike(f'%{q}%'),
-            )).limit(10).all()
+            )).order_by(ResearchCenter.name).limit(10).all()
         total = sum(len(v) for v in results.values())
     return render_template('search.html', q=q, results=results, total=total)
 
@@ -687,7 +692,7 @@ def faculty_profile(slug):
         colleagues = Faculty.query.filter(
             Faculty.department_id == member.department_id,
             Faculty.id != member.id
-        ).limit(5).all()
+        ).order_by(Faculty.name).limit(5).all()
     return render_template('faculty_profile.html', member=member, colleagues=colleagues)
 
 

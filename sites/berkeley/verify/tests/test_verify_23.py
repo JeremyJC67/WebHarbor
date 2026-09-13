@@ -12,9 +12,11 @@ from _support import (  # noqa: E402,F401
 
 GENUINE_STEPS = [step("/"), step("/research"), step("/research/bids", "done")]
 ANSWER = (
+    # The related centre is the first of BIDS's ORDER BY name LIMIT 3 list
+    # (app.py research_center; ground_truth.related_centres mirrors it).
     "BIDS is directed by Prof. David Culler; its focus areas are Data Science, Statistics, "
     "Computational Methods and Open Science. A related center listed on the page is the "
-    "Mathematical Sciences Research Institute."
+    "Berkeley Center for New Media."
 )
 
 

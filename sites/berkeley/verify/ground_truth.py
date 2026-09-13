@@ -128,10 +128,11 @@ def _faculty_of_department(connection: sqlite3.Connection, department_id: int) -
 
 
 def related_centres(connection: sqlite3.Connection, centre: dict[str, Any]) -> list[dict[str, Any]]:
-    """The centres the detail page renders: ``LIMIT 3`` with **no ORDER BY** (app.py:469-472)."""
+    """The centres the detail page renders: ``ORDER BY name LIMIT 3`` (app.py research_center)."""
     return _rows(
         connection,
-        "SELECT * FROM research_centers WHERE college_id = ? AND id != ? LIMIT 3",
+        "SELECT * FROM research_centers WHERE college_id = ? AND id != ? "
+        "ORDER BY name LIMIT 3",
         (centre["college_id"], centre["id"]),
     )
 
