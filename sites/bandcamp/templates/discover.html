@@ -58,6 +58,13 @@
     </aside>
 
     <div class="discover-main">
+        <div class="genre-row">
+            <a class="genre-chip{% if not selected_genre or selected_genre == 'all' %} active{% endif %}" href="{{ url_for('discover') }}">all genres</a>
+            {% for genre in genres %}
+                <a class="genre-chip{% if selected_genre == genre.slug %} active{% endif %}" href="{{ url_for('discover', genre=genre.slug) }}">{{ genre.name }}</a>
+            {% endfor %}
+        </div>
+
         {% if featured_album %}
             <article class="focus-release">
                 <img src="{{ url_for('static', filename=featured_album.cover_image) }}" alt="{{ featured_album.title }} cover">

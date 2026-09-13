@@ -637,6 +637,46 @@ def index():
     )
 
 
+@app.route("/editorial")
+def editorial_page():
+    editorial = Album.query.filter_by(is_editorial=True).order_by(Album.release_date.desc()).all()
+    recent = Album.query.order_by(Album.release_date.desc()).limit(16).all()
+    seen: set[int] = set()
+    merged: list[Album] = []
+    for album in editorial + recent:
+        if album.id not in seen:
+            seen.add(album.id)
+            merged.append(album)
+    features = merged[:8]
+    daily = [
+        {"kicker": ["Album of the Day", "Scene Report", "Label Focus", "Artist Profile"][index % 4], "album": album}
+        for index, album in enumerate(features)
+    ]
+    return render_template("editorial.html", daily=daily,
+                           scenes=Scene.query.order_by(Scene.name.asc()).limit(6).all())
+
+
+@app.route("/radio")
+def radio_page():
+    return render_template(
+        "radio.html",
+        shows=Genre.query.order_by(Genre.name.asc()).limit(6).all(),
+        episodes=Album.query.order_by(Album.release_date.desc()).limit(10).all(),
+    )
+
+
+@app.route("/gift-cards", methods=["GET", "POST"])
+def gift_cards():
+    if request.method == "POST":
+        code = (request.form.get("code") or "").strip().upper()
+        if re.fullmatch(r"BC-GC-[A-Z0-9]{4}-[A-Z0-9]{4}", code):
+            flash(f"Gift card {code} is valid. Balance added to this demo account.", "success")
+        else:
+            flash("That gift card code is not recognized.", "error")
+        return redirect(url_for("gift_cards"))
+    return render_template("gift_cards.html", denominations=[10, 25, 50, 100])
+
+
 @app.route("/discover")
 def discover():
     selected_genre = request.args.get("genre", "all")
