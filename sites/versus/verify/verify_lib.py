@@ -32,6 +32,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -62,25 +63,44 @@ def site_port():
     return 40000 + re.findall(r"'([a-z0-9_]+)'", block).index(SITE)
 
 
-def site_origins():
-    """Origins a trajectory step may legitimately carry.
+def run_origin(traj):
+    """The origin this run was actually recorded against, from the run itself.
 
-    Without this, every navigation check is a bare substring match on the path,
-    so a trajectory recorded against a different mirror on the same host -- same
-    paths, different port -- satisfies them. Override with WH_SITE_ORIGINS
-    (comma separated) for a harness that maps the site to another address.
+    Deliberately NOT the live registry port. A trajectory is evidence about the
+    run that produced it, and pinning the check to whatever port the site holds
+    today made every recorded run expire the next time an upstream merge
+    re-slotted the site -- four times in one day, at which point the checker is
+    the thing breaking, not the evidence.
+
+    What actually binds a run to this environment is recorded elsewhere and does
+    not rot: the before/after seed SHA-256 in the run manifest, and the code SHA.
+    A cross-site replay is caught by the path checks, not by the port -- the
+    other mirrors serve /article/, /section/, /track/, not /item/ and /compare/.
+
+    What this still buys, and why it is not simply dropped: the run must be
+    internally consistent. Every fact-bearing step has to sit on the same origin
+    the run started from, so a step recorded on chrome-error://chromewebdata/ or
+    about:blank after a failed navigation is not evidence that a page was seen.
     """
+    start = (traj.get("start_url") or "").rstrip("/")
+    if not start:
+        return ()
+    parsed = urllib.parse.urlsplit(start)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return ()
+    base = f"{parsed.scheme}://{parsed.netloc}"
     env = os.environ.get("WH_SITE_ORIGINS")
     if env:
-        return tuple(x.strip().rstrip("/") for x in env.split(",") if x.strip())
-    port = site_port()
-    return (f"http://localhost:{port}", f"http://127.0.0.1:{port}")
+        return tuple(x.strip().rstrip("/") for x in env.split(",") if x.strip()) + (base,)
+    return (base,)
 
 
 def step_urls(traj):
-    """Only steps on this site's own origin. Anything else is not evidence that
-    the agent visited THIS site."""
-    origins = site_origins()
+    """Only steps on the origin this run was recorded against. A step elsewhere
+    is not evidence that a page on this site was seen."""
+    origins = run_origin(traj)
+    if not origins:
+        return []
     return [s.get("url", "") or "" for s in traj.get("steps", [])
             if (s.get("url", "") or "").startswith(origins)]
 
@@ -125,8 +145,11 @@ def answered_on_site(traj):
     steps = traj.get("steps") or []
     if not steps:
         return False
+    origins = run_origin(traj)
+    if not origins:
+        return False
     done = [s for s in steps if s.get("action") == "done"] or [steps[-1]]
-    return (done[-1].get("url") or "").startswith(site_origins())
+    return (done[-1].get("url") or "").startswith(origins)
 
 
 def terminal_state_is_sound(j, traj):
