@@ -744,4 +744,5 @@ with app.app_context():
     seed()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=40015, debug=False)
+    port = int(os.environ.get('PORT', '40026'))
+    app.run(host='0.0.0.0', port=port, debug=False)
