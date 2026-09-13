@@ -364,8 +364,7 @@ def simulations_by_subject(slug):
 
 @app.route("/simulation/<slug>")
 def simulation_detail(slug):
-    # Read-only: GET must never mutate the DB, or task answers that
-    # reference play counts drift between visits.
+    # Read-only: GET must never mutate the DB.
     sim = Simulation.query.filter_by(slug=slug).first_or_404()
 
     subjects_full = [
@@ -378,17 +377,28 @@ def simulation_detail(slug):
         l for l in Language.query.filter(Language.code.in_(sim.languages())).all()
     ]
 
-    related = (
-        Simulation.query.filter(Simulation.id != sim.id)
-        .filter(
-            or_(*[
-                Simulation.subjects_json.like(f'%"{s}"%') for s in sim.subjects()
-            ])
+    # Upstream publishes an explicit relatedSimulations list per sim; use it and
+    # keep its order. Fall back to same-subject titles only when it is empty.
+    related_slugs = sim.related()
+    related = []
+    if related_slugs:
+        found = {
+            s.slug: s for s in
+            Simulation.query.filter(Simulation.slug.in_(related_slugs)).all()
+        }
+        related = [found[s] for s in related_slugs if s in found]
+    if not related:
+        related = (
+            Simulation.query.filter(Simulation.id != sim.id)
+            .filter(
+                or_(*[
+                    Simulation.subjects_json.like(f'%"{s}"%') for s in sim.subjects()
+                ])
+            )
+            .order_by(Simulation.title)
+            .limit(6)
+            .all()
         )
-        .order_by(Simulation.title)
-        .limit(6)
-        .all()
-    )
     activities = sim.activities.order_by(Activity.published_date.desc()).all()
 
     is_saved = (

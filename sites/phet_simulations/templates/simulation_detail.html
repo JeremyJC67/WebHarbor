@@ -141,13 +141,13 @@
         </ul>
       </div>
       <div class="side-card">
-        <h3>Statistics</h3>
+        <h3>Sim details</h3>
         <ul>
           <li>Version: {{ sim.version }}</li>
           <li>Released: {{ sim.release_date }}</li>
           <li>Last updated: {{ sim.updated_date }}</li>
           <li>Translations: {{ sim.locale_count }} languages</li>
-          <li>Released: {{ sim.release_date }}</li>
+          {% if sim.is_phet_studio %}<li>Available in PhET Studio</li>{% endif %}
         </ul>
       </div>
       <div class="side-card">
