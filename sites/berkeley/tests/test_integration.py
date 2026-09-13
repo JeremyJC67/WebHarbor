@@ -2,7 +2,7 @@
 
 Follows the walmart_careers pattern: the registry is *derived* from
 ``control_server.SITES`` so adding a later site does not require editing this
-file, while the ordering guarantee (berkeley is index 26 → port 40026) is still
+file, while the ordering guarantee (berkeley is index 28 → port 40028) is still
 asserted exactly.
 """
 from __future__ import annotations
@@ -15,8 +15,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 SITE = ROOT / "sites/berkeley"
-SITE_INDEX = 26
-SITE_PORT = 40026
+SITE_INDEX = 28
+SITE_PORT = 40028
 # The build-generated seed value, asserted only when that seed is present in
 # the worktree.
 SEED_MD5 = "3001bcf4bcec169f4192c08609160ab6"

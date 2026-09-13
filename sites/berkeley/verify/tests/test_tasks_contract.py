@@ -139,7 +139,7 @@ class TaskFileContractTests(unittest.TestCase):
         for row in self.rows:
             self.assertEqual(set(row), EXPECTED_KEYS, row["id"])
             self.assertEqual(row["web_name"], "UC Berkeley")
-            self.assertEqual(row["web"], "http://localhost:40026/")
+            self.assertEqual(row["web"], "http://localhost:40028/")
             self.assertEqual(row["upstream_url"], "https://www.berkeley.edu/")
             self.assertTrue(row["ques"].strip())
             self.assertIn("Checkpoints:", row["judge_rubric"])

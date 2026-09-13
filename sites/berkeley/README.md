@@ -1,6 +1,6 @@
 # UC Berkeley mirror
 
-Offline Flask mirror of `https://www.berkeley.edu/`. In the 27-site registry it is site index 26 and runs on container port `40026`. Every college, department, programme, faculty member, research centre, article, event and account is deterministic synthetic benchmark data; only the page chrome mirrors upstream.
+Offline Flask mirror of `https://www.berkeley.edu/`. In the 29-site registry it is site index 28 and runs on container port `40028`. Every college, department, programme, faculty member, research centre, article, event and account is deterministic synthetic benchmark data; only the page chrome mirrors upstream.
 
 ## Runtime
 
@@ -9,7 +9,7 @@ uv venv .venv --python 3.12
 uv pip install --python .venv/bin/python Flask==3.1.0 Flask-SQLAlchemy==3.1.1 Flask-Login==0.6.3 \
   Flask-WTF==1.2.2 Flask-Bcrypt==1.0.1 email-validator==2.2.0   # the shared pins; no site-specific deps
 cd sites/berkeley && PYTHONHASHSEED=0 ../../.venv/bin/python seed_data.py      # writes instance_seed/berkeley.db
-PORT=40026 ../../.venv/bin/python app.py
+PORT=40028 ../../.venv/bin/python app.py
 ```
 
 There is no Hugging Face archive for this site: `.build-generated-seed` marks it, `./scripts/fetch_assets.sh berkeley` skips it, and the Docker build regenerates `instance_seed/berkeley.db` from the tracked `seed_data.py` (`cd /opt/WebSyn/berkeley && rm -rf instance instance_seed && PYTHONHASHSEED=0 python seed_data.py && rm -rf instance`). The seed is byte-reproducible — md5 `3001bcf4bcec169f4192c08609160ab6`, identical under `PYTHONHASHSEED=0` and `=1` — because the four benchmark password hashes are precomputed bcrypt strings, every `created_at` is the frozen clock, and `User.email`/`User.username` carry `unique=True` without `index=True` (SQLAlchemy emits named indexes in set-iteration order, which moved SQLite root pages between runs).

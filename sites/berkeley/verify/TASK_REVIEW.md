@@ -2,7 +2,7 @@
 
 All 32 rows (the contributor's 30 plus the reviewer's 2) were re-grounded against the *built*
 `instance_seed/berkeley.db` and the templates the app renders — not against the contributor's
-summaries. Task URLs use UC Berkeley's registered site index 26 and port `40026`; the verifiers
+summaries. Task URLs use UC Berkeley's registered site index 28 and port `40028`; the verifiers
 accept any loopback port, so alt-port review runs grade identically.
 
 Verdicts: **ACCEPT** (kept, graded), **DROP** (removed from `tasks.jsonl`), **ADDED** (written by
