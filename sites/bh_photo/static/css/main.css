@@ -1336,3 +1336,36 @@ textarea {
 .card-actions form {
     display: inline-block;
 }
+
+/* Listing pagination, in the shape upstream uses at 30 rows per page. */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 26px 0 10px;
+    font-size: 14px;
+}
+
+.pagination a,
+.pagination .current {
+    display: inline-block;
+    min-width: 32px;
+    padding: 6px 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--brand-blue);
+}
+
+.pagination .current {
+    background: var(--brand-green);
+    border-color: var(--brand-green);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.pagination .page-of {
+    margin-left: 8px;
+    color: var(--muted);
+}

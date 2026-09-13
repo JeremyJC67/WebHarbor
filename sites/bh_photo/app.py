@@ -827,8 +827,25 @@ def inject_globals():
         Category.query.filter_by(parent_id=None).order_by(Category.nav_order, Category.name).all()
     )
     featured_brands = Brand.query.order_by(Brand.name).limit(10).all()
+    def page_url(number: int) -> str:
+        """Build a page link that keeps the active filters.
+
+        A category listing addresses its pages the way upstream does, as
+        /c/<slug>/pn/<n>; every other listing carries a page parameter.
+        """
+        args = {key: value for key, value in request.args.items(multi=False) if key != "page"}
+        if request.endpoint == "category_view":
+            slug = (request.view_args or {}).get("slug")
+            if number == 1:
+                return url_for("category_view", slug=slug, **args)
+            return url_for("category_view", slug=slug, page=number, **args)
+        if number > 1:
+            args["page"] = number
+        return url_for(request.endpoint, **{**(request.view_args or {}), **args})
+
     metrics = cart_metrics()
     return {
+        "page_url": page_url,
         "top_categories": top_categories,
         "featured_brands": featured_brands,
         "cart_count": metrics["count"],
@@ -877,19 +894,42 @@ def categories():
     return render_template("categories.html", categories=top_categories)
 
 
+PAGE_SIZE = 30
+
+
+def paginate(results: list, page: int) -> dict:
+    """Split a result list the way the upstream listing does: 30 rows per page."""
+    total = len(results)
+    pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+    page = min(max(page, 1), pages)
+    start = (page - 1) * PAGE_SIZE
+    window = results[start:start + PAGE_SIZE]
+    return {
+        "items": window,
+        "page": page,
+        "pages": pages,
+        "total": total,
+        "first_index": start + 1 if window else 0,
+        "last_index": start + len(window),
+    }
+
+
 @app.route("/c/<slug>")
-def category_view(slug: str):
+@app.route("/c/<slug>/pn/<int:page>")
+def category_view(slug: str, page: int = 1):
     category = Category.query.filter_by(slug=slug).first_or_404()
     ids = descendant_category_ids(category)
     products = [product for product in all_products() if product.category_id in ids]
     results = apply_product_filters(products, request.args)
+    window = paginate(results, page)
     return render_template(
         "category_listing.html",
         page_title=category.name,
         page_heading=category.name,
         page_description=category.hero_copy or category.description,
         category=category,
-        products=results,
+        products=window["items"],
+        pagination=window,
         filters=filters_for(products),
         base_products=products,
         active_tab=category.slug,
@@ -902,13 +942,15 @@ def search():
     products = all_products()
     results = apply_product_filters(products, request.args, query_text=query_text)
     log_search(query_text, "search", len(results))
+    window = paginate(results, request.args.get("page", 1, type=int) or 1)
     return render_template(
         "category_listing.html",
         page_title="Search",
         page_heading=f"Search results for “{query_text}”" if query_text else "Search the catalog",
-        page_description="Find cameras, lenses, lighting, audio, and pro workstation gear across the local benchmark catalog.",
+        page_description="Find cameras, lenses, lighting, audio and computing gear.",
         category=None,
-        products=results,
+        products=window["items"],
+        pagination=window,
         filters=filters_for(products),
         base_products=products,
         active_tab="search",
@@ -921,6 +963,7 @@ def brand_view(brand_slug: str):
     brand = Brand.query.filter_by(slug=brand_slug).first_or_404()
     products = [product for product in all_products() if product.brand_id == brand.id]
     results = apply_product_filters(products, request.args)
+    window = paginate(results, request.args.get("page", 1, type=int) or 1)
     return render_template(
         "category_listing.html",
         page_title=brand.name,
@@ -928,7 +971,8 @@ def brand_view(brand_slug: str):
         page_description=brand.blurb,
         category=None,
         brand=brand,
-        products=results,
+        products=window["items"],
+        pagination=window,
         filters=filters_for(products),
         base_products=products,
         active_tab="brand",
@@ -990,13 +1034,15 @@ def compare():
 def deals():
     products = Product.query.join(Deal).filter(Deal.is_active.is_(True)).all()
     results = apply_product_filters(products, request.args)
+    window = paginate(results, request.args.get("page", 1, type=int) or 1)
     return render_template(
         "category_listing.html",
         page_title="Deals",
         page_heading="Deals and daily savings",
         page_description="Current sale pricing, open-box spotlights, and editor-picked specials across photo, video, and creator tech.",
         category=None,
-        products=results,
+        products=window["items"],
+        pagination=window,
         filters=filters_for(products),
         base_products=products,
         active_tab="deals",
@@ -1007,13 +1053,15 @@ def deals():
 def used():
     products = Product.query.filter(Product.condition != "New").all()
     results = apply_product_filters(products, request.args)
+    window = paginate(results, request.args.get("page", 1, type=int) or 1)
     return render_template(
         "category_listing.html",
         page_title="Used",
         page_heading="Used and open-box",
         page_description="Deterministic demo inventory for pre-owned, open-box, and pro-verified creator gear.",
         category=None,
-        products=results,
+        products=window["items"],
+        pagination=window,
         filters=filters_for(products),
         base_products=products,
         active_tab="used",

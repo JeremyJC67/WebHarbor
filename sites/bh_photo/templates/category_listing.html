@@ -16,7 +16,7 @@
 
 <section class="shell listing-title">
     <h1>{{ page_heading }}</h1>
-    <p class="result-count">{{ products|length }} Items</p>
+    <p class="result-count">{{ pagination.total if pagination else products|length }} Items</p>
 </section>
 
 <section class="shell listing-layout">
@@ -154,7 +154,11 @@
     <div class="listing-content">
         <div class="listing-head">
             <div>
-                <strong>{{ products|length }} results</strong>
+                {% if pagination and pagination.total %}
+                    <strong>Showing {{ pagination.first_index }}&ndash;{{ pagination.last_index }} of {{ pagination.total }}</strong>
+                {% else %}
+                    <strong>{{ products|length }} results</strong>
+                {% endif %}
                 {% if search_query %}
                     <p>Search query: {{ search_query }}</p>
                 {% endif %}
@@ -175,6 +179,24 @@
                 </div>
             {% endfor %}
         </div>
+        {% if pagination and pagination.pages > 1 %}
+            <nav class="pagination" aria-label="Pagination">
+                {% if pagination.page > 1 %}
+                    <a href="{{ page_url(pagination.page - 1) }}">Previous</a>
+                {% endif %}
+                {% for number in range(1, pagination.pages + 1) %}
+                    {% if number == pagination.page %}
+                        <span class="current" aria-current="page">{{ number }}</span>
+                    {% else %}
+                        <a href="{{ page_url(number) }}">{{ number }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if pagination.page < pagination.pages %}
+                    <a href="{{ page_url(pagination.page + 1) }}">Next</a>
+                {% endif %}
+                <span class="page-of">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+            </nav>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
