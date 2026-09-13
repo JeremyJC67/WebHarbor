@@ -7,7 +7,7 @@
 <p class="muted">{{ pag.total }} items</p>
 
 <div class="tabs">
-  {% for f in ['All'] + folders %}
+  {% for f in [unfiltered] + folders %}
     <a href="{{ url_for('user_collection', username=u.username, folder=f) }}"
        class="{% if folder == f %}active{% endif %}">{{ f }}</a>
   {% endfor %}

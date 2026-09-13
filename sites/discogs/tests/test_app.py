@@ -2,6 +2,7 @@
 import importlib
 from datetime import datetime
 import os
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -456,6 +457,45 @@ class AppTests(unittest.TestCase):
                 response = self.client.post("/register", data=data)
                 self.assertLess(response.status_code, 500)
                 self.assertEqual(m.User.query.count(), 2)
+
+    def test_all_is_not_a_writable_collection_folder(self):
+        """"All" is the unfiltered view, not a folder. While it sat in the folder enum it
+        was offered in the form, accepted by the write path, and then unreachable: the
+        collection list treats folder == "All" as "do not filter", so such a row could
+        never be viewed as a folder again."""
+        self.assertNotIn("All", m.COLLECTION_FOLDERS)
+        self.assertEqual("All", m.UNFILTERED_FOLDER)
+        self.login("alice")
+        page = self.client.get("/release/1001").get_data(as_text=True)
+        select = re.search(r'<select[^>]*name="folder"[^>]*>(.*?)</select>', page, re.S)
+        self.assertIsNotNone(select)
+        self.assertNotIn(">All<", select.group(1))
+        self.client.post("/collection/add", data={
+            "release_id": 1, "folder": "All",
+            "media_condition": "Near Mint (NM or M-)",
+            "sleeve_condition": "Near Mint (NM or M-)"}, follow_redirects=True)
+        self.assertEqual(0, m.CollectionItem.query.count(),
+                         "a rejected folder must not write a collection row")
+
+    def test_collection_tab_row_lists_all_exactly_once(self):
+        self.login("alice")
+        page = self.client.get("/user/alice/collection").get_data(as_text=True)
+        tabs = re.findall(r'folder=([^"&]+)"', page)
+        self.assertEqual(1, tabs.count("All"), f"tabs={tabs}")
+
+    def test_relative_time_matches_live_singular_and_plural(self):
+        """Live Discogs writes "1 day ago" and "12 minutes ago"; every unit here was
+        hard-coded plural and the minute unit was abbreviated to "min"."""
+        from datetime import datetime, timedelta
+        now = datetime.utcnow()
+        for delta, expected in [
+            (timedelta(minutes=1), "1 minute ago"), (timedelta(minutes=12), "12 minutes ago"),
+            (timedelta(hours=1), "1 hour ago"), (timedelta(hours=11), "11 hours ago"),
+            (timedelta(days=1), "1 day ago"), (timedelta(days=10), "10 days ago"),
+            (timedelta(days=40), "1 month ago"), (timedelta(days=400), "1 year ago"),
+        ]:
+            with self.subTest(expected=expected):
+                self.assertEqual(expected, m.relative_time(now - delta))
 
 
 if __name__ == "__main__":

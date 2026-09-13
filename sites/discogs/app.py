@@ -319,7 +319,12 @@ class Review(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-COLLECTION_FOLDERS = ["Uncategorized", "All", "Vinyl", "CD", "Wishlist Bought"]
+# "All" is the unfiltered view, not a folder. It must not appear here: the collection
+# list treats folder == "All" as "do not filter", so a row actually stored with that
+# folder could never be viewed as a folder again, and the template renders the tab row
+# as ["All"] + COLLECTION_FOLDERS, which duplicated the tab.
+COLLECTION_FOLDERS = ["Uncategorized", "Vinyl", "CD", "Wishlist Bought"]
+UNFILTERED_FOLDER = "All"
 
 
 class CollectionItem(db.Model):
@@ -579,6 +584,11 @@ def search_url(**changes):
     return url_for("search", **{key: value for key, value in params.items() if value is not None})
 
 
+def _ago(n, unit):
+    """Live Discogs writes "1 day ago", not "1 days ago"."""
+    return f"{n} {unit}{'' if n == 1 else 's'} ago"
+
+
 @app.template_filter("relative")
 def relative_time(dt):
     if not dt:
@@ -586,11 +596,11 @@ def relative_time(dt):
     delta = datetime.utcnow() - dt
     s = int(delta.total_seconds())
     if s < 60: return "just now"
-    if s < 3600: return f"{s//60} min ago"
-    if s < 86400: return f"{s//3600} hours ago"
-    if s < 86400 * 30: return f"{s//86400} days ago"
-    if s < 86400 * 365: return f"{s//(86400*30)} months ago"
-    return f"{s//(86400*365)} years ago"
+    if s < 3600: return _ago(s // 60, "minute")
+    if s < 86400: return _ago(s // 3600, "hour")
+    if s < 86400 * 30: return _ago(s // 86400, "day")
+    if s < 86400 * 365: return _ago(s // (86400 * 30), "month")
+    return _ago(s // (86400 * 365), "year")
 
 
 @app.template_filter("stars")
@@ -1188,15 +1198,15 @@ def user_profile(username):
 @app.route("/user/<username>/collection")
 def user_collection(username):
     u = User.query.filter_by(username=username).first_or_404()
-    folder = request.args.get("folder", "All")
+    folder = request.args.get("folder", UNFILTERED_FOLDER)
     page = request.args.get("page", 1, type=int)
     q = u.collection_items.join(Release)
-    if folder != "All":
+    if folder != UNFILTERED_FOLDER:
         q = q.filter(CollectionItem.folder == folder)
     q = q.order_by(CollectionItem.added_at.desc())
     pag = paginate(q, page, 25)
     return render_template("collection.html", u=u, pag=pag, folder=folder,
-                           folders=COLLECTION_FOLDERS)
+                           folders=COLLECTION_FOLDERS, unfiltered=UNFILTERED_FOLDER)
 
 
 @app.route("/user/<username>/wantlist")
