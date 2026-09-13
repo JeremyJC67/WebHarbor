@@ -17,4 +17,3 @@ The interface crops them with CSS but does not alter the stored bytes.
 
 Community threads, benchmark accounts, saved items and tracker state are
 synthetic benchmark data, clearly separated from sourced medical text.
-

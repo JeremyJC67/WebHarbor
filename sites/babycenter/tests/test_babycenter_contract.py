@@ -1,8 +1,20 @@
 from __future__ import annotations
 
 import re
+from datetime import date
 
 import app as babycenter_app
+
+
+def test_pregnancy_weeks_use_the_fixed_benchmark_date_and_sourced_pages() -> None:
+    """Task answers must not drift with the host wall clock."""
+    assert babycenter_app.REFERENCE_DATE == date(2026, 5, 29)
+
+    with babycenter_app.app.app_context():
+        assert babycenter_app.pregnancy_week_for_due_date(date(2026, 10, 30)) == 18
+        assert babycenter_app.pregnancy_week_for_due_date(date(2026, 9, 18)) == 24
+        assert babycenter_app.pregnancy_week_for_due_date(date(2026, 12, 18)) == 10
+        assert babycenter_app.pregnancy_week_for_due_date(date(2026, 11, 30)) == 13
 
 
 def test_primary_pages_render(client) -> None:
