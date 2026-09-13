@@ -43,6 +43,17 @@ class AnswerBoundaries(unittest.TestCase):
         facts = {'company': {'name': 'Verdant', 'batch': 'Summer 2026', 'team_size': 2}}
         self.assertTrue(self.answer(17, 'Verdant — Summer 2026, team size 2.', facts))
 
+    def test_people_task_requires_profile_only_facts(self):
+        facts = {'person': {'name': 'Jessica Livingston', 'title': 'Founder, Retired',
+                            'group': 'Founders'},
+                 'book': 'Founders at Work', 'previous_role': 'VP of marketing',
+                 'previous_employer': 'Adams Harkness'}
+        self.assertFalse(self.answer(
+            13, 'Jessica Livingston — Founder, Retired, in the Founders section.', facts))
+        self.assertTrue(self.answer(
+            13, 'Jessica Livingston — Founder, Retired, in Founders. She wrote Founders at Work '
+                'and was VP of marketing at Adams Harkness.', facts))
+
     def test_comparison_reversal_fails(self):
         a = {'name': 'Codecademy', 'slug': 'codecademy', 'team_size': 225, 'batch': 'Summer 2011'}
         b = {'name': 'Panorama Education', 'slug': 'panorama-education', 'team_size': 350, 'batch': 'Summer 2013'}

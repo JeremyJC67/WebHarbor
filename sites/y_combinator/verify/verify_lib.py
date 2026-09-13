@@ -296,11 +296,11 @@ def expected(task, before):
         return {"pool": pool, "company": unique_extreme(pool, "team_size", reverse=True)}
     if task == 2:
         hits = [row for row in before["company"].values()
-                if "delivery" in norm(" ".join(filter(None, [row["name"], row["one_liner"],
-                                                            row["long_description"]])))]
+                if "warehouses" in norm(" ".join(filter(None, [row["name"], row["one_liner"],
+                                                              row["long_description"]])))]
         founded = [row for row in hits if row["year_founded"] == 2020]
         if len(founded) != 1:
-            raise ValueError("delivery search does not have exactly one 2020 company")
+            raise ValueError("warehouses search does not have exactly one 2020 company")
         return {"pool": hits, "company": founded[0]}
     if task == 3:
         pool = rows(before, "company", industry="Industrials", status="Public")
@@ -313,7 +313,7 @@ def expected(task, before):
         return {"pool": pool, "article": unique_extreme(pool, "view_count", reverse=True)}
     if task == 6:
         pool = [row for row in before["launch"].values()
-                if (row["created_at"] or "").startswith("2026-08")]
+                if "2026-08-25" <= (row["created_at"] or "")[:10] <= "2026-08-27"]
         launch = unique_extreme(pool, "vote_count", reverse=True)
         return {"pool": pool, "launch": launch,
                 "company": one(before, "company", slug=launch["company_slug"])}
@@ -335,11 +335,12 @@ def expected(task, before):
         return {"document": one(before, "legal_document", group="doc_links",
                                 title="SAFE: Valuation Cap, no Discount")}
     if task == 13:
-        matches = [row for row in before["staff"].values()
-                   if row["bio"] and "monzo" in norm(row["bio"])]
-        if len(matches) != 1:
-            raise ValueError("expected exactly one staff bio naming Monzo")
-        return {"person": matches[0]}
+        person = one(before, "staff", slug="jessica-livingston")
+        bio = norm(person["bio"] or "")
+        if "founders at work" not in bio or "vp of marketing" not in bio or "adams harkness" not in bio:
+            raise ValueError("Jessica Livingston profile no longer contains the task facts")
+        return {"person": person, "book": "Founders at Work",
+                "previous_role": "VP of marketing", "previous_employer": "Adams Harkness"}
     if task == 14:
         first = one(before, "company", slug="codecademy")
         second = one(before, "company", slug="panorama-education")
@@ -390,6 +391,10 @@ def package_checks(judge, trajectory, run_dir):
                 and bool(trajectory["final_answer"].strip()))
     judge.check("completed_run", trajectory.get("terminated") is True
                 and trajectory.get("termination_reason") in {"agent_done", "guided_done"})
+    judge.check("successful_actions", isinstance(steps, list) and bool(steps)
+                and all(isinstance(step, dict)
+                        and step.get("action_result", {}).get("success") is True
+                        for step in steps))
     screenshots = Path(run_dir).resolve() / "screenshots"
     valid = isinstance(steps, list) and bool(steps)
     referenced = []
@@ -488,16 +493,19 @@ def navigation_checks(judge, trajectory, facts):
         judge.check("candidates_opened",
                     all(visited(trajectory, f"/companies/{row['slug']}") for row in facts["pool"]))
     elif task == 2:
-        judge.check("delivery_search_used", visited_query(trajectory, "/companies", {"q": "delivery"}))
-        judge.check("company_page_opened", visited(trajectory, f"/companies/{facts['company']['slug']}"))
+        judge.check("warehouses_search_used", visited_query(trajectory, "/companies", {"q": "warehouses"}))
+        judge.check("candidates_opened",
+                    all(visited(trajectory, f"/companies/{row['slug']}") for row in facts["pool"]))
     elif task == 4:
         judge.check("quantum_search_used", visited_query(trajectory, "/founders", {"q": "quantum"}))
-        judge.check("founder_profile_reached",
-                    visited(trajectory, f"/founders/{facts['founder']['slug']}")
-                    or visited(trajectory, f"/companies/{facts['company']['slug']}"))
+        # Founder permalinks deliberately redirect to the company profile that
+        # carries the founder bio and the requested company facts.
+        judge.check("founder_company_profile_opened",
+                    visited(trajectory, f"/companies/{facts['company']['slug']}"))
     elif task == 5:
         judge.check("library_used", visited(trajectory, "/library"))
-        judge.check("article_opened", visited(trajectory, f"/library/{facts['article']['slug']}"))
+        judge.check("collection_articles_opened",
+                    all(visited(trajectory, f"/library/{row['slug']}") for row in facts["pool"]))
     elif task == 6:
         judge.check("launches_used", visited(trajectory, "/launches"))
         judge.check("company_page_opened", visited(trajectory, f"/companies/{facts['company']['slug']}"))
@@ -528,7 +536,8 @@ def navigation_checks(judge, trajectory, facts):
         judge.check("article_opened", visited(trajectory, f"/library/{facts['article']['slug']}"))
     elif task == 17:
         judge.check("directory_used", visited(trajectory, "/companies"))
-        judge.check("company_page_opened", visited(trajectory, f"/companies/{facts['company']['slug']}"))
+        judge.check("candidates_opened",
+                    all(visited(trajectory, f"/companies/{row['slug']}") for row in facts["pool"]))
 
 
 def answer_checks(judge, trajectory, facts):
@@ -597,6 +606,9 @@ def answer_checks(judge, trajectory, facts):
         judge.check("name", affirmative_phrase(text, person["name"]))
         judge.check("title", phrase(text, person["title"]))
         judge.check("section", phrase(text, person["group"]))
+        judge.check("book", affirmative_phrase(text, facts["book"]))
+        judge.check("previous_role", phrase(text, facts["previous_role"]))
+        judge.check("previous_employer", affirmative_phrase(text, facts["previous_employer"]))
     elif task == 14:
         larger = facts["larger"]
         smaller = next(row for row in facts["companies"] if row != larger)
