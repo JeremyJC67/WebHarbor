@@ -36,7 +36,8 @@ def main():
     if not initial:
         judge.emit()
 
-    resolution = spec(initial, 'Native Resolution') or spec(initial, 'Screen Resolution')
+    # the monitor group carries the dot count; the card's key features do not
+    resolution = spec(initial, 'Resolution')
     battery = spec(initial, 'Battery')
     judge.check('ground_truth_readable', bool(resolution and battery),
                 f'resolution={resolution!r} battery={battery!r}')
