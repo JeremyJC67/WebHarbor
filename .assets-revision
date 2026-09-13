@@ -7,31 +7,27 @@
 #
 # The revision is a commit sha, never a moving branch name.
 #
-# Current pin = the resolved commit of HF dataset PR #74
-# ("Upload kaggle.tar.gz with huggingface_hub"). That PR is still open,
-# so this sha is not on HF `main`.
+# Current pin = the commit that HF dataset `main` points at (verified
+# 2026-09-13). It carries the merged HF dataset PR #74 ("Upload kaggle.tar.gz
+# with huggingface_hub") and the later PR #75 ("Add reviewed NVIDIA asset
+# bundle"), so this sha is on HF `main`.
 #
 # Why this sha and not the other candidate (refs/pr/37, resolved
 # 600a3e1de158ae56dc82a5fab56c2ca25acb1e27):
-#   * this revision carries an archive for all 25 registered sites, and the
-#     kaggle seed DB it ships is identical to what sites/kaggle/seed_data.py
-#     generates (13/13 tables, row by row);
+#   * this revision carries an archive for every registered site (28 of 28), and
+#     the kaggle seed DB it ships was found identical to the seed the site's own
+#     code generates (13/13 tables, row by row) in the PR #106 audit;
 #   * refs/pr/37 ships an older kaggle seed (models table has 10 rows instead of
-#     11: densenet121-chestxray is absent) and has archives for only 17 of the 25
-#     registered sites, so pinning there would break fetch_assets.sh for eight
-#     other sites.
+#     11: densenet121-chestxray is absent) and its archives cover only 17 of the
+#     28 registered sites, so pinning there would break fetch_assets.sh.
 #   * this revision's kaggle.tar.gz (sha256
-#     c533c283fb68f924989523b6fb686beecf66846cb13579ca0eae32b524c99343,
-#     11278264 bytes) is currently REJECTED by the repository's own
+#     dd6f1ab34f99989b300e3366225a8f8b0932d49d033b48f141938d16f1c0607d,
+#     11278106 bytes) passes the repository's own
 #     scripts/validate_asset_archive.py:
-#         ValueError: unexpected managed path: 'kaggle/static'
-#     because the tarball includes the bare directory member `kaggle/static`.
-#     Until that archive is re-packed without the bare directory entry and
-#     uploaded (then this pin moves to the HF main sha containing it),
-#     `scripts/fetch_assets.sh` cannot install sites/kaggle's assets.
-#     See review-reports/PR-106-FINAL-AUDIT.md "Open blocker".
-#
-# Every pre-existing archive is byte-identical between this revision and
-# HF main, so pinning here does not change any other site's assets.
+#         [fetch] validated 73 managed members for kaggle
+#     That 73-member pack has no directory entries, so the earlier
+#     `ValueError: unexpected managed path: 'kaggle/static'` rejection (from the
+#     superseded 11278264-byte pack, sha256 c533c283...) no longer applies and
+#     `scripts/fetch_assets.sh` installs sites/kaggle's assets from this pin.
 repo: ChilleD/WebHarbor
 revision: 64264d065cdb0b7755ee99dab356be5733d9ddef
