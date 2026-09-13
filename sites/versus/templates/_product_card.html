@@ -1,6 +1,7 @@
 <article class="product-card">
   <a class="product-art" href="{{ url_for('product_detail', slug=product.slug) }}">
-    <img src="{{ url_for('product_art', slug=product.slug) }}" alt="{{ product.name }}">
+    <img src="{{ url_for('static', filename='images/products/' ~ product.slug ~ '.png') }}"
+         alt="Synthetic product art for {{ product.name }}" width="480" height="360" loading="lazy">
   </a>
   <div class="product-body">
     <div class="eyebrow">{{ product.category.name }}</div>

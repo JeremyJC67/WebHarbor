@@ -153,6 +153,47 @@ def winner(left: Product, right: Product) -> Product:
     return left if left.score >= right.score else right
 
 
+# Signals where a smaller number is the better result.
+LOWER_IS_BETTER = {"Price", "Weight", "Power"}
+
+
+def compare_rows(left: Product, right: Product) -> list[dict]:
+    """Signal-by-signal comparison with a leader and a margin per row.
+
+    The source site presents a comparison as a set of areas with a winner and a
+    margin each, rather than a single overall number, so the table carries that
+    shape. The product the site *declares* the winner is still the higher Versus
+    Score (see winner()); the area counts are additional information.
+    """
+    category = left.category
+    specs = [
+        (category.spec_1, left.spec_1_value, right.spec_1_value, category.unit_1),
+        (category.spec_2, left.spec_2_value, right.spec_2_value, category.unit_2),
+        (category.spec_3, left.spec_3_value, right.spec_3_value, category.unit_3),
+    ]
+    rows = [{"label": "Score", "left": left.score, "right": right.score, "unit": ""}]
+    rows += [{"label": label, "left": lv, "right": rv, "unit": unit}
+             for label, lv, rv, unit in specs]
+    rows.append({"label": "Price", "left": left.price, "right": right.price, "unit": ""})
+
+    for row in rows:
+        lv, rv = row["left"], row["right"]
+        if lv is None or rv is None or lv == rv:
+            row["leader"] = None
+            row["margin"] = None
+            continue
+        lower_better = row["label"] in LOWER_IS_BETTER
+        row["leader"] = "left" if ((lv < rv) if lower_better else (lv > rv)) else "right"
+        row["margin"] = round(abs(lv - rv), 1)
+    return rows
+
+
+def lead_summary(rows: list[dict], side: str) -> tuple[int, int]:
+    """(areas led by `side`, areas that have a leader at all)."""
+    decided = [r for r in rows if r["leader"]]
+    return sum(1 for r in decided if r["leader"] == side), len(decided)
+
+
 @app.route("/")
 def index():
     top = Product.query.order_by(Product.score.desc()).limit(8).all()
@@ -220,7 +261,13 @@ def compare_detail(left, right):
     right_product = product_by_slug(right)
     if left_product.category_id != right_product.category_id:
         flash("Those products are in different categories; compare signals are still shown side by side.", "info")
-    return render_template("compare.html", left=left_product, right=right_product, winner=winner(left_product, right_product))
+    rows = compare_rows(left_product, right_product)
+    champion = winner(left_product, right_product)
+    side = "left" if champion is left_product else "right"
+    led, decided = lead_summary(rows, side)
+    return render_template("compare.html", left=left_product, right=right_product,
+                           winner=champion, rows=rows, areas_led=led,
+                           areas_total=decided)
 
 
 @app.route("/compare/<left>-vs-<right>/save", methods=["POST"])
@@ -283,21 +330,15 @@ def account():
     return render_template("account.html", saved=saved)
 
 
-@app.route("/product-art/<slug>.svg")
-def product_art(slug):
-    product = product_by_slug(slug)
-    hue = abs(hash(product.slug)) % 360
-    initials = "".join(part[0] for part in product.brand.split()[:2]).upper()
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="{product.name}">
-<rect width="720" height="480" fill="hsl({hue}, 64%, 94%)"/>
-<circle cx="610" cy="100" r="150" fill="hsl({hue}, 70%, 62%)" opacity=".22"/>
-<circle cx="120" cy="390" r="190" fill="hsl({(hue + 46) % 360}, 70%, 48%)" opacity=".16"/>
-<rect x="190" y="120" width="340" height="230" rx="34" fill="hsl({hue}, 58%, 42%)"/>
-<rect x="228" y="154" width="264" height="150" rx="18" fill="white" opacity=".82"/>
-<text x="360" y="247" text-anchor="middle" font-family="Arial, sans-serif" font-size="58" font-weight="800" fill="#101828">{initials}</text>
-<text x="360" y="396" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#101828">{product.score} Versus Score</text>
-</svg>"""
-    return app.response_class(svg, mimetype="image/svg+xml")
+@app.route("/about")
+def about():
+    """What this mirror is, and which parts of it are synthetic.
+
+    The source site is mirrored for an offline agent benchmark, so the page
+    states plainly which values are sourced and which are generated rather than
+    leaving a visitor to assume everything is real.
+    """
+    return render_template("about.html")
 
 
 @app.route("/_health")

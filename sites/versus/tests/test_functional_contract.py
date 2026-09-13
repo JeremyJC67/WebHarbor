@@ -19,7 +19,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 SITE_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = SITE_DIR.parents[1]
@@ -158,6 +158,71 @@ class StatefulTasksStartUnsatisfied(unittest.TestCase):
                 f"{task['id']} asks to save a comparison Alice already has at seed "
                 f"state, so the after-state is identical whether or not the agent acts",
             )
+
+
+class GeneratedArt(unittest.TestCase):
+    """The tiles are synthetic by design, so the contract is byte-stability."""
+
+    def _generate(self, dest: Path):
+        work = dest / SITE_NAME
+        shutil.copytree(SITE_DIR, work)
+        shutil.rmtree(work / "static/images/products", ignore_errors=True)
+        subprocess.run([sys.executable, "generate_art.py"],
+                       cwd=work, check=True, capture_output=True)
+        return work
+
+    def test_art_is_byte_reproducible_and_matches_the_inventory(self):
+        inventory = json.loads((SITE_DIR / "generated_asset_inventory.json").read_text())
+        self.assertEqual(inventory["schema_version"], 1)
+        self.assertTrue(inventory["assets"], "inventory lists no tiles")
+        digests = []
+        for _ in range(2):
+            with tempfile.TemporaryDirectory() as tmp:
+                work = self._generate(Path(tmp))
+                run = subprocess.run([sys.executable, "check_generated_assets.py"],
+                                     cwd=work, capture_output=True, text=True)
+                self.assertEqual(run.returncode, 0,
+                                 f"asset gate failed on a fresh build:\n{run.stdout}")
+                digests.append(sorted(
+                    hashlib.sha256((work / row["path"]).read_bytes()).hexdigest()
+                    for row in inventory["assets"]))
+        self.assertEqual(digests[0], digests[1], "tiles differ between builds")
+
+    def test_gate_rejects_a_tampered_tile(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            work = self._generate(Path(tmp))
+            victim = work / json.loads(
+                (SITE_DIR / "generated_asset_inventory.json").read_text())["assets"][0]["path"]
+            victim.write_bytes(victim.read_bytes() + b"tamper")
+            run = subprocess.run([sys.executable, "check_generated_assets.py"],
+                                 cwd=work, capture_output=True, text=True)
+            self.assertEqual(run.returncode, 1,
+                             "gate passed a tampered tile; its PASS means nothing")
+
+    def test_every_product_has_a_tile(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = build_seed(Path(tmp))
+            slugs = {r[0] for r in sqlite3.connect(db).execute("SELECT slug FROM product")}
+        listed = {PurePosixPath(row["path"]).stem for row in json.loads(
+            (SITE_DIR / "generated_asset_inventory.json").read_text())["assets"]}
+        self.assertEqual(slugs, listed, "product catalogue and tile inventory disagree")
+
+
+class SyntheticDisclosure(unittest.TestCase):
+    """The synthetic parts must be stated in the UI, not only in the repo."""
+
+    def test_about_page_and_footer_name_what_is_synthetic(self):
+        about = (SITE_DIR / "templates" / "about.html").read_text().lower()
+        base = (SITE_DIR / "templates" / "base.html").read_text().lower()
+        for token in ("synthetic", "versus score"):
+            self.assertIn(token, about, f"/about does not mention {token}")
+            self.assertIn(token, base, f"the footer does not mention {token}")
+        self.assertIn("not affiliated", about)
+
+    def test_notice_exists_and_covers_imagery_and_data(self):
+        notice = (SITE_DIR / "NOTICE.md").read_text().lower()
+        for token in ("non-affiliation", "synthetic", "removal", "versus score"):
+            self.assertIn(token, notice, f"NOTICE.md does not cover {token}")
 
 
 class CsrfProtection(unittest.TestCase):

@@ -2,28 +2,48 @@
 {% block title %}{{ left.name }} vs {{ right.name }}{% endblock %}
 {% block content %}
 <section class="versus-hero">
-  <div><img src="{{ url_for('product_art', slug=left.slug) }}" alt="{{ left.name }}"><h1>{{ left.name }}</h1></div>
-  <span>vs</span>
-  <div><img src="{{ url_for('product_art', slug=right.slug) }}" alt="{{ right.name }}"><h1>{{ right.name }}</h1></div>
+  <div>
+    <img src="{{ url_for('static', filename='images/products/' ~ left.slug ~ '.png') }}"
+         alt="Synthetic product art for {{ left.name }}" width="480" height="360">
+    <h1>{{ left.name }}</h1>
+    <span class="score-ring {{ 'win' if winner.slug == left.slug }}">{{ left.score }}</span>
+  </div>
+  <div class="versus-rule">vs</div>
+  <div>
+    <img src="{{ url_for('static', filename='images/products/' ~ right.slug ~ '.png') }}"
+         alt="Synthetic product art for {{ right.name }}" width="480" height="360">
+    <h1>{{ right.name }}</h1>
+    <span class="score-ring {{ 'win' if winner.slug == right.slug }}">{{ right.score }}</span>
+  </div>
 </section>
-<section class="winner-band">
-  <strong>{{ winner.name }}</strong> wins with a {{ winner.score }} Versus Score.
+
+<section class="ruling winner-band">
+  <span class="eyebrow">The ruling</span>
+  <p>Get the <strong>{{ winner.name }}</strong> — it wins with a {{ winner.score }} Versus Score
+     and leads in {{ areas_led }} of {{ areas_total }} areas.</p>
   <form method="post" action="{{ url_for('save_comparison', left=left.slug, right=right.slug) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit">Save comparison</button>
   </form>
 </section>
+
 <section class="compare-table-wrap">
+  <h2 class="eyebrow">Biggest differences</h2>
   <table class="compare-table">
-    <thead><tr><th>Signal</th><th>{{ left.name }}</th><th>{{ right.name }}</th></tr></thead>
+    <thead>
+      <tr><th>Signal</th><th>{{ left.name }}</th><th>{{ right.name }}</th><th>Margin</th></tr>
+    </thead>
     <tbody>
-      <tr><th>Score</th><td>{{ left.score }}</td><td>{{ right.score }}</td></tr>
-      <tr><th>Price</th><td>${{ left.price }}</td><td>${{ right.price }}</td></tr>
-      <tr><th>{{ left.category.spec_1 }}</th><td>{{ left.spec_1_value|round(1) }}{{ left.category.unit_1 }}</td><td>{{ right.spec_1_value|round(1) }}{{ right.category.unit_1 }}</td></tr>
-      <tr><th>{{ left.category.spec_2 }}</th><td>{{ left.spec_2_value|round(1) }}{{ left.category.unit_2 }}</td><td>{{ right.spec_2_value|round(1) }}{{ right.category.unit_2 }}</td></tr>
-      <tr><th>{{ left.category.spec_3 }}</th><td>{{ left.spec_3_value|round(1) }}{{ left.category.unit_3 }}</td><td>{{ right.spec_3_value|round(1) }}{{ right.category.unit_3 }}</td></tr>
-      <tr><th>Pros</th><td>{{ left.pros }}</td><td>{{ right.pros }}</td></tr>
-      <tr><th>Cons</th><td>{{ left.cons }}</td><td>{{ right.cons }}</td></tr>
+      {% for row in rows %}
+        <tr>
+          <th>{{ row.label }}</th>
+          <td class="{{ 'lead' if row.leader == 'left' }}">{{ row.left }}{{ row.unit }}</td>
+          <td class="{{ 'lead' if row.leader == 'right' }}">{{ row.right }}{{ row.unit }}</td>
+          <td class="margin">{% if row.margin is not none %}+{{ row.margin }}{{ row.unit }}{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+      <tr><th>Pros</th><td>{{ left.pros }}</td><td>{{ right.pros }}</td><td class="margin">—</td></tr>
+      <tr><th>Cons</th><td>{{ left.cons }}</td><td>{{ right.cons }}</td><td class="margin">—</td></tr>
     </tbody>
   </table>
 </section>

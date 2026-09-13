@@ -1,27 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Versus{% endblock %}
-{% block content %}
+{% block title %}Versus | Compare everything{% endblock %}
+{% block hero %}
 <section class="hero">
-  <div>
-    <div class="eyebrow">Specs, scores, and side-by-side decisions</div>
-    <h1>Versus</h1>
-    <p>Compare phones, headphones, cameras, graphics cards, and smartwatches using ranked specifications and clear winner signals.</p>
-    <form class="hero-search" action="{{ url_for('search') }}">
-      <input name="q" placeholder="Try RTX 4080, Sony headphones, iPhone camera">
-      <button type="submit">Search</button>
-    </form>
-  </div>
-  <div class="hero-compare">
-    <span>Popular comparison</span>
-    <strong>Galaxy S24 Ultra</strong>
-    <em>vs</em>
-    <strong>iPhone 15 Pro</strong>
-    <a href="{{ url_for('compare_detail', left='iphone-15-pro', right='samsung-galaxy-s24-ultra') }}">Open comparison</a>
-  </div>
+  <h1>compare<br><span class="accent">everything</span></h1>
+  <p>Smartphones, headphones, cameras, graphics cards and smartwatches — ranked on the
+     specifications that decide it.</p>
+  <form class="hero-search" action="{{ url_for('search') }}">
+    <input name="q" placeholder="Type here to compare" aria-label="Search products">
+    <button type="submit">Compare</button>
+  </form>
+  <div class="hero-wave"></div>
 </section>
-
+{% endblock %}
+{% block content %}
 <section class="section">
-  <div class="section-head"><h2>Popular Comparisons</h2><a href="{{ url_for('compare_picker') }}">Build your own</a></div>
+  <div class="section-head">
+    <h2>Popular comparisons</h2>
+    <a href="{{ url_for('compare_picker') }}">Build your own</a>
+  </div>
   <div class="pair-grid">
     {% for left, right in pairs %}
       <a class="pair-card" href="{{ url_for('compare_detail', left=left.slug, right=right.slug) }}">
@@ -30,13 +26,13 @@
     {% endfor %}
   </div>
 </section>
-
 <section class="section">
-  <div class="section-head"><h2>Top Rated Products</h2><a href="{{ url_for('rankings') }}">Full ranking</a></div>
+  <div class="section-head">
+    <h2>Top rated products</h2>
+    <a href="{{ url_for('rankings') }}">Full ranking</a>
+  </div>
   <div class="card-grid">
-    {% for product in top %}
-      {% include "_product_card.html" %}
-    {% endfor %}
+    {% for product in top %}{% include "_product_card.html" %}{% endfor %}
   </div>
 </section>
 {% endblock %}

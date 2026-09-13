@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "generator": "sites/versus/generate_art.py",
+  "toolchain": "Pillow 11.0.0, Python 3.12, bundled default font",
+  "assets": [
+    {
+      "path": "static/images/products/apple-airpods-max.png",
+      "bytes": 8246,
+      "sha256": "bdd3752e5f48fe0e4c1fde3ad580c6b88c791a283b0a365396e471e0e1516847"
+    },
+    {
+      "path": "static/images/products/apple-watch-series-9.png",
+      "bytes": 8335,
+      "sha256": "266363dcd4ef387e8bef9ab949eede9f45439d9331e5a549a111b99e3fd8943e"
+    },
+    {
+      "path": "static/images/products/bose-quietcomfort-ultra.png",
+      "bytes": 9633,
+      "sha256": "e8bbca52f009bd304deb03866e3e983378f2e14c6df2be127f096825fe726d26"
+    },
+    {
+      "path": "static/images/products/canon-eos-r6-mark-ii.png",
+      "bytes": 9239,
+      "sha256": "3c0b790e62ddc31c0bd20567eed06d28d6411fbcf3ac87591007bcb94443bbd5"
+    },
+    {
+      "path": "static/images/products/fitbit-sense-2.png",
+      "bytes": 5359,
+      "sha256": "a2050f6157bb58d3f72977b92a8e7e6eb83e1eaa08a2ff33c01dff52b2325166"
+    },
+    {
+      "path": "static/images/products/fujifilm-x-t5.png",
+      "bytes": 5991,
+      "sha256": "56b25538ef1f2a06c6cfe6f2456d4b84f251ed1ce3fe774486d79b0694990c25"
+    },
+    {
+      "path": "static/images/products/garmin-venu-3.png",
+      "bytes": 7857,
+      "sha256": "f38aac293fd117db9d389fc1e770a159664b0ee925dd6ba91247098c1e89c7e9"
+    },
+    {
+      "path": "static/images/products/google-pixel-8-pro.png",
+      "bytes": 8489,
+      "sha256": "5aacae95ec3e0c1601e7e26a5e2d73305893420ec1330065881e879cf7f3ff5b"
+    },
+    {
+      "path": "static/images/products/iphone-15-pro.png",
+      "bytes": 6591,
+      "sha256": "4ce675fafd00aa54b12ca2f22f1dff598a2f9350f5c3a3dfb8f9c69763aa26e9"
+    },
+    {
+      "path": "static/images/products/nikon-z8.png",
+      "bytes": 6016,
+      "sha256": "532ce68049dc7854890edb5b6ab696fb96e8e2eed2e0fc49cfe4c213abbc496f"
+    },
+    {
+      "path": "static/images/products/oneplus-12.png",
+      "bytes": 7334,
+      "sha256": "d262535f4951c978d941a0e68077c3a8b367b568d35f52262d0ccdd088c18c86"
+    },
+    {
+      "path": "static/images/products/radeon-rx-7800-xt.png",
+      "bytes": 8498,
+      "sha256": "c6d5257da63c2028ca0c4a411f6011eec856c4f7866cca4aae24d5e29030cb1a"
+    },
+    {
+      "path": "static/images/products/radeon-rx-7900-xtx.png",
+      "bytes": 8539,
+      "sha256": "b0d75f71f509d845a3e135129c6492eae720e4cf73b737c9954c2e42da651665"
+    },
+    {
+      "path": "static/images/products/rtx-4070-super.png",
+      "bytes": 8757,
+      "sha256": "d079787eee44f7a4a0f7b8cabdbd9ff9c8ff3aa3b10ab244d8dc35cb51228c24"
+    },
+    {
+      "path": "static/images/products/rtx-4080-super.png",
+      "bytes": 8938,
+      "sha256": "0645ce22f5437027ef6e2c18b70afd25b7b89b1798a3459bb9f498dc3cb761f0"
+    },
+    {
+      "path": "static/images/products/samsung-galaxy-s24-ultra.png",
+      "bytes": 9478,
+      "sha256": "5cbb6cea508dab97b97ea46e5c6a60f189080303cb072df5e14f3d103f54d43a"
+    },
+    {
+      "path": "static/images/products/samsung-galaxy-watch-6.png",
+      "bytes": 9846,
+      "sha256": "d1506505cb8dc6324050b7e928aa69471f8b64bb8090c358ba05c1ab5bb1815b"
+    },
+    {
+      "path": "static/images/products/sennheiser-momentum-4.png",
+      "bytes": 8442,
+      "sha256": "b32fcf9a663f02bbc940dff308226f3423bb5747184489d8664243f5f3f1996f"
+    },
+    {
+      "path": "static/images/products/sony-a7-iv.png",
+      "bytes": 8489,
+      "sha256": "c2e56d7b22821b672d558412cfca26eb26527b5d399123423e38d857d6b4adc4"
+    },
+    {
+      "path": "static/images/products/sony-wh-1000xm5.png",
+      "bytes": 10209,
+      "sha256": "cf7d8586e55016fffda74b16d895c5b232b66071d2cac0498c97b37abb87644c"
+    }
+  ]
+}
