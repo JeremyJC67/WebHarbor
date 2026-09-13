@@ -32,28 +32,28 @@
         <details class="filter-group" open>
           <summary>Subject</summary>
           {% set subject_tree = [
-            ('physics', 'Physics', ['Motion', 'Sound & Waves', 'Work, Energy & Power',
-                                    'Quantum Phenomena', 'Light & Radiation',
-                                    'Electricity, Magnets & Circuits']),
-            ('math', 'Math & Statistics', ['Numbers', 'Quantum Mathematics', 'Math Applications']),
-            ('chemistry', 'Chemistry', ['General Chemistry', 'Quantum Chemistry']),
-            ('earth-science', 'Earth & Space', []),
-            ('biology', 'Biology', []),
+            ('physics', 'Physics'),
+            ('math', 'Math & Statistics'),
+            ('chemistry', 'Chemistry'),
+            ('earth-science', 'Earth & Space'),
+            ('biology', 'Biology'),
           ] %}
           <ul>
-            {% for slug, name, subtopics in subject_tree %}
+            {% for slug, name in subject_tree %}
               <li>
                 <label>
                   <input type="checkbox" name="subject" value="{{ slug }}"
                     {% if slug == subject %}checked{% endif %}>
                   {{ name }}
                 </label>
+                {% set subtopics = topics | selectattr('2', 'equalto', slug) | list %}
                 {% if subtopics %}
                   <div class="sub-group">
-                    {% for topic in subtopics %}
+                    {% for tslug, tname, _parent in subtopics %}
                       <label>
-                        <input type="checkbox" name="topic" value="{{ topic|lower|replace(' ', '-')|replace(',', '')|replace('&', 'and') }}">
-                        {{ topic }}
+                        <input type="checkbox" name="topic" value="{{ tslug }}"
+                          {% if tslug == topic %}checked{% endif %}>
+                        {{ tname }}
                       </label>
                     {% endfor %}
                   </div>
@@ -80,11 +80,8 @@
 
         <details class="filter-group">
           <summary>Compatibility</summary>
-          <ul>
-            <li><label><input type="checkbox" name="compat" value="html5" checked> HTML5</label></li>
-            <li><label><input type="checkbox" name="compat" value="ipad"> iPad</label></li>
-            <li><label><input type="checkbox" name="compat" value="chromebook"> Chromebook</label></li>
-          </ul>
+          <p class="filter-note">Every simulation in this snapshot is HTML5 and runs
+          on desktop, iPad and Chromebook, so there is nothing to narrow here.</p>
         </details>
 
         <details class="filter-group" {% if release %}open{% endif %}>
@@ -99,11 +96,9 @@
 
         <details class="filter-group">
           <summary>Inclusive Features</summary>
-          <ul>
-            <li><label><input type="checkbox" name="inclusive" value="alternative-input"> Alternative Input</label></li>
-            <li><label><input type="checkbox" name="inclusive" value="pan-zoom"> Pan and Zoom</label></li>
-            <li><label><input type="checkbox" name="inclusive" value="interactive-highlights"> Interactive Highlights</label></li>
-          </ul>
+          <p class="filter-note">Per-simulation accessibility flags are not part of
+          this snapshot. See the <a href="{{ url_for('accessibility') }}">Accessibility</a>
+          page for the features PhET simulations support.</p>
         </details>
 
         <details class="filter-group">
@@ -158,10 +153,11 @@
         <div class="results-sort">
           <label>Sort by</label>
           <select onchange="window.location.href=this.value">
-            {% set base = url_for('simulations', view='filter', subject=subject, grade=grade, language=language, release=release) %}
-            <option value="{{ base }}&sort=newest"   {% if sort == 'newest' %}selected{% endif %}>Newest</option>
-            <option value="{{ base }}&sort=title"    {% if sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
-            <option value="{{ base }}&sort=popular"  {% if sort == 'popular' %}selected{% endif %}>Most played</option>
+            {% set base = url_for('simulations', view='filter', subject=subject, topic=topic, grade=grade, language=language, release=release) %}
+            <option value="{{ base }}&sort=newest"       {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="{{ base }}&sort=title"        {% if sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
+            <option value="{{ base }}&sort=updated"      {% if sort == 'updated' %}selected{% endif %}>Recently updated</option>
+            <option value="{{ base }}&sort=translations" {% if sort == 'translations' %}selected{% endif %}>Most translated</option>
           </select>
         </div>
       </div>
@@ -173,11 +169,11 @@
         {% if total_pages > 1 %}
           <nav class="pager" aria-label="Pagination">
             {% if page > 1 %}
-              <a href="{{ url_for('simulations', view='filter', subject=subject, grade=grade, language=language, release=release, sort=sort, page=page-1) }}">&laquo; Previous</a>
+              <a href="{{ url_for('simulations', view='filter', subject=subject, topic=topic, grade=grade, language=language, release=release, sort=sort, page=page-1) }}">&laquo; Previous</a>
             {% endif %}
             <span class="pager-status">Page {{ page }} of {{ total_pages }}</span>
             {% if page < total_pages %}
-              <a href="{{ url_for('simulations', view='filter', subject=subject, grade=grade, language=language, release=release, sort=sort, page=page+1) }}">Next &raquo;</a>
+              <a href="{{ url_for('simulations', view='filter', subject=subject, topic=topic, grade=grade, language=language, release=release, sort=sort, page=page+1) }}">Next &raquo;</a>
             {% endif %}
           </nav>
         {% endif %}
@@ -185,6 +181,26 @@
         <p class="empty-state">No simulations match the selected filters.</p>
       {% endif %}
     </div>
+  </div>
+
+{% elif view_tab == 'customize' %}
+  {# === Customize mode: simulations that ship a teacher's guide upstream === #}
+  <div class="container">
+    <section class="subject-section">
+      <div class="subject-section-head">
+        <h2>Customizable Sims</h2>
+        <span class="more">{{ customizable | length }} available in PhET Studio</span>
+      </div>
+      {% if customizable %}
+        <div class="sim-grid">
+          {% for sim in customizable %}
+            {% include "_sim_card.html" %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">No customizable simulations in this snapshot.</p>
+      {% endif %}
+    </section>
   </div>
 
 {% else %}

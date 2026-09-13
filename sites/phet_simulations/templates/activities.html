@@ -35,7 +35,7 @@
           {{ activity.duration_min }} min
         </p>
         <p>{{ activity.description }}</p>
-        <p class="activity-author">By {{ activity.author }} &middot; {{ activity.download_count }} downloads &middot; {{ activity.published_date }}</p>
+        <p class="activity-author">By {{ activity.author }} &middot; {{ activity.duration_min }} min &middot; {{ activity.grade_level|title }}</p>
       </li>
     {% endfor %}
   </ul>
