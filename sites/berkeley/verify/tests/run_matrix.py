@@ -103,7 +103,7 @@ WORKFLOWS: dict[int, dict[str, Any]] = {
          "steps": [{"goto": "/login"},
                    {"fill": [("input[name='email']", "alice@berkeley.edu"),
                              ("input[name='password']", PASSWORD)]},
-                   {"click": "button[type=submit]"},
+                   {"click": "form[action='/login'] button[type=submit]"},
                    {"goto": "/research/seismo-lab"},
                    {"form": "/bookmark/add", "skip_in_state_mismatch": True},
                    {"goto": "/account"}]},
@@ -111,13 +111,14 @@ WORKFLOWS: dict[int, dict[str, Any]] = {
          "steps": [{"goto": "/login"},
                    {"fill": [("input[name='email']", "bob@berkeley.edu"),
                              ("input[name='password']", PASSWORD)]},
-                   {"click": "button[type=submit]"},
+                   {"click": "form[action='/login'] button[type=submit]"},
                    {"goto": "/research/msri"},
                    {"form": "/bookmark/add", "skip_in_state_mismatch": True},
                    {"goto": "/research/cpl"},
                    {"form": "/bookmark/add", "skip_in_state_mismatch": True},
                    {"goto": "/account"},
-                   {"click": "form[action='/bookmark/remove'] button"},
+                   {"click": "form[action='/bookmark/remove'] button",
+                    "skip_in_state_mismatch": True},
                    {"goto": "/account"}]},
 }
 
@@ -300,6 +301,12 @@ class Recorder:
 def drive(page, base_url: str, steps: list[dict[str, Any]], recorder: Recorder,
           *, skip_saves: bool = False) -> None:
     for item in steps:
+        if skip_saves and item.get("skip_in_state_mismatch"):
+            # The state-mismatch cell replays the workflow with every write
+            # skipped, so a later click that depends on a write (the bookmark
+            # removal) must be skipped with it, or the cell hangs on a form
+            # that a fresh instance never renders.
+            continue
         if "goto" in item:
             target = base_url + item["goto"]
             recorder.step(page, "navigate", {"url": target}, lambda target=target: page.goto(target))
@@ -315,8 +322,6 @@ def drive(page, base_url: str, steps: list[dict[str, Any]], recorder: Recorder,
             selector = item["click"]
             recorder.step(page, "click", {"selector": selector}, lambda selector=selector: page.click(selector))
         elif "form" in item:
-            if skip_saves and item.get("skip_in_state_mismatch"):
-                continue
             action = item["form"]
             selector = f"form[action='{action}'] button"
             recorder.step(page, "click", {"form": action}, lambda selector=selector: page.click(selector))
@@ -337,6 +342,24 @@ def fresh_instance(site_dir: Path) -> None:
 def boot(site_dir: Path, port: int) -> subprocess.Popen:
     log = site_dir / "scripts_dev" / "runs" / "server.log"
     log.parent.mkdir(parents=True, exist_ok=True)
+    # Refuse to run against a server we did not start. Otherwise the readiness
+    # probe below adopts any process already listening on the port (e.g. a
+    # leftover standalone `PORT=41026 python app.py`) and every snapshot and
+    # every verdict then describe that foreign instance while the cells look
+    # green. Observed for real: a stray server made the 30/31 pass cells fail
+    # with bookmarks_exact_delta.
+    try:
+        probe = http.client.HTTPConnection("127.0.0.1", port, timeout=1)
+        probe.request("GET", "/")
+        probe.getresponse()
+        probe.close()
+    except OSError:
+        pass
+    else:
+        raise RuntimeError(
+            f"port :{port} already serves a site that this run did not start; "
+            f"stop it (lsof -ti tcp:{port}) before running the matrix"
+        )
     handle = log.open("ab")
     process = subprocess.Popen(
         [sys.executable, "app.py"], cwd=str(site_dir),
@@ -378,9 +401,14 @@ def inject_collateral_write(site_dir: Path) -> None:
 
 
 def grade(run_dir: Path) -> dict[str, Any]:
-    command = ["uv", "run", "python", "agent_demo/eval_judge.py",
+    # eval_judge.py imports the agent_demo project's dependencies (openai,
+    # simpleArgParser), so it must be launched from inside agent_demo/ — the
+    # repo root has no pyproject and its .venv lacks them (verified: launching
+    # from the repo root dies with ModuleNotFoundError: No module named 'openai'
+    # and never writes eval.json).
+    command = ["uv", "run", "python", "eval_judge.py",
                "--run_dir", str(run_dir), "--verifier", "True"]
-    result = subprocess.run(command, cwd=str(REPO), capture_output=True, text=True)
+    result = subprocess.run(command, cwd=str(REPO / "agent_demo"), capture_output=True, text=True)
     verdict_path = run_dir / "eval.json"
     if not verdict_path.is_file():
         return {"pass": None, "reason": f"no eval.json (rc={result.returncode}): "
@@ -413,6 +441,11 @@ def emit_cells(number: int, facts: dict, out_root: Path, base_url: str) -> list[
             try:
                 snapshot(SITE_DIR, run_dir, "initial")
                 page = browser.new_page(viewport=VIEWPORT)
+                # agent.py navigates to the start URL before its first recorded
+                # step, so step 0's ``url`` is the start URL. Without this the
+                # page is still about:blank and the verifier's
+                # all_urls_match_local_origin gate fails the genuine run.
+                page.goto(base_url + "/")
                 recorder = Recorder(run_dir, task_id, f"{base_url}/")
                 if cell == "no_op":
                     drive(page, base_url, [{"goto": "/"}], recorder)
