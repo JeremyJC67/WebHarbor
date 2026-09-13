@@ -1453,7 +1453,13 @@ def checkout():
         fulfillment = request.form.get("fulfillment", "Ship to address").strip() or "Ship to address"
         payment_label = request.form.get("payment_label", "Demo Visa ending in 4242").strip() or "Demo Visa ending in 4242"
         note = request.form.get("note", "").strip()
-        order_number = f"BH-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}-{current_user.id:02d}"
+        # seeded orders read BH-<date>-<user><sequence>; a checkout placed on the
+        # site produced BH-<date>-<time>-<user>, so one store showed two formats
+        placed_today = Order.query.filter_by(user_id=current_user.id).count()
+        order_number = f"BH-{datetime.utcnow().strftime('%Y%m%d')}-{current_user.id:02d}{placed_today:02d}"
+        while Order.query.filter_by(order_number=order_number).first():
+            placed_today += 1
+            order_number = f"BH-{datetime.utcnow().strftime('%Y%m%d')}-{current_user.id:02d}{placed_today:02d}"
         order = Order(
             user_id=current_user.id,
             order_number=order_number,

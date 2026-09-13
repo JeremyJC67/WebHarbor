@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--16: David completes checkout and reports the order number."""
-from verify_lib import (Judge, cart_for, changed_tables_excluding, check_common,
+from verify_lib import (Judge, cart_for, changed_tables_excluding, check_common, trajectory_urls,
                         final_answer, load_run, login_submitted_as, normalize_text,
                         only_allowed_tables_changed, orders_for, parse_args, resolve_db,
                         submitted_from_path, visited_path)
@@ -33,9 +33,9 @@ def main():
     judge.check('submitted_the_checkout_form', submitted_from_path(trajectory, '/checkout'),
                 'a POST transition away from /checkout')
     judge.check('reached_an_order_confirmation',
-                any('/order/' in url for url in [step.get('url', '') for step in trajectory.get('steps', [])])
+                any('/order/' in url for url in trajectory_urls(trajectory))
                 or visited_path(trajectory, '/account/orders'),
-                'order receipt page')
+                f'urls={trajectory_urls(trajectory)[-3:]}')
     judge.check('exactly_one_order_created', len(created) == 1, f'created={sorted(created)}')
     if created:
         number = next(iter(created))
