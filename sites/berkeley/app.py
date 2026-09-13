@@ -2,13 +2,18 @@
 """UC Berkeley mirror — Flask application."""
 import os
 import re
+import secrets
 import sys
 from datetime import datetime
 from math import ceil
+from urllib.parse import urlsplit
 
 from flask import (Flask, render_template, request, redirect, url_for,
                    flash, jsonify, session, abort, g)
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.engine import Engine
 from flask_login import (LoginManager, UserMixin, login_user, logout_user,
                          login_required, current_user)
 from flask_wtf import FlaskForm
@@ -20,13 +25,32 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'berkeley-mirror-secret-key-2024'
+# Repo convention (webmd_doctor / walmart_careers): env-provided secret or a
+# per-process random key. Never a committed constant: with a known key anyone
+# can sign their own session cookie and read /account without the password.
+app.config['SECRET_KEY'] = os.environ.get('BERKELEY_SECRET_KEY') or secrets.token_hex(32)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'berkeley.db')}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['WTF_CSRF_TIME_LIMIT'] = None
+# Explicit request-size cap on top of Flask's MAX_FORM_MEMORY_SIZE default;
+# mirrors webmd_doctor. Every form on this site is a few KB.
+app.config['MAX_CONTENT_LENGTH'] = 256 * 1024
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 os.makedirs(os.path.join(BASE_DIR, 'instance'), exist_ok=True)
+
+
+@event.listens_for(Engine, "connect")
+def enable_sqlite_foreign_keys(connection, _record):
+    """SQLite defaults PRAGMA foreign_keys=0, so an orphan bookmark row is
+    accepted without complaint. The seeded schema declares the foreign keys;
+    turn enforcement on for every connection."""
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -66,6 +90,48 @@ def slugify(text):
     s = re.sub(r'[^a-zA-Z0-9\s-]', '', text)
     s = re.sub(r'[\s]+', '-', s.strip().lower())
     return s
+
+
+def bounded_int(raw, maximum_digits=9):
+    """int() for all-digit strings within a fixed length; None otherwise.
+
+    Query and form values reach SQLAlchemy as bound integers; an unbounded
+    conversion ('9' * 20) overflows SQLite's INTEGER and turns a normal 404
+    path into a 500. Mirrors the webmd_doctor helper.
+    """
+    raw = str(raw or '')
+    if not raw.isdigit() or len(raw) > maximum_digits:
+        return None
+    return int(raw)
+
+
+MAX_PAGE = 10**4
+
+
+def page_arg(name='page'):
+    """A 1..MAX_PAGE page number; malformed or huge values fall back to 1."""
+    value = bounded_int(request.args.get(name, ''), maximum_digits=6)
+    if value is None or value < 1:
+        return 1
+    return min(value, MAX_PAGE)
+
+
+def safe_next(raw):
+    """Same-origin relative redirect target or None.
+
+    ``?next=https://evil.example/`` on /login (and the hidden ``next`` field on
+    the bookmark form) would otherwise bounce the browser off the mirror.
+    """
+    if not raw or not isinstance(raw, str):
+        return None
+    if any(ord(char) < 32 or ord(char) == 127 for char in raw):
+        return None
+    if raw.startswith('//') or '\\' in raw:
+        return None
+    parsed = urlsplit(raw)
+    if parsed.scheme or parsed.netloc or not parsed.path.startswith('/'):
+        return None
+    return raw
 
 # ─── Models ───────────────────────────────────────────────────────────────────
 
@@ -241,7 +307,12 @@ class BookmarkForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    # A tampered session cookie with a non-numeric or out-of-range id must fail
+    # closed (anonymous), not raise int()/OverflowError into a 500.
+    value = bounded_int(user_id)
+    if value is None:
+        return None
+    return db.session.get(User, value)
 
 # ─── Context Processors ───────────────────────────────────────────────────────
 
@@ -287,7 +358,7 @@ def news():
     q = request.args.get('q', '').strip()
     category = request.args.get('category', '')
     featured = request.args.get('featured', '')
-    page = request.args.get('page', 1, type=int)
+    page = page_arg()
 
     query = NewsArticle.query
     if q:
@@ -354,7 +425,7 @@ def programs():
     q = request.args.get('q', '').strip()
     college_slug = request.args.get('college', '')
     degree = request.args.get('degree', '')
-    page = request.args.get('page', 1, type=int)
+    page = page_arg()
 
     query = Program.query
     if q:
@@ -404,7 +475,7 @@ def events():
     q = request.args.get('q', '').strip()
     category = request.args.get('category', '')
     date_filter = request.args.get('date', 'upcoming')
-    page = request.args.get('page', 1, type=int)
+    page = page_arg()
     now = BENCHMARK_NOW
 
     query = Event.query
@@ -450,6 +521,9 @@ def events():
 
 @app.route('/events/<int:event_id>')
 def event_detail(event_id):
+    if not 0 < event_id < 2**31:
+        # A 20-digit id would overflow SQLite's INTEGER and raise a 500.
+        abort(404)
     event = db.session.get(Event, event_id)
     if event is None:
         abort(404)
@@ -574,7 +648,7 @@ def search():
 def faculty():
     q = request.args.get('q', '').strip()
     dept_slug = request.args.get('dept', '')
-    page = request.args.get('page', 1, type=int)
+    page = page_arg()
 
     query = Faculty.query
     if q:
@@ -626,7 +700,7 @@ def login():
         user = User.query.filter_by(email=form.email.data.lower().strip()).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            next_page = request.args.get('next')
+            next_page = safe_next(request.args.get('next'))
             flash('Welcome back!', 'success')
             return redirect(next_page or url_for('index'))
         flash('Invalid email or password.', 'danger')
@@ -651,16 +725,25 @@ def register():
             )
             user.set_password(form.password.data)
             db.session.add(user)
-            db.session.commit()
-            login_user(user)
-            flash('Account created! Welcome to UC Berkeley.', 'success')
-            return redirect(url_for('index'))
+            try:
+                db.session.commit()
+            except IntegrityError:
+                # Concurrent duplicate registration: the unique constraint won;
+                # roll back so the session stays usable and re-render the form.
+                db.session.rollback()
+                flash('Email already registered.', 'danger')
+            else:
+                login_user(user)
+                flash('Account created! Welcome to UC Berkeley.', 'success')
+                return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 
-@app.route('/logout', methods=['GET', 'POST'])
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
+    # POST-only: a prefetcher (or any GET crawler) must not be able to end a
+    # session; GET/HEAD now answer 405.
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
@@ -708,39 +791,57 @@ def account():
     return render_template('account.html', bookmark_details=bookmark_details)
 
 
+BOOKMARK_TYPES = {
+    'program': Program,
+    'news': NewsArticle,
+    'event': Event,
+    'faculty': Faculty,
+    'research': ResearchCenter,
+}
+
+
 @app.route('/bookmark/add', methods=['POST'])
 @login_required
 def bookmark_add():
-    item_type = request.form.get('item_type')
-    item_id = request.form.get('item_id', type=int)
-    note = request.form.get('note', '')
-    if item_type and item_id:
-        existing = Bookmark.query.filter_by(
-            user_id=current_user.id, item_type=item_type, item_id=item_id
-        ).first()
-        if not existing:
-            bm = Bookmark(user_id=current_user.id, item_type=item_type,
-                          item_id=item_id, note=note)
-            db.session.add(bm)
-            db.session.commit()
-            flash('Saved to bookmarks.', 'success')
-        else:
-            flash('Already bookmarked.', 'info')
-    next_url = request.form.get('next') or request.referrer or url_for('account')
+    # An empty or invalid submission must fail loudly (400), never redirect as
+    # if something was saved: `item_type` is a closed vocabulary and the target
+    # row must exist, otherwise a bogus row lands in the bookmarks table.
+    item_type = request.form.get('item_type', '')
+    item_id = bounded_int(request.form.get('item_id', ''))
+    note = request.form.get('note', '')[:500]
+    model = BOOKMARK_TYPES.get(item_type)
+    if model is None or not item_id:
+        abort(400)
+    if db.session.get(model, item_id) is None:
+        abort(404)
+    existing = Bookmark.query.filter_by(
+        user_id=current_user.id, item_type=item_type, item_id=item_id
+    ).first()
+    if not existing:
+        bm = Bookmark(user_id=current_user.id, item_type=item_type,
+                      item_id=item_id, note=note)
+        db.session.add(bm)
+        db.session.commit()
+        flash('Saved to bookmarks.', 'success')
+    else:
+        flash('Already bookmarked.', 'info')
+    next_url = (safe_next(request.form.get('next')) or safe_next(request.referrer)
+                or url_for('account'))
     return redirect(next_url)
 
 
 @app.route('/bookmark/remove', methods=['POST'])
 @login_required
 def bookmark_remove():
-    bookmark_id = request.form.get('bookmark_id', type=int)
-    if bookmark_id:
-        bm = db.session.get(Bookmark, bookmark_id)
-        if bm and bm.user_id == current_user.id:
-            db.session.delete(bm)
-            db.session.commit()
-            flash('Bookmark removed.', 'info')
-    return redirect(request.referrer or url_for('account'))
+    bookmark_id = bounded_int(request.form.get('bookmark_id', ''))
+    if bookmark_id is None:
+        abort(400)
+    # Scoped to the signed-in user: another user's id is a 404, not a no-op.
+    bm = Bookmark.query.filter_by(id=bookmark_id, user_id=current_user.id).first_or_404()
+    db.session.delete(bm)
+    db.session.commit()
+    flash('Bookmark removed.', 'info')
+    return redirect(safe_next(request.referrer) or url_for('account'))
 
 
 @app.route('/_health')

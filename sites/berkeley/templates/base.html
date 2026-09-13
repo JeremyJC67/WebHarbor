@@ -37,6 +37,11 @@
     .top-bar .container { display: flex; justify-content: space-between; align-items: center; }
     .top-bar a { color: #ccc; }
     .top-bar a:hover { color: var(--gold); text-decoration: none; }
+    .top-bar .link-button {
+      background: none; border: none; padding: 0; margin: 0;
+      color: #ccc; font: inherit; cursor: pointer; text-decoration: none;
+    }
+    .top-bar .link-button:hover { color: var(--gold); text-decoration: none; }
     .top-bar-left span { margin-right: 16px; }
     .top-bar-right a { margin-left: 12px; }
     /* Header */
@@ -160,6 +165,16 @@
       transition: border-color 0.2s;
     }
     .form-control:focus { outline: none; border-color: var(--light-blue); box-shadow: 0 0 0 3px rgba(59,126,161,0.15); }
+    /* Visible keyboard focus for every interactive element (WCAG 2.4.7/1.4.11) */
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+    textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid #0b5cab; outline-offset: 2px; }
+    .top-bar a:focus-visible, header a:focus-visible, footer a:focus-visible,
+    nav.main-nav a:focus-visible { outline-color: var(--gold); }
+    /* Skip link: first focusable element, off-screen until focused */
+    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--white); color: var(--blue); padding: 10px 16px; font-family: Arial, sans-serif; font-weight: 700; }
+    .skip-link:focus { left: 0; }
+    /* Offline-mirror disclosure, above the footer on every page */
+    .mirror-notice { background: var(--off-white); color: var(--gray-dark); text-align: center; font-family: Arial, sans-serif; font-size: 13px; padding: 10px 16px; border-top: 1px solid var(--gray-light); }
     .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
     .form-text { font-size: 12px; color: var(--gray-mid); font-family: Arial, sans-serif; margin-top: 4px; }
     /* Filter bar */
@@ -251,6 +266,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
 <!-- Top bar -->
 <div class="top-bar">
   <div class="container">
@@ -261,7 +278,10 @@
     <div class="top-bar-right">
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('account') }}">{{ current_user.full_name or current_user.username }}</a>
-        <a href="{{ url_for('logout') }}">Sign Out</a>
+        <form method="post" action="{{ url_for('logout') }}" style="display: inline; margin-left: 12px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-button">Sign Out</button>
+        </form>
       {% else %}
         <a href="{{ url_for('login') }}">Sign In</a>
         <a href="{{ url_for('register') }}">Create Account</a>
@@ -310,7 +330,7 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
   <div class="container">
-    <div class="flash-messages">
+    <div class="flash-messages" role="alert">
       {% for category, message in messages %}
         <div class="alert alert-{{ category }}">{{ message }}</div>
       {% endfor %}
@@ -320,11 +340,15 @@
 {% endwith %}
 
 <!-- Main content -->
-<main>
+<main id="main">
   {% block content %}{% endblock %}
 </main>
 
 <!-- Footer -->
+<div class="mirror-notice" role="note">
+  Unofficial offline benchmark mirror of berkeley.edu with synthetic data. Not affiliated with or
+  endorsed by the University of California, Berkeley.
+</div>
 <footer>
   <div class="container">
     <div class="footer-main">
