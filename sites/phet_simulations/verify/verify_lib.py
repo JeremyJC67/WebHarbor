@@ -213,6 +213,29 @@ def has_number(text, value):
     return value in numbers_in(text)
 
 
+def counts(text, value, *nouns):
+    """True when `value` is reported AS A COUNT of one of `nouns`.
+
+    has_number alone accepts a digit appearing anywhere, so an answer about a
+    different subject ("version 9.9.9") satisfies a check for 9. This binds the
+    number to its referent while still accepting the natural phrasings an agent
+    uses: "9 simulations", "9 sims", "nine simulations", "simulations: 9",
+    "contains 9", "there are 9".
+    """
+    t = (text or "").lower()
+    if value not in numbers_in(text):
+        return False
+    words = {v: k for k, v in _WORD_NUMBERS.items()}
+    forms = [str(value)] + ([words[value]] if value in words else [])
+    for noun in [n.lower() for n in nouns]:
+        for f in forms:
+            pats = [rf"{re.escape(f)}\s*(?:\w+\s+){{0,3}}{re.escape(noun)}",
+                    rf"{re.escape(noun)}[^.]{{0,40}}?\b{re.escape(f)}\b"]
+            if any(re.search(p, t) for p in pats):
+                return True
+    return False
+
+
 def dates_in(text):
     """ISO and common long-form dates, normalised to YYYY-MM-DD where possible."""
     out = list(re.findall(r"\b(\d{4}-\d{2}-\d{2})\b", text or ""))

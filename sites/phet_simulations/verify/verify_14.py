@@ -21,6 +21,8 @@ def main():
     t = load_run(a.run_dir)
     fa = final_answer(t)
     j.check("final_answer_nonempty", bool(fa), f"final={fa!r}")
+    j.check("answer_names_saved_sim", contains_any(fa, ["Number Pairs"]),
+            f"the final answer must say which simulation was saved; final={fa!r}")
     j.check("nav_register", navigated_to(t, "/register"), "registration page visited")
     j.check("nav_number_pairs", navigated_to(t, "/simulation/number-pairs"), "detail page opened")
     init = resolve_db(a.initial_db, a.container, "instance_seed")

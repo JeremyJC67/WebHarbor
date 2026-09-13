@@ -12,7 +12,7 @@ from verify_lib import (load_run, navigated_to, navigated_any, final_answer, las
                         contains_all, contains_any, answer_equals, numbers_in, has_number,
                         dates_in, resolve_db, saved_sims_for, saved_rows_for, user_exists,
                         read_only_run, catalog_unchanged, table_counts, db_query,
-                        llm_text_match, Judge, parse_args)
+                        llm_text_match, counts, Judge, parse_args)
 
 
 def main():
@@ -22,7 +22,8 @@ def main():
     fa = final_answer(t)
     j.check("final_answer_nonempty", bool(fa), f"final={fa!r}")
     j.check("used_new_filter", navigated_to(t, "release=new"), "release=new in a visited URL")
-    j.check("answer_count_five", has_number(fa, 5), f"numbers={numbers_in(fa)}")
+    j.check("answer_count_five", counts(fa, 5, "simulation", "sim", "release", "new"),
+            f"the count must be reported as a number of simulations; numbers={numbers_in(fa)} final={fa!r}")
     j.check("answer_not_twelve", not has_number(fa, 12), "12 is the whole New set, not the 2025 subset")
     init = resolve_db(a.initial_db, a.container, "instance_seed")
     after = resolve_db(a.after_db, a.container, "instance")

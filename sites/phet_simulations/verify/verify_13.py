@@ -21,6 +21,8 @@ def main():
     t = load_run(a.run_dir)
     fa = final_answer(t)
     j.check("final_answer_nonempty", bool(fa), f"final={fa!r}")
+    j.check("answer_names_saved_sim", contains_any(fa, ["Membrane Transport"]),
+            f"the final answer must say which simulation was saved; final={fa!r}")
     j.check("nav_login", navigated_to(t, "/login"), "sign-in page visited")
     j.check("nav_membrane_transport", navigated_to(t, "/simulation/membrane-transport"), "detail page opened")
     init = resolve_db(a.initial_db, a.container, "instance_seed")
