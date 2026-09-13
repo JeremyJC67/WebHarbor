@@ -36,7 +36,7 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 28 sites today, scaling to 100+ together
+- **Community-driven** — 29 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
