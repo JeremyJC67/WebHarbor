@@ -455,6 +455,22 @@
   "product": "COLBOR CPL-80 Projection Lens Adapter",
   "sha256": "8065eae9e08ce73fe223effe500b32ed86b68104423fb91d6199e6b2c6692038"
  },
+ "cop40": {
+  "archive_image_url": "https://web.archive.org/web/20260108101205im_/https://www.bhphotovideo.com/images/fb/cooke_ckep_40_40mm_minis4_i_lens_for_1005632.jpg",
+  "bytes": 534501,
+  "file": "images/products/cop40.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/cooke_ckep_40_40mm_minis4_i_lens_for_1005632.jpg",
+  "product": "Cooke 40mm T2.8 miniS4/i Cine Lens (Feet)",
+  "sha256": "159523f71d5054119a8cc5d5e533ced9b7f2d30bcc34f7b683002e049b8f3918"
+ },
+ "cop65": {
+  "archive_image_url": "https://web.archive.org/web/20260113083203im_/https://www.bhphotovideo.com/images/fb/cooke_ckep_65_65mm_minis4_i_lens_for_1005633.jpg",
+  "bytes": 539533,
+  "file": "images/products/cop65.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/cooke_ckep_65_65mm_minis4_i_lens_for_1005633.jpg",
+  "product": "Cooke 65mm T2.8 miniS4/i Cine Lens (Feet)",
+  "sha256": "5a01d7dadf6d8f1bd284f04d45bfe8288d6c5ce266d8f5293e358d367dc53f82"
+ },
  "crhalotlite": {
   "archive_image_url": "https://web.archive.org/web/20250628161617im_/https://www.bhphotovideo.com/images/fb/creality_halot_lite_resin_3d_printer_1705449.jpg",
   "bytes": 69297,
@@ -575,6 +591,14 @@
   "product": "Film Devices Microphone Travel Boompole Kit (Carbon Fiber)",
   "sha256": "7786f4e3c444d1e219fe767cf1475ea594a52e7b9103b146c4e8b8ee6d93bb72"
  },
+ "fiflxa004": {
+  "archive_image_url": "https://web.archive.org/web/20260308110731im_/https://www.bhphotovideo.com/images/fb/fiilex_flxa004_2_fresnel_lens_1021508.jpg",
+  "bytes": 59583,
+  "file": "images/products/fiflxa004.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/fiilex_flxa004_2_fresnel_lens_1021508.jpg",
+  "product": "Fiilex 2\" Fresnel Lens for P360/EX and V70 LED Lights",
+  "sha256": "efdbffb1339b650733db5658fdba12bea76f1a7cd067d3152cfbb55a6152472c"
+ },
  "fig6cleko10": {
   "archive_image_url": "https://web.archive.org/web/20260204224901im_/https://www.bhphotovideo.com/images/fb/fiilex_flxg6clr_leko10_leko_lens_tube_for_1924247.jpg",
   "bytes": 58785,
@@ -679,6 +703,14 @@
   "product": "FUJIFILM X-T30 III Mirrorless Camera with 13-33mm f/3.5-6.3 Lens (Silver)",
   "sha256": "94a859e96835546a307729785549215a1435e8f42a2d5fd32da9258831141b55"
  },
+ "gigc2202t": {
+  "archive_image_url": "https://web.archive.org/web/20260327190652im_/https://www.bhphotovideo.com/images/fb/gitzo_gc2202t_traveler_tripod_bag_ser_2_1024826.jpg",
+  "bytes": 590883,
+  "file": "images/products/gigc2202t.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/gitzo_gc2202t_traveler_tripod_bag_ser_2_1024826.jpg",
+  "product": "Gitzo GC2202T Padded Traveler Tripod Bag Series 2",
+  "sha256": "7f8c3c748d8f0fa692a2cdc74a411945395e5437139e77388c2ad68d4975471d"
+ },
  "hohsct": {
   "archive_image_url": "https://web.archive.org/web/20251016193230im_/https://www.bhphotovideo.com/images/fb/hoodman_hsct_tripod_mount_for_dji_1512569.jpg",
   "bytes": 55825,
@@ -727,6 +759,14 @@
   "product": "ISOVOX Horizontal Mic Mount for Vocal Isolation Booth",
   "sha256": "6662493e97e45b4508393be890eaa4a32974f9d121cadf803b39b95df4653d04"
  },
+ "jogpatgp": {
+  "archive_image_url": "https://web.archive.org/web/20260221100603im_/https://www.bhphotovideo.com/images/fb/joby_jb01300_bww_gorillapod_action_tripod_with_1007303.jpg",
+  "bytes": 302703,
+  "file": "images/products/jogpatgp.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/joby_jb01300_bww_gorillapod_action_tripod_with_1007303.jpg",
+  "product": "JOBY GorillaPod Action Tripod with GoPro Mount",
+  "sha256": "58cc80f113f8e857d07ce4cc7319dd98792d5d7503b6e542bdadc56ef97d0359"
+ },
  "kaf14aflnz87": {
   "archive_image_url": "https://web.archive.org/web/20251004085302im_/https://static.bhphoto.com/images/en/na500x500.jpg",
   "bytes": 3763,
@@ -734,6 +774,14 @@
   "original_image_url": "https://static.bhphoto.com/images/en/na500x500.jpg",
   "product": "Kase 85mm f/1.4 AF Lens (Nikon Z)",
   "sha256": "4e3b19a088c9b214a0796704f74c4596c0c0180d20a2283e3e2f1ee3016237a1"
+ },
+ "kukd1d77": {
+  "archive_image_url": "https://web.archive.org/web/20260603035505im_/https://www.bhphotovideo.com/images/fb/kula_kd1d77_camera_lens_attachment_for_1023756.jpg",
+  "bytes": 57587,
+  "file": "images/products/kukd1d77.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/kula_kd1d77_camera_lens_attachment_for_1023756.jpg",
+  "product": "Kula Deeper Stereoscopic Lens Attachment",
+  "sha256": "58e89ac0ae66af51e458b8985ba79a8b9a9a7c3b22eddda2484aa297b72320f1"
  },
  "lasspc35pl": {
   "archive_image_url": "https://web.archive.org/web/20250912100145im_/https://static.bhphoto.com/images/en/na500x500.jpg",
@@ -1159,6 +1207,30 @@
   "product": "SKYROVER X1 Drone",
   "sha256": "4e3b19a088c9b214a0796704f74c4596c0c0180d20a2283e3e2f1ee3016237a1"
  },
+ "so16704": {
+  "archive_image_url": "https://web.archive.org/web/20260129231123im_/https://www.bhphotovideo.com/images/fb/sony_sel1670z_16_70mm_f_4_za_lens_1001009.jpg",
+  "bytes": 760302,
+  "file": "images/products/so16704.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_sel1670z_16_70mm_f_4_za_lens_1001009.jpg",
+  "product": "Sony Vario-Tessar T* E 16-70mm f/4 ZA OSS Lens",
+  "sha256": "dbf5a098a68855fea3559746c11c5ac488abe7a8dc14859ea7cdda87d740cf51"
+ },
+ "so181054": {
+  "archive_image_url": "https://web.archive.org/web/20260308003227im_/https://www.bhphotovideo.com/images/fb/sony_selp18105g_18_105mm_f_4_g_lens_1001011.jpg",
+  "bytes": 167962,
+  "file": "images/products/so181054.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_selp18105g_18_105mm_f_4_g_lens_1001011.jpg",
+  "product": "Sony E PZ 18-105mm f/4 G OSS Lens",
+  "sha256": "dacb00340141efae6a4a945f2c9a6f39a597d04b17f9ab38e80cdc05ec8b1547"
+ },
+ "soa3000": {
+  "archive_image_url": "https://web.archive.org/web/20260217112323im_/https://www.bhphotovideo.com/images/fb/sony_ilce3000k_b_alpha_a3000_dslr_camera_1001000.jpg",
+  "bytes": 176471,
+  "file": "images/products/soa3000.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_ilce3000k_b_alpha_a3000_dslr_camera_1001000.jpg",
+  "product": "Sony Alpha a3000 Digital Camera with 18-55mm Lens",
+  "sha256": "5f1e9d1faab6e375b5cea646979b0386a2b14fef378a23c2d048d1634b3bb4e6"
+ },
  "soa6700165bk": {
   "archive_image_url": "https://web.archive.org/web/20251204225615im_/https://www.bhphotovideo.com/images/fb/sony_a6700_mirrorless_camera_with_1928284.jpg",
   "bytes": 174681,
@@ -1214,6 +1286,14 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_ilme_fx6vk_fx6_digital_cinema_camera_1600161.jpg",
   "product": "Sony FX6 Digital Cinema Camera Kit with 24-105mm Lens",
   "sha256": "0cbe357d01ddec7e7312da24bd7b6d6591cf23e0bab3373f2fa83fb597a7b553"
+ },
+ "solaea3": {
+  "archive_image_url": "https://web.archive.org/web/20260424035300im_/https://www.bhphotovideo.com/images/fb/sony_laea3_a_mount_to_e_mount_lens_1008165.jpg",
+  "bytes": 126389,
+  "file": "images/products/solaea3.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_laea3_a_mount_to_e_mount_lens_1008165.jpg",
+  "product": "Sony A-Mount to E-Mount Lens Adapter (Black)",
+  "sha256": "fca588d55077da0c5c7952b2174fc2e389f3c41b08fe6c14f15e1254a13b78ca"
  },
  "sozve10kb": {
   "archive_image_url": "https://web.archive.org/web/20251121074739im_/https://www.bhphotovideo.com/images/fb/sony_zve10kb_zv_e10_mirrorless_camera_with_1912025.jpg",
