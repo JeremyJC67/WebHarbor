@@ -128,7 +128,10 @@
       transition: box-shadow 0.2s;
     }
     .card:hover { box-shadow: 0 4px 20px rgba(0,50,98,0.12); }
-    .card-img { height: 160px; background: var(--blue); display: flex; align-items: center; justify-content: center; }
+    /* position: relative keeps the absolutely-positioned "Featured" badge inside
+       its card image; without it the badge anchored to the page and painted over
+       the top-bar Sign In / Create Account links at 768/390/320 px. */
+    .card-img { height: 160px; background: var(--blue); display: flex; align-items: center; justify-content: center; position: relative; }
     .card-img-label { color: #ffffff; font-family: Arial, sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
     .card-body { padding: 20px; }
     .card-category {
