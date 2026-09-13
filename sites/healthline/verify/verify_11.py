@@ -4,7 +4,7 @@ starting dose. GT: 50 mg once daily.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_lib import (load_run, final_answer, navigated_to, contains_any,
+from verify_lib import (load_run, final_answer, navigated_to, amount_with_unit,
                         llm_text_match, Judge, parse_args)
 
 def main():
@@ -15,7 +15,8 @@ def main():
     # recalled "50 mg" from medical knowledge without reading the page.
     j.check("nav_drug", navigated_to(t, "/drug/sertraline"),
             "expected the sertraline drug page")
-    j.check("answer_dose", contains_any(fa, ["50 mg", "50mg"]), f"expected 50 mg; final={fa!r}")
+    j.check("answer_dose", amount_with_unit(fa, 50, ["mg", "milligram"]),
+            f"expected a standalone 50 mg dose; final={fa!r}")
     ok, ev = llm_text_match(fa, "50 mg once daily (typical starting dose)",
                             "What is sertraline's typical recommended starting dose?")
     j.check("answer_consistent", ok, ev, llm=True)

@@ -16,6 +16,8 @@ def main():
     j.check("answer_detect", contains_any(fa, ["measurement", "measur", "blood pressure reading",
                                                "blood pressure check", "monitor", "cuff"]),
             f"expected the detection method (a simple measurement); final={fa!r}")
+    j.check("answer_condition", contains_any(fa, ["high blood pressure", "hypertension", "silent killer"]),
+            f"expected the condition identity (hypertension / high blood pressure); final={fa!r}")
     ok, ev = llm_text_match(fa, "High Blood Pressure (hypertension), the silent killer, detected "
                             "with a simple (blood pressure) measurement",
                             "Which heart condition is the 'silent killer' and how is it detected?")

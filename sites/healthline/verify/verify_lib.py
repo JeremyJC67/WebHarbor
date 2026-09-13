@@ -164,6 +164,23 @@ def number_mentioned(final, amount):
             return True
     return False
 
+def amount_with_unit(final, amount, units):
+    """True only if `amount` appears as a standalone number with a listed unit nearby."""
+    if not number_mentioned(final, amount):
+        return False
+    f = norm(final)
+    return any(norm(u) in f for u in units)
+
+
+def count_groups(final, groups):
+    """Count distinct concept groups matched, so overlapping tokens in one phrase count once.
+
+    `groups` is a list of alternative-token lists; each list is one distinct concept.
+    """
+    f = norm(final)
+    return sum(1 for group in groups if any(norm(token) in f for token in group))
+
+
 # ---------------------------------------------------------------- DB state
 def fetch_db(container, kind):
     """kind: 'instance' (after) or 'instance_seed' (initial). docker cp -> temp file."""
