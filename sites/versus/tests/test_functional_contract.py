@@ -226,10 +226,15 @@ class VerifierTerminalState(unittest.TestCase):
 
     def test_answer_from_an_error_page_is_not_on_site(self):
         V = self._lib()
-        ok = {"steps": [{"step": 0, "action": "click", "url": "http://localhost:40026/"},
+        # Derive the origin the way the verifier does. Freezing a port here is
+        # the same mistake this suite exists to catch: it was frozen once in the
+        # verifier, once in the adversarial fixtures, and once here, and each
+        # time a registry move turned the check into a no-op or a false failure.
+        base = V.site_origins()[0]
+        ok = {"steps": [{"step": 0, "action": "click", "url": f"{base}/"},
                         {"step": 1, "action": "done",
-                         "url": "http://localhost:40026/item/nikon-z8"}]}
-        crashed = {"steps": [{"step": 0, "action": "click", "url": "http://localhost:40026/"},
+                         "url": f"{base}/item/nikon-z8"}]}
+        crashed = {"steps": [{"step": 0, "action": "click", "url": f"{base}/"},
                              {"step": 1, "action": "done",
                               "url": "chrome-error://chromewebdata/"}]}
         self.assertTrue(V.answered_on_site(ok))
