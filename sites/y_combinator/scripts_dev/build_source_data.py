@@ -499,15 +499,29 @@ def build_home(cache: Path, assets: Assets) -> dict:
     for match in re.finditer(r"In 2005, Y Combinator developed.{0,1800}?</p>", raw, re.S):
         narrative.append(strip_tags(match.group(0)))
     plain_text = strip_tags(raw)
+    footnote = attribution = None
+    quoted = re.search(r"[\u201c\"]?A formidable person is one who.{0,300}?</p>", raw, re.S)
+    if quoted:
+        text = strip_tags(quoted.group(0))
+        parts = re.split(r"\s*[—–-]\s*(?=Paul Graham)", text, maxsplit=1)
+        footnote = parts[0].strip()
+        if footnote.endswith(("\u201d", '"')) and not footnote.startswith(("\u201c", '"')):
+            footnote = "\u201c" + footnote
+        attribution = ("— " + parts[1].strip()) if len(parts) > 1 else None
     valuation = re.search(r"(\$[\d.]+ Trillion)\s*(in combined valuation)", plain_text)
+    # Upstream markup is
+    #   <span>{line one}</span><br/> <span>{lead} <span class="italic">{emphasis}</span></span>
+    hero = re.search(
+        r"<span>([^<]{4,60})</span><br/?>\s*<span>([^<]{0,30})"
+        r'<span class="italic">([^<]{4,60})</span>', raw)
     return {
         "valuation_amount": valuation.group(1) if valuation else None,
         "valuation_caption": valuation.group(2) if valuation else None,
-        "hero_headline_plain": "YC turns builders into",
-        "hero_headline_emphasis": "formidable founders",
-        "hero_footnote": strip_tags(
-            re.search(r"A formidable person is one who.{0,300}?</p>", raw, re.S).group(0)
-        ) if re.search(r"A formidable person is one who", raw) else None,
+        "hero_line_one": hero.group(1).strip() if hero else None,
+        "hero_line_two_lead": hero.group(2).strip() if hero else None,
+        "hero_headline_emphasis": hero.group(3).strip() if hero else None,
+        "hero_footnote": footnote,
+        "hero_footnote_attribution": attribution,
         "narrative": narrative,
         "in_the_room": [
             {"name": v.get("name"), "title": v.get("title"),

@@ -1,15 +1,17 @@
 {
  "meta": {
   "upstream": "https://www.ycombinator.com",
-  "generated_at": "2026-09-12T17:24:02Z",
+  "generated_at": "2026-09-13T04:31:57Z",
   "note": "Every record is extracted from a captured ycombinator.com response; absent upstream values are omitted rather than generated."
  },
  "home": {
   "valuation_amount": "$1.3 Trillion",
   "valuation_caption": "in combined valuation",
-  "hero_headline_plain": "YC turns builders into",
+  "hero_line_one": "YC turns builders",
+  "hero_line_two_lead": "into",
   "hero_headline_emphasis": "formidable founders",
-  "hero_footnote": "A formidable person is one who seems like they’ll get what they want, regardless of whatever obstacles are in the way.” — Paul Graham",
+  "hero_footnote": "“A formidable person is one who seems like they’ll get what they want, regardless of whatever obstacles are in the way.”",
+  "hero_footnote_attribution": "— Paul Graham",
   "narrative": [
    "In 2005, Y Combinator developed a new model of startup funding. Four times a year we invest $500k in a select group of startups. They move to San Francisco for three months, where we work intensively with them to get the company into the best possible shape, before they present to a large audience of investors on Demo Day."
   ],

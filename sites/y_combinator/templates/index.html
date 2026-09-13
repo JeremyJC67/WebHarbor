@@ -3,8 +3,14 @@
 {% block content %}
 <section class="hero">
     <div class="shell">
-        <h1><span class="plain">{{ hero.headline_plain }}</span><br>{{ hero.headline_emphasis }}<sup>[1]</sup></h1>
-        {% if hero.footnote %}<p class="hero-note">[1] {{ hero.footnote }}</p>{% endif %}
+        <h1><span>{{ hero.line_one }}</span><br>
+            <span>{{ hero.line_two_lead }} <em>{{ hero.headline_emphasis }}</em></span><sup>[1]</sup></h1>
+        {% if hero.footnote %}
+        <div class="hero-note">
+            <p>[1] {{ hero.footnote }}</p>
+            {% if hero.footnote_attribution %}<p class="attrib">{{ hero.footnote_attribution }}</p>{% endif %}
+        </div>
+        {% endif %}
         <div class="scroll-cue">⌄</div>
     </div>
 </section>

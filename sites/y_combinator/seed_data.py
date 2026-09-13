@@ -174,9 +174,11 @@ def seed(data: dict) -> None:
         db.session.add(HomeBlock(kind=kind, position=position, payload=dumps(payload)))
 
     block("hero", 0, {
-        "headline_plain": home.get("hero_headline_plain"),
+        "line_one": home.get("hero_line_one"),
+        "line_two_lead": home.get("hero_line_two_lead"),
         "headline_emphasis": home.get("hero_headline_emphasis"),
         "footnote": home.get("hero_footnote"),
+        "footnote_attribution": home.get("hero_footnote_attribution"),
         "valuation_amount": home.get("valuation_amount"),
         "valuation_caption": home.get("valuation_caption"),
     })

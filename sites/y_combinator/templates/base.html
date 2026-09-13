@@ -36,13 +36,15 @@
                 {% endif %}
             </div>
             {% endfor %}
-            {% if current_user.is_authenticated %}
-                <div class="nav-item"><a href="{{ url_for('bookmarks') }}">Bookmarks</a></div>
-                <div class="nav-item"><a href="{{ url_for('logout') }}">Log out</a></div>
-            {% else %}
-                <div class="nav-item"><a href="{{ url_for('login') }}">Log in</a></div>
-            {% endif %}
-            <a class="nav-apply" href="{{ url_for('static_page', page_slug='apply') }}">Apply</a>
+            <span class="nav-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('bookmarks') }}">Bookmarks</a>
+                    <a href="{{ url_for('logout') }}">Log out</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Log in</a>
+                {% endif %}
+                <a class="nav-apply" href="{{ url_for('static_page', page_slug='apply') }}">Apply</a>
+            </span>
             <button class="nav-toggle" type="button" aria-label="Open menu"
                     onclick="document.getElementById('nav-drawer').classList.toggle('open')">☰</button>
         </div>
