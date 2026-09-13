@@ -37,14 +37,14 @@
 
       {% if related %}
       <h2 class="section-heading mt-4">Related Programs</h2>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+      <div class="grid-2">
         {% for r in related %}
         <div class="card">
           <div class="card-body">
             <span class="badge badge-blue">{{ r.degree_type }}</span>
-            <h4 style="font-size: 15px; color: var(--blue); margin-top: 8px;">
+            <h3 style="font-size: 15px; color: var(--blue); margin-top: 8px;">
               <a href="{{ url_for('program_detail', slug=r.slug) }}" style="color: var(--blue);">{{ r.name }}</a>
-            </h4>
+            </h3>
           </div>
         </div>
         {% endfor %}

@@ -9,12 +9,12 @@
     :root {
       --blue: #003262;
       --gold: #FDB515;
-      --light-blue: #3B7EA1;
+      --light-blue: #2E6C8B;
       --dark-gold: #C4820A;
       --white: #ffffff;
       --off-white: #f8f7f5;
       --gray-light: #e9ecef;
-      --gray-mid: #6c757d;
+      --gray-mid: #64696f;
       --gray-dark: #343a40;
       --text: #212529;
       --link: #0057A8;
@@ -79,7 +79,7 @@
       background: var(--gold); border: none; border-radius: 0 4px 4px 0;
       color: var(--blue); font-weight: bold; cursor: pointer; font-size: 14px;
     }
-    .header-search button:hover { background: var(--dark-gold); }
+    .header-search button:hover { background: #E0A50C; }
     /* Nav */
     nav.main-nav {
       background: var(--blue);
@@ -129,7 +129,7 @@
     }
     .card:hover { box-shadow: 0 4px 20px rgba(0,50,98,0.12); }
     .card-img { height: 160px; background: var(--blue); display: flex; align-items: center; justify-content: center; }
-    .card-img-label { color: rgba(255,255,255,0.7); font-family: Arial, sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .card-img-label { color: #ffffff; font-family: Arial, sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
     .card-body { padding: 20px; }
     .card-category {
       display: inline-block; padding: 3px 10px; border-radius: 3px;
@@ -152,7 +152,7 @@
     .btn-primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
     .btn-primary:hover { background: #002244; color: var(--white); text-decoration: none; }
     .btn-gold { background: var(--gold); color: var(--blue); border-color: var(--gold); }
-    .btn-gold:hover { background: var(--dark-gold); color: var(--blue); text-decoration: none; }
+    .btn-gold:hover { background: #E0A50C; color: var(--blue); text-decoration: none; }
     .btn-outline { background: transparent; color: var(--blue); border-color: var(--blue); }
     .btn-outline:hover { background: var(--blue); color: var(--white); text-decoration: none; }
     .btn-sm { padding: 6px 14px; font-size: 13px; }
@@ -170,6 +170,14 @@
     textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid #0b5cab; outline-offset: 2px; }
     .top-bar a:focus-visible, header a:focus-visible, footer a:focus-visible,
     nav.main-nav a:focus-visible { outline-color: var(--gold); }
+    /* Long unbreakable strings (emails, room codes) must not widen a grid column */
+    .sidebar-layout > * { min-width: 0; }
+    .detail-meta-item, .sidebar li { overflow-wrap: anywhere; }
+    /* Filter-bar controls shrink instead of forcing the document to scroll */
+    .filter-bar form select, .filter-bar form input[type="text"],
+    .filter-bar form button { max-width: 100%; min-width: 0; }
+    /* Visually hidden, still announced (section labels for card grids) */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
     /* Skip link: first focusable element, off-screen until focused */
     .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--white); color: var(--blue); padding: 10px 16px; font-family: Arial, sans-serif; font-weight: 700; }
     .skip-link:focus { left: 0; }
@@ -215,7 +223,7 @@
     .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-family: Arial, sans-serif; font-weight: 700; }
     .badge-gold { background: var(--gold); color: var(--blue); }
     .badge-blue { background: var(--blue); color: var(--white); }
-    .badge-green { background: #28a745; color: white; }
+    .badge-green { background: #1E7E34; color: white; }
     /* Table */
     table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 14px; }
     th { background: var(--blue); color: var(--white); padding: 12px 16px; text-align: left; }
@@ -233,13 +241,23 @@
     .footer-main { padding: 48px 0 32px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
     .footer-brand .footer-logo { font-size: 22px; color: var(--white); font-family: Georgia, serif; margin-bottom: 12px; }
     .footer-brand p { font-size: 13px; line-height: 1.7; opacity: 0.7; }
-    footer h4 { color: var(--gold); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    footer h2 { color: var(--gold); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
     footer ul { list-style: none; }
     footer ul li { margin-bottom: 8px; }
     footer ul li a { color: rgba(255,255,255,0.7); font-size: 13px; }
     footer ul li a:hover { color: var(--gold); text-decoration: none; }
     .footer-bottom { border-top: 1px solid rgba(255,255,255,0.15); padding: 16px 0; display: flex; justify-content: space-between; align-items: center; }
     .footer-bottom p { font-size: 12px; opacity: 0.6; }
+    /* Responsive split grids (fixed fr pairs overflow at 320px) */
+    .split-3-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 32px; }
+    .split-1-3 { display: grid; grid-template-columns: 1fr 3fr; gap: 32px; }
+    .split-2-3 { display: grid; grid-template-columns: 2fr 3fr; }
+    /* Responsive multi-column grids (inline 4/2-column grids overflow at 390px) */
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    @media (max-width: 768px) {
+      .grid-4, .grid-2, .split-3-2, .split-1-3, .split-2-3 { grid-template-columns: 1fr; }
+    }
     /* Utility */
     .mt-1{margin-top:8px} .mt-2{margin-top:16px} .mt-3{margin-top:24px} .mt-4{margin-top:32px}
     .mb-1{margin-bottom:8px} .mb-2{margin-bottom:16px} .mb-3{margin-bottom:24px} .mb-4{margin-bottom:32px}
@@ -357,7 +375,7 @@
         <p>The University of California, Berkeley is a public research university located in Berkeley, California. Founded in 1868, it is the oldest of the University of California's campuses and is regarded as one of the world's leading universities.</p>
       </div>
       <div>
-        <h4>Academics</h4>
+        <h2>Academics</h2>
         <ul>
           <li><a href="{{ url_for('programs') }}">Degree Programs</a></li>
           <li><a href="{{ url_for('departments') }}">Departments</a></li>
@@ -366,7 +384,7 @@
         </ul>
       </div>
       <div>
-        <h4>Research</h4>
+        <h2>Research</h2>
         <ul>
           <li><a href="{{ url_for('research') }}">Research Centers</a></li>
           <li><a href="{{ url_for('faculty') }}">Faculty Directory</a></li>
@@ -374,7 +392,7 @@
         </ul>
       </div>
       <div>
-        <h4>Campus</h4>
+        <h2>Campus</h2>
         <ul>
           <li><a href="{{ url_for('events') }}">Events</a></li>
           <li><a href="{{ url_for('news') }}">Berkeley News</a></li>

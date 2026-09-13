@@ -54,7 +54,7 @@ record of what the snapshot derives; none of them appears in `tasks.jsonl` — t
   over the literal phrase matches one row. The AI-family allowlist (11 rows) is the rule the task
   implies, and every accepted answer must still bind its quoted interests to the named row.
 * BIDS has four focus areas (not three), and the "related centres" the page shows are the three
-  rows its unordered `LIMIT 3` query returns — naming any other same-college centre fails.
+  rows its `ORDER BY name LIMIT 3` query returns — naming any other same-college centre fails.
 * `GET /news/<slug>` used to increment `view_count` and commit. That made a read-only task write the
   DB and broke the byte-identical reset invariant, so it was removed before the verifiers were
   written; the column is kept and still renders the frozen seed values.

@@ -11,7 +11,7 @@
 
 <div class="container py-4">
   <!-- Overview -->
-  <div style="background: var(--off-white); border-radius: 4px; padding: 32px; margin-bottom: 40px; display: grid; grid-template-columns: 3fr 2fr; gap: 32px;">
+  <div class="split-3-2" style="background: var(--off-white); border-radius: 4px; padding: 32px; margin-bottom: 40px;">
     <div>
       <h2 style="color: var(--blue); font-size: 28px; margin-bottom: 16px;">The World's Top Public Research University</h2>
       <p style="font-size: 16px; line-height: 1.8; margin-bottom: 16px;">UC Berkeley is home to more than 200 research institutes, centers, and programs. Our faculty and students conduct groundbreaking research across every discipline, from artificial intelligence to environmental science, from genomics to urban planning.</p>
@@ -55,7 +55,7 @@
       {% set college_centers = centers | selectattr('college_id', 'equalto', college.id) | list %}
       {% if college_centers %}
       <div style="background: var(--off-white); border: 1px solid var(--gray-light); border-radius: 4px; padding: 16px;">
-        <h4 style="font-size: 14px; color: var(--blue); margin-bottom: 8px; font-family: Arial, sans-serif;">{{ college.name }}</h4>
+        <h3 style="font-size: 14px; color: var(--blue); margin-bottom: 8px; font-family: Arial, sans-serif;">{{ college.name }}</h3>
         <p style="font-family: Arial, sans-serif; font-size: 13px; color: var(--gray-mid);">{{ college_centers|length }} center{{ 's' if college_centers|length != 1 else '' }}</p>
       </div>
       {% endif %}

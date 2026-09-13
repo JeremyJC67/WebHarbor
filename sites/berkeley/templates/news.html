@@ -46,10 +46,11 @@
   </p>
 
   {% if articles %}
+  <h2 class="sr-only">News articles</h2>
   <div class="card-grid">
     {% for article in articles %}
     <div class="card">
-      <div class="card-img" style="background: {% if article.category == 'Research' %}#003262{% elif article.category == 'Science' %}#3B7EA1{% elif article.category == 'Athletics' %}#C4820A{% elif article.category == 'Arts' %}#6f3fa0{% else %}#003262{% endif %};">
+      <div class="card-img" style="background: {% if article.category == 'Research' %}#003262{% elif article.category == 'Science' %}#2E6C8B{% elif article.category == 'Athletics' %}#8A5A07{% elif article.category == 'Arts' %}#5A3383{% else %}#003262{% endif %};">
         <span class="card-img-label">{{ article.category }}</span>
         {% if article.featured %}<span style="position: absolute; top: 8px; right: 8px;" class="badge badge-gold">Featured</span>{% endif %}
       </div>

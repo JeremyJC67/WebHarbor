@@ -81,7 +81,7 @@
     <!-- Sidebar -->
     <aside>
       <div class="sidebar">
-        <h3>Related Articles</h3>
+        <h2>Related Articles</h2>
         {% if related %}
         <ul>
           {% for r in related %}
@@ -100,7 +100,7 @@
       </div>
 
       <div class="sidebar mt-3">
-        <h3>Browse News</h3>
+        <h2>Browse News</h2>
         <ul>
           {% for cat in ['Research', 'Campus Life', 'Faculty', 'Student', 'Athletics', 'Science', 'Arts'] %}
           <li><a href="{{ url_for('news') }}?category={{ cat }}">{{ cat }}</a></li>

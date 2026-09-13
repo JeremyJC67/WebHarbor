@@ -12,7 +12,7 @@
 
 <div class="page-header">
   <div class="container">
-    <div style="display: flex; align-items: center; gap: 24px;">
+    <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
       <div style="width: 80px; height: 80px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: var(--blue); font-family: Arial, sans-serif; flex-shrink: 0;">
         {{ member.name[0] }}
       </div>
@@ -47,10 +47,10 @@
 
       {% if colleagues %}
       <h2 class="section-heading">Colleagues in the Department</h2>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+      <div class="grid-2" style="gap: 12px;">
         {% for c in colleagues %}
         <div style="background: var(--off-white); border: 1px solid var(--gray-light); border-radius: 4px; padding: 16px;">
-          <h4 style="font-size: 14px; color: var(--blue);"><a href="{{ url_for('faculty_profile', slug=c.slug) }}" style="color: var(--blue);">{{ c.name }}</a></h4>
+          <h3 style="font-size: 14px; color: var(--blue);"><a href="{{ url_for('faculty_profile', slug=c.slug) }}" style="color: var(--blue);">{{ c.name }}</a></h3>
           <p style="font-family: Arial, sans-serif; font-size: 13px; color: var(--gray-mid);">{{ c.title }}</p>
         </div>
         {% endfor %}

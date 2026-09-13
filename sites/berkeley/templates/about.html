@@ -18,7 +18,7 @@
 
   <!-- Stats -->
   <h2 class="section-heading">Berkeley by the Numbers</h2>
-  <div class="stats-grid mb-4" style="grid-template-columns: repeat(4, 1fr);">
+  <div class="stats-grid mb-4 grid-4">
     <div class="stat-box"><span class="stat-number">{{ stats.founded }}</span><span class="stat-label">Year Founded</span></div>
     <div class="stat-box"><span class="stat-number">{{ stats.nobel_laureates }}</span><span class="stat-label">Nobel Laureates on Faculty</span></div>
     <div class="stat-box"><span class="stat-number">{{ "{:,}".format(stats.undergrad_count) }}</span><span class="stat-label">Undergraduate Students</span></div>
@@ -34,7 +34,7 @@
   </div>
 
   <!-- History -->
-  <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 40px; margin-bottom: 48px;">
+  <div class="split-3-2" style="gap: 40px; margin-bottom: 48px;">
     <div>
       <h2 class="section-heading">History</h2>
       <p style="font-size: 16px; line-height: 1.8; margin-bottom: 16px;">The University of California was founded on March 23, 1868, with the merger of the private College of California and the public Agricultural, Mining, and Mechanical Arts College. Berkeley's first class of 40 students was admitted in 1869.</p>

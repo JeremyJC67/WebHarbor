@@ -30,7 +30,7 @@ counts (14 colleges, 30 departments, 83 programmes, 82 faculty, 25 research cent
 articles, 64 events, 4 users, 0 bookmarks) and the row-level catalog fingerprint pinned in
 `verify_lib.py`. `ground_truth.py` then re-derives the task's target the way the app renders it —
 the `BENCHMARK_NOW = 2026-05-12` event filter, `PER_PAGE`, the app's `ORDER BY` clauses and the
-unordered `LIMIT 3` related-centres query — and fails closed on drift. The seven catalog tables must
+`ORDER BY name LIMIT 3` related-centres query — and fails closed on drift. The seven catalog tables must
 be row-identical before and after; `users` and `bookmarks` are the only runtime tables.
 
 Read-only tasks (everything except 30 and 31) require **every** seeded table to be row-identical,

@@ -34,7 +34,7 @@
             <div style="font-family: Arial, sans-serif; font-size: 11px;">{{ r.start_datetime.strftime('%b') }}</div>
           </div>
           <div>
-            <h4 style="font-size: 15px; color: var(--blue);"><a href="{{ url_for('event_detail', event_id=r.id) }}" style="color: var(--blue);">{{ r.title }}</a></h4>
+            <h3 style="font-size: 15px; color: var(--blue);"><a href="{{ url_for('event_detail', event_id=r.id) }}" style="color: var(--blue);">{{ r.title }}</a></h3>
             <p style="font-size: 13px; color: var(--gray-mid); font-family: Arial, sans-serif;">{{ r.location }}</p>
           </div>
         </div>

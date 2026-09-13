@@ -46,15 +46,16 @@
   </p>
 
   {% if events %}
+  <h2 class="sr-only">Events</h2>
   <div class="card-grid">
     {% for event in events %}
     <div class="card">
-      <div style="background: {% if event.category == 'Lecture' %}#003262{% elif event.category == 'Sports' %}#C4820A{% elif event.category == 'Arts' %}#6f3fa0{% elif event.category == 'Career' %}#28a745{% elif event.category == 'Health' %}#20c997{% elif event.category == 'Virtual' %}#6c757d{% else %}#3B7EA1{% endif %}; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="background: {% if event.category == 'Lecture' %}#003262{% elif event.category == 'Sports' %}#8A5A07{% elif event.category == 'Arts' %}#5A3383{% elif event.category == 'Career' %}#1E7E34{% elif event.category == 'Health' %}#0F7A5A{% elif event.category == 'Virtual' %}#55595E{% else %}#2E6C8B{% endif %}; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
           <div style="font-family: Arial, sans-serif; font-size: 32px; font-weight: bold; line-height: 1;">{{ event.start_datetime.strftime('%d') }}</div>
           <div style="font-family: Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">{{ event.start_datetime.strftime('%b %Y') }}</div>
         </div>
-        <span class="badge" style="background: rgba(255,255,255,0.2); color: white; font-size: 11px;">{{ event.category }}</span>
+        <span class="badge" style="background: rgba(0,0,0,0.3); color: white; font-size: 11px;">{{ event.category }}</span>
       </div>
       <div class="card-body">
         <h3 class="card-title" style="font-size: 16px; margin-bottom: 10px;">

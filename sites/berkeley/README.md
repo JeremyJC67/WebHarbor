@@ -35,9 +35,9 @@ Benchmark accounts: `alice`, `bob`, `carol`, `dave` `@berkeley.edu`, password `t
 
 ## Routes
 
-`/`, `/news` (search + category + pagination), `/news/<slug>`, `/academics`, `/programs` (search, college and degree filters, pagination), `/programs/<slug>`, `/events` (category + upcoming/past/today), `/events/<id>`, `/research`, `/research/<slug>`, `/departments`, `/departments/<slug>`, `/admissions`, `/about`, `/search` (programmes / news / events / faculty / centres), `/faculty` (name, interest and department filters), `/faculty/<slug>`, `/login`, `/register`, `/logout`, `/account` (bookmarks), `/bookmark/add` (POST), `/bookmark/remove` (POST), `/_health`.
+`/`, `/news` (search + category + pagination), `/news/<slug>`, `/academics`, `/programs` (search, college and degree filters, pagination), `/programs/<slug>`, `/events` (category + upcoming/past/today), `/events/<id>`, `/research`, `/research/<slug>`, `/departments`, `/departments/<slug>`, `/admissions`, `/about`, `/search` (programmes / news / events / faculty / centres), `/faculty` (name, interest and department filters), `/faculty/<slug>`, `/login`, `/register`, `/logout` (POST-only, CSRF-protected: a prefetching GET gets 405), `/account` (bookmarks), `/bookmark/add` (POST), `/bookmark/remove` (POST), `/_health`.
 
-Article detail, programme detail, event detail, faculty profiles and centre pages are pure reads: no GET path writes the database, so a read-only benchmark task's after-state always equals its initial snapshot.
+Article detail, programme detail, event detail, faculty profiles and centre pages are pure reads: no GET path writes the database, so a read-only benchmark task's after-state always equals its initial snapshot. `sites/berkeley/tests/` holds the runnable checks: registry/seed integration, the answer-leak sweep (`test_answer_leaks.py`) and the app-robustness suite (`test_app_robustness.py`).
 
 ## Grading contract
 

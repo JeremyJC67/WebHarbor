@@ -38,7 +38,7 @@
       <div style="display: flex; flex-direction: column; gap: 12px;">
         {% for r in related %}
         <div style="background: var(--off-white); border: 1px solid var(--gray-light); border-radius: 4px; padding: 16px;">
-          <h4 style="font-size: 15px; color: var(--blue);"><a href="{{ url_for('research_center', slug=r.slug) }}" style="color: var(--blue);">{{ r.name }}</a></h4>
+          <h3 style="font-size: 15px; color: var(--blue);"><a href="{{ url_for('research_center', slug=r.slug) }}" style="color: var(--blue);">{{ r.name }}</a></h3>
           {# No Director line here: a related card must not reveal another
              centre's director before its own detail page is visited. #}
           <p style="font-size: 13px; color: var(--gray-mid); font-family: Arial, sans-serif;">{{ r.description[:90] }}{% if r.description|length > 90 %}...{% endif %}</p>
