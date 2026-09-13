@@ -154,6 +154,10 @@
         {% if current_user.is_authenticated %}
           <form class="save-form" data-sim-id="{{ sim.id }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="save-note-label" for="save-note">Note (optional)</label>
+            <input type="text" id="save-note" name="notes" class="save-note"
+                   maxlength="200" placeholder="Why you are saving this sim"
+                   value="{{ saved_note or '' }}">
             {% if is_saved %}
               <button type="button" class="btn btn-ghost" data-action="unsave">Remove from saved</button>
             {% else %}

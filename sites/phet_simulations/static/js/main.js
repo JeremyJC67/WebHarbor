@@ -18,7 +18,11 @@
             'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken(form),
           },
-          body: JSON.stringify({ sim_id: simId }),
+          body: JSON.stringify(
+            action === 'save'
+              ? { sim_id: simId, notes: (form.querySelector('.save-note') || {}).value || '' }
+              : { sim_id: simId }
+          ),
         })
           .then(function (r) { return r.json(); })
           .then(function (data) {

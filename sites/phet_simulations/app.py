@@ -401,13 +401,13 @@ def simulation_detail(slug):
         )
     activities = sim.activities.order_by(Activity.published_date.desc()).all()
 
-    is_saved = (
-        current_user.is_authenticated
-        and SavedSimulation.query.filter_by(
-            user_id=current_user.id, sim_id=sim.id,
-        ).first()
-        is not None
+    saved_row = (
+        SavedSimulation.query.filter_by(user_id=current_user.id, sim_id=sim.id).first()
+        if current_user.is_authenticated
+        else None
     )
+    is_saved = saved_row is not None
+    saved_note = saved_row.notes if saved_row else ""
 
     return render_template(
         "simulation_detail.html",
@@ -418,6 +418,7 @@ def simulation_detail(slug):
         related=related,
         activities=activities,
         is_saved=is_saved,
+        saved_note=saved_note,
     )
 
 
