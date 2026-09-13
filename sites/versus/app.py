@@ -1,6 +1,7 @@
 """Versus mirror — product comparison and ranking workflows."""
 from __future__ import annotations
 
+import json
 import os
 import re
 from functools import wraps
@@ -54,9 +55,12 @@ class Category(db.Model):
     slug = db.Column(db.String(80), unique=True, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     tagline = db.Column(db.String(180), nullable=False)
+    # What the brand/maker column means here. A sourced city or university is
+    # identified by country, not by a manufacturer.
+    brand_label = db.Column(db.String(30), nullable=False, default="Brand")
     spec_1 = db.Column(db.String(80), nullable=False)
     spec_2 = db.Column(db.String(80), nullable=False)
-    spec_3 = db.Column(db.String(80), nullable=False)
+    spec_3 = db.Column(db.String(80), nullable=True)
     unit_1 = db.Column(db.String(24), default="")
     unit_2 = db.Column(db.String(24), default="")
     unit_3 = db.Column(db.String(24), default="")
@@ -69,11 +73,11 @@ class Product(db.Model):
     brand = db.Column(db.String(80), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
     score = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    release_year = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Integer, nullable=True)
+    release_year = db.Column(db.Integer, nullable=True)
     spec_1_value = db.Column(db.Float, nullable=False)
     spec_2_value = db.Column(db.Float, nullable=False)
-    spec_3_value = db.Column(db.Float, nullable=False)
+    spec_3_value = db.Column(db.Float, nullable=True)
     battery_hours = db.Column(db.Float, default=0)
     weight_grams = db.Column(db.Float, default=0)
     pros = db.Column(db.Text, nullable=False)
@@ -173,8 +177,10 @@ def compare_rows(left: Product, right: Product) -> list[dict]:
     ]
     rows = [{"label": "Score", "left": left.score, "right": right.score, "unit": ""}]
     rows += [{"label": label, "left": lv, "right": rv, "unit": unit}
-             for label, lv, rv, unit in specs]
-    rows.append({"label": "Price", "left": left.price, "right": right.price, "unit": ""})
+             for label, lv, rv, unit in specs
+             if label and lv is not None and rv is not None]
+    if left.price is not None and right.price is not None:
+        rows.append({"label": "Price", "left": left.price, "right": right.price, "unit": ""})
 
     for row in rows:
         lv, rv = row["left"], row["right"]
@@ -216,6 +222,23 @@ def category_index():
     return render_template("categories.html", counts=counts)
 
 
+PAGE_SIZE = 8
+
+
+def paginate(rows, page):
+    """Slice a result set and describe the paging, the way a catalogue site does."""
+    total = len(rows)
+    pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+    page = min(max(page or 1, 1), pages)
+    start = (page - 1) * PAGE_SIZE
+    return rows[start:start + PAGE_SIZE], {
+        "page": page, "pages": pages, "total": total,
+        "start": start + 1 if total else 0,
+        "end": min(start + PAGE_SIZE, total),
+        "has_prev": page > 1, "has_next": page < pages,
+    }
+
+
 @app.route("/category/<slug>")
 def category_detail(slug):
     category = Category.query.filter_by(slug=slug).first_or_404()
@@ -230,7 +253,12 @@ def category_detail(slug):
     if min_score:
         rows = [item for item in rows if item.score >= min_score]
     brands = [row[0] for row in db.session.query(Product.brand).filter_by(category_id=category.id).distinct().order_by(Product.brand)]
-    return render_template("category.html", category=category, products=rows, brands=brands, brand=brand, max_price=max_price, min_score=min_score)
+    has_prices = db.session.query(Product.price).filter(
+        Product.category_id == category.id, Product.price.isnot(None)).first() is not None
+    rows, paging = paginate(rows, request.args.get("page", type=int))
+    return render_template("category.html", category=category, products=rows, brands=brands,
+                           brand=brand, max_price=max_price, min_score=min_score,
+                           paging=paging, has_prices=has_prices)
 
 
 @app.route("/item/<slug>")
@@ -291,7 +319,10 @@ def rankings():
     if category_slug:
         category = Category.query.filter_by(slug=category_slug).first_or_404()
         rows = [row for row in rows if row.category_id == category.id]
-    return render_template("rankings.html", products=rows, category_slug=category_slug)
+    ranked = list(enumerate(rows, start=1))
+    ranked, paging = paginate(ranked, request.args.get("page", type=int))
+    return render_template("rankings.html", ranked=ranked, category_slug=category_slug,
+                           paging=paging)
 
 
 @app.route("/search")
@@ -346,19 +377,88 @@ def health():
     return {"ok": True, "site": "versus"}
 
 
+SOURCED = os.path.join(BASE_DIR, "data", "catalogue_wikidata.json")
+
+# Wikidata is user-edited, and some rows pair claims that do not belong
+# together -- a state's population against a city's area, for instance. Rather
+# than maintain a hand-written list of bad ids (the first attempt named an id
+# that was not the offending item's, so the bad row shipped anyway), the claims
+# are cross-checked against each other and anything implausible is dropped.
+# Known limitation, not a solved problem: population and area are independent
+# claims and are not guaranteed to describe the same administrative boundary. A
+# metro-area population paired with a city-proper area inflates the derived
+# density. The bound below removes the gross cases (one row paired a state
+# population with a city area, giving 102,298 people per km2) but cannot
+# separate, say, an inflated Kuala Lumpur from a genuinely dense Mumbai. No task
+# is written against the density figure for that reason, and data/README.md
+# records the caveat.
+MAX_PLAUSIBLE_DENSITY = 40000      # people per km2; the densest real cities sit near 46k
+MIN_PLAUSIBLE_DENSITY = 50
+
+
+def _sourced_rows():
+    """Cities and universities, as fetched from Wikidata with provenance.
+
+    Consumer-electronics categories are not sourced this way: no free citable
+    source carries their specs at scale (a SPARQL count of digital cameras
+    holding both mass and release date returns zero). See data/README.md.
+    """
+    if not os.path.exists(SOURCED):
+        return {"cities": [], "universities": []}
+    with open(SOURCED, encoding="utf-8") as fh:
+        data = json.load(fh)
+    out, seen = {}, {}
+    for key in ("cities", "universities"):
+        rows = [r for r in data.get(key, []) if _claims_are_consistent(key, r)]
+        rows = sorted(rows, key=lambda r: r["qid"])   # deterministic order
+        for r in rows:
+            seen.setdefault(_slugify(r["name"]), []).append(r["qid"])
+        out[key] = rows
+    # Two entities sharing an English label are indistinguishable on the page, so
+    # a task naming one would be ambiguous. Drop every side of the collision
+    # rather than silently keeping whichever sorted first. Wikidata has two
+    # items labelled "University of Lille": the merged 2018 institution and the
+    # historic one.
+    ambiguous = {q for qids in seen.values() if len(qids) > 1 for q in qids}
+    if ambiguous:
+        for key in out:
+            out[key] = [r for r in out[key] if r["qid"] not in ambiguous]
+    return out
+
+
+def _claims_are_consistent(kind, rec):
+    """Cross-check a row's own claims; drop it when they contradict each other."""
+    f = rec["fields"]
+    try:
+        if kind == "cities":
+            density = float(f["pop"]["value"]) / float(f["area"]["value"])
+            return MIN_PLAUSIBLE_DENSITY < density < MAX_PLAUSIBLE_DENSITY
+        if kind == "universities":
+            founded = int(f["inception"]["value"][:4])
+            return 1000 < founded <= 2026 and float(f["students"]["value"]) > 0
+    except (KeyError, ValueError, ZeroDivisionError):
+        return False
+    return True
+
+
 def seed_database():
     if Category.query.count() > 0:
         return
     categories = [
-        ("smartphones", "Smartphones", "Compare cameras, screens, battery life, and performance.", "Camera score", "Battery", "Display", "pt", "h", "in"),
-        ("headphones", "Headphones", "Compare noise cancelling, battery, weight, and travel features.", "ANC score", "Battery", "Weight", "pt", "h", "g"),
-        ("cameras", "Cameras", "Compare sensor resolution, stabilization, burst speed, and video features.", "Megapixels", "Burst", "Weight", "MP", "fps", "g"),
-        ("graphics-cards", "Graphics Cards", "Compare gaming performance, VRAM, power draw, and value.", "VRAM", "Power", "Benchmark", "GB", "W", "pt"),
-        ("smartwatches", "Smartwatches", "Compare fitness sensors, battery, display, and ecosystem support.", "Fitness score", "Battery", "Weight", "pt", "h", "g"),
+        ("smartphones", "Smartphones", "Compare cameras, screens, battery life, and performance.", "Camera score", "Battery", "Display", "pt", "h", "in", "Brand"),
+        ("headphones", "Headphones", "Compare noise cancelling, battery, weight, and travel features.", "ANC score", "Battery", "Weight", "pt", "h", "g", "Brand"),
+        ("cameras", "Cameras", "Compare sensor resolution, stabilization, burst speed, and video features.", "Megapixels", "Burst", "Weight", "MP", "fps", "g", "Brand"),
+        ("graphics-cards", "Graphics Cards", "Compare gaming performance, VRAM, power draw, and value.", "VRAM", "Power", "Benchmark", "GB", "W", "pt", "Brand"),
+        ("smartwatches", "Smartwatches", "Compare fitness sensors, battery, display, and ecosystem support.", "Fitness score", "Battery", "Weight", "pt", "h", "g", "Brand"),
+        ("cities", "Cities", "Compare population, footprint, and how densely people live.", "Population", "Area", "Density", "", "km2", "/km2", "Country"),
+        ("universities", "Universities", "Compare enrolment and how long the institution has been teaching.", "Students", "Founded", None, "", "", None, "Country"),
     ]
+
     category_map = {}
-    for slug, name, tagline, spec_1, spec_2, spec_3, unit_1, unit_2, unit_3 in categories:
-        cat = Category(slug=slug, name=name, tagline=tagline, spec_1=spec_1, spec_2=spec_2, spec_3=spec_3, unit_1=unit_1, unit_2=unit_2, unit_3=unit_3)
+    for slug, name, tagline, spec_1, spec_2, spec_3, unit_1, unit_2, unit_3, brand_label in categories:
+        cat = Category(slug=slug, name=name, tagline=tagline, brand_label=brand_label,
+                       spec_1=spec_1, spec_2=spec_2, spec_3=spec_3,
+                       unit_1=unit_1, unit_2=unit_2, unit_3=unit_3)
         db.session.add(cat)
         db.session.flush()
         category_map[slug] = cat
@@ -403,7 +503,60 @@ def seed_database():
             cons=cons,
             summary=f"{name} is a {category_map[category_slug].name.lower()} contender with a Versus score of {score}, released in {year}, and priced around ${price}.",
         ))
+    seed_sourced_entries(category_map)
     db.session.commit()
+
+
+def _slugify(name):
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def seed_sourced_entries(category_map):
+    """Add the Wikidata-sourced Cities and Universities entries.
+
+    Every figure here is a Wikidata claim recorded in data/catalogue_wikidata.json
+    with its Q-id, property id and unit. The Versus Score is synthetic, as it is
+    for every other category, and is derived deterministically from the sourced
+    figures so it stays stable across builds rather than being hand-assigned.
+    """
+    rows = _sourced_rows()
+
+    for rec in rows["cities"]:
+        pop = float(rec["fields"]["pop"]["value"])
+        area = float(rec["fields"]["area"]["value"])
+        density = round(pop / area, 1)
+        db.session.add(Product(
+            slug=_slugify(rec["name"]), name=rec["name"], brand=rec.get("country", "—"),
+            category_id=category_map["cities"].id,
+            score=_synthetic_score(density, 200, 12000),
+            price=None, release_year=None,
+            spec_1_value=pop, spec_2_value=area, spec_3_value=density,
+            battery_hours=0, weight_grams=0,
+            pros=f"{pop:,.0f} residents across {area:,.0f} km2",
+            cons=f"Density {density:,.0f} people per km2",
+            summary=(f"{rec['name']} covers {area:,.0f} km2 and is home to "
+                     f"{pop:,.0f} people, a density of {density:,.0f} per km2.")))
+
+    for rec in rows["universities"]:
+        students = float(rec["fields"]["students"]["value"])
+        founded = int(rec["fields"]["inception"]["value"][:4])
+        db.session.add(Product(
+            slug=_slugify(rec["name"]), name=rec["name"], brand=rec.get("country", "—"),
+            category_id=category_map["universities"].id,
+            score=_synthetic_score(students, 70000, 200000),
+            price=None, release_year=founded,
+            spec_1_value=students, spec_2_value=float(founded), spec_3_value=None,
+            battery_hours=0, weight_grams=0,
+            pros=f"{students:,.0f} enrolled students",
+            cons=f"Teaching since {founded}",
+            summary=(f"{rec['name']} has enrolled {students:,.0f} students and has "
+                     f"been teaching since {founded}.")))
+
+
+def _synthetic_score(value, low, high):
+    """A benchmark score, not a real-world rating. Deterministic from the input."""
+    span = max(high - low, 1)
+    return max(60, min(99, round(60 + 39 * (value - low) / span)))
 
 
 def seed_benchmark_users():

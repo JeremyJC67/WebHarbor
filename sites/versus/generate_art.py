@@ -38,6 +38,8 @@ CATEGORY_ACCENT = {
     "cameras": (56, 189, 248),
     "graphics-cards": (34, 197, 94),
     "smartwatches": (251, 146, 60),
+    "cities": (96, 165, 250),
+    "universities": (250, 204, 21),
 }
 DEFAULT_ACCENT = (124, 92, 255)
 
@@ -48,7 +50,9 @@ def _mix(a, b, t):
 
 def _initials(brand, name):
     """Two letters at most, taken from the brand, falling back to the name."""
-    source = (brand or name or "?").strip()
+    source = (brand or "").strip()
+    if source in ("", "-", "—"):
+        source = (name or "?").strip()
     parts = [p for p in source.replace("-", " ").split() if p]
     if not parts:
         return "?"
@@ -67,6 +71,9 @@ def _device_box(category):
         "cameras": (cx - 104, cy - 62, cx + 104, cy + 62, 16),
         "graphics-cards": (cx - 122, cy - 46, cx + 122, cy + 46, 10),
         "smartwatches": (cx - 54, cy - 62, cx + 54, cy + 62, 22),
+        # Not devices: a skyline block and a pediment stand in for the entity.
+        "cities": (cx - 116, cy - 40, cx + 116, cy + 70, 6),
+        "universities": (cx - 100, cy - 54, cx + 100, cy + 62, 8),
     }
     return shapes.get(category, (cx - 90, cy - 70, cx + 90, cy + 70, 16))
 
@@ -97,6 +104,16 @@ def draw_tile(slug, name, brand, category):
             cx = x0 + 44 + i * 72
             d.ellipse((cx - r, (y0 + y1) // 2 - r, cx + r, (y0 + y1) // 2 + r),
                       outline=_mix(accent, INK, 0.35), width=2)
+    elif category == "cities":
+        for i, h in enumerate((70, 104, 52, 88, 60)):
+            x = x0 + 14 + i * 44
+            d.rectangle((x, y1 - h, x + 32, y1 - 4), outline=_mix(accent, INK, 0.4), width=2)
+    elif category == "universities":
+        d.polygon([(x0 + 6, y0 + 6), (x1 - 6, y0 + 6), ((x0 + x1) // 2, y0 - 26)],
+                  outline=_mix(accent, INK, 0.45))
+        for i in range(4):
+            x = x0 + 30 + i * 48
+            d.line([(x, y0 + 14), (x, y1 - 10)], fill=_mix(accent, INK, 0.35), width=3)
     elif category == "headphones":
         d.arc((x0 + 16, y0 + 10, x1 - 16, y1 - 10), start=200, end=340,
               fill=_mix(accent, INK, 0.45), width=6)

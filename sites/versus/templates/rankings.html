@@ -9,11 +9,11 @@
   {% endfor %}
 </div>
 <section class="ranking-list">
-  {% for product in products %}
+  {% for rank, product in ranked %}
     <a class="ranking-row" href="{{ url_for('product_detail', slug=product.slug) }}">
-      <span class="rank">{{ loop.index }}</span>
+      <span class="rank">{{ rank }}</span>
       <strong>{{ product.name }}</strong>
-      <small>{{ product.category.name }} · ${{ product.price }}</small>
+      <small>{{ product.category.name }}{% if product.price is not none %} · ${{ product.price }}{% endif %}</small>
       <span class="score">{{ product.score }}</span>
     </a>
   {% endfor %}

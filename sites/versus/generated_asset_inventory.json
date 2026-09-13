@@ -4,6 +4,16 @@
   "toolchain": "Pillow 11.0.0, Python 3.12, bundled default font",
   "assets": [
     {
+      "path": "static/images/products/ahmedabad.png",
+      "bytes": 6192,
+      "sha256": "eb8d5c87656f374a4d3c39ae024bf76f0a2b0089beecf48d5d5416252a351cbd"
+    },
+    {
+      "path": "static/images/products/alexandria-university.png",
+      "bytes": 7989,
+      "sha256": "bdd5f62aba100aa636fffd9de4e939135d858d25b6459a2234e920104247f325"
+    },
+    {
       "path": "static/images/products/apple-airpods-max.png",
       "bytes": 8246,
       "sha256": "bdd3752e5f48fe0e4c1fde3ad580c6b88c791a283b0a365396e471e0e1516847"
@@ -14,9 +24,44 @@
       "sha256": "266363dcd4ef387e8bef9ab949eede9f45439d9331e5a549a111b99e3fd8943e"
     },
     {
+      "path": "static/images/products/aristotle-university-of-thessaloniki.png",
+      "bytes": 8241,
+      "sha256": "ce96ddafbd19d418ede6258fdfc4e8bb0e3d825503e8ebb767609bfa87b70865"
+    },
+    {
+      "path": "static/images/products/arizona-state-university.png",
+      "bytes": 9164,
+      "sha256": "2fb53380e48c3292c39088676ae1cee401add79871f1bfad9d75dfc860e89c8b"
+    },
+    {
+      "path": "static/images/products/baghdad.png",
+      "bytes": 6481,
+      "sha256": "20dc1c2ebd353c01f947e07c9668751a2ed1281a04724b9bb0d5e96db3ccae59"
+    },
+    {
+      "path": "static/images/products/baoding.png",
+      "bytes": 6730,
+      "sha256": "f0caf783bd4b0d3c915392867f5fd246056dd1f7d17eea7071d5b321b8befaf7"
+    },
+    {
+      "path": "static/images/products/beijing.png",
+      "bytes": 5461,
+      "sha256": "8adc2f95a12ef43914d5ad49c8f7e37859cbe0626f3a4c5356d41cee848f989a"
+    },
+    {
+      "path": "static/images/products/bogot.png",
+      "bytes": 6974,
+      "sha256": "a717d46bae838f32b784d60037ee57bc54dae23771d2ccd1c484a06974d7c3c3"
+    },
+    {
       "path": "static/images/products/bose-quietcomfort-ultra.png",
       "bytes": 9633,
       "sha256": "e8bbca52f009bd304deb03866e3e983378f2e14c6df2be127f096825fe726d26"
+    },
+    {
+      "path": "static/images/products/cairo.png",
+      "bytes": 6686,
+      "sha256": "c5e0d4be76c4111436930bb7436919c3dd1b5ba040fcc4e38b943266ddad53fa"
     },
     {
       "path": "static/images/products/canon-eos-r6-mark-ii.png",
@@ -24,14 +69,64 @@
       "sha256": "3c0b790e62ddc31c0bd20567eed06d28d6411fbcf3ac87591007bcb94443bbd5"
     },
     {
+      "path": "static/images/products/capital-university-egypt.png",
+      "bytes": 8874,
+      "sha256": "d1cee31b91ba449cad73bca58c0ab9171ccfdd1c3d8e6a4820db3988e49b6538"
+    },
+    {
+      "path": "static/images/products/changchun.png",
+      "bytes": 6344,
+      "sha256": "b61a31fe3922d70991049fd29e8605a1cc03595b1f660cfb3b7a42e4b209ff8f"
+    },
+    {
+      "path": "static/images/products/changsha.png",
+      "bytes": 6263,
+      "sha256": "e3833cde63242e1c5a53bb5921ff1cd3341d9978c3dfb8f121f531fdafbd9dc3"
+    },
+    {
+      "path": "static/images/products/complutense-university-of-madrid.png",
+      "bytes": 9284,
+      "sha256": "08497e92dcc6d9b900ecf4bd74800e08e32dc6526b07ff16a7320a22aa332c6a"
+    },
+    {
+      "path": "static/images/products/damascus-university.png",
+      "bytes": 7711,
+      "sha256": "05428ba1105a8b51f5f2754a13f177faf1032d627a28deec18ae3ace6e27aaa6"
+    },
+    {
+      "path": "static/images/products/dongguan.png",
+      "bytes": 7055,
+      "sha256": "0893c56850e4f686755ab9b74bfe650d8ec2faccbf72f63cf39162fe12ccc6f9"
+    },
+    {
       "path": "static/images/products/fitbit-sense-2.png",
       "bytes": 5359,
       "sha256": "a2050f6157bb58d3f72977b92a8e7e6eb83e1eaa08a2ff33c01dff52b2325166"
     },
     {
+      "path": "static/images/products/foshan.png",
+      "bytes": 6047,
+      "sha256": "76c999c184dd907cad9fe820995f3f8bdd5542d5815a9addce3f87037021503c"
+    },
+    {
       "path": "static/images/products/fujifilm-x-t5.png",
       "bytes": 5991,
       "sha256": "56b25538ef1f2a06c6cfe6f2456d4b84f251ed1ce3fe774486d79b0694990c25"
+    },
+    {
+      "path": "static/images/products/fuyang.png",
+      "bytes": 5307,
+      "sha256": "456ccc66abf1730bf9165726825a4a7f331a818b6633a8036ce272e3cb284825"
+    },
+    {
+      "path": "static/images/products/fuzhou.png",
+      "bytes": 4807,
+      "sha256": "391ad69f1bff733f25606048a63999b8fbae498acf3e3bcb827b418dacd11967"
+    },
+    {
+      "path": "static/images/products/ganzhou.png",
+      "bytes": 7132,
+      "sha256": "594eeffd00c971a9fea8bbeb1ee66cd90ed9e7f4750c1ebb10f16efce68a95b5"
     },
     {
       "path": "static/images/products/garmin-venu-3.png",
@@ -44,9 +139,174 @@
       "sha256": "5aacae95ec3e0c1601e7e26a5e2d73305893420ec1330065881e879cf7f3ff5b"
     },
     {
+      "path": "static/images/products/grand-canyon-university.png",
+      "bytes": 9217,
+      "sha256": "3e3d1b010969db12d156fe88b29761747e32bb8de2db2cbfa4a262d19dd29494"
+    },
+    {
+      "path": "static/images/products/guangzhou.png",
+      "bytes": 7039,
+      "sha256": "b3d0c1a788bfcb64ae05bc946b3d78e529e7fd76a7392c953b3e356ba9125b13"
+    },
+    {
+      "path": "static/images/products/hangzhou.png",
+      "bytes": 6003,
+      "sha256": "6622f03f0b1a56de91459b03953476c7ed556fb32765150c547d1292377719f0"
+    },
+    {
+      "path": "static/images/products/hanoi.png",
+      "bytes": 5338,
+      "sha256": "9589a0c48b54e2a224e1992330cca4287b0772b3bd9a6a0b493160c1af6c4197"
+    },
+    {
+      "path": "static/images/products/hefei.png",
+      "bytes": 4017,
+      "sha256": "3b0d0e298359c673d2276b8a7f6afa7c5ee97f6126e23ecaa9ff6e8528b6425c"
+    },
+    {
+      "path": "static/images/products/ho-chi-minh-city.png",
+      "bytes": 6506,
+      "sha256": "81cb3afe83de77c5357d20a15d594769f768fd2c65f3578b57451050aa120086"
+    },
+    {
+      "path": "static/images/products/homs-university.png",
+      "bytes": 6351,
+      "sha256": "0046290acaef0158ad0f4827dcaf500e43a742c66b67153cbc560f505ae49b58"
+    },
+    {
       "path": "static/images/products/iphone-15-pro.png",
       "bytes": 6591,
       "sha256": "4ce675fafd00aa54b12ca2f22f1dff598a2f9350f5c3a3dfb8f9c69763aa26e9"
+    },
+    {
+      "path": "static/images/products/istanbul.png",
+      "bytes": 5939,
+      "sha256": "55198cec5a4e513405fbc12957034a7b32d9fec60cac6567fd2170bbea536669"
+    },
+    {
+      "path": "static/images/products/iu-international-university-of-applied-sciences.png",
+      "bytes": 6676,
+      "sha256": "4f65588af71008da7650d6ad67936f04ad2ab98d13e68f700858b4a144787387"
+    },
+    {
+      "path": "static/images/products/jinan.png",
+      "bytes": 4354,
+      "sha256": "599e97df917a2b6da520961cc74ba837398dafdcad2528d5b60befd1a7680ab4"
+    },
+    {
+      "path": "static/images/products/jining.png",
+      "bytes": 4452,
+      "sha256": "4438c8126af6503e6871b9f6e06dd46cb0a307c258e35ca1db8245fffb7fb534"
+    },
+    {
+      "path": "static/images/products/karachi.png",
+      "bytes": 6377,
+      "sha256": "6107c0bbdb1fecf300c7d3ccef9c56f0aa8bfb158f504c9e65d52877fdc10cce"
+    },
+    {
+      "path": "static/images/products/kuala-lumpur.png",
+      "bytes": 5678,
+      "sha256": "353484ed9d92c6c4c761f5a6af8a2fa20b916c6b0a90e5d22f9d5500bf8886de"
+    },
+    {
+      "path": "static/images/products/kunming.png",
+      "bytes": 5931,
+      "sha256": "c9f6c8501c1f16517aaa121071bb2b3b1f1c3116f9be04e674cd682fb01f34f5"
+    },
+    {
+      "path": "static/images/products/kwame-nkrumah-university-of-science-and-technology.png",
+      "bytes": 9483,
+      "sha256": "00d9a799e342709e23d6558c7f39af7c8255cf060e3e676df4882a1cfa12fb78"
+    },
+    {
+      "path": "static/images/products/lagos-state-university.png",
+      "bytes": 8093,
+      "sha256": "8a76cb0021a12958b570bc6654f933bca3be207bf6812092b41d9f37ba8545ce"
+    },
+    {
+      "path": "static/images/products/lagos.png",
+      "bytes": 5732,
+      "sha256": "5c9ad111a377b4631f224fde50f7820ced44ea37a4e0be4b176ffdc534376753"
+    },
+    {
+      "path": "static/images/products/lahore.png",
+      "bytes": 5581,
+      "sha256": "7b6bdd58cf06889fa58accb812b6a1391253455f28e10a594875060f5dc65f97"
+    },
+    {
+      "path": "static/images/products/lebanese-university.png",
+      "bytes": 6438,
+      "sha256": "567433e3b0e78d5899109e60cd99f7ab5d973e3a7fdd8f1cb4e70e185718bf27"
+    },
+    {
+      "path": "static/images/products/lima.png",
+      "bytes": 3905,
+      "sha256": "afa4f6ad4c219f6ef3c2cc9f9bda03e67217d236c04808b754db293897b11655"
+    },
+    {
+      "path": "static/images/products/mexico-city.png",
+      "bytes": 7747,
+      "sha256": "1f64d00aff38d7928601b37b137bc5ad22efa82f04628f4d537a592520d71891"
+    },
+    {
+      "path": "static/images/products/monterrey-institute-of-technology-and-higher-education.png",
+      "bytes": 7717,
+      "sha256": "ca352cfc455907e246bed0f686aedc349b29862b160f6a2c34977c52e3f430e3"
+    },
+    {
+      "path": "static/images/products/moscow.png",
+      "bytes": 7256,
+      "sha256": "a950317c1ce6d10a021ee2aad963fec299e242cd8c716f6bea93c6f50b5f34fc"
+    },
+    {
+      "path": "static/images/products/nanjing.png",
+      "bytes": 6202,
+      "sha256": "333563be0ff57e3de848d07f5888f6e5bd3ec80c509e1ea5402d40c7df2ad299"
+    },
+    {
+      "path": "static/images/products/nanning.png",
+      "bytes": 6150,
+      "sha256": "ad5c802f24eda779c28c61e327c9a1a475e875ce3e3c275771020948fc21e97d"
+    },
+    {
+      "path": "static/images/products/nantong.png",
+      "bytes": 6420,
+      "sha256": "0de8b7800d22e72df2e1f30762d19d3fcbf01c83f7500353f3bca12753f3c4b5"
+    },
+    {
+      "path": "static/images/products/nanyang.png",
+      "bytes": 6399,
+      "sha256": "3445c3b9bbf8a5dc810154dddc88a04f7b6ad021f3feb4839b2a6b5f5e1afc1c"
+    },
+    {
+      "path": "static/images/products/national-technological-university.png",
+      "bytes": 7711,
+      "sha256": "9bb6efc8a338235d6eb58eedcd42696b2efd07dead1db7765a798d39cba57b3a"
+    },
+    {
+      "path": "static/images/products/national-university-of-c-rdoba.png",
+      "bytes": 8463,
+      "sha256": "94cea693c79e2a710e6b396d0c2bf0921f0787e389ce13cecc29eeb3e473d2de"
+    },
+    {
+      "path": "static/images/products/national-university-of-la-plata.png",
+      "bytes": 7697,
+      "sha256": "5ba732d7f97d152172126fb317ef68903909671defe7732477914d8af07cce2a"
+    },
+    {
+      "path": "static/images/products/national-university-of-rosario.png",
+      "bytes": 7720,
+      "sha256": "fce3af34b9919e0f938378b6a41b2ad5d9e47b9915878c21b8e4032e31025259"
+    },
+    {
+      "path": "static/images/products/national-university-of-tucum-n.png",
+      "bytes": 8206,
+      "sha256": "d4f5b0417c3f00837644f081031c8d71f4bfbeeb55a76624f44b2a8b0df1600d"
+    },
+    {
+      "path": "static/images/products/netaji-subhas-open-university.png",
+      "bytes": 9042,
+      "sha256": "1f59fe7d38d91a3a7898388acf055e3917310ffb1736752bb2573ddeea7e78a7"
     },
     {
       "path": "static/images/products/nikon-z8.png",
@@ -54,9 +314,29 @@
       "sha256": "532ce68049dc7854890edb5b6ab696fb96e8e2eed2e0fc49cfe4c213abbc496f"
     },
     {
+      "path": "static/images/products/ningbo.png",
+      "bytes": 5319,
+      "sha256": "42b57e99ebf88bafc52ac4551a925aca48e6799ca3653bc947547a1171165c1a"
+    },
+    {
       "path": "static/images/products/oneplus-12.png",
       "bytes": 7334,
       "sha256": "d262535f4951c978d941a0e68077c3a8b367b568d35f52262d0ccdd088c18c86"
+    },
+    {
+      "path": "static/images/products/open-university-of-catalonia.png",
+      "bytes": 8953,
+      "sha256": "fc63c6d3336a2e9eabe8e5a159eaa7addcf6f1138bb59120ad19da3042814be8"
+    },
+    {
+      "path": "static/images/products/qingdao.png",
+      "bytes": 6490,
+      "sha256": "e8b484152f2d1a84da86813a4eead902b4f29b4b5caaf0f2642379b4045420f9"
+    },
+    {
+      "path": "static/images/products/quanzhou.png",
+      "bytes": 6980,
+      "sha256": "37f44344bbcf0be9e5c67bf12a5927009ab0b6bebfd1624b95fca8c3a4fc802c"
     },
     {
       "path": "static/images/products/radeon-rx-7800-xt.png",
@@ -79,6 +359,11 @@
       "sha256": "0645ce22f5437027ef6e2c18b70afd25b7b89b1798a3459bb9f498dc3cb761f0"
     },
     {
+      "path": "static/images/products/s-o-paulo.png",
+      "bytes": 6863,
+      "sha256": "e40840f177c7e6aac6c670de3a281d72dbd9a436eab2b1a6ba6865fafdb94bf7"
+    },
+    {
       "path": "static/images/products/samsung-galaxy-s24-ultra.png",
       "bytes": 9478,
       "sha256": "5cbb6cea508dab97b97ea46e5c6a60f189080303cb072df5e14f3d103f54d43a"
@@ -89,9 +374,39 @@
       "sha256": "d1506505cb8dc6324050b7e928aa69471f8b64bb8090c358ba05c1ab5bb1815b"
     },
     {
+      "path": "static/images/products/sapienza-university-of-rome.png",
+      "bytes": 9039,
+      "sha256": "1b4fbd5cdbe003555421ddd6950ec8de7411d2689ccaad159cbdf120f2778ec8"
+    },
+    {
       "path": "static/images/products/sennheiser-momentum-4.png",
       "bytes": 8442,
       "sha256": "b32fcf9a663f02bbc940dff308226f3423bb5747184489d8664243f5f3f1996f"
+    },
+    {
+      "path": "static/images/products/shanghai.png",
+      "bytes": 6117,
+      "sha256": "d5145289532d9bfc65fd28977122de9af06e1cf9de3a2ec884ac4849b3d6d775"
+    },
+    {
+      "path": "static/images/products/shangqiu.png",
+      "bytes": 6272,
+      "sha256": "68ed39b1a5b7199350d990768fe9450bdd487155f0b57f8c12592d2c49ee13ca"
+    },
+    {
+      "path": "static/images/products/shenyang.png",
+      "bytes": 6612,
+      "sha256": "707c30255714d3c534a85a2cedf9a97ca138cc1f1f7e033da9082e9e486485ac"
+    },
+    {
+      "path": "static/images/products/shenzhen.png",
+      "bytes": 5891,
+      "sha256": "83f0fb4562dbe7f7eb789e1c4e65ea313f7a14dbb2d2666557ab77ff047e7b3f"
+    },
+    {
+      "path": "static/images/products/shijiazhuang.png",
+      "bytes": 6449,
+      "sha256": "6c0849ab176dd0a1c2637a58f6688a1d56e614e4058584a228d3fc04d3e7f3ba"
     },
     {
       "path": "static/images/products/sony-a7-iv.png",
@@ -102,6 +417,126 @@
       "path": "static/images/products/sony-wh-1000xm5.png",
       "bytes": 10209,
       "sha256": "cf7d8586e55016fffda74b16d895c5b232b66071d2cac0498c97b37abb87644c"
+    },
+    {
+      "path": "static/images/products/southern-new-hampshire-university.png",
+      "bytes": 9515,
+      "sha256": "1a849e18639b87475f98fa664918768e73c64806b840971185bd077d1375b9fa"
+    },
+    {
+      "path": "static/images/products/suzhou.png",
+      "bytes": 6388,
+      "sha256": "fcd4c41089e1c92428b0281cb42522bebbdf902fe4e7a85f33faa7a50c2a3bf2"
+    },
+    {
+      "path": "static/images/products/tangshan.png",
+      "bytes": 5727,
+      "sha256": "94bce75ed92c3e00bc1de188cf4c1ae40f62951e664c144e2ceddda80bcaa71a"
+    },
+    {
+      "path": "static/images/products/tianjin.png",
+      "bytes": 3973,
+      "sha256": "1e816f36209c2d6db325bbe704c97018a14d3105293a3fa1503ac893192fe571"
+    },
+    {
+      "path": "static/images/products/tokyo.png",
+      "bytes": 5737,
+      "sha256": "ea8bcbf3ee3fa71322b6f5eb5deb62d286f807efcf5968947df415610ead6d6f"
+    },
+    {
+      "path": "static/images/products/university-of-algiers-1.png",
+      "bytes": 8335,
+      "sha256": "b31331859806718cfff38f5adc0c0baa6ab3012fbc9fdec326c8c6178d3b3f08"
+    },
+    {
+      "path": "static/images/products/university-of-benin.png",
+      "bytes": 7850,
+      "sha256": "3e84627359cbea7549a1e00f9f9f80dd1d42cdcf6b02ff4205476b6f6347a51b"
+    },
+    {
+      "path": "static/images/products/university-of-bologna.png",
+      "bytes": 8482,
+      "sha256": "c336b1e5b998026161513dfb96a746f66295bbd91073c14ebf13b88de343bbcf"
+    },
+    {
+      "path": "static/images/products/university-of-continuing-education.png",
+      "bytes": 9197,
+      "sha256": "14440572c8e5ee84f74303ad71eb65f69322d407481de178799c63ed8dd8d7b3"
+    },
+    {
+      "path": "static/images/products/university-of-granada.png",
+      "bytes": 8480,
+      "sha256": "c8c12e91203de3a49cea9bf4b5142718cef8626700bb937332b0fc7bb570c4a0"
+    },
+    {
+      "path": "static/images/products/university-of-illinois-urbana-champaign.png",
+      "bytes": 8785,
+      "sha256": "446a2670158ea313b41a6c6cb7c291a616268eb217c1f505ce9e250f9803e7cf"
+    },
+    {
+      "path": "static/images/products/university-of-lyon.png",
+      "bytes": 7657,
+      "sha256": "9801f98502ead4c156cb3ae1994dfd004c46823fef410a046c941fae5d853583"
+    },
+    {
+      "path": "static/images/products/university-of-melbourne.png",
+      "bytes": 8308,
+      "sha256": "90650430e04dbd88d97c0107a6e8a05a2950172312fa4edcd89f37d17850e976"
+    },
+    {
+      "path": "static/images/products/university-of-s-o-paulo.png",
+      "bytes": 8806,
+      "sha256": "134a38c323cb9aec8745eb3da2e0ffd3be8f363509054800c59d353e5033ed22"
+    },
+    {
+      "path": "static/images/products/university-of-toronto.png",
+      "bytes": 7716,
+      "sha256": "236d0e413700c950ab4c343222a5117485613d1ca13e998138e42b42c91ff874"
+    },
+    {
+      "path": "static/images/products/university-of-toulouse.png",
+      "bytes": 7817,
+      "sha256": "3197d039f20722bbedbcdc95be6011080a304e2d54c9edf04a4d3588e3885e44"
+    },
+    {
+      "path": "static/images/products/university-of-vienna.png",
+      "bytes": 8153,
+      "sha256": "6ea0662e00bcb3003a0ccf73d47543d459ec5380d477c79449fa2295acbafbd9"
+    },
+    {
+      "path": "static/images/products/weifang.png",
+      "bytes": 6976,
+      "sha256": "fb2c79038e699ec754e09c703a4b2df6ce2e8f2892ce6947053d9c56b0171188"
+    },
+    {
+      "path": "static/images/products/wenzhou.png",
+      "bytes": 6837,
+      "sha256": "8247e046ba08dafe153bae9bbd45d11e11f840bccfe715c77ef1a7c207659d45"
+    },
+    {
+      "path": "static/images/products/western-governors-university.png",
+      "bytes": 9561,
+      "sha256": "0439276101b2365a2eff0740fbe8deb63a008f54b46eb7b8d9f1e40759bf902d"
+    },
+    {
+      "path": "static/images/products/wuhan.png",
+      "bytes": 6723,
+      "sha256": "6468604bedde477c0e8ccb6f9374f689827c3ae14ee2034a7540dcebd84c5a86"
+    },
+    {
+      "path": "static/images/products/xi-an.png",
+      "bytes": 5594,
+      "sha256": "e42b6378bc62b2c655a55858dbe1aaa2b625bf20385c4c108a7c9b6bcf04c16a"
+    },
+    {
+      "path": "static/images/products/xuzhou.png",
+      "bytes": 6355,
+      "sha256": "a4bd4c88c01c53b0e8b11e88ed8ae811085650b87fa2e421da97adf1dcab599e"
+    },
+    {
+      "path": "static/images/products/zhengzhou.png",
+      "bytes": 5752,
+      "sha256": "68966ba7d9ce7bc5b8446af404146128de8a7aa7ed9919e1a24080afb9c18197"
     }
   ]
 }

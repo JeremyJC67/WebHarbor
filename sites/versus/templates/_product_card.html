@@ -9,8 +9,8 @@
     <p>{{ product.summary }}</p>
     <dl class="stat-row">
       <div><dt>Score</dt><dd>{{ product.score }}</dd></div>
-      <div><dt>Price</dt><dd>${{ product.price }}</dd></div>
-      <div><dt>Year</dt><dd>{{ product.release_year }}</dd></div>
+      {% if product.price is not none %}<div><dt>Price</dt><dd>${{ product.price }}</dd></div>{% endif %}
+      {% if product.release_year %}<div><dt>Year</dt><dd>{{ product.release_year }}</dd></div>{% endif %}
     </dl>
   </div>
 </article>
