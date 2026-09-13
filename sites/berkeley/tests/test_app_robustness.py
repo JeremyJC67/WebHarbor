@@ -1,10 +1,8 @@
 """App-robustness regression tests (Appendix A §1 forms, §6 hardening).
 
 Every test here was written after the corresponding probe failed on the
-pre-fix tree (see review-reports/berkeley/CHECKLIST_REPORT.md §6 for the raw
-before/after evidence), and each detector was mutation-checked by
-re-introducing the defect (mutations archived under
-scripts_dev/logs/phase_e/).
+pre-fix tree, and each detector was mutation-checked by re-introducing the
+defect and confirming the test then fails.
 
 Covers: POST-only logout, session-cookie forgery and malformed user ids,
 bookmark-form validation (empty/invalid -> 400, unknown row -> 404, another

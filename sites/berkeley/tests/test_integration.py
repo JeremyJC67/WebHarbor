@@ -17,8 +17,8 @@ ROOT = Path(__file__).resolve().parents[3]
 SITE = ROOT / "sites/berkeley"
 SITE_INDEX = 26
 SITE_PORT = 40026
-# Recorded in scripts_dev/REVIEW_STATUS.md §7.2; asserted only when the
-# build-generated seed is present in the worktree.
+# The build-generated seed value, asserted only when that seed is present in
+# the worktree.
 SEED_MD5 = "3001bcf4bcec169f4192c08609160ab6"
 
 
