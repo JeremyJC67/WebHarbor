@@ -2281,6 +2281,17 @@ def build_seed_database():
     with app.app_context():
         db.session.remove()
         db.engine.dispose()
+        # Self-lock: the generator writes through the app's engine and then copy()s
+        # from this canonical path. If a future change ever redirects the engine
+        # (an env-provided URI, a moved BASE_DIR), refuse before deleting or
+        # creating anything — otherwise the seed silently lands elsewhere while
+        # the copy still reads DB_PATH (the maintainers' §8 self-inflicted wound).
+        observed_uri = str(db.engine.url)
+        expected_uri = 'sqlite:///' + db_path
+        if observed_uri != expected_uri:
+            raise SystemExit(
+                f'seed lock: app engine URI {observed_uri!r} != canonical {expected_uri!r}; '
+                'refusing to build instance_seed/berkeley.db')
         if os.path.exists(db_path):
             os.unlink(db_path)
         db.create_all()

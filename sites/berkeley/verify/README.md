@@ -46,8 +46,9 @@ add order or an extra save each fail on a named check.
 Navigation gates require an exact mirror path (any loopback port) carrying every required query
 parameter; a listing hit never replaces a detail visit, and the final action's declared target
 counts as a visit so a run that ends on a `navigate` is not penalised. Multi-hop tasks (19, 24, 25,
-30, 31) gate each hop in order. The catalog-scan tasks (16, 28) accept either the filtered listings
-or several pages of the full listing.
+30, 31) gate each hop; the ordered ones (24, 30, 31) additionally require the hops in sequence
+(`check_paths_in_order`), while 19 and 25 gate their listing and detail visits independently. The
+catalog-scan tasks (16, 28) accept either the filtered listings or several pages of the full listing.
 
 Answer matchers are negation-aware whole-token matches: names (titles ignored), locations (leading
 room numbers optional), counts (thousands separators and word forms, with "12" never matching inside
