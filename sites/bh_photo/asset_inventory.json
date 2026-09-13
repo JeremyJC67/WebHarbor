@@ -343,6 +343,14 @@
   "product": "AQUATECH Zoom Gear for Nikon Z 70-180mm f/2.8 Lens",
   "sha256": "add615bf850fea0bec1c098bde5fd22c184616a8ddc8553623227f701fc375dc"
  },
+ "arch69": {
+  "archive_image_url": "https://web.archive.org/web/20260325112404im_/https://www.bhphotovideo.com/images/fb/Arca_Swiss_111000_Compendium_Lens_Hood_2117.jpg",
+  "bytes": 85678,
+  "file": "images/products/arch69.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Arca_Swiss_111000_Compendium_Lens_Hood_2117.jpg",
+  "product": "Arca-Swiss Compendium Lens Hood",
+  "sha256": "8360d93c82c38cc761cae90ab3a5bb569d90146829aae1a87b6abf4fbc322d69"
+ },
  "arsp254775k": {
   "archive_image_url": "https://web.archive.org/web/20260312052329im_/https://www.bhphotovideo.com/images/fb/arri_signature_prime_3_lens_set_1901628.jpg",
   "bytes": 87243,
@@ -423,6 +431,22 @@
   "product": "Blackmagic Design Pocket Cinema Camera 4K",
   "sha256": "751874fb4cffb8e1ed7237904167eca3d6066da8f9dd91cc58c08873438f2e44"
  },
+ "bl6kpkcamp": {
+  "archive_image_url": "https://web.archive.org/web/20260402095210im_/https://www.bhphotovideo.com/images/fb/blackmagic_design_cinecampochdef6kp_pocket_cinema_camera_6k_1625642.jpg",
+  "bytes": 407840,
+  "file": "images/products/bl6kpkcamp.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/blackmagic_design_cinecampochdef6kp_pocket_cinema_camera_6k_1625642.jpg",
+  "product": "Blackmagic Design Pocket Cinema Camera 6K Pro (Canon EF)",
+  "sha256": "0eff9fc0b2c493208096ff516607f90007ecb2b82c3e46d7b26637cded1368fc"
+ },
+ "blcc6k": {
+  "archive_image_url": "https://web.archive.org/web/20260302091755im_/https://www.bhphotovideo.com/images/fb/blackmagic_design_cinema_camera_6k_1787634.jpg",
+  "bytes": 313195,
+  "file": "images/products/blcc6k.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/blackmagic_design_cinema_camera_6k_1787634.jpg",
+  "product": "Blackmagic Design Cinema Camera 6K (Leica L)",
+  "sha256": "aa9e356b1fedd4d19fb89679b761389759a657b3b6da5a9177b0af4c37f4b350"
+ },
  "blrem3lae": {
   "archive_image_url": "https://web.archive.org/web/20250817170123im_/https://www.bhphotovideo.com/images/fb/blazar_lens_rem_3la_e_remus_m_1_5x_full_frame_anamorphic_1904573.jpg",
   "bytes": 106793,
@@ -495,6 +519,14 @@
   "product": "Canon EOS 90D DSLR Camera with 18-135mm Lens",
   "sha256": "b55450730ccf7a7681ccd5a7c462d386290f297445243665bdfba6b35cd17306"
  },
+ "caec70": {
+  "archive_image_url": "https://web.archive.org/web/20260217071356im_/https://www.bhphotovideo.com/images/fb/canon_eos_c70_cinema_camera_1595392.jpg",
+  "bytes": 661904,
+  "file": "images/products/caec70.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/canon_eos_c70_cinema_camera_1595392.jpg",
+  "product": "Canon EOS C70 Cinema Camera (RF Mount)",
+  "sha256": "a97b428cc1560c79c84ef42ec66bb7f5493ed48a5a2717121e497e219c334555"
+ },
  "caec802450k": {
   "archive_image_url": "https://web.archive.org/web/20260223050102im_/https://www.bhphotovideo.com/images/fb/canon_eos_c80_cinema_camera_1915619.jpg",
   "bytes": 114166,
@@ -526,6 +558,38 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/canon_4157c001_hg_100tbr_tripod_grip_1512527.jpg",
   "product": "Canon HG-100TBR Tripod Grip",
   "sha256": "a7f22cd60a4837f1678d33b6a8912a40f633ec3952e34779e3d0f48015d109c4"
+ },
+ "camt7": {
+  "archive_image_url": "https://web.archive.org/web/20251016031251im_/https://www.bhphotovideo.com/images/fb/Canon_6205A009_Mini_Tripod_7_213133.jpg",
+  "bytes": 22498,
+  "file": "images/products/camt7.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Canon_6205A009_Mini_Tripod_7_213133.jpg",
+  "product": "Canon Mini Tripod 7",
+  "sha256": "15949dc938a7740ea41be522be5c53ea6a6bcf85505c3739e169c8d7b4b93111"
+ },
+ "chlplbsl": {
+  "archive_image_url": "https://web.archive.org/web/20260206152801im_/https://www.bhphotovideo.com/images/fb/Chimera_1870_Pancake_Lantern_Softbox_with_218656.jpg",
+  "bytes": 116998,
+  "file": "images/products/chlplbsl.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Chimera_1870_Pancake_Lantern_Softbox_with_218656.jpg",
+  "product": "Chimera Pancake Lantern with Skirt (Large, Full Diffusion)",
+  "sha256": "0347245db5cd472bd04a7e413ea1a714978f3eb1123daeef570ca5ac664f39bd"
+ },
+ "chlplbsm": {
+  "archive_image_url": "https://web.archive.org/web/20260203032359im_/https://www.bhphotovideo.com/images/fb/Chimera_1865_Pancake_Lantern_Softbox_with_218652.jpg",
+  "bytes": 126638,
+  "file": "images/products/chlplbsm.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Chimera_1865_Pancake_Lantern_Softbox_with_218652.jpg",
+  "product": "Chimera Pancake Lantern with Skirt (Medium, Full Diffusion)",
+  "sha256": "1cc373912bd38fb237f5cedfa4f0b2bb703bdf8a38a3fe203db532f5f2700378"
+ },
+ "chlplbss": {
+  "archive_image_url": "https://web.archive.org/web/20260228024244im_/https://www.bhphotovideo.com/images/fb/Chimera_1860_Pancake_Lantern_Softbox_with_218649.jpg",
+  "bytes": 119716,
+  "file": "images/products/chlplbss.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Chimera_1860_Pancake_Lantern_Softbox_with_218649.jpg",
+  "product": "Chimera Pancake Lantern with Skirt (Small, Full Diffusion)",
+  "sha256": "4d86ca8a152a4ca5bf1a541b730b04dedc07d23ed779cb97f355a6f4e63347e4"
  },
  "clcl1": {
   "archive_image_url": "https://web.archive.org/web/20260707102103im_/https://www.bhphotovideo.com/images/fb/cloud_microphones_cl_1_cloudlifter_mic_activator_1177578.jpg",
@@ -623,6 +687,118 @@
   "product": "Deity Microphones TC-1 Wireless Timecode Generator Box (Bluetooth, 2.4 GHz)",
   "sha256": "2dae1b529e54fd3ed321af28b9c8f42655b55d07912d012391a44ba920047899"
  },
+ "dja3sfmcrc2": {
+  "archive_image_url": "https://web.archive.org/web/20260126204143im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000816_01_air_3s_drone_with_1856232.jpg",
+  "bytes": 204605,
+  "file": "images/products/dja3sfmcrc2.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000816_01_air_3s_drone_with_1856232.jpg",
+  "product": "DJI Air 3S Drone with RC 2 Fly More Combo",
+  "sha256": "cd24ae01a8c1bbd62f2a54b5ba4a6b2d6df9eb8d5d8f4022295a74bb644fa959"
+ },
+ "dja3sfmcrcn3": {
+  "archive_image_url": "https://web.archive.org/web/20260107210641im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000815_01_air_3s_drone_with_1856231.jpg",
+  "bytes": 204605,
+  "file": "images/products/dja3sfmcrcn3.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000815_01_air_3s_drone_with_1856231.jpg",
+  "product": "DJI Air 3S Drone with RC-N3 Fly More Combo",
+  "sha256": "cd24ae01a8c1bbd62f2a54b5ba4a6b2d6df9eb8d5d8f4022295a74bb644fa959"
+ },
+ "djair3n2": {
+  "archive_image_url": "https://web.archive.org/web/20260304052326im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000691_01_air_3_drone_with_1773596.jpg",
+  "bytes": 160495,
+  "file": "images/products/djair3n2.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000691_01_air_3_drone_with_1773596.jpg",
+  "product": "DJI Air 3 Drone with RC-N2",
+  "sha256": "e04d7c93fb1c55a44794d9963f18600d5965a32cae2b725a046b19302614f9cf"
+ },
+ "djair3srcn3": {
+  "archive_image_url": "https://web.archive.org/web/20260108100746im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000814_01_air_3s_drone_1856230.jpg",
+  "bytes": 207795,
+  "file": "images/products/djair3srcn3.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000814_01_air_3s_drone_1856230.jpg",
+  "product": "DJI Air 3S Drone",
+  "sha256": "d1de91e6d60bbea84e00a4e8364b1acde63a36313dc5d5b9b1bdb5e60584ede5"
+ },
+ "djavatad": {
+  "archive_image_url": "https://web.archive.org/web/20260822202012im_/https://www.bhphotovideo.com/images/fb/dji_cp_fp_00000062_01_avata_drone_1719563.jpg",
+  "bytes": 58013,
+  "file": "images/products/djavatad.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_fp_00000062_01_avata_drone_1719563.jpg",
+  "product": "DJI Avata FPV Drone",
+  "sha256": "f61217d6ead32027bcb23f04947481619af77a08206c4a8444cb3b411c6dedb0"
+ },
+ "djflipgl": {
+  "archive_image_url": "https://web.archive.org/web/20260224025126im_/https://www.bhphotovideo.com/images/fb/dji_cp_fp_00000179_04_flip_drone_rc_n3_1870772.jpg",
+  "bytes": 259593,
+  "file": "images/products/djflipgl.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_fp_00000179_04_flip_drone_rc_n3_1870772.jpg",
+  "product": "DJI Flip Drone (RC-N3)",
+  "sha256": "02f90d39cc6545afcdb2cd1d3930e0d5c9ab6dab38ba8a91dea4f32ad5124ed2"
+ },
+ "djm3pfmcrcp": {
+  "archive_image_url": "https://web.archive.org/web/20260128215104im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000662_01_mavic_3_pro_drone_1761809.jpg",
+  "bytes": 248584,
+  "file": "images/products/djm3pfmcrcp.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000662_01_mavic_3_pro_drone_1761809.jpg",
+  "product": "DJI Mavic 3 Pro Drone with Fly More Combo & DJI RC Pro",
+  "sha256": "e21fe3fab08e00396ce3a311de81205181cfce373545d812d1728cc56cc76dd9"
+ },
+ "djm4k": {
+  "archive_image_url": "https://web.archive.org/web/20260718144843im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000787_02_mini_4k_drone_gl_1852395.jpg",
+  "bytes": 101637,
+  "file": "images/products/djm4k.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000787_02_mini_4k_drone_gl_1852395.jpg",
+  "product": "DJI Mini 4K Drone",
+  "sha256": "80a177422a24fe5b06ccf35883a33d8d98d59e765606fb649a5dd13a21ec4e02"
+ },
+ "djm4kfmc": {
+  "archive_image_url": "https://web.archive.org/web/20260721014146im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000788_02_mini_4k_drone_fly_1852396.jpg",
+  "bytes": 145056,
+  "file": "images/products/djm4kfmc.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000788_02_mini_4k_drone_fly_1852396.jpg",
+  "product": "DJI Mini 4K Drone Fly More Combo",
+  "sha256": "069fff4c68e85cada67d29cb0549b8454c3bb0a8492b3299a9ca529ef9ff7bdc"
+ },
+ "djm4p": {
+  "archive_image_url": "https://web.archive.org/web/20260604133938im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000731_01_mini_4_pro_drone_1784782.jpg",
+  "bytes": 128594,
+  "file": "images/products/djm4p.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000731_01_mini_4_pro_drone_1784782.jpg",
+  "product": "DJI Mini 4 Pro Drone with RC-N2 Controller",
+  "sha256": "f6bddb8ede1c7e9e694c01bba2e3d0487a069b89fd21508b254de41f8bee66ea"
+ },
+ "djm4p512gcrc": {
+  "archive_image_url": "https://web.archive.org/web/20260105213747im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000847_01_mavic_4_pro_drone_1886937.jpg",
+  "bytes": 137303,
+  "file": "images/products/djm4p512gcrc.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000847_01_mavic_4_pro_drone_1886937.jpg",
+  "product": "DJI Mavic 4 Pro Drone with 512GB Creator Combo",
+  "sha256": "d7425f01e854d63fcd82ca53fcf71e3587cc5ea2e6e94a818734c7775501910e"
+ },
+ "djm4pfmcclpk": {
+  "archive_image_url": "https://web.archive.org/web/20260108100750im_/https://www.bhphotovideo.com/images/fb/dji_mini_4_pro_drone_1869800.jpg",
+  "bytes": 86709,
+  "file": "images/products/djm4pfmcclpk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_mini_4_pro_drone_1869800.jpg",
+  "product": "DJI Mini 4 Pro Drone with RC 2 & Travel Case Kit",
+  "sha256": "4a8d5b997bb666fb4a1cd072aac29da6b46423b26e48a4965af2d8d8fb59a0fe"
+ },
+ "djm4pfmcrc2": {
+  "archive_image_url": "https://web.archive.org/web/20260107212654im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000848_01_mavic_4_pro_drone_1886938.jpg",
+  "bytes": 120713,
+  "file": "images/products/djm4pfmcrc2.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000848_01_mavic_4_pro_drone_1886938.jpg",
+  "product": "DJI Mavic 4 Pro Drone with Fly More Combo",
+  "sha256": "eb4e5f896a0dff00ccf4fafb0fd3303eda590c0cb6e67f7c06d583fb5cc0ce2a"
+ },
+ "djm4pro": {
+  "archive_image_url": "https://web.archive.org/web/2026im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000849_01_mavic_4_pro_drone_1886939.jpg",
+  "bytes": 112532,
+  "file": "images/products/djm4pro.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000849_01_mavic_4_pro_drone_1886939.jpg",
+  "product": "DJI Mavic 4 Pro Drone",
+  "sha256": "7edc18f9019a45b6905d78a31ffc677c265050dde4033a6432c192dfd540aa6e"
+ },
  "djm5pfmcprc2": {
   "archive_image_url": "https://web.archive.org/web/20251229161557im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000895_01_mini_5_pro_drone_1916806.jpg",
   "bytes": 103808,
@@ -630,6 +806,54 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000895_01_mini_5_pro_drone_1916806.jpg",
   "product": "DJI Mini 5 Pro Drone with RC2 Fly More Combo Plus",
   "sha256": "8e0f3368f4b34f814b5dd3f1274734775a1aabbadae9653ac803f1ecc3878c1f"
+ },
+ "djmavic3prc": {
+  "archive_image_url": "https://web.archive.org/web/20260121152422im_/https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000654_01_mavic_3_pro_drone_1761807.jpg",
+  "bytes": 194722,
+  "file": "images/products/djmavic3prc.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_ma_00000654_01_mavic_3_pro_drone_1761807.jpg",
+  "product": "DJI Mavic 3 Pro Drone with DJI RC",
+  "sha256": "c0991b34021086dcf0cea54c266e1f5f1d7ae15486a87a9b6977c3d61972c505"
+ },
+ "djmic21rxcc": {
+  "archive_image_url": "https://web.archive.org/web/20260108213459im_/https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000325_01_dji_mic_2_2_1800665.jpg",
+  "bytes": 204879,
+  "file": "images/products/djmic21rxcc.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000325_01_dji_mic_2_2_1800665.jpg",
+  "product": "DJI Mic 2 2-Person Compact Digital Wireless Microphone System/Recorder for Camera & Smartphone (2.4 GHz)",
+  "sha256": "ad528c88a63497a5ff93a1afe81e51aaefe0b837aa9a3f804fd7f0cf486e28c9"
+ },
+ "djmic21txsbk": {
+  "archive_image_url": "https://web.archive.org/web/20260213035837im_/https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000328_01_dji_mic_2_1_1800667.jpg",
+  "bytes": 80254,
+  "file": "images/products/djmic21txsbk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000328_01_dji_mic_2_1_1800667.jpg",
+  "product": "DJI Mic 2 Clip-On Transmitter/Recorder with Built-In Microphone (2.4 GHz, Shadow Black)",
+  "sha256": "a0cba66cd1bb4ec40a56bea5579cc9650d761612c8c2f0b27ba69da8ccefa107"
+ },
+ "djmm1tx1rx": {
+  "archive_image_url": "https://web.archive.org/web/20260410073345im_/https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000432_01_mic_mini_compact_wireless_1858479.jpg",
+  "bytes": 57550,
+  "file": "images/products/djmm1tx1rx.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000432_01_mic_mini_compact_wireless_1858479.jpg",
+  "product": "DJI Mic Mini Compact Wireless Microphone System for Camera & Smartphone (2.4 GHz)",
+  "sha256": "30fd587a67d2dce322caeeadddfd68f03feef5666b7f820cdb25141084e0dd03"
+ },
+ "djmm2tx1rxcc": {
+  "archive_image_url": "https://web.archive.org/web/20260406172328im_/https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000433_01_mic_mini_2_person_compact_1858480.jpg",
+  "bytes": 122258,
+  "file": "images/products/djmm2tx1rxcc.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_rn_00000433_01_mic_mini_2_person_compact_1858480.jpg",
+  "product": "DJI Mic Mini 2-Person Compact Wireless Microphone System for Camera & Smartphone (2.4 GHz)",
+  "sha256": "81c22c924a3dc65de19c134b7380c04f3c12b17a9aaf4e9a8e67524ed4df5970"
+ },
+ "djneo": {
+  "archive_image_url": "https://web.archive.org/web/20260302072831im_/https://www.bhphotovideo.com/images/fb/dji_cp_fp_00000184_01_neo_drone_1846257.jpg",
+  "bytes": 108987,
+  "file": "images/products/djneo.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/dji_cp_fp_00000184_01_neo_drone_1846257.jpg",
+  "product": "DJI Neo Drone (No Remote)",
+  "sha256": "fea1d259a7ae1dc6c510507c26cc92bc68e9469d49a6b47fa3549a8d9dbdb050"
  },
  "djo360tlp": {
   "archive_image_url": "https://web.archive.org/web/20250808223024im_/https://www.bhphotovideo.com/images/fb/dji_cp_os_00000456_01_transparent_lens_protectors_for_1900221.jpg",
@@ -686,6 +910,22 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/dzofilm_vespid_25mm_t2_1_lens_1601842.jpg",
   "product": "DZOFilm VESPID 25mm T2.1 Lens (PL & EF Mounts)",
   "sha256": "b2d5a0b7920270dd7b04107e2b3aa2e07d655fca3f0d40f4095d467e69ba8b55"
+ },
+ "elwmalp": {
+  "archive_image_url": "https://web.archive.org/web/20260128030959im_/https://www.bhphotovideo.com/images/fb/elgato_10aan9901_wave_mic_arm_lp_1709808.jpg",
+  "bytes": 44956,
+  "file": "images/products/elwmalp.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/elgato_10aan9901_wave_mic_arm_lp_1709808.jpg",
+  "product": "Elgato Wave Mic Arm LP",
+  "sha256": "ec6bc05ad6442ac1ef42982525261630dca1c5f087afbe5503f3f0e12b708e11"
+ },
+ "elwmap": {
+  "archive_image_url": "https://web.archive.org/web/20260128031000im_/https://www.bhphotovideo.com/images/fb/elgato_10aat9901_wave_mic_arm_pro_1857508.jpg",
+  "bytes": 31082,
+  "file": "images/products/elwmap.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/elgato_10aat9901_wave_mic_arm_pro_1857508.jpg",
+  "product": "Elgato Wave Mic Arm Pro (Black)",
+  "sha256": "34c8bd1c1292168992c25d924de9320188e858b02a620e80ebf8664d6378686b"
  },
  "epds770ii": {
   "archive_image_url": "https://web.archive.org/web/20250825134145im_/https://www.bhphotovideo.com/images/fb/epson_b11b262201_ds_770_ii_document_scanner_1601979.jpg",
@@ -966,6 +1206,14 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/hasselblad_h_3013740_h6d_50c_medium_format_dslr_1244708.jpg",
   "product": "Hasselblad H6D-50c Medium Format DSLR Camera",
   "sha256": "1d8ac4ed99ca5d0eb7a8df1c60e4a86db280c6eae3cec60d489db1bc7a93a487"
+ },
+ "helhr40-5": {
+  "archive_image_url": "https://web.archive.org/web/20260325091430im_/https://www.bhphotovideo.com/images/fb/Heliopan_701540_40_5mm_Rubber_Lens_Hood_21870.jpg",
+  "bytes": 187423,
+  "file": "images/products/helhr40-5.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Heliopan_701540_40_5mm_Rubber_Lens_Hood_21870.jpg",
+  "product": "Heliopan 40.5mm Screw-in Rubber Lens Hood",
+  "sha256": "7c42eae7fab042aa8f9d580699a02a44baccf3758bd9e39ed0426a1aed342380"
  },
  "hohsct": {
   "archive_image_url": "https://web.archive.org/web/20251016193230im_/https://www.bhphotovideo.com/images/fb/hoodman_hsct_tripod_mount_for_dji_1512569.jpg",
@@ -1359,6 +1607,22 @@
   "product": "Moment Drop-In Lens Mount for the iPhone 12 Pro",
   "sha256": "46c6428767d8eedcdd536d27ffd04a4af2ce5c5e77969c65c1fec211c09a5a8d"
  },
+ "nem150tube": {
+  "archive_image_url": "https://web.archive.org/web/20260108205435im_/https://www.bhphotovideo.com/images/fb/Neumann_M_150_TUBE_M_150_Tube_Microphone_219349.jpg",
+  "bytes": 82727,
+  "file": "images/products/nem150tube.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Neumann_M_150_TUBE_M_150_Tube_Microphone_219349.jpg",
+  "product": "Neumann M 150 Tube Microphone",
+  "sha256": "4036c7150e4089790910986c2f379dc49653ff166826f81b761e7c8f1f4f7d86"
+ },
+ "neskm184mt": {
+  "archive_image_url": "https://web.archive.org/web/20250716230553im_/https://www.bhphotovideo.com/images/fb/Neumann_SKM_184_MT_SKM184MT_Stereo_Matched_Microphone_210679.jpg",
+  "bytes": 255737,
+  "file": "images/products/neskm184mt.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Neumann_SKM_184_MT_SKM184MT_Stereo_Matched_Microphone_210679.jpg",
+  "product": "Neumann SKM 184 MT Stereo Matched Microphone Pair (Matte Black)",
+  "sha256": "d7f466a3531f9d1ddb6c65adf649ed97d90ee89b9c1fe90852ea76983ca09e90"
+ },
  "ni2018": {
   "archive_image_url": "https://web.archive.org/web/20260302153408im_/https://www.bhphotovideo.com/images/fb/nikon_20mm_f_1_8g_fx_lens_1082607.jpg",
   "bytes": 549765,
@@ -1486,6 +1750,14 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/nikon_2042_zr_cinema_camera_with_1920128.jpg",
   "product": "Nikon ZR Cinema Camera with 35mm f/1.4 Lens Kit",
   "sha256": "74931d8978117df01a8def2576615bef37ed6874c2ba393ef55508001c7f8ceb"
+ },
+ "nolall": {
+  "archive_image_url": "https://web.archive.org/web/20260115002130im_/https://www.bhphotovideo.com/images/fb/Novoflex_LEM_LER_Lens_Adapter_Leica_R_to_220122.jpg",
+  "bytes": 92368,
+  "file": "images/products/nolall.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/Novoflex_LEM_LER_Lens_Adapter_Leica_R_to_220122.jpg",
+  "product": "Novoflex Lens Adapter Leica-R to Leica-M Body",
+  "sha256": "15999a3e5ff54053b8e8777b3a3478988d1bbb031009763842d158dd072883da"
  },
  "notrbalc2830": {
   "archive_image_url": "https://web.archive.org/web/20260322043948im_/https://www.bhphotovideo.com/images/fb/novoflex_triobalc2830_triopod_tripod_base_with_1254287.jpg",
@@ -1975,6 +2247,14 @@
   "product": "Sony a7 V Mirrorless Camera with 28-70mm II Lens",
   "sha256": "75f0969ce7ee1b3125fc9bc1cf120891e51f8efe0860a4da345dbe3beab14fb1"
  },
+ "soairpeak": {
+  "archive_image_url": "https://web.archive.org/web/20260302021056im_/https://www.bhphotovideo.com/images/fb/sony_airpeak_drone_1617585.jpg",
+  "bytes": 212344,
+  "file": "images/products/soairpeak.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_airpeak_drone_1617585.jpg",
+  "product": "Sony Airpeak S1 Professional Drone",
+  "sha256": "076d3371e0420d0550043ce2f38e78e706251daca3261ac70e917d36fa3fa782"
+ },
  "soalcsh168": {
   "archive_image_url": "https://web.archive.org/web/20251214185844im_/https://www.bhphotovideo.com/images/fb/sony_alc_sh168_lens_hood_1702566.jpg",
   "bytes": 547686,
@@ -1990,6 +2270,62 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_cea_g1920t_1920gb_cfexpress_4_0_type_1906928.jpg",
   "product": "Sony 1920GB CFexpress 4.0 Type A TOUGH Memory Card",
   "sha256": "8b909995448ef60aecee440e7a77b268170486dc8cecdb35fca523aaab2b65b9"
+ },
+ "sofx30": {
+  "archive_image_url": "https://web.archive.org/web/20260115181607im_/https://www.bhphotovideo.com/images/fb/sony_ilme_fx30_fx30_digital_cinema_camera_1729317.jpg",
+  "bytes": 862284,
+  "file": "images/products/sofx30.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_ilme_fx30_fx30_digital_cinema_camera_1729317.jpg",
+  "product": "Sony FX30 Digital Cinema Camera",
+  "sha256": "f3cbb5a495221d11464eeac012232a95ba6bcab33edc671963fa9ea658e0910f"
+ },
+ "sofx301850lk": {
+  "archive_image_url": "https://web.archive.org/web/20260130230033im_/https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1780633.jpg",
+  "bytes": 75366,
+  "file": "images/products/sofx301850lk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1780633.jpg",
+  "product": "Sony FX30 Digital Cinema Camera Kit with 18-50mm Lens",
+  "sha256": "8d64a45e671bf9855973dc401cc2f09d24b44948b52d16100db6cd1baf5889d1"
+ },
+ "sofx30e102lk": {
+  "archive_image_url": "https://web.archive.org/web/20260303093455im_/https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729529.jpg",
+  "bytes": 912250,
+  "file": "images/products/sofx30e102lk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729529.jpg",
+  "product": "Sony FX30 Digital Cinema Camera with 10-20mm Lens Kit",
+  "sha256": "17d722cf355d6dc409386335fd19573f0a3d423b791b2e4a814f8b330dcd968b"
+ },
+ "sofx30e11mlk": {
+  "archive_image_url": "https://web.archive.org/web/20260224050109im_/https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729527.jpg",
+  "bytes": 842067,
+  "file": "images/products/sofx30e11mlk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729527.jpg",
+  "product": "Sony FX30 Digital Cinema Camera with 11mm Lens Kit",
+  "sha256": "ff9a769fa9a17d411486e0d5d8552145247fd71f852ea9a125684f024e0d9a12"
+ },
+ "sofx30e15mlk": {
+  "archive_image_url": "https://web.archive.org/web/20260225184950im_/https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729528.jpg",
+  "bytes": 946450,
+  "file": "images/products/sofx30e15mlk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729528.jpg",
+  "product": "Sony FX30 Digital Cinema Camera with 15mm Lens Kit",
+  "sha256": "e9f7adc5a9969839a04197e3551ec0d764902bafcee3f36a17ebd52166a406c2"
+ },
+ "sofx30xlr": {
+  "archive_image_url": "https://web.archive.org/web/20260215063227im_/https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729318.jpg",
+  "bytes": 483322,
+  "file": "images/products/sofx30xlr.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_fx30_digital_cinema_camera_1729318.jpg",
+  "product": "Sony FX30 Digital Cinema Camera with XLR Handle Unit",
+  "sha256": "a51fe3a747c5988fc8acd7d49904ef967fe7277fe878f43f9c2be1a23b249786"
+ },
+ "sofx6": {
+  "archive_image_url": "https://web.archive.org/web/20260311161922im_/https://www.bhphotovideo.com/images/fb/sony_pxw_fx6_cinema_camera_body_1592066.jpg",
+  "bytes": 76836,
+  "file": "images/products/sofx6.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_pxw_fx6_cinema_camera_body_1592066.jpg",
+  "product": "Sony FX6 Full-Frame Cinema Camera (Body Only)",
+  "sha256": "e1215b57091a5d8af18b848abe9565241bb526061f4c7ff4be8851011244bf58"
  },
  "sofx6k": {
   "archive_image_url": "https://web.archive.org/web/20250622185618im_/https://www.bhphotovideo.com/images/fb/sony_ilme_fx6vk_fx6_digital_cinema_camera_1600161.jpg",
@@ -2022,6 +2358,30 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/sony_zve10kw_zv_e10_mirrorless_camera_with_1912026.jpg",
   "product": "Sony ZV-E10 Mirrorless Camera with 16-50mm f/3.5-5.6 II Lens (White)",
   "sha256": "3ff788def79e966ef056ba71c2b83059283ddfd06a8da22453b93bdb73aa3995"
+ },
+ "symicd2": {
+  "archive_image_url": "https://web.archive.org/web/20260205040631im_/https://www.bhphotovideo.com/images/fb/synco_mic_d2_d2_hyper_cardioid_shotgun_microphone_1572052.jpg",
+  "bytes": 60639,
+  "file": "images/products/symicd2.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/synco_mic_d2_d2_hyper_cardioid_shotgun_microphone_1572052.jpg",
+  "product": "Synco Mic-D2 Hypercardioid Shotgun Microphone",
+  "sha256": "f8cd2625b9fa2dba638a18ece2d450225e82b3c9538dff1193e65ece9ed193c4"
+ },
+ "symicd2bpk": {
+  "archive_image_url": "https://web.archive.org/web/20260312013801im_/https://www.bhphotovideo.com/images/fb/synco_mic_d2_hypercardioid_shotgun_microphone_1733181.jpg",
+  "bytes": 31339,
+  "file": "images/products/symicd2bpk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/synco_mic_d2_hypercardioid_shotgun_microphone_1733181.jpg",
+  "product": "Synco Mic-D2 Hypercardioid Shotgun Microphone Boom Kit with Boompole & Accessories",
+  "sha256": "7aea6e47c670894fcfc41961107656fbe0d7654f8943dcc559ae5b068250b622"
+ },
+ "symicd2cblk": {
+  "archive_image_url": "https://web.archive.org/web/20260228100637im_/https://www.bhphotovideo.com/images/fb/synco_mic_d2_hypercardiod_shotgun_microphone_1733779.jpg",
+  "bytes": 32020,
+  "file": "images/products/symicd2cblk.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/synco_mic_d2_hypercardiod_shotgun_microphone_1733779.jpg",
+  "product": "Synco Mic-D2 Hypercardioid Shotgun Microphone and 10' XLR Cable",
+  "sha256": "cda006930b2a4be7408df6fcb2db04f559fbd9edefa4b9c0a8613e6b3557c6c7"
  },
  "ted4ssd": {
   "archive_image_url": "https://web.archive.org/web/20260418000924im_/https://www.bhphotovideo.com/images/fb/terramaster_d4_ssd_4_bay_m_2_usb4_40gbps_1908990.jpg",
@@ -2287,6 +2647,14 @@
   "product": "Yongnuo YN 50mm f/1.4 Lens for Canon EF",
   "sha256": "76dd7226b7e98ac37386434d940845ccb1a145abeae7fbd68a9896476a6ed5e8"
  },
+ "zce2m4": {
+  "archive_image_url": "https://web.archive.org/web/20260521230931im_/https://www.bhphotovideo.com/images/fb/z_cam_e1511_e2_m4_4k_cinema_camera_1566077.jpg",
+  "bytes": 756953,
+  "file": "images/products/zce2m4.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/z_cam_e1511_e2_m4_4k_cinema_camera_1566077.jpg",
+  "product": "Z CAM E2-M4 Professional 4K Cinema Camera (Micro Four Thirds)",
+  "sha256": "bfdb8fb88e37995a9348511ead9d9dd6fa9469f1c490477b4ce3a5a950661c95"
+ },
  "ze3514zmb": {
   "archive_image_url": "https://web.archive.org/web/20260411002820im_/https://www.bhphotovideo.com/images/fb/zeiss_2112_846_35mm_f_1_4_black_lens_1081652.jpg",
   "bytes": 463485,
@@ -2318,5 +2686,13 @@
   "original_image_url": "https://www.bhphotovideo.com/images/fb/zeiss_2096_685_lens_cleaning_kit_1081867.jpg",
   "product": "ZEISS Lens Cleaning Kit",
   "sha256": "d679c91ae05bc79914496f35bef8ff97f166fd6a27a9eee69be32dfe5dda92ae"
+ },
+ "zozdm1pmp": {
+  "archive_image_url": "https://web.archive.org/web/20260602002755im_/https://www.bhphotovideo.com/images/fb/zoom_zdm_1pmp_podcast_mic_pack_with_1580284.jpg",
+  "bytes": 340180,
+  "file": "images/products/zozdm1pmp.jpg",
+  "original_image_url": "https://www.bhphotovideo.com/images/fb/zoom_zdm_1pmp_podcast_mic_pack_with_1580284.jpg",
+  "product": "Zoom ZDM-1 Podcast Mic Pack with Headphones, Windscreen, XLR, and Tabletop Stand",
+  "sha256": "d899f123a1fd8c7d3566ca36cdeab94945851017fac82a7bffc1f789b43e7e47"
  }
 }
