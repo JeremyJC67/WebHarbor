@@ -363,8 +363,8 @@ def companies():
             ])).lower()
             score = sum(1 for t in tokens if t in haystack)
             if score:
-                scored.append((-score, c.name.lower(), c))
-        rows = [c for _, _, c in sorted(scored)]
+                scored.append((-score, c.name.lower(), c.slug, c))
+        rows = [c for _, _, _, c in sorted(scored)]
 
     page_rows, page_info = paginate(rows, request.args.get('page', 1, type=int))
     facets = {
@@ -409,8 +409,8 @@ def founders():
             ])).lower()
             score = sum(1 for t in tokens if t in haystack)
             if score:
-                picked.append((-score, f.name.lower(), f))
-        rows = [f for _, _, f in sorted(picked)]
+                picked.append((-score, f.name.lower(), f.slug, f))
+        rows = [f for _, _, _, f in sorted(picked)]
     page_rows, page_info = paginate(rows, request.args.get('page', 1, type=int))
     batches = [b for (b,) in db.session.query(Company.batch).distinct()
                .order_by(Company.batch) if b]
@@ -471,8 +471,8 @@ def library():
                 article.author, article.series])).lower()
             score = sum(1 for t in tokens if t in haystack)
             if score:
-                rows.append((-score, article.title.lower(), article))
-        results = [a for _, _, a in sorted(rows)]
+                rows.append((-score, article.title.lower(), article.slug, article))
+        results = [a for _, _, _, a in sorted(rows)]
         return render_template('library.html', carousels=None, results=results, q=q)
     carousels = LibraryCarousel.query.order_by(LibraryCarousel.sort_order).all()
     return render_template('library.html', carousels=carousels, results=None, q=q)
