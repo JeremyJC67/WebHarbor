@@ -400,5 +400,75 @@ class ContractTests(unittest.TestCase):
         self.assertGreaterEqual(len(re.findall(r'<li><a href="[^"]+">', footer)), 18)
 
 
+
+class SeedingConsistency(unittest.TestCase):
+    """Every surface that shows a conference seed must agree.
+
+    Oklahoma City and Denver both finished 2023-24 at 57-25 and the league
+    seeded Oklahoma City first, which a record-only sort cannot reproduce.
+    Before this was unified the standings page said Thunder while the game
+    cards, game strip and series page said Nuggets.
+
+    Checked without importing the app so it runs on a bare checkout.
+    """
+
+    APP = VERIFY_DIR.parent / "app.py"
+    SEED_DB = VERIFY_DIR.parent / "instance_seed" / "nba.db"
+
+    def _official_order(self):
+        module = ast.parse(self.APP.read_text(encoding="utf-8"))
+        for node in ast.walk(module):
+            if isinstance(node, ast.Assign) and any(
+                isinstance(t, ast.Name) and t.id == "OFFICIAL_SEED_ORDER" for t in node.targets
+            ):
+                for sub in ast.walk(node):
+                    if isinstance(sub, ast.List):
+                        return [ast.literal_eval(e) for e in sub.elts]
+        self.fail("OFFICIAL_SEED_ORDER not found in app.py")
+
+    def test_both_seed_paths_share_one_sort_key(self):
+        source = self.APP.read_text(encoding="utf-8")
+        module = ast.parse(source)
+        bodies = {
+            node.name: ast.get_source_segment(source, node)
+            for node in ast.walk(module)
+            if isinstance(node, ast.FunctionDef)
+            and node.name in {"team_seed", "attach_standing_fields"}
+        }
+        self.assertEqual(set(bodies), {"team_seed", "attach_standing_fields"})
+        for name, body in bodies.items():
+            self.assertIn(
+                "seed_sort_key", body,
+                f"{name} does not use the shared seed_sort_key, so seeds can disagree",
+            )
+            self.assertNotIn(
+                "item.city)", body,
+                f"{name} still sorts by city, which breaks the 57-25 tie the wrong way",
+            )
+
+    def test_seed_order_puts_the_thunder_first_in_the_west(self):
+        order = {slug: rank for rank, slug in enumerate(self._official_order())}
+        connection = sqlite3.connect(self.SEED_DB)
+        connection.row_factory = sqlite3.Row
+        try:
+            rows = [dict(r) for r in connection.execute(
+                "SELECT slug, city, name, wins, losses, conference FROM teams"
+            )]
+        finally:
+            connection.close()
+        key = lambda t: (-t["wins"], t["losses"], order.get(t["slug"], 99), t["city"])
+        west = sorted([t for t in rows if t["conference"] == "West"], key=key)
+        self.assertEqual(
+            west[0]["slug"], "thunder",
+            f"West top seed resolves to {west[0]['city']} {west[0]['name']}",
+        )
+        self.assertEqual(west[1]["slug"], "nuggets")
+        self.assertEqual(
+            (west[0]["wins"], west[0]["losses"]), (west[1]["wins"], west[1]["losses"]),
+            "the tie this order exists to break is gone; re-check the fixture",
+        )
+        east = sorted([t for t in rows if t["conference"] == "East"], key=key)
+        self.assertEqual(east[0]["slug"], "celtics")
+
 if __name__ == "__main__":
     unittest.main()

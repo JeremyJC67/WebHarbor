@@ -323,24 +323,32 @@ def team_last_ten(team):
     return f"{wins}-{10 - wins}"
 
 
+# Published 2023-24 conference seeding. Records alone cannot reproduce it
+# because the real tiebreakers are not in the seed data: Oklahoma City and
+# Denver both finished 57-25 and the league seeded Oklahoma City first. Every
+# place that displays a seed reads this one order, so the standings page and
+# the game cards cannot disagree.
+OFFICIAL_SEED_ORDER = {
+    slug: rank for rank, slug in enumerate([
+        "celtics", "knicks", "bucks", "cavaliers", "magic", "pacers",
+        "seventysixers", "heat", "bulls", "hawks", "nets", "raptors",
+        "hornets", "wizards", "pistons", "thunder", "nuggets",
+        "timberwolves", "clippers", "mavericks", "suns", "pelicans",
+        "lakers", "kings", "warriors", "rockets", "jazz", "grizzlies",
+        "spurs", "trail-blazers",
+    ])
+}
+
+
+def seed_sort_key(team):
+    return (-team.wins, team.losses, OFFICIAL_SEED_ORDER.get(team.slug, 99), team.city)
+
+
 def attach_standing_fields(teams):
     if not teams:
         return []
     leader_net = max(team.wins - team.losses for team in teams)
-    official_order = {
-        slug: rank for rank, slug in enumerate([
-            "celtics", "knicks", "bucks", "cavaliers", "magic", "pacers",
-            "seventysixers", "heat", "bulls", "hawks", "nets", "raptors",
-            "hornets", "wizards", "pistons", "thunder", "nuggets",
-            "timberwolves", "clippers", "mavericks", "suns", "pelicans",
-            "lakers", "kings", "warriors", "rockets", "jazz", "grizzlies",
-            "spurs", "trail-blazers",
-        ])
-    }
-    ordered = sorted(
-        teams,
-        key=lambda team: (-team.wins, team.losses, official_order.get(team.slug, 99), team.city),
-    )
+    ordered = sorted(teams, key=seed_sort_key)
     for rank, team in enumerate(ordered, 1):
         team.rank = rank
         team.games_back = round((leader_net - (team.wins - team.losses)) / 2, 1)
@@ -429,7 +437,7 @@ def scoreboard_games():
 
 def team_seed(team):
     teams = Team.query.filter_by(conference=team.conference).all()
-    ranked = sorted(teams, key=lambda item: (-item.wins, item.losses, item.city))
+    ranked = sorted(teams, key=seed_sort_key)
     for index, ranked_team in enumerate(ranked, 1):
         if ranked_team.id == team.id:
             return index
