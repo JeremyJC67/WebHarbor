@@ -226,21 +226,34 @@ class VerifierTerminalState(unittest.TestCase):
 
     def test_answer_from_an_error_page_is_not_on_site(self):
         V = self._lib()
-        # Derive the origin the way the verifier does. Freezing a port here is
-        # the same mistake this suite exists to catch: it was frozen once in the
-        # verifier, once in the adversarial fixtures, and once here, and each
-        # time a registry move turned the check into a no-op or a false failure.
-        base = V.site_origins()[0]
-        ok = {"steps": [{"step": 0, "action": "click", "url": f"{base}/"},
+        # The origin comes from the run's own start_url, so a registry re-slot
+        # does not expire recorded evidence. An arbitrary port is used here on
+        # purpose: the check is internal consistency, not today's port.
+        base = "http://localhost:40123"
+        ok = {"start_url": f"{base}/",
+              "steps": [{"step": 0, "action": "click", "url": f"{base}/"},
                         {"step": 1, "action": "done",
                          "url": f"{base}/item/nikon-z8"}]}
-        crashed = {"steps": [{"step": 0, "action": "click", "url": f"{base}/"},
+        crashed = {"start_url": f"{base}/",
+                   "steps": [{"step": 0, "action": "click", "url": f"{base}/"},
                              {"step": 1, "action": "done",
                               "url": "chrome-error://chromewebdata/"}]}
         self.assertTrue(V.answered_on_site(ok))
         self.assertFalse(V.answered_on_site(crashed),
                          "a final answer emitted from a browser error page counted as on-site")
-        self.assertFalse(V.answered_on_site({"steps": []}))
+        self.assertFalse(V.answered_on_site({"start_url": f"{base}/", "steps": []}))
+        self.assertFalse(V.answered_on_site({"steps": ok["steps"]}),
+                         "a trajectory with no start_url has no origin to be consistent with")
+
+    def test_a_run_survives_the_site_being_re_slotted(self):
+        """Recorded evidence must not expire when upstream moves the port."""
+        V = self._lib()
+        old = {"start_url": "http://localhost:40027/",
+               "steps": [{"step": 0, "action": "click", "url": "http://localhost:40027/"},
+                         {"step": 1, "action": "done",
+                          "url": "http://localhost:40027/item/nikon-z8"}]}
+        self.assertTrue(V.answered_on_site(old))
+        self.assertTrue(V.navigated_to(old, "/item/nikon-z8"))
 
     def test_every_verifier_checks_the_terminal_state(self):
         for path in sorted((SITE_DIR / "verify").glob("verify_*.py")):
