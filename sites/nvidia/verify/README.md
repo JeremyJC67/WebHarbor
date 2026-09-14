@@ -41,9 +41,9 @@ stdout 始终是一份 JSON：`task_id` 为本题、`pass` 为严格 bool、`rea
 - 信息题：事实取显式initial DB（T11静态技术/购买事实见来源），必需相关页/对象证据。信息匹配使用型号实体、数值和单位、比较主语方向、版本分量与完整日期；不是substring。支持大小写/空白/千分位、GB/GDDR 7、USD/美元、W/watts等合理格式，以及清晰的日期格式。
 - 确定性解析支持简洁事实句和明确关系，不保证理解任意修辞/暗示。遇歧义或矛盾返回FAIL，保持原输出并交独立主审；不调用LLM兜底，也不让LLM缺配置变成任务FAIL。
 - 否定作用域（repair002, H2）：“not a live release feed / frozen historical catalog”这类文档作用域保留语只对 **T9/T10** 豁免（由 `predicates.driver_qualifier_scope` 在完整保留原文的前提下仅去掉该短语内的否定词）；其余 18 题只豁免与目标无关的对比（其它型号、无关指标、变体名、PSU 说明），出现针对性的否定/不确定词即 FAIL（fail-closed）。该边界由自带回归 `tests/test_driver_qualifier.py::test_other_information_task_not_relaxed` 钉住。
-- T6题意指定comparison工具，必须同一比较包含5090/4090；T7未指定工具，可分别读两详情。T18相关news/search列表显示日期时可接受，不强制详情。T11必须技术页与5080购买页两类证据，最终停本地购买页，无固定浏览顺序。
+- T6题意指定comparison工具，必须同一比较包含5090/4090；T7未指定工具，可分别读两详情。T18相关news/search列表显示日期时可接受，不强制详情（search证据必须含一个真正出现在文章正文/标题里的词token，纯数字查询不再算作证据）。T11必须技术页与5080购买页两类证据，最终停本地购买页，无固定浏览顺序。
 - 状态题：DB是完成结果的权威依据，不附加英文最终回答或登录页面访问要求。按新增/删除row ID绑定同一账号和目标，保护所有其他wishlist/users/reviews/orders等记录。仅模拟driver download计数非递减作为无害副作用允许；不把账号/收藏误操作或额外订单当无害。
-- Wishlist新增要求目标原先不存在、只新增一条；T16仅删Alice目标且保留所有其他条目。T14仅改Alice country，保留其他字段。T15同一新增row满足Alice/Jetson/5星/精确归一化标题/非空body；`Not Incredible`失败。T19仅新增指定邮箱subscription。
+- Wishlist新增要求目标原先不存在、只新增一条；T16仅删Alice目标且保留所有其他条目。T14仅改Alice country，保留其他字段。T15同一新增row满足Alice/Jetson/5星/精确归一化标题/非空body；`Not Incredible`失败。T19仅新增指定邮箱subscription，且该row的`topic`必须是本店的GeForce列表值。
 - Wishlist写入端点（repair002, M8）：站点模板使用 `/wishlist/add/<id>` 与 `/wishlist/remove/<id>`，二者幂等（重复提交不改变状态）；旧的 `/wishlist/toggle/<id>` 仅为兼容保留。判分仍要求“恰好新增一条”，不因端点幂等而放宽。
 - T16历史校正：原版真实登录→account→详情移除路线本来会被原verifier接受；本修复不以简化URL fixture夸大原实际UI失败，改为直接按准确state判定。
 
@@ -84,3 +84,17 @@ CLI/输入契约另有回归套件，钉住 `agent_demo/eval_judge.py --verifier
 WH_CONTAINER=<running nvidia container> TEST_OUT=/absolute/outside/source/tree \
   python3 -B -m unittest discover -s sites/nvidia/tests -p 'test_verifier_contract.py'
 ```
+
+## 扩展修复轮（#107 后续）的判分契约变更
+
+上一轮 20 题逐任务审查（`_wh_review_tools/pr107-audit/agent-{a,b,c}/summary.md`）发现的判分问题在本轮全部修掉；每条都改成“rubric 已经要求的语义”，没有改 `tasks.jsonl`。
+
+| 题 | 变更 | 依据 | 回归 |
+|---|---|---|---|
+| T6 | `answers.cuda_compare()` 重写为“比较主张 + 计数归属”解析：接受 rubric 自己的句式（`… 5,376 more CUDA cores than … (21,760 versus 16,384)`）、counts-first（`21,760 CUDA cores against 16,384 for the 4090, which is 5,376 more`）与句尾 delta（`while the 4090 has 16,384; that is 5,376 more`）；反向主语、错误指标、错误 delta、相等声明、绝对计数互换仍然 FAIL | audit agent-a `blocker`（21 条自然正确表述里 9 条被误判） | `tests/test_verifiers.py`（`rubric-wording`、`trailing-delta`、`swapped-absolute-counts` + `NEAR[6]`），`agent-a/verifier-probe/probe-T6-*`、`t6-pass`、`t6-inverse` |
+| T1 | `answers.measurements()` 同时识别“单位在前”的规格行写法（`CUDA Cores: 10,752`），允许单位集合与数值校验不变（`Tensor Cores: 10,752`、`CUDA Cores: 11,752` 仍 FAIL） | audit agent-a `medium` | `NEAR[1]`、`spec-row-echo`，`agent-a/verifier-probe/probe-T1-row_echo` |
+| T3 | 答案必须同时给出型号与价格（裸 `$299` FAIL） | audit agent-a `low` | `bare-price-only`、`model-and-price`，`agent-a/verifier-probe/t3-bare_price_only` |
+| T5 | 证据必须覆盖**两个**产品（含两者的 comparison，或两页详情）；单商品页/购买页不再足够 | rubric 原文 “FAIL for … one-product-only evidence” | `one-jetson-page-insufficient`、`other-jetson-page-only-insufficient`、`both-jetson-details`，`agent-a/verifier-probe/T5-*` |
+| T9/T10 | `predicates.driver_evidence()` 要求结果页把**目标系列**钉住（branch/OS 可留空，系列不可）；目标驱动详情页仍单独充分 | audit agent-b `low`（branch+os-only 曾 PASS） | `series-only-broad`、`no-series-filter`、`branch-os-only-insufficient`，`agent-b/verifier-probe/run-t9|t10_*` |
+| T18 | 保留 rubric 允许的“列表或搜索结果”证据，但 search 证据必须含一个真正出现在文章里的词 token（纯数字查询 FAIL） | audit agent-c `low` + rubric 原文 | `news-search`、`news-search-numeric-only` |
+| T19 | 新增订阅行除 email 外还必须满足 `topic` 为本店 GeForce 列表值 | audit agent-c `low`（`topic=NotTheGeForceTopic` 曾 PASS） | `wrong-topic`、`geforce-topic` |

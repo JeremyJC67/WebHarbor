@@ -45,7 +45,8 @@ URLS = {
 }
 NEAR = {
     0: ['132 GB GDDR7', '32 MB GDDR7', '32 GB GDDR6', 'RTX 5080: 32 GB GDDR7'],
-    1: ['110752 CUDA cores', '10752 tensor cores', '10751 CUDA cores'],
+    1: ['110752 CUDA cores', '10752 tensor cores', '10751 CUDA cores',
+        'CUDA Cores: 11,752', 'Tensor Cores: 10,752'],
     2: ['1450 W', '450 kW', '449 W'],
     3: ['RTX 5060 Ti: $299', 'RTX 5060: $1299', 'RTX 5070: $299', 'RTX 5060',
         'RTX 5060 is the most expensive at $299'],
@@ -270,17 +271,44 @@ class Suite:
             self.case(n, 'native-get-comparison', 0, urls=['/compare?product='+slugs[0]+'&product='+slugs[1]])
         self.case(6, 'product-overrides-ids', 1,
                   urls=['/compare?product=geforce-rtx-5080&ids=geforce-rtx-5090,geforce-rtx-4090'])
-        # CQ-06: the Nano detail page itself states both products' capacity and
-        # kit/module identity, so it is sufficient evidence; the answer must
-        # still state both products' facts (see the near-0x cases).
-        self.case(5, 'one-jetson-page-sufficient', 0, urls=['/products/jetson-orin-nano-super'])
+        # Extended PR #107 fix round: the T5 rubric requires specifications for BOTH
+        # Jetson products and fails one-product-only evidence, so the earlier
+        # "one detail page is sufficient" pin (CQ-06) is replaced by "both products".
+        self.case(5, 'one-jetson-page-insufficient', 1, urls=['/products/jetson-orin-nano-super'])
+        self.case(5, 'other-jetson-page-only-insufficient', 1, urls=['/products/jetson-orin-nx'])
+        self.case(5, 'both-jetson-details', 0,
+                  urls=['/products/jetson-orin-nano-super', '/products/jetson-orin-nx'])
+        # Extended round: T3 requires the model as well as the price.
+        self.case(3, 'bare-price-only', 1, answer='$299')
+        self.case(3, 'model-and-price', 0, answer='GeForce RTX 5060: $299')
+        # Extended round: the rubric's own T6 sentence shape and a trailing delta.
+        self.case(1, 'spec-row-echo', 0, answer='CUDA Cores: 10,752')
+        self.case(6, 'rubric-wording', 0,
+                  answer='The GeForce RTX 5090 has 5,376 more CUDA cores than the GeForce RTX 4090 (21,760 versus 16,384).')
+        self.case(6, 'trailing-delta', 0,
+                  answer='The GeForce RTX 5090 has 21,760 CUDA cores while the GeForce RTX 4090 has 16,384; that is 5,376 more.')
+        self.case(6, 'swapped-absolute-counts', 1,
+                  answer='The RTX 5090 has 16,384 CUDA cores and the RTX 4090 has 21,760, so the 5090 has 5,376 more.')
         for n in (9, 10):
             self.case(n, 'empty-drivers', 1, urls=['/drivers'])
-            self.case(n, 'broad-results', 0, urls=['/drivers?os=Windows+11'])
+            # A broad search is valid, but the requested series must be pinned: branch
+            # and OS may stay unset, an absent series filter may not (extended round).
+            self.case(n, 'series-only-broad', 0,
+                      urls=['/drivers?series=' + ('GeForce+RTX+50+Series' if n == 9 else 'GeForce+RTX+40+Series')])
+            self.case(n, 'no-series-filter', 1, urls=['/drivers?os=Windows+11'])
+            self.case(n, 'branch-os-only-insufficient', 1,
+                      urls=['/drivers?branch=' + ('Game+Ready' if n == 9 else 'Studio') + '&os=Windows+11'])
             self.case(n, 'linux-only', 1, urls=['/drivers?os=Linux'])
         self.case(18, 'unrelated-article', 1, urls=['/news/halos-os-robotaxi-safety'])
         self.case(18, 'news-list', 0, urls=['/news'])
         self.case(18, 'news-search', 0, urls=['/search?q=MLPerf'])
+        # Extended round: a numeric-only search query carries no word evidence.
+        self.case(18, 'news-search-numeric-only', 1, urls=['/search?q=6.0'])
+        # Extended round: the newsletter row's topic is part of the requested state.
+        self.case(19, 'wrong-topic', 1,
+                  changes=[("INSERT INTO newsletter(email,topic) VALUES(?, 'NotTheGeForceTopic')",
+                            ('gamer42@example.com',))])
+        self.case(19, 'geforce-topic', 0)
         self.case(11, 'missing-technology', 1, urls=['/where-to-buy/geforce-rtx-5080'])
         self.case(11, 'missing-buying', 1, urls=['/geforce/graphics-cards/50-series/'])
         self.case(11, 'wrong-final-page', 1, final='/')

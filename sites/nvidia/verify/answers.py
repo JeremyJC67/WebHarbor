@@ -121,9 +121,18 @@ def measurements(text, unit):
         'bandwidth': r'(?:[gmt]b\s*/\s*s|[gmt]bps|gigabytes?\s+per\s+second)',
     }
     out = []
+    normed = norm(text)
     pattern = '(' + MEASURE_NUMBER + r')\s*(' + units[unit] + r')(?!\w)'
-    for m in re.finditer(pattern, norm(text)):
+    for m in re.finditer(pattern, normed):
         out.append((Decimal(m[1]), re.sub(r'\s+', ' ', m[2])))
+    # The site's own Tech Specs rows write the unit before the value
+    # ("CUDA Cores  10,752"), so a value-first-only reader rejected a correct
+    # number copied from the page the task points at (audit NVIDIA--1: medium).
+    # The allowed-unit check in single_measure() still rejects another metric
+    # ("Tensor Cores: 10,752") and a wrong value is still a wrong value.
+    reverse = r'(?<!\w)(' + units[unit] + r')(?!\w)\s*[:=]?\s*(' + MEASURE_NUMBER + r')(?!\d)'
+    for m in re.finditer(reverse, normed):
+        out.append((Decimal(m[2]), re.sub(r'\s+', ' ', m[1])))
     return out
 
 
@@ -270,27 +279,180 @@ def direction(text, winner, loser, metric):
     return bool((positive or inverse) and not wrong)
 
 
+# Absolute CUDA counts of the two compared cards (GEAR: T6).
+CUDA_ABS = {'5090': '21760', '4090': '16384'}
+_CUDA_CARD = r'(?<!\w)(?:geforce\s+)?(?:rtx\s+)?(5090|4090)(?!\w)'
+_CUDA_COMPARATIVE = r'\b(?:more|higher|greater|faster|larger|wins?|winner|leads?)\b'
+_CUDA_LOWER = r'\b(?:fewer|less|lower|smaller)\b'
+_CUDA_CONNECTOR = re.compile(
+    r'^[\s(),/&+-]*(?:(?:vs\.?|versus|against|compared\s+to|and|then|to|with|at)\b[\s(),/&+-]*)*$')
+
+
+def cuda_cards(text):
+    """Ordered, de-duplicated card mentions (5090 / 4090 only)."""
+    order = []
+    for m in re.finditer(_CUDA_CARD, norm(text)):
+        if m.group(1) not in order:
+            order.append(m.group(1))
+    return order
+
+
+_CUDA_CLAUSE_SPLIT = re.compile(r'(?<!\d)[.;!?](?!\d)(?=\s|$)|;')
+
+
+def cuda_claims(text, delta=None):
+    """(kind, subject, object) comparative claims found in the answer's clauses.
+
+    `kind` is 'higher' or 'lower', `subject` the card the comparative belongs to and
+    `object` the card named after `than` (or None when the comparative stands
+    alone). A clause break ends a card's ownership of a comparative, so "the 4090
+    has 16,384; that is 5,376 more" does not read as a claim that the 4090 has more.
+    "<card> has 5,376 more" stays a claim by that card; a bare restatement of the
+    answer's delta after a count list ("… 16,384, so 5,376 more") does not.
+    """
+    normed = norm(text)
+    delta_text = str(delta) if delta is not None else None
+    claims = []
+    for clause in _CUDA_CLAUSE_SPLIT.split(normed):
+        cards = [(m.start(), m.end(), m.group(1)) for m in re.finditer(_CUDA_CARD, clause)]
+        if not cards:
+            continue
+        for kind, pattern in (('higher', _CUDA_COMPARATIVE), ('lower', _CUDA_LOWER)):
+            for m in re.finditer(pattern, clause):
+                before = [card for card in cards if card[1] <= m.start()]
+                after = [card for card in cards if card[0] >= m.end()]
+                subject = before[-1] if before else None
+                tail = clause[m.end():]
+                if re.search(r'\bthan\b', tail) and after:
+                    claims.append((kind, subject[2] if subject else None, after[0][2]))
+                    continue
+                if subject is None:
+                    continue
+                gap = clause[subject[1]:m.start()]
+                if delta_text and delta_text in gap and not re.fullmatch(
+                        r'\s*(?:has|is|with|owns|of)?\s*' + re.escape(delta_text) + r'\s*', gap):
+                    continue
+                claims.append((kind, subject[2], None))
+    return claims
+
+
+def cuda_direction(text, winner='5090', loser='4090', delta=None):
+    """Which card the answer claims has more CUDA cores.
+
+    The rubric's own wording puts the winner before its comparison and both absolute
+    counts in a trailing parenthetical, which is why the earlier fixed-width window
+    around the winner rejected it. Direction is read from the comparative claims and
+    their subjects, so a trailing delta ("while the 4090 has 16,384; that is 5,376
+    more") is bound to the sentence's subject and a reversed winner, an inverse
+    form, an equality claim and a wrong metric all stay unambiguous.
+    """
+    normed = norm(text)
+    if any(card not in (winner, loser) for card in models(normed)):
+        return False
+    if re.search(r'\b(?:equal|same|tie|neither)\b', normed):
+        return False
+    if re.search(r'\b(?:tensor|bandwidth|rt\s+cores?|tdp|watts?)\b', normed):
+        return False
+    accepted = False
+    for kind, subject, obj in cuda_claims(normed, delta):
+        if kind == 'higher':
+            if subject == winner and obj in (None, loser):
+                accepted = True
+            elif (subject == loser and obj in (None, winner)) or obj == winner:
+                return False
+        else:
+            if subject == loser and obj in (None, winner):
+                accepted = True
+            elif (subject == winner and obj in (None, loser)) or obj == loser:
+                return False
+    if accepted:
+        return True
+    if re.search(r'\b(?:in\s+favou?r\s+of|favou?ring|attributed\s+to|belongs\s+to)\s+(?:the\s+)?'
+                 r'(?:geforce\s+)?(?:rtx\s+)?' + re.escape(winner) + r'\b', normed):
+        return True
+    order = cuda_cards(normed)
+    if (order and order[0] == winner and delta is not None and cuda_counts_ok(normed)
+            and re.search(r'\b' + re.escape(str(delta)) + r'\b\s*' + _CUDA_COMPARATIVE, normed)):
+        # A trailing delta whose comparison sits in a separate clause: the winner is
+        # the sentence's subject and the counts already fix the direction.
+        return True
+    return False
+
+
+def cuda_counts_ok(text):
+    """Bind absolute counts to the card they belong to.
+
+    A value written inside its own card's clause binds to that card. When both
+    counts sit in one trailing list after both cards were named (the rubric's own
+    "(21,760 versus 16,384)"), the list follows the cards' mention order, which is
+    how the sentence reads. An omitted list keeps the previous behaviour: a single
+    absolute count belongs to the card mentioned before it.
+    """
+    normed = norm(text)
+    counts = [(m.start(), m.group()) for m in re.finditer(r'\b(?:21760|16384)\b', normed)]
+    if not counts:
+        return True
+    hits = list(re.finditer(_CUDA_CARD, normed))
+    if not hits:
+        return False
+    order = []
+    for hit in hits:
+        if hit.group(1) not in order:
+            order.append(hit.group(1))
+    runs = []
+    for position, value in counts:
+        if runs:
+            previous = runs[-1][-1]
+            gap = normed[previous[0] + len(previous[1]):position]
+            if _CUDA_CONNECTOR.match(gap):
+                runs[-1].append((position, value))
+                continue
+        runs.append([(position, value)])
+    for run in runs:
+        if len(run) > 1:
+            for index, (_, value) in enumerate(run):
+                if index < len(order) and value != CUDA_ABS[order[index]]:
+                    return False
+                if index >= len(order) and value not in CUDA_ABS.values():
+                    return False
+        else:
+            position, value = run[0]
+            # Postfix attribution ("16,384 for the GeForce RTX 4090") names the card
+            # after its own count, which is how a counts-first answer reads.
+            tail = normed[position + len(value):]
+            postfix = re.match(r'\s*(?:cuda\s+cores?\s+)?(?:for|on|of)\s+(?:the\s+)?(?:geforce\s+)?(?:rtx\s+)?'
+                               r'(5090|4090)\b', tail)
+            if postfix:
+                owner = postfix.group(1)
+            else:
+                before = [hit.group(1) for hit in hits if hit.end() <= position]
+                if not before:
+                    return False
+                owner = before[-1]
+            if value != CUDA_ABS[owner]:
+                return False
+    return True
+
+
 def cuda_compare(text, delta):
+    """T6: the requested delta, the right metric and the right direction.
+
+    Phrasing is not graded: the rubric's own sentence shape ("… 5,376 more CUDA
+    cores … (21,760 versus 16,384)"), a counts-first shape and a trailing-delta
+    shape are all accepted, while a reversed winner, a wrong metric, a wrong delta,
+    an equality claim and swapped absolute counts all still fail.
+    """
     normed = strip_harmless_contrasts(norm(text))
-    if not direction(normed, '5090', '4090', 'cuda'):
+    if not cuda_direction(normed, '5090', '4090', delta):
         return False
     # The question establishes CUDA for a concise answer; an explicitly wrong
-    # metric is rejected by direction(), without requiring a magic CUDA token.
+    # metric is rejected by cuda_direction(), without requiring a magic CUDA token.
     numbers = re.findall(NUMBER, normed)
     if str(delta) not in numbers:
         return False
     if not all(n in {'5090', '4090', '21760', '16384', str(delta)} for n in numbers):
         return False
-    # If absolute counts are given they must be attributed to the right card:
-    # the first count belongs to whichever model precedes it.
-    counts = [(m.start(), m.group()) for m in re.finditer(r'\b(?:21760|16384)\b', normed)]
-    if counts:
-        prefix = normed[:counts[0][0]]
-        if '5090' in prefix and '4090' not in prefix.rsplit('5090', 1)[-1]:
-            return counts[0][1] == '21760'
-        if '4090' in prefix:
-            return counts[0][1] == '16384'
-    return True
+    return cuda_counts_ok(normed)
 
 
 def publication_date(text, expected):

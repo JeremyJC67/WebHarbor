@@ -34,27 +34,46 @@ def minimum(ctx, series=None, memory=None):
 
 
 def driver_evidence(ctx, target):
+    """Target-row evidence for T9/T10.
+
+    The question names a product series, so a results page must scope itself to that
+    series: branch and OS may stay unset (a broad search that still displays the
+    requested row is valid), but a query that never pins the series is not evidence
+    for it (audit NVIDIA--9 / --10: low). The target row's own detail page is
+    sufficient on its own.
+    """
     for path, q in ctx.pages:
         if path == f"/drivers/{target['id']}":
             return True
-        if path != '/drivers' or not any(q.get(k, [''])[0] for k in ('series', 'branch', 'os')):
+        if path != '/drivers':
+            continue
+        if q.get('series', [''])[0] != target['product_series']:
             continue
         if all(q.get(key, [''])[0] in ('', target[column]) for key, column in
-               [('series', 'product_series'), ('branch', 'branch'), ('os', 'os')]):
+               [('branch', 'branch'), ('os', 'os')]):
             return True
     return False
 
 
 def news_evidence(ctx, article):
+    """Article/date evidence for T18.
+
+    The rubric accepts "Relevant article, Newsroom listing or search result that
+    includes the Blackwell MLPerf Training 6.0 article and date", so the listing and
+    the app's search route stay valid. A search query must carry at least one word
+    token that actually occurs in the article; a numeric-only query (the "0" of
+    "6.0") no longer counts as having found it (audit NVIDIA--18: low).
+    """
     for path, q in ctx.pages:
         if path == '/news/' + article['slug']:
             return True
         if path == '/news' and q.get('category', [''])[0] in ('', article['category']):
             return True  # The list visibly includes each article's publication date.
         if path == '/search':
-            tokens = re.findall(r'[a-z0-9]+', q.get('q', [''])[0].lower())
+            words = [t for t in re.findall(r'[a-z0-9]+', q.get('q', [''])[0].lower())
+                     if len(t) >= 3 and not t.isdigit()]
             haystack = ' '.join(str(article[k]) for k in ('title', 'category', 'author', 'excerpt', 'body')).lower()
-            if any(token in haystack for token in tokens):
+            if words and any(word in haystack for word in words):
                 return True  # App search uses token overlap, not strict AND.
     return False
 
@@ -114,6 +133,9 @@ def information(ctx):
                 'missing RTX 50 price comparison evidence')
         ok = a.segment_ok(answer, lambda name: a.names_model(name, '5060') and 'ti' not in name,
                           [lambda t: a.price(t, p['price_usd'])])
+        # The question asks which card is least expensive, so the answer must name the
+        # model as well as its price; a bare price is half an answer (audit NVIDIA--3: low).
+        ok = ok and bool(a.models(answer))
         ok = ok and not re.search(r'\b(?:most\s+expensive|priciest|highest[- ]priced)\b', a.norm(answer))
     elif n == 4:
         p = one([p for p in ctx.before['products'] if p['category'] == 'Data Center' and p['memory_gb'] == 141], '141GB GPU')
@@ -127,9 +149,11 @@ def information(ctx):
             ok = a.segment_ok(answer, lambda name: a.names_model(name, 'h200'),
                               [lambda t: a.only_model(t, 'h200')])
     elif n == 5:
-        require(ctx.detail(NANO) or ctx.detail(NX) or ctx.compare([NANO, NX]) or
-                ctx.buying(NANO) or ctx.buying(NX),
-                'missing relevant Jetson product evidence')
+        # The rubric requires specifications for BOTH Jetson products and fails
+        # one-product-only evidence, so a single detail page is no longer enough
+        # (audit NVIDIA--5: low); a comparison of both products or both detail pages is.
+        require(ctx.compare([NANO, NX]) or (ctx.detail(NANO) and ctx.detail(NX)),
+                'missing specifications for both Jetson products')
         # These targets are explicitly the reviewed kit/module variants.
         if ctx.product(NANO)['memory_gb'] != 8 or ctx.product(NX)['memory_gb'] != 16:
             raise InfraError('Jetson reference variant changed; review task contract')
@@ -204,6 +228,9 @@ def state(ctx):
         added, removed, modified = delta(ctx, 'newsletter')
         require(not removed and not modified and len(added) == 1, 'must add exactly one subscription and preserve existing rows')
         require(a.norm(added[0]['email']) == 'gamer42@example.com', 'wrong subscription email')
+        # The subscription is the site's GeForce newsletter list; the row's topic is
+        # part of the requested state (audit NVIDIA--19: low).
+        require(a.norm(added[0]['topic'] or '') == 'geforce', 'newsletter topic must be the GeForce list')
         require(not any(a.norm(r['email']) == 'gamer42@example.com' for r in ctx.before['newsletter']), 'subscription already existed')
         return ['New target subscription; existing state preserved']
     user = one([r for r in ctx.before['users'] if r['email'] == EMAIL], 'seeded Alice account')
