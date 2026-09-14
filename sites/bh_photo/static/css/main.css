@@ -1476,3 +1476,482 @@ textarea {
 .subcategory-tile:hover strong {
     text-decoration: underline;
 }
+
+/* Department landing. B&H separates the broad Photography department from
+   its product listings; keeping that intermediate layer preserves both the
+   upstream information density and the task's category-discovery path. */
+.department-hero {
+    margin-top: 16px;
+    background: #f3f3f3;
+    border-block: 1px solid #e2e2e2;
+}
+
+.department-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+    gap: 46px;
+    align-items: center;
+    min-height: 330px;
+    padding-block: 34px;
+}
+
+.department-hero h1 {
+    margin: 8px 0 12px;
+    font-size: clamp(2.5rem, 5vw, 4.7rem);
+    line-height: 0.98;
+}
+
+.department-hero p:not(.kicker) {
+    max-width: 650px;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    margin-bottom: 24px;
+}
+
+.department-hero-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 10px;
+    color: var(--brand-blue);
+    font-weight: 700;
+    text-align: center;
+}
+
+.department-hero-product img {
+    width: min(470px, 100%);
+    height: 260px;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+.department-section {
+    margin-top: 38px;
+}
+
+.department-category-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.department-category-card {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+    text-align: center;
+}
+
+.department-category-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 176px;
+    padding: 18px;
+    background: #f7f7f7;
+    border: 1px solid #e5e5e5;
+}
+
+.department-category-media img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+}
+
+.department-category-card small {
+    color: var(--muted);
+}
+
+.department-category-card:hover strong,
+.department-link-grid a:hover strong {
+    color: var(--brand-blue);
+    text-decoration: underline;
+}
+
+.department-link-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+}
+
+.department-link-grid a {
+    display: flex;
+    min-width: 0;
+    min-height: 104px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.department-link-grid a span {
+    color: var(--brand-blue);
+    font-size: 13px;
+}
+
+.department-editorial {
+    margin-top: 42px;
+    padding: 28px 0;
+    border-block: 1px solid var(--border);
+}
+
+.department-editorial p {
+    max-width: 920px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+/* Bundle cards use a stacked layout on the four-column homepage shelf. The
+   wide 220px media column is reserved for the one-column bundle listing. */
+.bundle-card > *,
+.bundle-card > div,
+.bundle-card h2,
+.bundle-card h3,
+.bundle-card p {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.bundle-card-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    background: #f7f7f7;
+}
+
+.bundle-card-media img,
+.bundle-card > img {
+    width: 100%;
+    height: 190px;
+    object-fit: contain;
+}
+
+.bundle-grid:not(.tall) .bundle-card {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.bundle-search-panel {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.bundle-search-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.5fr) minmax(200px, 0.7fr) auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.bundle-search-form label {
+    display: grid;
+    gap: 6px;
+    font-weight: 700;
+}
+
+.bundle-search-panel .result-count {
+    margin-top: 12px;
+}
+
+.bundle-count {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.bundle-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.85fr);
+    gap: 34px;
+    align-items: center;
+    margin-top: 24px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.bundle-detail-media img {
+    width: 100%;
+    height: 430px;
+    object-fit: contain;
+}
+
+.bundle-detail-main h1 {
+    margin: 8px 0 14px;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    line-height: 1.08;
+}
+
+.bundle-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.bundle-product-card {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 16px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.bundle-product-card img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+}
+
+.bundle-product-card h3 {
+    margin: 7px 0;
+    overflow-wrap: anywhere;
+}
+
+/* Checkout follows the upstream shipping -> payment -> review sequence while
+   keeping all values deterministic and local to the benchmark. */
+.checkout-hero {
+    margin-bottom: 0;
+}
+
+.checkout-progress {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.checkout-progress-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+}
+
+.checkout-progress-step:last-child {
+    border-right: 0;
+}
+
+.checkout-progress-step span {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #aaa;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.checkout-progress-step.active {
+    color: var(--text);
+    box-shadow: inset 0 -3px var(--brand-green);
+}
+
+.checkout-progress-step.active span,
+.checkout-progress-step.complete span {
+    border-color: var(--brand-green);
+    background: var(--brand-green);
+    color: #ffffff;
+}
+
+.checkout-stage-card {
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.checkout-stage-card h2 {
+    margin: 7px 0 16px;
+}
+
+.checkout-addresses {
+    display: grid;
+    gap: 10px;
+    margin: 4px 0;
+    padding: 0;
+    border: 0;
+}
+
+.checkout-addresses legend {
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.checkout-address-option {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    gap: 12px !important;
+    align-items: start;
+    padding: 14px;
+    border: 1px solid var(--border);
+    font-weight: 400 !important;
+}
+
+.checkout-address-option:has(input:checked) {
+    border-color: var(--brand-green);
+    box-shadow: inset 3px 0 var(--brand-green);
+}
+
+.checkout-address-option input,
+.checkout-confirmation input {
+    width: auto;
+    margin-top: 3px;
+}
+
+.checkout-address-option strong,
+.checkout-address-option small {
+    display: block;
+}
+
+.checkout-address-option small {
+    margin-top: 5px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.checkout-safe-note {
+    padding: 12px 14px;
+    background: #f3f8f4;
+    color: var(--muted);
+    border-left: 3px solid var(--brand-green);
+}
+
+.checkout-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+}
+
+.checkout-review-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.checkout-review-grid section {
+    padding: 16px;
+    border: 1px solid var(--border);
+}
+
+.checkout-review-grid h3,
+.checkout-review-grid p {
+    margin-top: 0;
+}
+
+.checkout-review-grid a {
+    color: var(--brand-blue);
+}
+
+.checkout-confirmation {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    gap: 10px !important;
+    align-items: start;
+}
+
+.checkout-summary {
+    align-self: start;
+    position: sticky;
+    top: 18px;
+}
+
+.checkout-summary-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.checkout-summary-row img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+@media (max-width: 1100px) {
+    .department-hero-grid,
+    .bundle-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .department-category-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .department-link-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .bundle-product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .department-hero-grid {
+        min-height: 0;
+        padding-block: 26px;
+    }
+
+    .department-hero-product img,
+    .bundle-detail-media img {
+        height: 240px;
+    }
+
+    .department-category-grid,
+    .department-link-grid,
+    .bundle-search-form,
+    .checkout-review-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .department-category-media {
+        min-height: 150px;
+    }
+
+    .checkout-progress {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .checkout-progress-step:nth-child(2) {
+        border-right: 0;
+    }
+
+    .checkout-progress-step:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .checkout-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .checkout-actions > * {
+        width: 100%;
+        text-align: center;
+    }
+
+    .checkout-summary {
+        position: static;
+    }
+
+    .bundle-product-card {
+        grid-template-columns: 92px minmax(0, 1fr);
+    }
+
+    .bundle-product-card img {
+        width: 92px;
+        height: 92px;
+    }
+}

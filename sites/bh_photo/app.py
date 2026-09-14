@@ -242,16 +242,31 @@ class Product(db.Model):
     # packaging rows are the last thing a shopper wants summarised on a listing
     SKIP_FEATURE_GROUPS = {"packaging info", "shipping"}
     SKIP_FEATURE_LABELS = {"box dimensions (lxwxh)", "package weight", "box dimensions"}
+    DETAIL_ONLY_FEATURE_LABELS = {
+        "angle of view",
+        "battery",
+        "native resolution",
+        "read speed",
+        "weight",
+    }
+    DETAIL_ONLY_FEATURE_PAIRS = {("monitor", "resolution")}
 
     @property
     def key_features(self) -> list[tuple[str, str]]:
         """The short specification list upstream prints on a listing row."""
         preferred, fallback = [], []
-        for group in self.spec_groups:
-            skip_group = (group.title or "").strip().lower() in self.SKIP_FEATURE_GROUPS
-            for spec in group.specs:
+        for group in sorted(self.spec_groups, key=lambda item: item.sort_order):
+            group_name = (group.title or "").strip().lower()
+            skip_group = group_name in self.SKIP_FEATURE_GROUPS
+            for spec in sorted(group.specs, key=lambda item: item.sort_order):
+                spec_name = (spec.name or "").strip().lower()
+                if (
+                    spec_name in self.DETAIL_ONLY_FEATURE_LABELS
+                    or (group_name, spec_name) in self.DETAIL_ONLY_FEATURE_PAIRS
+                ):
+                    continue
                 entry = (spec.name, spec.value)
-                if skip_group or (spec.name or "").strip().lower() in self.SKIP_FEATURE_LABELS:
+                if skip_group or spec_name in self.SKIP_FEATURE_LABELS:
                     fallback.append(entry)
                 else:
                     preferred.append(entry)
@@ -938,9 +953,6 @@ def category_view(slug: str, page: int = 1):
     category = Category.query.filter_by(slug=slug).first_or_404()
     ids = descendant_category_ids(category)
     products = [product for product in all_products() if product.category_id in ids]
-    results = apply_product_filters(products, request.args)
-    window = paginate(results, page)
-    # upstream fronts a department with its subcategories before the product rows
     children = Category.query.filter_by(parent_id=category.id).order_by(Category.nav_order).all()
     child_tiles = []
     for child in children:
@@ -951,9 +963,68 @@ def category_view(slug: str, page: int = 1):
             "count": len(members),
             "image": sample.image_path if sample else "icons/product-placeholder.svg",
         })
+
+    if category.parent_id is None and page == 1 and not request.args:
+        hero_product = next(
+            (product for product in products if product.image_path.startswith("images/products/")),
+            products[0] if products else None,
+        )
+        guide_sections = []
+        if category.slug == "photography":
+            guide_sections = [
+                {
+                    "title": "Accessories and essentials",
+                    "links": [
+                        ("Camera Bags & Cases", url_for("search", q="camera bag")),
+                        ("Flashes & On-Camera Lighting", url_for("search", q="flash lighting")),
+                        ("Batteries & Power", url_for("search", q="camera battery")),
+                        ("Lens Filters", url_for("search", q="lens filter")),
+                        ("Cleaning & Care", url_for("search", q="camera cleaning")),
+                        ("Memory & Storage", url_for("category_view", slug="memory-cards-storage")),
+                    ],
+                },
+                {
+                    "title": "What would you like to shoot?",
+                    "links": [
+                        ("Portrait Photography", url_for("category_view", slug="camera-lenses", focal_length="medium-telephoto")),
+                        ("Sports & Wildlife", url_for("category_view", slug="camera-lenses", focal_length="super-telephoto")),
+                        ("Travel & Everyday", url_for("category_view", slug="mirrorless-cameras")),
+                        ("Video & Content Creation", url_for("category_view", slug="mirrorless-cameras", view="grid")),
+                    ],
+                },
+                {
+                    "title": "More in Photography",
+                    "links": [
+                        ("Used Photo Gear", url_for("used", within="camera")),
+                        ("Photo Deals", url_for("deals", within="camera")),
+                        ("Camera Bundles", url_for("bundles", q="camera")),
+                        ("Store Pickup", url_for("store_pickup")),
+                    ],
+                },
+                {
+                    "title": "Scan, print and present",
+                    "links": [
+                        ("Printers & Scanners", url_for("category_view", slug="printers-scanners")),
+                        ("Displays & Monitors", url_for("category_view", slug="monitors")),
+                        ("Tripods & Presentation Support", url_for("category_view", slug="tripods-supports")),
+                    ],
+                },
+            ]
+        return render_template(
+            "department_landing.html",
+            page_title=category.name,
+            category=category,
+            subcategories=child_tiles,
+            product_count=len(products),
+            hero_product=hero_product,
+            guide_sections=guide_sections,
+        )
+
+    results = apply_product_filters(products, request.args)
+    window = paginate(results, page)
     return render_template(
         "category_listing.html",
-        subcategories=child_tiles,
+        subcategories=child_tiles if category.parent_id is None else [],
         page_title=category.name,
         page_heading=category.name,
         page_description=category.hero_copy or category.description,
@@ -1101,7 +1172,47 @@ def used():
 @app.route("/bundles")
 def bundles():
     bundles_list = Bundle.query.order_by(Bundle.featured.desc(), Bundle.title).all()
-    return render_template("bundles.html", bundles=bundles_list)
+    query_text = request.args.get("q", "").strip()
+    audience = request.args.get("audience", "").strip()
+    audiences = sorted({bundle.audience for bundle in bundles_list if bundle.audience})
+    if query_text:
+        needles = tokenized(query_text)
+        bundles_list = [
+            bundle
+            for bundle in bundles_list
+            if all(
+                needle in " ".join(
+                    [
+                        bundle.title,
+                        bundle.description,
+                        bundle.audience,
+                        " ".join(item.product.name for item in bundle.items),
+                    ]
+                ).lower()
+                for needle in needles
+            )
+        ]
+    if audience:
+        bundles_list = [bundle for bundle in bundles_list if bundle.audience == audience]
+    return render_template(
+        "bundles.html",
+        bundles=bundles_list,
+        query_text=query_text,
+        audiences=audiences,
+        selected_audience=audience,
+    )
+
+
+@app.route("/bundle/<bundle_slug>")
+def bundle_detail(bundle_slug: str):
+    bundle = Bundle.query.filter_by(slug=bundle_slug).first_or_404()
+    related = (
+        Bundle.query.filter(Bundle.id != bundle.id, Bundle.audience == bundle.audience)
+        .order_by(Bundle.featured.desc(), Bundle.title)
+        .limit(3)
+        .all()
+    )
+    return render_template("bundle_detail.html", bundle=bundle, related=related)
 
 
 @app.route("/bundle/<bundle_slug>/add", methods=["POST"])
@@ -1459,9 +1570,61 @@ def checkout():
         return redirect(url_for("cart"))
     totals = order_totals_for(items)
     addresses = current_user.addresses
+    draft = dict(session.get("checkout_draft", {}))
+    step = request.args.get("step", "shipping")
+    if step not in {"shipping", "payment", "review"}:
+        step = "shipping"
+
     if request.method == "POST":
-        fulfillment = request.form.get("fulfillment", "Ship to address").strip() or "Ship to address"
-        payment_label = request.form.get("payment_label", "Demo Visa ending in 4242").strip() or "Demo Visa ending in 4242"
+        step = request.form.get("step", "shipping").strip()
+        if step == "shipping":
+            fulfillment = request.form.get("fulfillment", "Ship to address").strip()
+            address_id = parse_positive_int(request.form.get("address_id"), default=0)
+            address = next((item for item in addresses if item.id == address_id), None)
+            if fulfillment not in {"Ship to address", "Store pickup"}:
+                flash("Choose a valid fulfillment option.", "danger")
+                return redirect(url_for("checkout"))
+            if fulfillment == "Ship to address" and not address:
+                flash("Choose one of your saved shipping addresses.", "danger")
+                return redirect(url_for("checkout"))
+            draft = {
+                "fulfillment": fulfillment,
+                "address_id": address.id if address else None,
+                "shipping_complete": True,
+            }
+            session["checkout_draft"] = draft
+            session.modified = True
+            return redirect(url_for("checkout", step="payment"))
+
+        if step == "payment":
+            if not draft.get("shipping_complete"):
+                flash("Complete shipping before choosing payment.", "warning")
+                return redirect(url_for("checkout"))
+            payment_label = request.form.get("payment_label", "").strip()
+            if payment_label not in {
+                "Demo Visa ending in 4242",
+                "Demo Mastercard ending in 1881",
+                "PayPal demo account",
+            }:
+                flash("Choose one of the available demo payment methods.", "danger")
+                return redirect(url_for("checkout", step="payment"))
+            draft["payment_label"] = payment_label
+            draft["payment_complete"] = True
+            session["checkout_draft"] = draft
+            session.modified = True
+            return redirect(url_for("checkout", step="review"))
+
+        if step != "review" or not (
+            draft.get("shipping_complete") and draft.get("payment_complete")
+        ):
+            flash("Complete shipping and payment before reviewing the order.", "warning")
+            return redirect(url_for("checkout"))
+        if request.form.get("confirmed") != "yes":
+            flash("Confirm that you reviewed the order before placing it.", "warning")
+            return redirect(url_for("checkout", step="review"))
+
+        fulfillment = draft["fulfillment"]
+        payment_label = draft["payment_label"]
         note = request.form.get("note", "").strip()
         # seeded orders read BH-<date>-<user><sequence>; a checkout placed on the
         # site produced BH-<date>-<time>-<user>, so one store showed two formats
@@ -1498,9 +1661,30 @@ def checkout():
             )
             db.session.delete(item)
         db.session.commit()
+        session.pop("checkout_draft", None)
+        session.modified = True
         flash("Your demo checkout was completed locally.", "success")
         return redirect(url_for("order_receipt", order_number=order.order_number))
-    return render_template("checkout.html", items=items, totals=totals, addresses=addresses)
+
+    if step == "payment" and not draft.get("shipping_complete"):
+        return redirect(url_for("checkout"))
+    if step == "review" and not (
+        draft.get("shipping_complete") and draft.get("payment_complete")
+    ):
+        return redirect(url_for("checkout"))
+    selected_address = next(
+        (address for address in addresses if address.id == draft.get("address_id")),
+        None,
+    )
+    return render_template(
+        "checkout.html",
+        items=items,
+        totals=totals,
+        addresses=addresses,
+        checkout_step=step,
+        checkout_draft=draft,
+        selected_address=selected_address,
+    )
 
 
 @app.route("/order/<order_number>")

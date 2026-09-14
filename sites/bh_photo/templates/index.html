@@ -88,11 +88,13 @@
     <div class="bundle-grid">
         {% for bundle in bundles %}
             <article class="bundle-card">
-                <img src="{{ url_for('static', filename=bundle.image_path) }}" alt="{{ bundle.title }}">
+                <a class="bundle-card-media" href="{{ url_for('bundle_detail', bundle_slug=bundle.slug) }}">
+                    <img src="{{ url_for('static', filename=bundle.image_path) }}" alt="{{ bundle.title }}">
+                </a>
                 <div>
                     <p class="eyebrow">{{ bundle.badge }} · {{ bundle.audience }}</p>
-                    <h3>{{ bundle.title }}</h3>
-                    <p>{{ bundle.description }}</p>
+                    <h3><a href="{{ url_for('bundle_detail', bundle_slug=bundle.slug) }}">{{ bundle.title }}</a></h3>
+                    <p>{{ bundle.description|replace('Each item in the kit is listed below.', 'Open the kit to see every included item.') }}</p>
                     <div class="price-line">
                         <strong>{{ bundle.bundle_price|currency }}</strong>
                         <span class="strike">{{ bundle.list_price|currency }}</span>

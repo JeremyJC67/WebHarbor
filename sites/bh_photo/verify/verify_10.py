@@ -34,8 +34,11 @@ def main():
     others = [row['name'] for row in members if 'eos c80' not in normalize_text(row['name'])]
     judge.check('ground_truth_two_other_items', len(others) == 2, f'others={others}')
 
-    # the mirror has no per-kit page; kits and their contents live on /bundles
-    judge.check('opened_kit_listing', visited_path(trajectory, '/bundles'), 'kit listing')
+    judge.check(
+        'opened_the_matching_kit_page',
+        visited_path(trajectory, '/bundle/' + kit['slug']),
+        f"expected=/bundle/{kit['slug']}",
+    )
     judge.check('answer_states_kit_price', has_number(answer, kit['bundle_price']),
                 f"expected={kit['bundle_price']} answer={answer!r}")
     missing = [name for name in others if not names_product(answer, name)]

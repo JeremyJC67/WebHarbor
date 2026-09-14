@@ -37,8 +37,8 @@
         <div class="tab-row">
             <a class="{{ 'active' if active_tab == 'overview' else '' }}" href="{{ url_for('product_detail', product_slug=product.slug) }}">Overview</a>
             <a class="{{ 'active' if active_tab == 'specs' else '' }}" href="{{ url_for('product_specs', product_slug=product.slug) }}">Specs</a>
-            <a class="{{ 'active' if active_tab == 'reviews' else '' }}" href="{{ url_for('product_reviews', product_slug=product.slug) }}">Reviews</a>
-            <a class="{{ 'active' if active_tab == 'qa' else '' }}" href="{{ url_for('product_qa', product_slug=product.slug) }}">Q&amp;A</a>
+            <a class="{{ 'active' if active_tab == 'reviews' else '' }}" href="{{ url_for('product_reviews', product_slug=product.slug) }}#reviews">Reviews</a>
+            <a class="{{ 'active' if active_tab == 'qa' else '' }}" href="{{ url_for('product_qa', product_slug=product.slug) }}#questions">Q&amp;A</a>
         </div>
 
         {% if active_tab == 'overview' %}
@@ -74,7 +74,7 @@
                 {% endfor %}
             </div>
         {% elif active_tab == 'reviews' %}
-            <div class="detail-panel">
+            <div class="detail-panel" id="reviews">
                 {% for review in product.reviews %}
                     <article class="review-card">
                         <div class="rating-line">
@@ -88,7 +88,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div class="detail-panel">
+            <div class="detail-panel" id="questions">
                 {% for question in product.questions %}
                     <article class="qa-card">
                         <h3>Q: {{ question.question }}</h3>

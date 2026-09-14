@@ -61,9 +61,13 @@ class SiteFixture(unittest.TestCase):
     @classmethod
     def _seed_minimal_catalog(cls):
         s, db = cls.site, cls.db
-        category = s.Category(name='Mirrorless Cameras', slug='mirrorless-cameras')
+        department = s.Category(name='Photography', slug='photography', nav_order=1)
+        category = s.Category(
+            name='Mirrorless Cameras', slug='mirrorless-cameras', nav_order=1,
+            parent=department,
+        )
         brand = s.Brand(name='Testbrand', slug='testbrand')
-        db.session.add_all([category, brand])
+        db.session.add_all([department, category, brand])
         db.session.flush()
         store = s.StoreLocation(
             name='Test Pickup Counter', slug='test-pickup-counter', city='New York',
@@ -79,6 +83,27 @@ class SiteFixture(unittest.TestCase):
         user.set_password('TestPass123!')
         db.session.add_all([store, product, user])
         db.session.flush()
+        db.session.add(s.Address(
+            user_id=user.id, label='Studio', recipient='Tester', line1='1 Test Plaza',
+            city='New York', state='NY', zip_code='10001', is_default=True,
+        ))
+        spec_group = s.ProductSpecGroup(
+            product_id=product.id, title='Specifications', sort_order=0,
+        )
+        db.session.add(spec_group)
+        db.session.flush()
+        db.session.add_all([
+            s.ProductSpec(group_id=spec_group.id, name='Lens Mount', value='Test Mount', sort_order=0),
+            s.ProductSpec(group_id=spec_group.id, name='Angle of View', value='220°', sort_order=1),
+        ])
+        bundle = s.Bundle(
+            title='Test Cinema Kit', slug='test-cinema-kit',
+            description='A complete production package.', image_path=product.main_image,
+            bundle_price=999.0, list_price=1099.0, audience='Cinema', featured=True,
+        )
+        db.session.add(bundle)
+        db.session.flush()
+        db.session.add(s.BundleItem(bundle_id=bundle.id, product_id=product.id, quantity=1))
         db.session.add(s.StoreInventory(
             store_id=store.id, product_id=product.id, quantity=3, pickup_eta='Ready in 2 hours',
         ))
@@ -102,6 +127,10 @@ class SiteFixture(unittest.TestCase):
     def reservation_rows(self):
         with self.app.app_context():
             return self.site.StoreReservation.query.count()
+
+    def order_rows(self):
+        with self.app.app_context():
+            return self.site.Order.query.count()
 
 
 class MalformedNumericInputTests(SiteFixture):
@@ -186,6 +215,98 @@ class StaticAssetTests(SiteFixture):
         response = self.app.test_client().get('/favicon.ico')
         self.assertEqual(response.status_code, 200)
         self.assertGreater(len(response.get_data()), 0)
+
+
+class ShoppingPathTests(SiteFixture):
+    def test_department_is_a_landing_page_before_the_listing(self):
+        client = self.app.test_client()
+
+        landing = client.get('/c/photography').get_data(as_text=True)
+        listing = client.get('/c/mirrorless-cameras').get_data(as_text=True)
+
+        self.assertIn('Shop Photography', landing)
+        self.assertIn('Mirrorless Cameras', landing)
+        self.assertNotIn('class="filters"', landing)
+        self.assertIn('class="filters"', listing)
+
+    def test_listing_does_not_leak_detail_only_specifications(self):
+        client = self.app.test_client()
+
+        listing = client.get('/c/mirrorless-cameras').get_data(as_text=True)
+        specs = client.get('/product/test-camera/specs').get_data(as_text=True)
+
+        self.assertNotIn('Angle of View: 220', listing)
+        self.assertIn('Angle of View', specs)
+        self.assertIn('220°', specs)
+
+    def test_bundle_search_leads_to_a_dedicated_detail_page(self):
+        client = self.app.test_client()
+
+        results = client.get('/bundles?q=Test+Camera').get_data(as_text=True)
+        detail = client.get('/bundle/test-cinema-kit').get_data(as_text=True)
+
+        self.assertIn('/bundle/test-cinema-kit', results)
+        self.assertNotIn('href="/product/test-camera"', results)
+        self.assertIn('Test Cinema Kit', detail)
+        self.assertIn('Test Camera', detail)
+
+    def test_checkout_requires_shipping_payment_and_review_steps(self):
+        client = self.signed_in_client()
+        client.post(f'/cart/add/{self.product_slug}', data={'quantity': '1'})
+        before = self.order_rows()
+
+        response = client.post(
+            '/checkout',
+            data={'step': 'shipping', 'fulfillment': 'Ship to address', 'address_id': '1'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/checkout?step=payment'))
+        self.assertEqual(self.order_rows(), before)
+
+        response = client.post(
+            '/checkout', data={'step': 'payment', 'payment_label': 'Demo Visa ending in 4242'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/checkout?step=review'))
+        self.assertEqual(self.order_rows(), before)
+
+        response = client.post(
+            '/checkout',
+            data={'step': 'review', 'note': 'Test order', 'confirmed': 'yes'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/order/BH-', response.location)
+        self.assertEqual(self.order_rows(), before + 1)
+        self.assertEqual(self.cart_rows(), 0)
+
+    def test_checkout_cannot_skip_directly_to_review(self):
+        client = self.signed_in_client()
+        client.post(f'/cart/add/{self.product_slug}', data={'quantity': '1'})
+        before = self.order_rows()
+
+        response = client.post('/checkout', data={'step': 'review'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/checkout'))
+        self.assertEqual(self.order_rows(), before)
+
+    def test_checkout_requires_explicit_review_confirmation(self):
+        client = self.signed_in_client()
+        client.post(f'/cart/add/{self.product_slug}', data={'quantity': '1'})
+        before = self.order_rows()
+        client.post(
+            '/checkout',
+            data={'step': 'shipping', 'fulfillment': 'Ship to address', 'address_id': '1'},
+        )
+        client.post(
+            '/checkout', data={'step': 'payment', 'payment_label': 'Demo Visa ending in 4242'},
+        )
+
+        response = client.post('/checkout', data={'step': 'review'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/checkout?step=review'))
+        self.assertEqual(self.order_rows(), before)
 
 
 if __name__ == '__main__':
