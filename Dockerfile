@@ -70,16 +70,11 @@ RUN cd /opt/WebSyn/healthline && test -f instance_seed/healthline.db && \
     PYTHONHASHSEED=0 python3 migrate_seed.py && \
     python3 prune_unreferenced_images.py --apply && rm -rf instance
 
-# Versus ships deliberately synthetic product art (see sites/versus/NOTICE.md)
-# rather than photography. The tiles are regenerated here and gated on exact
-# coverage + per-file SHA-256 + PNG decode, the same contract webmd_doctor,
-# compass and walmart_careers use, so altered or missing art fails the build.
-# The seed is code-generated too; the benchmark password hash is a frozen
-# constant, so both the tiles and the DB are byte-identical on every build.
-RUN cd /opt/WebSyn/versus && \
-    rm -rf static/images/products && \
-    python3 generate_art.py && \
-    python3 check_generated_assets.py
+# Versus ships source-backed entity imagery from the pinned asset bundle.
+# The generic gate enforces exact coverage, hashes, source URLs and WebP headers.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/versus
+# The seed remains code-generated; the benchmark password hash is frozen so the
+# SQLite output is byte-identical on every build.
 RUN cd /opt/WebSyn/versus && \
     rm -rf instance instance_seed && \
     mkdir -p instance_seed && \

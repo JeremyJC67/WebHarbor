@@ -2,8 +2,9 @@
 {% block title %}{{ product.name }}{% endblock %}
 {% block content %}
 <section class="detail-hero">
-  <img src="{{ url_for('static', filename='images/products/' ~ product.slug ~ '.png') }}"
-       alt="Synthetic product art for {{ product.name }}" width="480" height="360">
+  <img class="entity-image entity-image--{{ product.category.slug }}"
+       src="{{ url_for('static', filename='images/products/' ~ product.slug ~ '.webp') }}"
+       alt="{{ product.name }}" width="960" height="720">
   <div>
     <div class="eyebrow">{{ product.category.name }}</div>
     <div class="headline">

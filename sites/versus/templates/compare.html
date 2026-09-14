@@ -3,15 +3,17 @@
 {% block content %}
 <section class="versus-hero">
   <div>
-    <img src="{{ url_for('static', filename='images/products/' ~ left.slug ~ '.png') }}"
-         alt="Synthetic product art for {{ left.name }}" width="480" height="360">
+    <img class="entity-image entity-image--{{ left.category.slug }}"
+         src="{{ url_for('static', filename='images/products/' ~ left.slug ~ '.webp') }}"
+         alt="{{ left.name }}" width="960" height="720">
     <h1>{{ left.name }}</h1>
     <span class="score-ring {{ 'win' if winner.slug == left.slug }}">{{ left.score }}</span>
   </div>
   <div class="versus-rule">vs</div>
   <div>
-    <img src="{{ url_for('static', filename='images/products/' ~ right.slug ~ '.png') }}"
-         alt="Synthetic product art for {{ right.name }}" width="480" height="360">
+    <img class="entity-image entity-image--{{ right.category.slug }}"
+         src="{{ url_for('static', filename='images/products/' ~ right.slug ~ '.webp') }}"
+         alt="{{ right.name }}" width="960" height="720">
     <h1>{{ right.name }}</h1>
     <span class="score-ring {{ 'win' if winner.slug == right.slug }}">{{ right.score }}</span>
   </div>

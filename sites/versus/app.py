@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import os
 import re
 from functools import wraps
@@ -21,6 +22,7 @@ from werkzeug.security import check_password_hash
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+mimetypes.add_type("image/webp", ".webp")
 
 app = Flask(__name__, instance_path=os.path.join(BASE_DIR, "instance"))
 app.config["SECRET_KEY"] = "webharbor-versus-dev-key"

@@ -9,43 +9,49 @@ curl -so /dev/null -w "%{http_code}\n" http://localhost:40029/
 curl -X POST http://localhost:40029/reset/versus
 ```
 
-## Build products, not assets
+## Assets and build products
 
-This site fetches nothing from Hugging Face. Both of its binary-ish artefacts are
-regenerated deterministically during the Docker build and gated there:
+The entity images are source-backed assets distributed through the pinned Hugging Face
+bundle. The SQLite seed remains a deterministic build product:
 
 | Artefact | Generator | Gate |
 | --- | --- | --- |
-| `static/images/products/*.png` (20 tiles) | `generate_art.py` | `check_generated_assets.py` — coverage, size, SHA-256, PNG decode |
+| `static/images/products/*.webp` (107 images) | `fetch_images.py` from pinned source URLs | `scripts/check_asset_inventory.py` — exact coverage, size, SHA-256, URL and WebP header |
 | `instance_seed/versus.db` | `app.py` import side effect | `md5(instance) == md5(instance_seed)` after `/reset/versus` |
 
-Both are byte-identical across builds. The seed's benchmark password hash is a frozen
+The seed's benchmark password hash is a frozen
 constant (`BENCHMARK_PASSWORD_HASH`) because `generate_password_hash()` draws a fresh
 scrypt salt per call, which made two builds of the same commit differ.
 
-Regenerate locally and refresh the pinned hashes:
+Re-fetch the exact recorded sources and reproduce the images with Pillow 11:
 
 ```bash
-python3 generate_art.py --write-inventory
-python3 check_generated_assets.py
+uv run --python 3.12 --with pillow==11.0.0 --with requests==2.32.5 \
+  python fetch_images.py
+python ../../scripts/check_asset_inventory.py .
 ```
+
+`--refresh` rewrites pinned source/output hashes and is only for a reviewed source
+change. `asset_inventory.json` records the represented entity, source page, direct asset
+URL, source and output hashes, dimensions, attribution and licence/disposition.
 
 ## What is real and what is not
 
 Product names, brands, release years, list prices and published specifications follow the
 manufacturers' figures. The **Versus Score, all user accounts and all saved comparisons
-are synthetic benchmark data**; product art is programmatically drawn, not photography.
-`/about` and the footer say so on every page. See `NOTICE.md`.
+are synthetic benchmark data**. The 107 entity images are real, locally stored media:
+85 are Wikimedia Commons files and 22 come from official product, campus, identity,
+press or video pages. `/about` and the footer state the distinction. See `NOTICE.md`.
 
 ## Catalogue
 
-20 products across 5 categories (smartphones, headphones, cameras, graphics cards,
-smartwatches), 4 benchmark accounts sharing the password `TestPass123!`, and 3 saved
-comparisons seeded for `alice.j@test.com`.
+107 entities across 7 categories: 20 consumer-electronics products, 52 cities and 35
+universities. The seed also carries 4 benchmark accounts sharing the password
+`TestPass123!` and 3 saved comparisons for `alice.j@test.com`.
 
 ## Tasks
 
-17 tasks in `tasks.jsonl`, each with a deterministic verifier in `verify/` and a
+20 tasks in `tasks.jsonl`, each with a deterministic verifier in `verify/` and a
 `judge_rubric`. Ground truth is derived from the passed `initial_db` rather than frozen
 in the verifier, so the expected answer moves with the seed. Navigation checks accept
 only steps on this site's own origin, with the port derived from `control_server.py`'s
@@ -56,5 +62,5 @@ carry Score, Price and Year. Questions are written so the answer requires a page
 does not carry.
 
 ```bash
-python3 -m unittest discover -s tests -v          # 11 regression tests
+python3 -m unittest discover -s tests -v
 ```

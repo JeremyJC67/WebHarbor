@@ -174,43 +174,44 @@ class StatefulTasksStartUnsatisfied(unittest.TestCase):
             )
 
 
-class GeneratedArt(unittest.TestCase):
-    """The tiles are synthetic by design, so the contract is byte-stability."""
+class SourceBackedImages(unittest.TestCase):
+    """Every entity image is local, exact, hashed and traceable to a source page."""
 
-    def _generate(self, dest: Path):
-        work = dest / SITE_NAME
-        shutil.copytree(SITE_DIR, work)
-        shutil.rmtree(work / "static/images/products", ignore_errors=True)
-        subprocess.run([sys.executable, "generate_art.py"],
-                       cwd=work, check=True, capture_output=True)
-        return work
+    def _inventory(self):
+        return json.loads((SITE_DIR / "asset_inventory.json").read_text())
 
-    def test_art_is_byte_reproducible_and_matches_the_inventory(self):
-        inventory = json.loads((SITE_DIR / "generated_asset_inventory.json").read_text())
+    def _run_gate(self, site: Path):
+        return subprocess.run(
+            [sys.executable, str(REPO_ROOT / "scripts" / "check_asset_inventory.py"), str(site)],
+            capture_output=True,
+            text=True,
+        )
+
+    def test_source_backed_assets_pass_the_repository_gate(self):
+        inventory = self._inventory()
         self.assertEqual(inventory["schema_version"], 1)
-        self.assertTrue(inventory["assets"], "inventory lists no tiles")
-        digests = []
-        for _ in range(2):
-            with tempfile.TemporaryDirectory() as tmp:
-                work = self._generate(Path(tmp))
-                run = subprocess.run([sys.executable, "check_generated_assets.py"],
-                                     cwd=work, capture_output=True, text=True)
-                self.assertEqual(run.returncode, 0,
-                                 f"asset gate failed on a fresh build:\n{run.stdout}")
-                digests.append(sorted(
-                    hashlib.sha256((work / row["path"]).read_bytes()).hexdigest()
-                    for row in inventory["assets"]))
-        self.assertEqual(digests[0], digests[1], "tiles differ between builds")
+        self.assertEqual(inventory["asset_count"], 107)
+        self.assertEqual(len(inventory["assets"]), 107)
+        run = self._run_gate(SITE_DIR)
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+
+    def test_every_image_has_entity_and_source_provenance(self):
+        for row in self._inventory()["assets"]:
+            self.assertEqual(PurePosixPath(row["path"]).suffix, ".webp")
+            self.assertTrue(row["entity_name"])
+            self.assertTrue(row["source_page"].startswith("https://"))
+            self.assertTrue(row["source_url"].startswith("https://"))
+            self.assertTrue(row["source_sha256"])
+            self.assertTrue(row["license"])
 
     def test_gate_rejects_a_tampered_tile(self):
         with tempfile.TemporaryDirectory() as tmp:
-            work = self._generate(Path(tmp))
-            victim = work / json.loads(
-                (SITE_DIR / "generated_asset_inventory.json").read_text())["assets"][0]["path"]
+            work = Path(tmp) / SITE_NAME
+            shutil.copytree(SITE_DIR, work)
+            victim = work / self._inventory()["assets"][0]["path"]
             victim.write_bytes(victim.read_bytes() + b"tamper")
-            run = subprocess.run([sys.executable, "check_generated_assets.py"],
-                                 cwd=work, capture_output=True, text=True)
-            self.assertEqual(run.returncode, 1,
+            run = self._run_gate(work)
+            self.assertNotEqual(run.returncode, 0,
                              "gate passed a tampered tile; its PASS means nothing")
 
     def test_every_product_has_a_tile(self):
@@ -218,7 +219,7 @@ class GeneratedArt(unittest.TestCase):
             db = build_seed(Path(tmp))
             slugs = {r[0] for r in sqlite3.connect(db).execute("SELECT slug FROM product")}
         listed = {PurePosixPath(row["path"]).stem for row in json.loads(
-            (SITE_DIR / "generated_asset_inventory.json").read_text())["assets"]}
+            (SITE_DIR / "asset_inventory.json").read_text())["assets"]}
         self.assertEqual(slugs, listed, "product catalogue and tile inventory disagree")
 
 

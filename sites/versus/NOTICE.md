@@ -1,71 +1,52 @@
 # Third-party material in the Versus mirror
 
-This file records the disposition of third-party material this site relies on, so a
-reviewer can determine what is included, where it came from, and how to remove it.
+This file records how third-party media is used so a reviewer can identify every
+redistributed asset, its source and how to remove it.
 
 ## Non-affiliation and trademarks
 
 WebHarbor is an independent research benchmark for web agents. This mirror is not
-affiliated with, authorized by, endorsed by or sponsored by Versus Tech, nor by Apple,
-Samsung, Google, OnePlus, Sony, Bose, Sennheiser, Canon, Nikon, Fujifilm, NVIDIA, AMD,
-Garmin or Fitbit. Product and company names are used only to identify the products being
-compared. No license or permission is granted or implied by their presence, and nothing
-here should be read as a statement by any of those companies.
+affiliated with, authorized by, endorsed by or sponsored by Versus Tech or by any
+manufacturer, city or university represented here. Names and marks identify the compared
+entities only. No licence or permission is granted or implied by their presence.
 
-The running site makes no request to any external service. This is verified, not
-asserted: a Playwright sweep of every route at four viewports recorded zero external
-requests.
+The running site makes no request to an external service. All media is stored locally in
+the pinned Hugging Face asset bundle.
 
-## Imagery — deliberately synthetic, no third-party media redistributed
+## Imagery
 
-**This site redistributes no third-party images, fonts or media of any kind.** The 20
-product tiles under `static/images/products/` are drawn programmatically by
-`generate_art.py`: a category-derived backdrop, a schematic device outline, the brand
-initials and the product name, over the site's own palette. Each tile carries a visible
-`SYNTHETIC ART` label. They depict no real product and reproduce no photograph.
+The mirror contains 107 real, entity-matched images under
+`static/images/products/`: 20 consumer-electronics products, 52 cities and 35
+universities.
 
-Why, stated plainly:
+- 85 images come from Wikimedia Commons. `asset_inventory.json` records the exact
+  Commons file page, direct thumbnail URL, author and licence for each file.
+- 22 images come from official manufacturer, university, campus, press, identity or
+  verified organization video pages. They are copyrighted by the named organizations
+  and are reproduced at reduced resolution solely to identify the entity in this
+  non-commercial research benchmark.
 
-- versus.com began returning CloudFront 403 to this client during the review and
-  remained blocked across repeated probes. No attempt was made to work around that.
-- Freely licensed photography for these specific models could not be matched reliably.
-  A Wikimedia Commons sweep returned a freely licensed candidate for 18 of 20 products,
-  but strict model matching showed the hits were largely the wrong item — a OnePlus 8
-  for the OnePlus 12, an A7R IV for the A7 IV, a 4070 Ti Super for the 4070 Super, a
-  card-slot close-up for the Nikon Z8, earbuds for over-ear headphones. Shipping those
-  would inject false product facts into a benchmark whose purpose is factual navigation.
-- Generated art is the precedent already merged on `main`: `webmd_doctor` ships
-  Pillow-drawn initials avatars and gradient poster panels "instead of photography".
+The source bytes are resized to a 960 × 720 WebP. Photographs use a centered 4:3 crop;
+product renders and logos use a contained layout. No image is presented as a measurement
+or task answer. `fetch_images.py` pins the source and output hashes, while
+`scripts/check_asset_inventory.py` enforces exact coverage, hashes, HTTPS source URLs and
+WebP headers during asset checks and the Docker build.
 
-This is a deliberate deviation from the reviewer checklist's "Real images" line, and it
-is the maintainers' call whether to accept it. It is recorded here rather than glossed.
-
-Engineering contract, matching the `webmd_doctor` / `compass` / `walmart_careers` gates:
-
-- `generate_art.py` is deterministic — no RNG, no clock, no locale, Pillow's bundled
-  default font, fixed PNG compression with no ancillary chunks — so two builds of the
-  same commit produce byte-identical tiles.
-- `generated_asset_inventory.json` pins every tile's path, byte length and SHA-256.
-- `check_generated_assets.py` enforces exact coverage (nothing missing, extra or stale),
-  per-file size and SHA-256 equality, and a full PNG decode. It runs in the Docker build,
-  so altered or missing art fails the build instead of degrading silently.
-- The tiles are build products, not commits: `static/images/` is gitignored, and the
-  inventory is what travels in Git.
-
-No task answer depends on reading an image. All 17 verifiers are deterministic and never
-open a screenshot; every graded fact is text in the DOM.
+The inventory is the per-file attribution source of truth. In addition to the fields
+required by the repository gate, each row records the represented entity, Wikidata QID
+when applicable, source kind, source page, source file, licence/disposition, author,
+source dimensions and normalized output dimensions.
 
 ## Data
 
-Product names, brands, release years, list prices and published specifications follow the
-manufacturers' figures. **The Versus Score is not versus.com's value** — it is synthetic
-benchmark data, as are all user accounts and saved comparisons. The distinction is stated
-on `/about` and in the site footer on every page.
+Product names, brands, release years, list prices and published specifications follow
+the manufacturers' figures. The **Versus Score is not versus.com's value**. It is
+synthetic benchmark data, as are all accounts and saved comparisons. `/about` and the
+footer state this distinction on the running site.
 
 ## Removal
 
-To remove the generated art: delete `static/images/products/`, the two `generate_art.py`
-/ `check_generated_assets.py` build steps from the Dockerfile, and the `<img>` references
-in `templates/_product_card.html`, `product.html` and `compare.html`. The application,
-its routes, its seeded data and all 17 tasks continue to function without them; only the
-visual presentation changes.
+To remove all third-party media, delete the 107 entries from `asset_inventory.json`,
+remove `static/images/products/` from the Versus Hugging Face archive, and remove the
+image elements from `_product_card.html`, `product.html` and `compare.html`. The routes,
+seeded data and all 20 tasks continue to function; only the visual presentation changes.
