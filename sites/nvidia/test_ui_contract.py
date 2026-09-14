@@ -176,6 +176,8 @@ class UIContract(unittest.TestCase):
             'dgx-b200': 'Official NVIDIA product render — DGX B200',
             'l40s': 'Official NVIDIA product render — L40S',
             'rtx-pro-6000-blackwell': 'Official NVIDIA product render — RTX PRO 6000 Blackwell',
+            'rtx-6000-ada': 'Official NVIDIA product render — RTX 6000 Ada Generation',
+            'shield-tv-pro': 'Official NVIDIA product image — SHIELD TV Pro',
         }
         catalog = self.get('/products')
         comparison = self.get('/compare?ids=' + ','.join(labels))
@@ -203,10 +205,11 @@ class UIContract(unittest.TestCase):
                 self.assertIn('not a photograph of this model', html)
         # Every product image carries a caption (repair002, L6); slugs outside the
         # illustrations map get the generic wording.
-        generic = {'rtx-6000-ada': 'RTX 6000 Ada Generation', 'rtx-4000-ada': 'RTX 4000 Ada Generation',
+        generic = {'rtx-4000-ada': 'RTX 4000 Ada Generation',
                    'rtx-5000-ada': 'RTX 5000 Ada Generation', 'jetson-orin-nx': 'Jetson Orin NX 16GB',
                    'jetson-orin-nano-super': 'Jetson Orin Nano Super Developer Kit',
-                   'geforce-rtx-4090': 'GeForce RTX 4090'}
+                   'geforce-rtx-4090': 'GeForce RTX 4090',
+                   'shield-tv': 'SHIELD TV'}
         for slug, name in generic.items():
             self.assert_image_label(catalog, slug, f'Local mirror illustration for {name}')
         self.login()

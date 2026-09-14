@@ -184,10 +184,10 @@
     },
     {
       "path": "static/images/products/geforce-rtx-5070.png",
-      "sha256": "685bd3c060e0db6b9c100308a1b528589ad44dfd4d0e75b04e3a0aca238d977e",
-      "bytes": 311137,
-      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/50-series/5070-family/geforce-rtx-5070-banner-xl-offset-desktop@2x.jpg",
-      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5070-family/",
+      "sha256": "5c1e461b645c9b85363a264259486e857fa0d6f71c1501709e00b834347f03c1",
+      "bytes": 731229,
+      "source_url": "https://iprsoftwaremedia.com/219/files/20250/geforce-rtx-5070.jpg",
+      "source_page": "https://nvidianews.nvidia.com/news/nvidia-blackwell-geforce-rtx-50-series-opens-new-world-of-ai-computer-graphics",
       "source_kind": "official_product_media",
       "retrieved_at": "2026-09-13"
     },
@@ -292,12 +292,12 @@
     },
     {
       "path": "static/images/products/rtx-6000-ada.png",
-      "sha256": "43d4f5e3e1e73db0e58cf6c53ff880577ca27d6bd14914d73e883ba8b46d775b",
-      "bytes": 104022,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "b8c6a0c6a53163ace27496760792c28f2dc0533d134464acc81bbe6729377e19",
+      "bytes": 187982,
+      "source_url": "https://iprsoftwaremedia.com/219/files/20228/6329dce7b3aed3127c5e769b_nvidia-rtx-6000/nvidia-rtx-6000_mid.jpg",
+      "source_page": "https://nvidianews.nvidia.com/news/nvidias-new-ada-lovelace-rtx-gpu-arrives-for-designers-and-creators",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/rtx-pro-6000-blackwell.png",
@@ -310,12 +310,12 @@
     },
     {
       "path": "static/images/products/shield-tv-pro.png",
-      "sha256": "bf5fb5fea0fd167cfbb3fa74b38d5c00a65ed94e17deffa799f693f2a3f2157a",
-      "bytes": 92754,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "4e1226c71cdbb2cddae701b6535e5a9c33e09ab959bceabe19e3547678443451",
+      "bytes": 344889,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/SHIELD/specs/shield-tv-pro/nvidia-shield-tv-pro-og-image-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/shield/shield-tv-pro/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/shield-tv.png",
