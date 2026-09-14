@@ -1,7 +1,34 @@
 {
   "schema_version": 1,
-  "asset_count": 33,
+  "asset_count": 36,
   "assets": [
+    {
+      "path": "static/images/heroes/geforce-rtx-40-series-hero.jpg",
+      "sha256": "f4956a68aa7dfea98872c6c41a969b45d865c0b50fe3d97aa99470c01a190d6f",
+      "bytes": 122531,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4090/geforce-ada-4090-web-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
+    },
+    {
+      "path": "static/images/heroes/geforce-rtx-50-series-hero.jpg",
+      "sha256": "335cbd37e0182b6890de7927678ab7869ba4fe23e326c867406b56e4bdcdac69",
+      "bytes": 2367267,
+      "source_url": "https://iprsoftwaremedia.com/219/files/20250/blackwell-geforce-rtx-50-series.jpg",
+      "source_page": "https://nvidianews.nvidia.com/news/nvidia-blackwell-geforce-rtx-50-series-opens-new-world-of-ai-computer-graphics",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
+    },
+    {
+      "path": "static/images/heroes/geforce-rtx-5090-hero.jpg",
+      "sha256": "deb5d977cc94d0bbf22045ea58d280d9f097a15586076881d5bb20cd4038b571",
+      "bytes": 2027371,
+      "source_url": "https://iprsoftwaremedia.com/219/files/20250/geforce-rtx-5090.jpg",
+      "source_page": "https://nvidianews.nvidia.com/news/nvidia-blackwell-geforce-rtx-50-series-opens-new-world-of-ai-computer-graphics",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
+    },
     {
       "path": "static/images/news/ai-for-science-software-cuda.png",
       "sha256": "99666b39143cc64da3eb83723123de2b6908bb459443167782a6b9d97d8372e5",
@@ -166,21 +193,21 @@
     },
     {
       "path": "static/images/products/geforce-rtx-5080.png",
-      "sha256": "fe87f0a8050138f556f73d0d1946b51a139ec88f135f789a0dc050df0f425f43",
-      "bytes": 92749,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "77e4b4623d1fbfdd9ecc1f871f0edff00159bdb19948676aae49f09ea697aa04",
+      "bytes": 674789,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/50-series/rtx-5080/geforce-rtx-5080-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5080/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-5090.png",
-      "sha256": "db23c61b74eba8023fdfd6cf8de6570d42bb25e1e076ab2d4902bed621d2a69a",
-      "bytes": 110076,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "ba4f7a3b258ad9565adf902758bc80afa6023f0846e04d8be34c0def11fff8ea",
+      "bytes": 772399,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/50-series/rtx-5090/geforce-rtx-5090-learn-more-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/gh200-grace-hopper.png",

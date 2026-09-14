@@ -157,15 +157,23 @@ class UIContract(unittest.TestCase):
         self.assertIn('/where-to-buy/h200-tensor-core', [a.get('href') for a in detail.attrs('a')])
         self.assertEqual(self.snapshot(), before)
         # Label all known contextual pictures at every active product-image surface.
+        # Extended PR #107 fix round: the two family assets that share one vendor
+        # artwork say so, the two official per-SKU 5080/5090 renders and the two
+        # re-sourced official assets are labelled, and no surface describes one file
+        # in two different ways.
         labels = {
-            'geforce-rtx-4060': 'Official NVIDIA product render — RTX 4060 family',
+            'geforce-rtx-4060': 'Official NVIDIA product render — RTX 4060 Ti (the RTX 4060 / RTX 4060 Ti family artwork)',
             'geforce-rtx-4070-super': 'Official NVIDIA product render — RTX 4070 SUPER',
             'geforce-rtx-4080-super': 'Official NVIDIA product render — RTX 4080 SUPER',
             'geforce-rtx-5060-ti': 'Official NVIDIA marketing image — RTX 5060 Ti',
-            'geforce-rtx-5060': 'Official NVIDIA product render — RTX 5060 family',
+            'geforce-rtx-5060': 'Official NVIDIA marketing image — RTX 5060 family desktop system',
             'geforce-rtx-5070-ti': 'Official NVIDIA product render — RTX 5070 Ti',
             'geforce-rtx-5070': 'Official NVIDIA product render — RTX 5070',
+            'geforce-rtx-5080': 'Official NVIDIA product render — GeForce RTX 5080',
+            'geforce-rtx-5090': 'Official NVIDIA product render — GeForce RTX 5090',
             'h100-tensor-core': 'Official NVIDIA product render — H100',
+            'h200-tensor-core': 'Official NVIDIA product render — H200 Tensor Core GPU',
+            'dgx-b200': 'Official NVIDIA product render — DGX B200',
             'l40s': 'Official NVIDIA product render — L40S',
             'rtx-pro-6000-blackwell': 'Official NVIDIA product render — RTX PRO 6000 Blackwell',
         }
@@ -177,8 +185,22 @@ class UIContract(unittest.TestCase):
                     self.assert_image_label(html, slug, label)
         for route in ('/', '/search?q=5070', '/geforce/graphics-cards/50-series/'):
             self.assert_image_label(self.get(route), 'geforce-rtx-5070', labels['geforce-rtx-5070'])
+        self.assert_image_label(self.get('/geforce/graphics-cards/50-series/'),
+                                'geforce-rtx-5090', labels['geforce-rtx-5090'])
         self.assert_image_label(self.get('/geforce/graphics-cards/40-series/'),
                                 'geforce-rtx-4080-super', labels['geforce-rtx-4080-super'])
+        # The dedicated hero artwork is a different file from every product card, so no
+        # page shows the same image twice (extended fix round).
+        for route, hero in (('/', '/static/images/heroes/geforce-rtx-5090-hero.jpg'),
+                            ('/geforce/graphics-cards/50-series/', '/static/images/heroes/geforce-rtx-50-series-hero.jpg'),
+                            ('/geforce/graphics-cards/40-series/', '/static/images/heroes/geforce-rtx-40-series-hero.jpg')):
+            html = self.get(route)
+            images = Markup(html).attrs('img')
+            sources = [image.get('src') for image in images]
+            with self.subTest(hero=hero):
+                self.assertIn(hero, sources)
+                self.assertEqual(len(sources), len(set(sources)), route)
+                self.assertIn('not a photograph of this model', html)
         # Every product image carries a caption (repair002, L6); slugs outside the
         # illustrations map get the generic wording.
         generic = {'rtx-6000-ada': 'RTX 6000 Ada Generation', 'rtx-4000-ada': 'RTX 4000 Ada Generation',
