@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
-"""Versus--8: battery life of the Garmin Venu 3, reached via the smartwatches category."""
+"""Versus--8: Versus Score of the graphics card with the most VRAM."""
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify_lib as V
 
-SLUG = "garmin-venu-3"
-
 
 def body(j, traj, initial, after):
-    target = V.product(initial, SLUG)
-    if not target:
-        return j.fail("seed data missing", f"{SLUG} is not in initial_db")
-    expected = target["spec_2_value"]
+    rows = V.products(initial, "graphics-cards")
+    if not rows:
+        return j.fail("seed data missing", "no products in category graphics-cards")
+    target = V.unique_extreme(rows, "spec_1_value", largest=True)
+    if target is None:
+        return j.fail("ambiguous ground truth",
+                      "no unique extreme for spec_1_value in initial_db")
+    expected = target["score"]
 
     ans = V.final_answer(traj)
-    j.check("opened the smartwatches category listing",
-            V.navigated_to(traj, f"/category/{target['category_slug']}"),
-            f"steps={V.step_urls(traj)}")
-    j.check("opened the fact-bearing page for the product",
-            V.opened_detail_or_compare(traj, SLUG),
-            f"steps={V.step_urls(traj)[-6:]}")
+    j.check("opened the fact-bearing page for the target product",
+            V.opened_detail_or_compare(traj, target["slug"]),
+            f"slug={target['slug']} steps={V.step_urls(traj)[-6:]}")
     V.terminal_state_is_sound(j, traj)
-    j.check("answer states the derived battery life",
-            V.mentions_number(ans, expected),
-            f"expected={expected} {target['unit_2']} from initial_db")
-    ok, why = V.llm_text_match(ans, f"{expected} {target['unit_2']}",
-                               "battery life in hours of the Garmin Venu 3")
+    j.check("answer names the right product",
+            V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
+    j.check("answer states the derived value",
+            V.mentions_number(ans, expected), f"expected={expected} from initial_db")
+    ok, why = V.llm_text_match(ans, f"{target['name']} — {expected}",
+                               "Versus Score of the graphics card with the most VRAM")
     j.check("anchored LLM agreement", ok, why, llm=True)
 
 

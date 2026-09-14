@@ -1,38 +1,42 @@
 #!/usr/bin/env python3
-"""Versus--19: larger of two named cities by area."""
+"""Versus--19: Carol saves the Bologna vs Sapienza comparison."""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify_lib as V
 
-LEFT, RIGHT = "shanghai", "beijing"
+EMAIL = "carol.d@test.com"
+A, B = "university-of-bologna", "sapienza-university-of-rome"
 
 
 def body(j, traj, initial, after):
-    left, right = V.product(initial, LEFT), V.product(initial, RIGHT)
-    if not (left and right):
-        return j.fail("seed data missing", "one of the two cities is not in initial_db")
-    if left["spec_2_value"] == right["spec_2_value"]:
-        return j.fail("ambiguous ground truth", "the two cities tie on area")
-    target = left if left["spec_2_value"] > right["spec_2_value"] else right
-    other = right if target is left else left
-    expected = target["spec_2_value"]
+    pair = frozenset((A, B))
+    before, now = V.saved_pairs(initial, EMAIL), V.saved_pairs(after, EMAIL)
+    if before is None:
+        return j.fail("initial_db unreadable", "cannot establish the before state")
+    if now is None:
+        return j.fail("after_db unavailable",
+                      "a stateful task cannot be graded without the after state")
+    if pair in before:
+        return j.fail("task design error",
+                      "the requested comparison is already saved in the seed")
 
-    ans = V.terminal_state_is_sound(j, traj)
-    j.check("opened the comparison or both detail pages",
-            V.navigated_to(traj, f"/compare/{LEFT}-vs-{RIGHT}")
-            or V.navigated_to(traj, f"/compare/{RIGHT}-vs-{LEFT}")
-            or (V.opened_detail_or_compare(traj, LEFT)
-                and V.opened_detail_or_compare(traj, RIGHT)),
+    ans = V.final_answer(traj)
+    j.check("the answer was emitted from a page on this site",
+            V.answered_on_site(traj),
+            f"terminal url={(traj.get('steps') or [{}])[-1].get('url')!r}")
+    j.check("reported what it did, without denying it",
+            bool(ans) and not V.looks_negated(ans), f"answer={ans!r}")
+    j.check("signed in", V.navigated_to(traj, "/login"), f"steps={V.step_urls(traj)[:6]}")
+    j.check("opened the comparison page for the requested pair",
+            V.navigated_to(traj, f"/compare/{A}-vs-{B}")
+            or V.navigated_to(traj, f"/compare/{B}-vs-{A}"),
             f"steps={V.step_urls(traj)[-6:]}")
-    j.check("answer names the larger city by area",
-            V.mentions_product(ans, target["name"]),
-            f"expected={target['name']!r} ({expected} vs {other['spec_2_value']})")
-    j.check("answer states that area",
-            V.mentions_number(ans, expected, tol=1.0), f"expected={expected}")
-    ok, why = V.llm_text_match(ans, f"{target['name']} — {expected} km2",
-                               "which of the two cities is larger by area, and that area")
-    j.check("anchored LLM agreement", ok, why, llm=True)
+    j.check("the comparison is actually saved to that account",
+            pair in now, f"account pairs after the run = {sorted(map(sorted, now))}")
+    j.check("no unrelated comparison was added",
+            len(now - before - {pair}) == 0,
+            f"unexpected additions = {sorted(map(sorted, now - before - {pair}))}")
 
 
 if __name__ == "__main__":

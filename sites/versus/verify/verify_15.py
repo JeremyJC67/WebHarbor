@@ -1,33 +1,34 @@
 #!/usr/bin/env python3
-"""Versus--15: price of the headphones with the lowest ANC score."""
+"""Versus--15: area of a named city, reached through the site."""
 import sys
 from pathlib import Path
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify_lib as V
 
+SLUG = "shanghai"
+
 
 def body(j, traj, initial, after):
-    rows = V.products(initial, "headphones")
-    if not rows:
-        return j.fail("seed data missing", "no products in category headphones")
-    target = V.unique_extreme(rows, "spec_1_value", largest=False)
-    if target is None:
-        return j.fail("ambiguous ground truth",
-                      "no unique extreme for spec_1_value in initial_db")
-    expected = target["price"]
+    target = V.product(initial, SLUG)
+    if not target:
+        return j.fail("seed data missing", f"{SLUG} is not in initial_db")
+    expected = target["spec_2_value"]
 
-    ans = V.final_answer(traj)
-    j.check("opened the fact-bearing page for the target product",
-            V.opened_detail_or_compare(traj, target["slug"]),
-            f"slug={target['slug']} steps={V.step_urls(traj)[-6:]}")
-    V.terminal_state_is_sound(j, traj)
-    j.check("answer names the right product",
-            V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
-    j.check("answer states the derived value",
-            V.mentions_money(ans, expected), f"expected={expected} from initial_db")
-    ok, why = V.llm_text_match(ans, f"{target['name']} — {expected}",
-                               "price of the headphones with the lowest ANC score")
+    ans = V.terminal_state_is_sound(j, traj)
+    j.check("reached the city through the site",
+            V.navigated_any(traj, [f"/category/{target['category_slug']}", "/rankings", "/search"]),
+            f"steps={V.step_urls(traj)[:6]}")
+    j.check("opened the fact-bearing page for the city",
+            V.opened_detail_or_compare(traj, SLUG), f"steps={V.step_urls(traj)[-6:]}")
+    j.check("answer states the derived area",
+            V.mentions_number(ans, expected, tol=1.0),
+            f"expected={expected} {target['unit_2']} from initial_db")
+    j.check("answer does not report the population instead",
+            not V.mentions_number(ans, target["spec_1_value"], tol=1.0)
+            or V.mentions_number(ans, expected, tol=1.0),
+            "population and area must not be confused")
+    ok, why = V.llm_text_match(ans, f"{expected} {target['unit_2']}",
+                               "area in square kilometres of the named city")
     j.check("anchored LLM agreement", ok, why, llm=True)
 
 

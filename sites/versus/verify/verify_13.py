@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Versus--13: Bob saves the Apple Watch Series 9 vs Garmin Venu 3 comparison."""
+"""Versus--13: price of the headphones with the lowest ANC score."""
 import sys
 from pathlib import Path
 
@@ -8,40 +8,27 @@ import verify_lib as V
 
 
 def body(j, traj, initial, after):
-    email = "bob.c@test.com"
-    pair = frozenset(({"apple-watch-series-9", "garmin-venu-3"}))
-    before = V.saved_pairs(initial, email)
-    now = V.saved_pairs(after, email)
-    if before is None:
-        return j.fail("initial_db unreadable", "cannot establish the before state")
-    if now is None:
-        return j.fail("after_db unavailable",
-                      "a stateful task cannot be graded without the after state")
-    if pair in before:
-        return j.fail("task design error",
-                      "the requested comparison is already saved in the seed, so the "
-                      "after state would be identical whether or not the agent acted")
+    rows = V.products(initial, "headphones")
+    if not rows:
+        return j.fail("seed data missing", "no products in category headphones")
+    target = V.unique_extreme(rows, "spec_1_value", largest=False)
+    if target is None:
+        return j.fail("ambiguous ground truth",
+                      "no unique extreme for spec_1_value in initial_db")
+    expected = target["price"]
 
     ans = V.final_answer(traj)
-    j.check("the answer was emitted from a page on this site",
-            V.answered_on_site(traj),
-            f"terminal url={(traj.get('steps') or [{}])[-1].get('url')!r}")
-    j.check("reported what it did, without denying it",
-            bool(ans) and not V.looks_negated(ans),
-            f"answer={ans!r} (this task is graded on the state change; the report "
-            f"must still exist and must not contradict it)")
-
-    j.check("signed in", V.navigated_to(traj, "/login"),
-            f"steps={V.step_urls(traj)[:6]}")
-    j.check("opened the comparison page for the requested pair",
-            V.navigated_to(traj, "/compare/apple-watch-series-9-vs-garmin-venu-3")
-            or V.navigated_to(traj, "/compare/garmin-venu-3-vs-apple-watch-series-9"),
-            f"steps={V.step_urls(traj)[-6:]}")
-    j.check("the comparison is actually saved to that account",
-            pair in now, f"account pairs after the run = {sorted(map(sorted, now))}")
-    j.check("no unrelated comparison was added",
-            len(now - before - {pair}) == 0,
-            f"unexpected additions = {sorted(map(sorted, now - before - {pair}))}")
+    j.check("opened the fact-bearing page for the target product",
+            V.opened_detail_or_compare(traj, target["slug"]),
+            f"slug={target['slug']} steps={V.step_urls(traj)[-6:]}")
+    V.terminal_state_is_sound(j, traj)
+    j.check("answer names the right product",
+            V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
+    j.check("answer states the derived value",
+            V.mentions_money(ans, expected), f"expected={expected} from initial_db")
+    ok, why = V.llm_text_match(ans, f"{target['name']} — {expected}",
+                               "price of the headphones with the lowest ANC score")
+    j.check("anchored LLM agreement", ok, why, llm=True)
 
 
 if __name__ == "__main__":

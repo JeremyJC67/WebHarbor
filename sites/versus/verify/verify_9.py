@@ -1,40 +1,33 @@
 #!/usr/bin/env python3
-"""Versus--9: build the R6 Mark II vs A7 IV comparison in the picker and name the winner."""
+"""Versus--9: price of the heaviest camera."""
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verify_lib as V
 
-LEFT, RIGHT = "canon-eos-r6-mark-ii", "sony-a7-iv"
-
 
 def body(j, traj, initial, after):
-    left, right = V.product(initial, LEFT), V.product(initial, RIGHT)
-    if not (left and right):
-        return j.fail("seed data missing", "one of the two cameras is not in initial_db")
-    if left["score"] == right["score"]:
+    rows = V.products(initial, "cameras")
+    if not rows:
+        return j.fail("seed data missing", "no products in category cameras")
+    target = V.unique_extreme(rows, "spec_3_value", largest=True)
+    if target is None:
         return j.fail("ambiguous ground truth",
-                      "the two cameras tie on Versus Score in initial_db, so the "
-                      "site's winner depends on argument order")
-    # The site declares the higher Versus Score the winner (app.winner()).
-    target = left if left["score"] > right["score"] else right
-    loser = right if target is left else left
+                      "no unique extreme for spec_3_value in initial_db")
+    expected = target["price"]
 
     ans = V.final_answer(traj)
-    j.check("used the compare picker", V.navigated_to(traj, "/compare"),
-            f"steps={V.step_urls(traj)}")
-    j.check("landed on the comparison page for this pair",
-            V.navigated_to(traj, f"/compare/{LEFT}-vs-{RIGHT}")
-            or V.navigated_to(traj, f"/compare/{RIGHT}-vs-{LEFT}"),
-            f"steps={V.step_urls(traj)[-6:]}")
+    j.check("opened the fact-bearing page for the target product",
+            V.opened_detail_or_compare(traj, target["slug"]),
+            f"slug={target['slug']} steps={V.step_urls(traj)[-6:]}")
     V.terminal_state_is_sound(j, traj)
-    j.check("answer names the product the site declares the winner",
-            V.mentions_product(ans, target["name"]),
-            f"expected={target['name']!r} (score {target['score']} vs {loser['score']})")
-    ok, why = V.llm_text_match(
-        ans, f"the winner is {target['name']}",
-        "which product the site declares the winner of this comparison")
+    j.check("answer names the right product",
+            V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
+    j.check("answer states the derived value",
+            V.mentions_money(ans, expected), f"expected={expected} from initial_db")
+    ok, why = V.llm_text_match(ans, f"{target['name']} — {expected}",
+                               "price of the heaviest camera")
     j.check("anchored LLM agreement", ok, why, llm=True)
 
 

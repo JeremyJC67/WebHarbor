@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Versus--10: Versus Score of the graphics card with the most VRAM."""
+"""Versus--10: longer battery of OnePlus 12 vs Pixel 8 Pro."""
 import sys
 from pathlib import Path
 
@@ -8,26 +8,30 @@ import verify_lib as V
 
 
 def body(j, traj, initial, after):
-    rows = V.products(initial, "graphics-cards")
-    if not rows:
-        return j.fail("seed data missing", "no products in category graphics-cards")
-    target = V.unique_extreme(rows, "spec_1_value", largest=True)
-    if target is None:
+    left = V.product(initial, "oneplus-12")
+    right = V.product(initial, "google-pixel-8-pro")
+    if not (left and right):
+        return j.fail("seed data missing", "one of the two products is not in initial_db")
+    if left["battery_hours"] == right["battery_hours"]:
         return j.fail("ambiguous ground truth",
-                      "no unique extreme for spec_1_value in initial_db")
-    expected = target["score"]
+                      "the two products tie on battery_hours in initial_db")
+    target = left if left["battery_hours"] > right["battery_hours"] else right
+    expected = target["battery_hours"]
 
     ans = V.final_answer(traj)
-    j.check("opened the fact-bearing page for the target product",
-            V.opened_detail_or_compare(traj, target["slug"]),
-            f"slug={target['slug']} steps={V.step_urls(traj)[-6:]}")
+    j.check("opened the comparison or both detail pages",
+            V.navigated_to(traj, f"/compare/{left['slug']}-vs-{right['slug']}")
+            or V.navigated_to(traj, f"/compare/{right['slug']}-vs-{left['slug']}")
+            or (V.opened_detail_or_compare(traj, left["slug"])
+                and V.opened_detail_or_compare(traj, right["slug"])),
+            f"steps={V.step_urls(traj)[-6:]}")
     V.terminal_state_is_sound(j, traj)
     j.check("answer names the right product",
             V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
     j.check("answer states the derived value",
             V.mentions_number(ans, expected), f"expected={expected} from initial_db")
     ok, why = V.llm_text_match(ans, f"{target['name']} — {expected}",
-                               "Versus Score of the graphics card with the most VRAM")
+                               "which of the two phones lasts longer and for how many hours")
     j.check("anchored LLM agreement", ok, why, llm=True)
 
 
