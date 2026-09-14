@@ -4,7 +4,7 @@ A coding agent (Claude Code, Cursor, Aider, Codex, ...) is reading this. Read on
 
 ## What it is
 
-29 Flask mirror websites (Amazon, GitHub, BBC News, ...) packaged into one Docker image, plus a control plane on `:8101` for resetting per-site state. Used as a deterministic offline environment for web-agent benchmarks. ~3 GB image.
+30 Flask mirror websites (Amazon, GitHub, BBC News, ...) packaged into one Docker image, plus a control plane on `:8101` for resetting per-site state. Used as a deterministic offline environment for web-agent benchmarks. ~3 GB image.
 
 Two repos:
 - **code** (this one) — Flask apps, control plane, scripts.
@@ -58,7 +58,7 @@ docker run -d -p 8101:8101 -p 40000-40029:40000-40029 \
   battalion7244/webharbor:latest
 ```
 
-Sites are on `40000`-`40028` in the order declared by `SITES=( ... )` in `websyn_start.sh`. Control plane:
+Sites are on `40000`-`40029` in the order declared by `SITES=( ... )` in `websyn_start.sh`. Control plane:
 
 | Method | Path                | Purpose                                   |
 |--------|---------------------|-------------------------------------------|
@@ -142,7 +142,7 @@ docker run -d --rm --name wh-test \
 curl -s http://localhost:8201/health | python3 -m json.tool | head
 
 # 5. every site renders 200
-for p in $(seq 41000 41028); do
+for p in $(seq 41000 41029); do
   curl -so /dev/null -w "$p:%{http_code}\n" http://localhost:$p/
 done
 

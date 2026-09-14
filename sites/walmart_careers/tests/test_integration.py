@@ -85,14 +85,12 @@ def test_tasks_and_verifiers_are_complete_and_use_site_24():
     assert all("A checkpoint passes only when the required evidence is present" in row["judge_rubric"] for row in rows)
 
 
-def test_assets_pin_is_immutable_merged_revision():
+def test_assets_pin_is_immutable_review_candidate():
     text = (ROOT / ".assets-revision").read_text()
     revision = re.search(r"^revision:\s*([0-9a-f]+)$", text, re.M).group(1)
-    # NBA review candidate: 28 archives, a superset of main's pin
-    # (ad6f424f72cada9e6f5c09a58093d0ceeab9c52b, 27 archives) that also carries
-    # nba.tar.gz. It is an immutable commit but still an open Hugging Face PR
-    # (ChilleD/WebHarbor discussion #71), so it must be re-pinned to the HF
-    # merge commit before this branch is released.
+    # HF PR #88 is an immutable candidate cut from current dataset main. It
+    # carries 32 archives: all 30 registered sites plus two unused archives.
+    # Re-pin to the HF merge commit before this branch is released.
     assert revision == "65a85a1494688f3b9e82217e50a1dd3a5c6f1a8a"
     assert (SITE / ".build-generated-seed").is_file()
     assert (SITE / ".requires-images").is_file()
@@ -102,11 +100,10 @@ def test_assets_pin_is_immutable_merged_revision():
 
 def test_shared_documentation_uses_the_current_site_range():
     current = port_range()
-    stale = {f"40000-400{end}" for end in range(20, 25)} - {current}
     for relative in ["README.md", "AGENTS.md", "CONTRIBUTING.md", "CLAUDE.md", "agent_demo/README.md"]:
         text = (ROOT / relative).read_text()
-        for old in stale:
-            assert old not in text, f"{relative} still documents {old}"
+        ranges = set(re.findall(r"\b40000-4\d{4}\b", text))
+        assert ranges <= {current}, f"{relative} documents stale ranges: {sorted(ranges - {current})}"
         assert current in text, relative
 
 
