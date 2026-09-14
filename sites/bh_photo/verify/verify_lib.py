@@ -319,6 +319,13 @@ def names_product(text: Any, product_name: str) -> bool:
     distinctive = [token for token in tokens if len(token) >= 3 and not token.isdigit()]
     if not distinctive:
         distinctive = tokens or words[:3]
+    # a measurement distinguishes siblings that are otherwise the same words:
+    # "512GB ... with 64GB SDXC" and "512GB ... with 128GB SDXC" share every
+    # other token, so the capacity has to match rather than be outvoted
+    sized = [token for token in words if re.fullmatch(r"\d+(?:gb|tb|mb|mm|w|wh|mah)", token)]
+    for token in sized:
+        if not re.search(rf"\b{re.escape(token)}\b", haystack):
+            return False
     hits = sum(1 for token in distinctive if re.search(rf"\b{re.escape(token)}\b", haystack))
     return hits >= min(len(distinctive), max(2, (len(distinctive) + 1) // 2))
 

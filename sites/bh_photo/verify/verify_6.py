@@ -50,9 +50,16 @@ def main():
     named = [card for card in cards if names_product(answer, card['name'])]
     judge.check('answer_names_a_catalogue_card', bool(named),
                 f'expected one of {[card["name"] for card in cards]} answer={answer!r}')
+    # the two checks above were independent, so a run could open one card and
+    # report a different one - both true separately, but the answer then
+    # describes a page the run never read. They have to agree.
+    opened = [card for card in named if visited_path(trajectory, '/product/' + card['slug'])]
+    judge.check('the_card_named_is_the_card_opened', bool(opened),
+                f'named={[c["slug"] for c in named]} '
+                f'opened={[c["slug"] for c in cards if visited_path(trajectory, "/product/" + c["slug"])]}')
     judge.check('answer_states_that_card_price',
-                any(has_number(answer, card['price']) for card in named),
-                f'prices={[card["price"] for card in named]} answer={answer!r}')
+                any(has_number(answer, card['price']) for card in opened),
+                f'prices={[card["price"] for card in opened]} answer={answer!r}')
 
     # a Type A card is the trap: the R1 does not take one
     wrong = row_dicts(initial, """

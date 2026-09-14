@@ -56,13 +56,21 @@ def main():
                 names_product(answer, cheaper['name']),
                 f"expected={cheaper['name']!r} answer={answer!r}")
 
-    remaining_total = round(cheaper['price'] * cheaper['quantity'], 2)
-    judge.check('answer_gives_the_new_cart_total', has_number(answer, remaining_total),
-                f'expected={remaining_total} answer={answer!r}')
-    judge.check('answer_is_not_the_old_total',
-                not has_number(answer, round(dearer['price'] * dearer['quantity'] + remaining_total, 2))
-                or has_number(answer, remaining_total),
-                f'answer={answer!r}')
+    # the cart page shows Subtotal, Shipping, Tax and Total; the task asks for
+    # the Total, so grade that and not the merchandise subtotal, which is what
+    # a reader of the page would never call the total
+    subtotal = round(cheaper['price'] * cheaper['quantity'], 2)
+    shipping = 0 if subtotal >= 99 else 14.95
+    expected_total = round(subtotal + shipping + round(subtotal * 0.08875, 2), 2)
+    judge.check('answer_gives_the_new_cart_total', has_number(answer, expected_total),
+                f'expected={expected_total} (subtotal {subtotal}) answer={answer!r}')
+    judge.check('answer_is_not_the_subtotal_instead',
+                not (has_number(answer, subtotal) and not has_number(answer, expected_total)),
+                f'subtotal={subtotal} total={expected_total} answer={answer!r}')
+    old_subtotal = round(dearer['price'] * dearer['quantity'] + subtotal, 2)
+    judge.check('answer_is_not_the_pre_removal_figure',
+                not has_number(answer, old_subtotal) or has_number(answer, expected_total),
+                f'pre_removal={old_subtotal} answer={answer!r}')
 
     judge.check('no_unrelated_state_written',
                 only_allowed_tables_changed(initial, after, ALLOWED),
