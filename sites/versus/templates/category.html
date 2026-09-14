@@ -18,4 +18,12 @@
     {% include "_product_card.html" %}
   {% endfor %}
 </section>
+
+{% if paging.pages > 1 %}
+<nav class="pager" aria-label="Pagination">
+  {% if paging.has_prev %}<a rel="prev" href="{{ url_for(request.endpoint, **dict(request.view_args, **dict(request.args, page=paging.page - 1))) }}">Previous</a>{% endif %}
+  <span>{{ paging.start }}–{{ paging.end }} of {{ paging.total }} · page {{ paging.page }} of {{ paging.pages }}</span>
+  {% if paging.has_next %}<a rel="next" href="{{ url_for(request.endpoint, **dict(request.view_args, **dict(request.args, page=paging.page + 1))) }}">Next</a>{% endif %}
+</nav>
+{% endif %}
 {% endblock %}

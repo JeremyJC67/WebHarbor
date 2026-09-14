@@ -256,3 +256,9 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 26px 70px; }
   .ranking-row { grid-template-columns: 34px 1fr auto; }
   .ranking-row small { display: none; }
 }
+
+.pager { display: flex; gap: 16px; align-items: center; justify-content: center;
+  margin: 26px 0 4px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+.pager a { border: 1px solid var(--line); border-radius: 999px; padding: 8px 18px;
+  font-weight: 600; color: var(--ink); }
+.pager a:hover { border-color: var(--accent); color: var(--accent-2); }
