@@ -93,7 +93,7 @@ def test_assets_pin_is_immutable_merged_revision():
     # nba.tar.gz. It is an immutable commit but still an open Hugging Face PR
     # (ChilleD/WebHarbor discussion #71), so it must be re-pinned to the HF
     # merge commit before this branch is released.
-    assert revision == "0cfa54bf8e18558f32c44d128fa6ab1f384b5da9"
+    assert revision == "65a85a1494688f3b9e82217e50a1dd3a5c6f1a8a"
     assert (SITE / ".build-generated-seed").is_file()
     assert (SITE / ".requires-images").is_file()
     assert (SITE / "asset_inventory.json").is_file()
