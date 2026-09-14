@@ -95,39 +95,37 @@ passed.
 
 ### Asset delivery status
 
-`.assets-revision` is pinned to `a9d3ea79513fa36a51498129cb9d031e4cc096cc`, the
+`.assets-revision` is pinned to `b7e605c0ec5fc47de85b09e7427162cc50e38980`, the
 squash-merge commit of HF dataset PR
-[#84](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/84) on the
+[#85](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/85) on the
 dataset's `main`. It sits on top of PR
+[#84](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/84) and PR
 [#75](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/75), which
-added the first reviewed NVIDIA bundle. Both PRs are merged, the pinned commit is
+added the first reviewed NVIDIA bundle. Those PRs are merged, the pinned commit is
 on `main`, and the earlier "PR not merged" and "archive rejected by the
 validator" blockers are cleared:
 
 - the pinned revision carries 31 `*.tar.gz` (one per registered site plus
   `bandcamp.tar.gz` and `drugs_com.tar.gz`, which `fetch_assets.sh` ignores for
   sites this checkout does not register);
-- `nvidia.tar.gz` at that revision has 34 file members and no directory members,
+- `nvidia.tar.gz` at that revision has 37 file members and no directory members,
   so `scripts/validate_asset_archive.py nvidia.tar.gz nvidia` prints
-  `[fetch] validated 34 managed members for nvidia` and exits 0;
-- `./scripts/fetch_assets.sh` at this pin finishes with
-  `[fetch] done — 29 site(s) extracted into sites/` (log:
-  `_wh_review_tools/orch/integration/logs/pr107-hf/04-refetch.log`).
+  `[fetch] validated 37 managed members for nvidia` and exits 0;
+- `./scripts/fetch_assets.sh` at this pin extracts all 29 registered sites
+  (`[fetch] done — 29 site(s) extracted into sites/`).
 
 | Artifact | Members | Bytes | SHA-256 |
 | --- | --- | --- | --- |
-| `nvidia.tar.gz` at the current pin (HF PR #84) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
-| prepared follow-up archive (HF PR pending) | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| `nvidia.tar.gz` at the current pin (HF PR #85) | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| previous pin's `nvidia.tar.gz` (HF PR #84, superseded) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
 
-The follow-up archive replaces five product images and adds three dedicated hero
-images (see "Image and verifier follow-up" below). It passes
+PR #85 replaces five product images and adds three dedicated hero images (see
+"Image and verifier follow-up" below). Its archive passes
 `validate_asset_archive.py` (`validated 37 managed members`) and a clean-room
 extract in which all 36 images have distinct SHA-256 values, the seed database is
-byte-identical to the pin
+byte-identical to the previous pin
 (`2143c954def96cc921760ab2bea79fe119de3d73212d1b01daf6c61792c2b38d`) and every
-`products.image` path resolves. These numbers are refreshed in the same commit
-that moves `.assets-revision` once the follow-up PR is merged; this branch does not
-change `.assets-revision`.
+`products.image` path resolves.
 
 The revisions rejected in earlier rounds are kept here for the record: the older
 candidate archive from HF PR #38
