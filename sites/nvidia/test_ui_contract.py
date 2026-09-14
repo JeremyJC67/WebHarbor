@@ -158,16 +158,16 @@ class UIContract(unittest.TestCase):
         self.assertEqual(self.snapshot(), before)
         # Label all known contextual pictures at every active product-image surface.
         labels = {
-            'geforce-rtx-4060': 'Application illustration — content creation scene',
-            'geforce-rtx-4070-super': 'Series technology illustration — chip artwork',
-            'geforce-rtx-4080-super': 'Series technology illustration — chip artwork',
-            'geforce-rtx-5060-ti': 'Application illustration — desktop PC',
-            'geforce-rtx-5060': 'Application illustration — desktop PC',
-            'geforce-rtx-5070-ti': 'Series illustration — graphics card artwork',
-            'geforce-rtx-5070': 'Series illustration — graphics card artwork',
-            'h100-tensor-core': 'Promotional illustration — connected globe',
-            'l40s': 'Application illustration — virtual 3D scenes',
-            'rtx-pro-6000-blackwell': 'Workstation illustration — desktop setup',
+            'geforce-rtx-4060': 'Official NVIDIA product render — RTX 4060 family',
+            'geforce-rtx-4070-super': 'Official NVIDIA product render — RTX 4070 SUPER',
+            'geforce-rtx-4080-super': 'Official NVIDIA product render — RTX 4080 SUPER',
+            'geforce-rtx-5060-ti': 'Official NVIDIA marketing image — RTX 5060 Ti',
+            'geforce-rtx-5060': 'Official NVIDIA product render — RTX 5060 family',
+            'geforce-rtx-5070-ti': 'Official NVIDIA product render — RTX 5070 Ti',
+            'geforce-rtx-5070': 'Official NVIDIA product render — RTX 5070',
+            'h100-tensor-core': 'Official NVIDIA product render — H100',
+            'l40s': 'Official NVIDIA product render — L40S',
+            'rtx-pro-6000-blackwell': 'Official NVIDIA product render — RTX PRO 6000 Blackwell',
         }
         catalog = self.get('/products')
         comparison = self.get('/compare?ids=' + ','.join(labels))

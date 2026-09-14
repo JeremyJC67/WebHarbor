@@ -85,39 +85,39 @@
     },
     {
       "path": "static/images/products/dgx-b200.png",
-      "sha256": "7274b26f5fb893f415303582f3188261a5fc7e34b2db853ee817f50a8aaa2f31",
-      "bytes": 29363,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "49ad82710dcb0671c4b529b4532ad481ef7325a2ed7580cd2e613b9295d42540",
+      "bytes": 213532,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/data-center/dgx-b200/dgx-b200-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/data-center/dgx-b200/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-4060.png",
-      "sha256": "e5d930b6f3d9668ac3d830ca7994a3d2fa4605efa6d43e6346f44e2bacd9bb2f",
-      "bytes": 162702,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "6bcc4e8eebf22f5fd23d12165a1fa1843085b77f64557c56ee3dfead71355cf4",
+      "bytes": 436022,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4060-4060ti/geforce-rtx-4060-ti-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4060-4060ti/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-4070-super.png",
-      "sha256": "2ffee1dde9594067f9d01cf3d37d0785a47b8020ffc459a9d821d006949c8ce2",
-      "bytes": 126079,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "254a29b6e85deb90566f1ec47eaeddadb8904c10134e1843bc0ac5d9b22e40af",
+      "bytes": 443622,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/40-series/rtx-4070-4070ti/geforce-rtx-4070-super-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4070-family/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-4080-super.png",
-      "sha256": "2ffee1dde9594067f9d01cf3d37d0785a47b8020ffc459a9d821d006949c8ce2",
-      "bytes": 126079,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "1646c52183f2b9708637a0e7d659fb46fbf94fff382815b7d86fa5b7afaac177",
+      "bytes": 459502,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/ada/rtx-4080/geforce-rtx-4080-super-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4080-family/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-4090.png",
@@ -130,39 +130,39 @@
     },
     {
       "path": "static/images/products/geforce-rtx-5060-ti.png",
-      "sha256": "badb1b1e320fc43fa97de16860b5fe9ff334487191e7f71a9971a6b807ae7daa",
-      "bytes": 91007,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "1d73f9c139d7af6f2ba9e42e0d2a38b7d50300338fb2c92c91f58aa874c99333",
+      "bytes": 277159,
+      "source_url": "https://iprsoftwaremedia.com/219/files/20253/67fe58ec3d6332544cc7c2a5_geforce-rtx-5060-ti/geforce-rtx-5060-ti_mid.jpg",
+      "source_page": "https://nvidianews.nvidia.com/news/nvidia-geforce-rtx-5060-ti-graphics-card",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-5060.png",
-      "sha256": "badb1b1e320fc43fa97de16860b5fe9ff334487191e7f71a9971a6b807ae7daa",
-      "bytes": 91007,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "1851812352198c262bd94f761eb73d911eaaa48539f9626ed3ba597c2ee7a5d2",
+      "bytes": 693804,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/50-series/5060-family/geforce-rtx-5060-family-og-1200x630@2x.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5060-family/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-5070-ti.png",
-      "sha256": "e74f45250ec8646adf6ccd263f00d17783d45fa5830bcab186dcbf44174e759d",
-      "bytes": 108745,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "ae3eb8a626571f4f2037f075a361aaf705002acedffab07a4b86f1d94bfcd19f",
+      "bytes": 768863,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/50-series/5070-family/geforce-rtx-5070-ti-og-image.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5070-family/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-5070.png",
-      "sha256": "e74f45250ec8646adf6ccd263f00d17783d45fa5830bcab186dcbf44174e759d",
-      "bytes": 108745,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "685bd3c060e0db6b9c100308a1b528589ad44dfd4d0e75b04e3a0aca238d977e",
+      "bytes": 311137,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/geforce/graphic-cards/50-series/5070-family/geforce-rtx-5070-banner-xl-offset-desktop@2x.jpg",
+      "source_page": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5070-family/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/geforce-rtx-5080.png",
@@ -193,21 +193,21 @@
     },
     {
       "path": "static/images/products/h100-tensor-core.png",
-      "sha256": "e2457a51cec050d6b7654beebd900421628552487995f3b1c399c8090314adae",
-      "bytes": 440945,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "ff46d82513f58a122aa3ffe67394afcbb734559c5ae1ecfbd518dbae34f85cad",
+      "bytes": 478281,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/gtcs22/data-center/h100/h100-og.jpg",
+      "source_page": "https://www.nvidia.com/en-us/data-center/h100/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/h200-tensor-core.png",
-      "sha256": "02db17b7f676310deae5e9a9bc1abc79c64d5075803171eb834b4887557a7dd8",
-      "bytes": 27019,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "0e7a186c509225ffc00ca26affc356e08bf1cd90747885efef9038a0c11dc3a7",
+      "bytes": 289915,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/h200/h200-tensor-og.jpg",
+      "source_page": "https://www.nvidia.com/en-us/data-center/h200/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/jetson-agx-orin.png",
@@ -238,12 +238,12 @@
     },
     {
       "path": "static/images/products/l40s.png",
-      "sha256": "2a962a903d8055c5e59f0a470a2fb66b84f77bfb301d29dfb6b0c5116c1b5d33",
-      "bytes": 225490,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "6f4b526e1dbd7b1a3418211274378f15b82c055cf7e329ca579cc06b6909b5a7",
+      "bytes": 280646,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/l40s/nvidia-l40s-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/data-center/l40s/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/rtx-4000-ada.png",
@@ -274,12 +274,12 @@
     },
     {
       "path": "static/images/products/rtx-pro-6000-blackwell.png",
-      "sha256": "993a0481d229bc8ad57eeac14714c02c892d115bc73f4aa406479f912dc12dee",
-      "bytes": 47554,
-      "source_url": "https://huggingface.co/datasets/ChilleD/WebHarbor/resolve/fbf6b9f4f735116ae0e4194db2b160e9a4207fc1/nvidia.tar.gz",
-      "source_page": "https://www.nvidia.com/",
-      "source_kind": "mirror_asset_bundle",
-      "retrieved_at": "2026-09-12"
+      "sha256": "698174f40521b5b761e54238d33d549182b8632b43f1e2267d3abdca811d63da",
+      "bytes": 373484,
+      "source_url": "https://www.nvidia.com/content/dam/en-zz/Solutions/data-center/rtx-pro-6000-blackwell-workstation-edition/nvidia-geforce-rtx-pro-6000-og-1200x630.jpg",
+      "source_page": "https://www.nvidia.com/en-us/products/workstations/professional-desktop-gpus/rtx-pro-6000/",
+      "source_kind": "official_product_media",
+      "retrieved_at": "2026-09-13"
     },
     {
       "path": "static/images/products/shield-tv-pro.png",
