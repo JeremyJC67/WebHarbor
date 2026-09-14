@@ -29,7 +29,7 @@ def body(j, traj, initial, after):
             V.mentions_product(ans, target["name"]),
             f"expected={target['name']!r} ({expected} vs {other['spec_2_value']})")
     j.check("answer states that area",
-            V.mentions_number(ans, expected, tol=1.0), f"expected={expected}")
+            V.claims_number(ans, expected, tol=1.0), f"expected={expected}")
     ok, why = V.llm_text_match(ans, f"{target['name']} — {expected} km2",
                                "which of the two cities is larger by area, and that area")
     j.check("anchored LLM agreement", ok, why, llm=True)

@@ -22,7 +22,7 @@ def body(j, traj, initial, after):
     j.check("answer names the right university",
             V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
     j.check("answer states the derived enrolment",
-            V.mentions_number(ans, expected, tol=1.0), f"expected={expected}")
+            V.claims_number(ans, expected, tol=1.0), f"expected={expected}")
     ok, why = V.llm_text_match(ans, f"{target['name']} — {expected} students",
                                "student enrolment of the longest-teaching university")
     j.check("anchored LLM agreement", ok, why, llm=True)

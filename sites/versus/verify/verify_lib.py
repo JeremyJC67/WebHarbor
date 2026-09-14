@@ -219,6 +219,63 @@ def _numbers(text):
     return [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?", (text or "").replace(",", ""))]
 
 
+# Markers a run uses to separate its own claim from the page text it pastes as
+# evidence. Everything from the first marker on is quoted material, not an
+# assertion.
+EVIDENCE_MARKERS = ("spec panel:", "panel:", "table:", "ranking:", "account page",
+                    "winner band:", "filtered list:", " | ")
+
+
+# Pasted page text also shows up as "<Name>: FIELD 1234.0" without any of the
+# markers above, so the label shape is detected too.
+# The label must not span a sentence boundary: allowing "." inside it let the
+# pattern start at the beginning of the answer and swallow the claim itself.
+DUMP_SHAPE = re.compile(r"[A-Z][\w'\-]+(?: [\w'\-]+){0,6}:\s+[A-Z][A-Z ]{2,}")
+
+
+def claim_region(text):
+    """The part of an answer the run is actually asserting.
+
+    An independent reviewer caught a run claiming 88500 students while the panel
+    dump pasted after it carried the real 96945; a whole-answer numeric search
+    was satisfied by the dump, so every deterministic check passed a wrong
+    answer. Pasting the page must not substitute for answering.
+
+    The boundary is a convention, and it is a deliberately generous one: the
+    claim is everything before the first sign of quoted page text. An answer
+    that states its figure up front passes; one that only quotes does not.
+    """
+    text = text or ""
+    low = text.lower()
+    cuts = [low.index(m) for m in EVIDENCE_MARKERS if m in low]
+    m = DUMP_SHAPE.search(text)
+    if m:
+        cuts.append(m.start())
+    cut = min(cuts, default=len(text))
+    # An answer that is entirely quoted page text asserts nothing. Returning the
+    # whole string here would restore exactly the hole this closes.
+    return text[:cut].strip()
+
+
+def claims_number(text, value, tol=0.05):
+    """The value must appear in what the run asserts, not only in quoted text."""
+    return mentions_number(claim_region(text), value, tol)
+
+
+def claims_money(text, value):
+    return mentions_money(claim_region(text), value)
+
+
+def claims_product(text, name):
+    """Naming a product only counts when the run asserts it.
+
+    Same hole as the numeric one: an account page pasted as evidence carries
+    every product name on it, so a whole-answer search is satisfied without the
+    run ever committing to an answer.
+    """
+    return mentions_product(claim_region(text), name)
+
+
 def mentions_number(text, value, tol=0.05):
     """True when the answer states `value`. Accepts 336, 336.0, '336 h', '336-hour'."""
     try:

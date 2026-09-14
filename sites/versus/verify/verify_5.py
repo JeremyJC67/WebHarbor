@@ -26,7 +26,7 @@ def body(j, traj, initial, after):
 
     # Which seeded pair does the answer name? Both product names must appear.
     matched = [pair for pair in before
-               if all(V.mentions_product(ans, names[slug]) for slug in pair)]
+               if all(V.claims_product(ans, names[slug]) for slug in pair)]
     j.check("answer names both products of one comparison already on the account",
             len(matched) >= 1,
             f"seeded pairs={sorted(map(sorted, before))} answer={ans!r}")

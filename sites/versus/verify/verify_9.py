@@ -25,7 +25,7 @@ def body(j, traj, initial, after):
     j.check("answer names the right product",
             V.mentions_product(ans, target["name"]), f"expected={target['name']!r}")
     j.check("answer states the derived value",
-            V.mentions_money(ans, expected), f"expected={expected} from initial_db")
+            V.claims_money(ans, expected), f"expected={expected} from initial_db")
     ok, why = V.llm_text_match(ans, f"{target['name']} — {expected}",
                                "price of the heaviest camera")
     j.check("anchored LLM agreement", ok, why, llm=True)

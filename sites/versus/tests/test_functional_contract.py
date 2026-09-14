@@ -111,6 +111,20 @@ class TaskContract(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)), "duplicate task ids")
         self.assertEqual(ids, [f"Versus--{i}" for i in range(len(ids))])
 
+    def test_verify_dir_holds_exactly_the_expected_files(self):
+        """A rename left 16 stray "verify_N 2.py" copies in the directory once.
+
+        They were never committed, but they crashed the adversarial harness,
+        which globs the directory to decide what to grade. A directory that is
+        the input to grading has to be exactly what it claims.
+        """
+        vd = SITE_DIR / "verify"
+        expected = {f"verify_{i}.py" for i in range(len(load_tasks()))} | {"verify_lib.py"}
+        actual = {p.name for p in vd.iterdir() if p.is_file() and p.suffix == ".py"}
+        self.assertEqual(actual, expected,
+                         f"unexpected: {sorted(actual - expected)}; "
+                         f"missing: {sorted(expected - actual)}")
+
     def test_task_count_is_in_the_review_guide_range(self):
         self.assertGreaterEqual(len(load_tasks()), 15)
         self.assertLessEqual(len(load_tasks()), 20)

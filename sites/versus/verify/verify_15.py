@@ -21,11 +21,11 @@ def body(j, traj, initial, after):
     j.check("opened the fact-bearing page for the city",
             V.opened_detail_or_compare(traj, SLUG), f"steps={V.step_urls(traj)[-6:]}")
     j.check("answer states the derived area",
-            V.mentions_number(ans, expected, tol=1.0),
+            V.claims_number(ans, expected, tol=1.0),
             f"expected={expected} {target['unit_2']} from initial_db")
     j.check("answer does not report the population instead",
-            not V.mentions_number(ans, target["spec_1_value"], tol=1.0)
-            or V.mentions_number(ans, expected, tol=1.0),
+            not V.claims_number(ans, target["spec_1_value"], tol=1.0)
+            or V.claims_number(ans, expected, tol=1.0),
             "population and area must not be confused")
     ok, why = V.llm_text_match(ans, f"{expected} {target['unit_2']}",
                                "area in square kilometres of the named city")

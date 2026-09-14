@@ -30,7 +30,7 @@ def body(j, traj, initial, after):
             V.mentions_product(ans, target["name"]),
             f"expected={target['name']!r} at {target['spec_2_value']} km2")
     j.check("answer states that city's population",
-            V.mentions_number(ans, expected, tol=1.0), f"expected={expected}")
+            V.claims_number(ans, expected, tol=1.0), f"expected={expected}")
     if most_populous and most_populous["slug"] != target["slug"]:
         j.check("answer is not about the most populous city instead",
                 not (V.mentions_product(ans, most_populous["name"])
