@@ -8,6 +8,7 @@
     <a class="{{ 'active' if category.slug == category_slug }}" href="{{ url_for('rankings', category=category.slug) }}">{{ category.name }}</a>
   {% endfor %}
 </div>
+<p class="results-summary">Showing {{ paging.start }} to {{ paging.end }} of {{ paging.total }}</p>
 <section class="ranking-list">
   {% for rank, product in ranked %}
     <a class="ranking-row" href="{{ url_for('product_detail', slug=product.slug) }}">
@@ -22,7 +23,7 @@
 {% if paging.pages > 1 %}
 <nav class="pager" aria-label="Pagination">
   {% if paging.has_prev %}<a rel="prev" href="{{ url_for(request.endpoint, **dict(request.view_args, **dict(request.args, page=paging.page - 1))) }}">Previous</a>{% endif %}
-  <span>{{ paging.start }}–{{ paging.end }} of {{ paging.total }} · page {{ paging.page }} of {{ paging.pages }}</span>
+  <span>Page {{ paging.page }} of {{ paging.pages }}</span>
   {% if paging.has_next %}<a rel="next" href="{{ url_for(request.endpoint, **dict(request.view_args, **dict(request.args, page=paging.page + 1))) }}">Next</a>{% endif %}
 </nav>
 {% endif %}

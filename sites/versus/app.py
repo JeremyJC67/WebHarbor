@@ -204,7 +204,18 @@ def lead_summary(rows: list[dict], side: str) -> tuple[int, int]:
 
 @app.route("/")
 def index():
-    top = Product.query.order_by(Product.score.desc()).limit(8).all()
+    catalogue_categories = Category.query.order_by(Category.name).all()
+    top = []
+    comparison_count = 0
+    for category in catalogue_categories:
+        category_rows = (
+            Product.query.filter_by(category_id=category.id)
+            .order_by(Product.score.desc(), Product.name.asc())
+            .all()
+        )
+        if category_rows:
+            top.append(category_rows[0])
+        comparison_count += len(category_rows) * (len(category_rows) - 1) // 2
     popular_pairs = [
         ("iphone-15-pro", "samsung-galaxy-s24-ultra"),
         ("sony-wh-1000xm5", "bose-quietcomfort-ultra"),
@@ -212,7 +223,14 @@ def index():
         ("rtx-4080-super", "radeon-rx-7900-xtx"),
     ]
     pairs = [(product_by_slug(a), product_by_slug(b)) for a, b in popular_pairs]
-    return render_template("index.html", top=top, pairs=pairs)
+    return render_template(
+        "index.html",
+        top=top,
+        pairs=pairs,
+        entity_count=Product.query.count(),
+        category_count=len(catalogue_categories),
+        comparison_count=comparison_count,
+    )
 
 
 @app.route("/categories")
@@ -528,7 +546,7 @@ def seed_sourced_entries(category_map):
         area = float(rec["fields"]["area"]["value"])
         density = round(pop / area, 1)
         db.session.add(Product(
-            slug=_slugify(rec["name"]), name=rec["name"], brand=rec.get("country", "—"),
+            slug=_slugify(rec["name"]), name=rec["name"], brand=rec.get("country", "N/A"),
             category_id=category_map["cities"].id,
             score=_synthetic_score(density, 200, 12000),
             price=None, release_year=None,
@@ -543,7 +561,7 @@ def seed_sourced_entries(category_map):
         students = float(rec["fields"]["students"]["value"])
         founded = int(rec["fields"]["inception"]["value"][:4])
         db.session.add(Product(
-            slug=_slugify(rec["name"]), name=rec["name"], brand=rec.get("country", "—"),
+            slug=_slugify(rec["name"]), name=rec["name"], brand=rec.get("country", "N/A"),
             category_id=category_map["universities"].id,
             score=_synthetic_score(students, 70000, 200000),
             price=None, release_year=founded,

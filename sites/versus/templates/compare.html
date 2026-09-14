@@ -21,7 +21,7 @@
 
 <section class="ruling winner-band">
   <span class="eyebrow">The ruling</span>
-  <p>Get the <strong>{{ winner.name }}</strong> — it wins with a {{ winner.score }} Versus Score
+  <p>Get the <strong>{{ winner.name }}</strong>. It wins with a {{ winner.score }} Versus Score
      and leads in {{ areas_led }} of {{ areas_total }} areas.</p>
   <form method="post" action="{{ url_for('save_comparison', left=left.slug, right=right.slug) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -39,13 +39,13 @@
       {% for row in rows %}
         <tr>
           <th>{{ row.label }}</th>
-          <td class="{{ 'lead' if row.leader == 'left' }}">{{ row.left }}{{ row.unit }}</td>
-          <td class="{{ 'lead' if row.leader == 'right' }}">{{ row.right }}{{ row.unit }}</td>
-          <td class="margin">{% if row.margin is not none %}+{{ row.margin }}{{ row.unit }}{% else %}—{% endif %}</td>
+          <td data-label="{{ left.name }}" class="{{ 'lead' if row.leader == 'left' }}">{{ row.left }}{{ row.unit }}</td>
+          <td data-label="{{ right.name }}" class="{{ 'lead' if row.leader == 'right' }}">{{ row.right }}{{ row.unit }}</td>
+          <td data-label="Margin" class="margin">{% if row.margin is not none %}+{{ row.margin }}{{ row.unit }}{% else %}N/A{% endif %}</td>
         </tr>
       {% endfor %}
-      <tr><th>Pros</th><td>{{ left.pros }}</td><td>{{ right.pros }}</td><td class="margin">—</td></tr>
-      <tr><th>Cons</th><td>{{ left.cons }}</td><td>{{ right.cons }}</td><td class="margin">—</td></tr>
+      <tr><th>Pros</th><td data-label="{{ left.name }}">{{ left.pros }}</td><td data-label="{{ right.name }}">{{ right.pros }}</td><td data-label="Margin" class="margin">N/A</td></tr>
+      <tr><th>Cons</th><td data-label="{{ left.name }}">{{ left.cons }}</td><td data-label="{{ right.name }}">{{ right.cons }}</td><td data-label="Margin" class="margin">N/A</td></tr>
     </tbody>
   </table>
 </section>

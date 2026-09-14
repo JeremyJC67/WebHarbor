@@ -223,6 +223,34 @@ class SourceBackedImages(unittest.TestCase):
         self.assertEqual(slugs, listed, "product catalogue and tile inventory disagree")
 
 
+class VisualTaskPathStructure(unittest.TestCase):
+    """Pin the task-path presentation fixes found in the visual audit."""
+
+    def test_navigation_has_a_compact_mobile_variant(self):
+        base = (SITE_DIR / "templates" / "base.html").read_text()
+        css = (SITE_DIR / "static" / "css" / "main.css").read_text()
+        self.assertIn('<details class="mobile-menu">', base)
+        self.assertIn(".desktop-nav { display: none; }", css)
+        self.assertIn(".mobile-menu-panel", css)
+
+    def test_mobile_comparison_values_are_labelled_and_stackable(self):
+        compare = (SITE_DIR / "templates" / "compare.html").read_text()
+        css = (SITE_DIR / "static" / "css" / "main.css").read_text()
+        for label in ('data-label="{{ left.name }}"',
+                      'data-label="{{ right.name }}"',
+                      'data-label="Margin"'):
+            self.assertIn(label, compare)
+        self.assertIn("content: attr(data-label)", css)
+        self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr))", css)
+
+    def test_homepage_exposes_real_scale_and_image_backed_pairs(self):
+        index = (SITE_DIR / "templates" / "index.html").read_text()
+        self.assertIn("catalogue-summary", index)
+        self.assertIn("comparison pairs", index)
+        self.assertIn("pair-media", index)
+        self.assertIn("Top rated by category", index)
+
+
 class VerifierTerminalState(unittest.TestCase):
     """An independent reviewer caught a run that answered from a crash page.
 

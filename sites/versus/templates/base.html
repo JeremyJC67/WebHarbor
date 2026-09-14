@@ -10,7 +10,7 @@
 <body>
   <header class="site-header" role="banner">
     <a class="brand" href="{{ url_for('index') }}"><span class="mark">versus</span></a>
-    <nav class="top-nav" role="navigation" aria-label="Main">
+    <nav class="top-nav desktop-nav" role="navigation" aria-label="Main">
       <a href="{{ url_for('category_index') }}">Categories</a>
       {% for category in categories[:3] %}
         <a href="{{ url_for('category_detail', slug=category.slug) }}">{{ category.name }}</a>
@@ -18,6 +18,17 @@
       <a href="{{ url_for('rankings') }}">Rankings</a>
       <a href="{{ url_for('compare_picker') }}">Compare</a>
     </nav>
+    <details class="mobile-menu">
+      <summary>Menu</summary>
+      <nav class="mobile-menu-panel" aria-label="Mobile main">
+        <a href="{{ url_for('category_index') }}">Categories</a>
+        {% for category in categories[:3] %}
+          <a href="{{ url_for('category_detail', slug=category.slug) }}">{{ category.name }}</a>
+        {% endfor %}
+        <a href="{{ url_for('rankings') }}">Rankings</a>
+        <a href="{{ url_for('compare_picker') }}">Compare</a>
+      </nav>
+    </details>
     <form class="header-search" action="{{ url_for('search') }}">
       <input name="q" placeholder="Search products" value="{{ request.args.get('q', '') }}" aria-label="Search products">
       <button type="submit">Search</button>
@@ -72,7 +83,7 @@
       </div>
     </div>
     <p class="footer-note">
-      Offline WebHarbor benchmark mirror of versus.com. Not affiliated with, authorized by or
+      Offline WebHarbor benchmark mirror of versus.com. Not affiliated with, authorized by, or
       endorsed by Versus Tech. Product specifications and prices are sourced; the Versus Score,
       accounts and saved comparisons are synthetic benchmark data. Entity images are source-backed
       and stored locally; see the repository notice for attribution.
