@@ -10,4 +10,17 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  // A "Scroll horizontally …" hint is only shown while its region really overflows.
+  // The region itself stays a focusable labelled region (role=region + tabindex),
+  // so keyboard users keep the scroll affordance at every width (audit NVIDIA--7/9/10).
+  function syncScrollHints() {
+    document.querySelectorAll('.scroll-hint[data-scroll-region]').forEach(function (hint) {
+      var region = document.getElementById(hint.dataset.scrollRegion);
+      if (!region) return;
+      hint.hidden = region.scrollWidth <= region.clientWidth + 1;
+    });
+  }
+  syncScrollHints();
+  window.addEventListener('resize', syncScrollHints);
 });

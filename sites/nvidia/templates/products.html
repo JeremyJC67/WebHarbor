@@ -31,11 +31,12 @@
         {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
         <label for="sort" class="muted" style="margin-right:6px">Sort</label>
         <select id="sort" name="sort" onchange="this.form.submit()">
+          {# Only neutral orders are offered. "Featured" and "Newest" promoted the
+             category flagship into the first tile and "Price: High to Low" led with the
+             most expensive card, which for Studio / Professional is also the
+             maximum-memory answer (audit NVIDIA--8: low). #}
           <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
-          <option value="featured" {% if sort == 'featured' %}selected{% endif %}>Featured</option>
           <option value="price-low" {% if sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
-          <option value="price-high" {% if sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
-          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
         </select>
         <noscript><button class="btn" type="submit">Sort</button></noscript>
       </form>

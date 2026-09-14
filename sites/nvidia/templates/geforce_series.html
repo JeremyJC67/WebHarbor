@@ -9,10 +9,10 @@
       <p>{{ 'Blackwell brings neural rendering and AI-powered graphics to gamers and creators.' if generation == '50' else 'Ada Lovelace brings accelerated ray tracing and AI-powered frame generation to gaming and creation.' }}</p>
       <div class="row"><a class="btn" href="#models">Explore Models</a><a class="btn btn-ghost" href="{{ url_for('buying_options') }}">See All Buying Options</a></div>
     </div>
-    {% if items %}
+    {% if hero_image %}
     <figure class="hero-media">
-      <img src="{{ url_for('static', filename='images/' + items[0].image) }}" alt="{{ items[0].name }}">
-      <figcaption>{{ items[0].name }} · representative model</figcaption>
+      <img src="{{ url_for('static', filename=hero_image) }}" alt="{{ hero_caption }}">
+      <figcaption>{{ hero_caption }}; not a photograph of this model.</figcaption>
     </figure>
     {% endif %}
   </div>

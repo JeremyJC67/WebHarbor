@@ -37,16 +37,16 @@
             {% endfor %}
           </select>
         </div>
-        <div class="field row"><button class="btn" type="submit">Search</button><a class="text-link" href="{{ url_for('drivers') }}">Clear Filters</a></div>
+        <div class="field row"><button class="btn" type="submit">Filter</button><a class="text-link" href="{{ url_for('drivers') }}">Clear Filters</a></div>
       </div>
     </form>
 
     {% if searched %}
       <p class="filter-summary">Selected: {{ series or 'All series' }} · {{ branch or 'Any branch' }} · {{ os_filter or 'Any operating system' }}</p>
       {% if results %}
-      <p class="scroll-hint" id="driver-scroll-help">Scroll horizontally for release dates, sizes, and Details. Keyboard: focus the results region and use arrow keys.</p>
-      <div class="scroll-x" tabindex="0" role="region" aria-label="Driver results" aria-describedby="driver-scroll-help">
-      <table class="specs" style="margin-top:24px">
+      <p class="scroll-hint" id="driver-scroll-help" data-scroll-region="driver-results">Scroll horizontally for release dates, sizes, and Details. Keyboard: focus the results region and use arrow keys.</p>
+      <div class="scroll-x" id="driver-results" tabindex="0" role="region" aria-label="Driver results" aria-describedby="driver-scroll-help">
+      <table class="specs">
         <thead>
           <tr>
             <th style="width:auto">Product Series</th><th style="width:auto">Branch</th>

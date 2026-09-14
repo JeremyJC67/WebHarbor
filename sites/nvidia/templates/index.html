@@ -14,12 +14,17 @@
         <a class="btn btn-ghost" href="{{ url_for('geforce_series', series_slug='50-series') }}">Explore RTX 50 Series</a>
       </div>
     </div>
+    {% if hero_image %}
+    <figure class="hero-media">
+      <img src="{{ url_for('static', filename=hero_image) }}" alt="{{ hero_caption }}">
+      <figcaption>{{ hero_caption }}; not a photograph of this model.</figcaption>
+    </figure>
+    {% elif flagship.image %}
     <div class="hero-media">
-      {% if flagship.image %}
       <img src="{{ url_for('static', filename='images/' + flagship.image) }}"
            alt="{{ flagship.name }}">
-      {% endif %}
     </div>
+    {% endif %}
   </div>
 </section>
 {% endif %}

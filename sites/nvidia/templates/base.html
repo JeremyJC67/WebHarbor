@@ -23,7 +23,7 @@
     </nav>
     <div class="actions">
       <form class="searchbox" action="{{ url_for('search') }}" method="get">
-        <input type="search" name="q" placeholder="Search" value="{{ request.args.get('q','') }}" aria-label="Search">
+        <input type="search" name="q" placeholder="Search" value="{{ request.args.get('q','') }}" aria-label="Search site">
         <button type="submit">Search</button>
       </form>
       {% if current_user.is_authenticated %}
@@ -77,7 +77,9 @@
         <p>Local newsletter subscription demo.</p>
         <form action="{{ url_for('newsletter') }}" method="post" style="display:flex;margin-top:8px">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="email" name="email" placeholder="Your email" aria-label="Newsletter email" required>
+          {# The accessible name stays distinct from the login/register "Email" field so a
+             label-based locator is unambiguous (audit NVIDIA--14/15/16/17: low). #}
+          <input type="email" name="email" placeholder="Your email" aria-label="Newsletter sign-up address" required>
           <button class="btn" type="submit">Subscribe</button>
         </form>
       </div>

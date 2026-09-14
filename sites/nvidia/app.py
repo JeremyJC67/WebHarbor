@@ -269,7 +269,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     confirm = PasswordField('Confirm password',
                             validators=[DataRequired(), EqualTo('password')])
-    newsletter_opt_in = BooleanField('Email me NVIDIA news and offers')
+    newsletter_opt_in = BooleanField('Send me NVIDIA news and offers')
 
 
 class AccountForm(FlaskForm):
@@ -303,10 +303,27 @@ def _tokenize(q):
 
 
 def _score(haystack, tokens):
+    """Token overlap, with whole-number matching for numeric tokens.
+
+    A single character (the "0" of a query such as "MLPerf Training 6.0") is not a
+    meaningful token, and a numeric token must occur as a whole number instead of
+    inside a longer number, so a numeric-heavy query no longer matches the whole
+    catalog (audit NVIDIA--18: low). Word tokens keep substring matching, which is
+    the mirror's documented token-overlap search.
+    """
     if not tokens:
         return 0
     h = haystack.lower()
-    return sum(1 for t in tokens if t in h)
+    score = 0
+    for token in tokens:
+        if len(token) < 2:
+            continue
+        if token.isdigit():
+            if re.search(r'(?<!\d)' + re.escape(token) + r'(?!\d)', h):
+                score += 1
+        elif token in h:
+            score += 1
+    return score
 
 
 def _product_hay(p):
@@ -332,6 +349,20 @@ def inject_globals():
 # --------------------------------------------------------------------------
 # Routes — browse
 # --------------------------------------------------------------------------
+# Dedicated hero artwork, installed from NVIDIA's own per-page media. The home hero
+# and the two series heroes no longer reuse a product-card file, so no page shows the
+# same image twice (audit NVIDIA--7/--12: 40-series hero reuse; NVIDIA--0/--3 and
+# NVIDIA--7: the 5090 file shown twice on / and on the 50-series page).
+FLAGSHIP_HERO_IMAGE = 'images/heroes/geforce-rtx-5090-hero.jpg'
+FLAGSHIP_HERO_CAPTION = 'Official NVIDIA product render — GeForce RTX 5090 (hero image)'
+SERIES_HEROES = {
+    '50': ('images/heroes/geforce-rtx-50-series-hero.jpg',
+           'Official NVIDIA marketing image — GeForce RTX 50 Series'),
+    '40': ('images/heroes/geforce-rtx-40-series-hero.jpg',
+           'Official NVIDIA product render — GeForce RTX 4090'),
+}
+
+
 @app.route('/')
 def index():
     # Name order keeps this curated strip from implying a price ranking (repair002, L7).
@@ -342,7 +373,8 @@ def index():
     latest_news = Article.query.order_by(Article.published.desc()).limit(3).all()
     flagship = Product.query.filter_by(slug='geforce-rtx-5090').first()
     return render_template('index.html', featured=featured, latest_news=latest_news,
-                           flagship=flagship)
+                           flagship=flagship, hero_image=FLAGSHIP_HERO_IMAGE,
+                           hero_caption=FLAGSHIP_HERO_CAPTION)
 
 
 @app.route('/products')
@@ -370,12 +402,6 @@ def products():
         items = [p for _, p in scored]
     elif sort == 'price-low':
         items.sort(key=lambda p: (p.price_usd or 10**9))
-    elif sort == 'price-high':
-        items.sort(key=lambda p: -(p.price_usd or 0))
-    elif sort == 'newest':
-        items.sort(key=lambda p: -(p.release_year or 0))
-    elif sort == 'featured':
-        items.sort(key=lambda p: (not p.is_featured, -(p.price_usd or 0)))
     else:  # name
         items.sort(key=lambda p: p.name.casefold())
 
@@ -404,9 +430,16 @@ def geforce_series(series_slug):
     if series_slug not in ('50-series', '40-series'):
         abort(404)
     generation = series_slug[:2]
-    items = Product.query.filter_by(series=f'RTX {generation} Series').order_by(
-        Product.price_usd.desc()).all()
-    return render_template('geforce_series.html', generation=generation, items=items)
+    # Family grid presented in a specification order (memory tier, then CUDA cores,
+    # then name). The tile order no longer encodes the catalog price ranking, and
+    # the cheapest model of the family is still the last tile, so the grid does not
+    # pre-sort the "least expensive" question (audit NVIDIA--3: low; this used to be
+    # `order_by(Product.price_usd.desc())`).
+    items = Product.query.filter_by(series=f'RTX {generation} Series').all()
+    items.sort(key=lambda p: (-(p.memory_gb or 0), -(p.cuda_cores or 0), p.name.casefold()))
+    hero_image, hero_caption = SERIES_HEROES[generation]
+    return render_template('geforce_series.html', generation=generation, items=items,
+                           hero_image=hero_image, hero_caption=hero_caption)
 
 
 @app.route('/where-to-buy')

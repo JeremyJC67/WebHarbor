@@ -24,8 +24,8 @@
     </form>
 
     {% if items %}
-    <p class="scroll-hint" id="compare-scroll-help">Scroll horizontally to view all selected models. Keyboard: focus the table region and use arrow keys.</p>
-    <div class="scroll-x" tabindex="0" role="region" aria-label="Product comparison" aria-describedby="compare-scroll-help" style="margin-top:28px">
+    <p class="scroll-hint" id="compare-scroll-help" data-scroll-region="compare-table">Scroll horizontally to view all selected models. Keyboard: focus the table region and use arrow keys.</p>
+    <div class="scroll-x" id="compare-table" tabindex="0" role="region" aria-label="Product comparison" aria-describedby="compare-scroll-help" style="margin-top:28px">
       <table class="compare-tbl">
         <thead>
           <tr>

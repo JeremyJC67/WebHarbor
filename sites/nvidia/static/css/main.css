@@ -94,8 +94,11 @@ img{max-width:100%;height:auto;display:block}
 .card .name{font-weight:700;font-size:16px}
 .card .tagline{color:var(--muted);font-size:13px;flex:1}
 .card .price{font-weight:800;font-size:17px;margin-top:6px}
-.card .stars{color:var(--star);font-size:13px}
+.card .stars{color:var(--star);font-size:13px;white-space:nowrap}
 .muted{color:var(--muted)}
+/* The rating glyph and its numeric value read as one unit, so the narrowest
+   viewport must not split them across a line break (audit NVIDIA--8: low). */
+.stars{white-space:nowrap}
 .green{color:var(--action)}
 
 /* spec table */
