@@ -173,7 +173,7 @@ def normalized_url_path(url: str) -> str:
 def is_site_url(url: str) -> bool:
     """Accept HTTP(S) URLs on a loopback host while allowing any port.
 
-    Runs hit the alt-port container (41026) while tasks.jsonl says 40028, so the
+    Runs hit the alt-port container (41026) while tasks.jsonl says 40029, so the
     port is deliberately not checked here.
     """
     parsed = urlparse(str(url or ""))

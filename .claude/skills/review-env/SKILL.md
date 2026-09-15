@@ -44,7 +44,7 @@ Run the same Pre-PR checks the contributor was supposed to run.
 
 ```bash
 # 1. all 29 sites return 200
-for p in $(seq 41000 41027); do
+for p in $(seq 41000 41028); do
   curl -so /dev/null -w "$p:%{http_code}\n" http://localhost:$p/
 done
 

@@ -13,7 +13,11 @@
 # berkeley.tar.gz (sha256
 # ab9d2716ae8d06540a181b5e60c37f613d87b103864b467511da546b1b173789,
 # 6951483 bytes, 171 managed members) — the site's first archive, so that
-# fetch_assets.sh can install sites/berkeley/static/images/.
+# fetch_assets.sh can install sites/berkeley/static/images/. Checked at the merge
+# of PR #116 onto main 7ace1c77 (2026-09-14): for all 29 sites registered before
+# berkeley, this ref's archive size and LFS oid are identical to the b7e605c0 pin
+# below, so switching the pin for the berkeley archive does not change any other
+# site's assets; this ref covers all 30 registered sites (29 + berkeley).
 #
 # This is deliberately a PR ref rather than a sha: the PR is unmerged, so its
 # head is only reachable through refs/pr/91. Refs of this shape move if the PR
@@ -22,20 +26,41 @@
 # distinction the "never a moving branch name" rule above is about then applies
 # again.
 #
-# Previous pin = 64264d065cdb0b7755ee99dab356be5733d9ddef, the commit HF dataset
+# Previous pin = b7e605c0ec5fc47de85b09e7427162cc50e38980, the commit HF dataset
+# `main` points at (verified 2026-09-14): the squash-merge commit of HF dataset PR
+# #85 ("Upload nvidia.tar.gz with distinct official product and hero images (#107
+# follow-up)"), which sits on top of the merged PR #84 ("Upload repacked
+# nvidia.tar.gz with de-duplicated official product images (#107)"), PR #75 ("Add
+# reviewed NVIDIA asset bundle") and PR #74 ("Upload kaggle.tar.gz with
+# huggingface_hub"), so this sha is on HF `main`.
+#
+# Its nvidia.tar.gz is the repacked bundle (sha256
+# 617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b, 16340955 bytes,
+# 37 file members and no directory entries), which carries the official NVIDIA
+# renders for 33 product/news images plus three dedicated hero images under
+# static/images/heroes/: 36 images with 36 distinct sha256, so
+# sites/nvidia/static/images/ has no byte-identical duplicate and no page reuses
+# one file twice. It supersedes the 9927312-byte PR #84 archive (sha256
+# ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f) and the
+# original 6706395-byte bundle (blob 0f1d8068af602748d0dec19ef04b52c7559fef28),
+# which carried duplicates.
+#
+# Pin before that = 64264d065cdb0b7755ee99dab356be5733d9ddef, the commit HF dataset
 # `main` pointed at (verified 2026-09-13). It carries the merged HF dataset PR
 # #74 ("Upload kaggle.tar.gz with huggingface_hub") and the later PR #75 ("Add
 # reviewed NVIDIA asset bundle").
 #
-# Why that sha and not the other candidate (refs/pr/37, resolved
+# Why these pins and not the other candidate (refs/pr/37, resolved
 # 600a3e1de158ae56dc82a5fab56c2ca25acb1e27):
-#   * that revision carries an archive for every registered site (28 of 28), and
+#   * the pinned revision carries an archive for every registered site (30 of 30
+#     for refs/pr/91: the 29 main-site archives plus berkeley.tar.gz; 29 of 29 for
+#     b7e605c0), and
 #     the kaggle seed DB it ships was found identical to the seed the site's own
 #     code generates (13/13 tables, row by row) in the PR #106 audit;
 #   * refs/pr/37 ships an older kaggle seed (models table has 10 rows instead of
 #     11: densenet121-chestxray is absent) and its archives cover only 17 of the
-#     28 registered sites, so pinning there would break fetch_assets.sh.
-#   * that revision's kaggle.tar.gz (sha256
+#     30 registered sites, so pinning there would break fetch_assets.sh.
+#   * the pinned revision's kaggle.tar.gz (sha256
 #     dd6f1ab34f99989b300e3366225a8f8b0932d49d033b48f141938d16f1c0607d,
 #     11278106 bytes) passes the repository's own
 #     scripts/validate_asset_archive.py:

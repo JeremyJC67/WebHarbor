@@ -172,7 +172,7 @@ docker run -d --rm --name wh-test \
   -p 8201:8101 -p 41000-41028:40000-40028 webharbor:dev
 
 # all 29 sites return 200
-for p in $(seq 41000 41027); do
+for p in $(seq 41000 41028); do
   curl -so /dev/null -w "$p:%{http_code}\n" http://localhost:$p/
 done
 
