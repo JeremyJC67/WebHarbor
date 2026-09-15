@@ -1,18 +1,316 @@
 {
  "schema_version": 1,
  "site": "bh_photo",
- "asset_count": 337,
- "total_bytes": 88413710,
- "direct_asset_urls": 337,
+ "asset_count": 370,
+ "total_bytes": 89089524,
+ "direct_asset_urls": 370,
  "source_page_only": 0,
- "captured_on": "2026-09-14",
- "capture_method": "Internet Archive Wayback Machine, im_ modifier for original image bytes",
+ "captured_on": "2026-09-15",
+ "capture_method": "Internet Archive Wayback Machine for catalog images; browser-observed public B&H category assets for the Photography department presentation",
  "source_page": "https://www.bhphotovideo.com/",
  "notes": [
-  "bhphotovideo.com serves a Cloudflare challenge to automation, so every image was taken from an archived capture rather than the live site.",
-  "source_url is the original B&H URL; source_page is the Wayback capture the bytes came from."
+  "The 337 product images retain their dated Wayback capture provenance.",
+  "The 33 Photography department visuals were captured from the rendered public B&H category page on 2026-09-15 and are served locally at runtime.",
+  "source_url identifies the original asset; source_page records the exact page or archive capture used to observe it."
  ],
  "assets": [
+  {
+   "path": "static/images/department/batteries.jpg",
+   "bytes": 2745,
+   "sha256": "472ad30b4121063a72384cc843085d68f6fa6f61d6eac07b6d4cd7689e593d4b",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1081825.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/books.jpg",
+   "bytes": 7317,
+   "sha256": "e49108adf1a62359a099cb95e7502d68cbe740f517e294f2032731fbec90fbd4",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1013062.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/camera-bags.jpg",
+   "bytes": 4061,
+   "sha256": "00c851f19452733a85eea5c76404a6cb04b56f6a74ebf669c1ea61f07bec78b2",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1141773.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/content-creator.jpg",
+   "bytes": 2134,
+   "sha256": "82b94798ec1525ff5e79a6d01f3323271fb51e10b1130506a191348cbfefd2e8",
+   "source_url": "https://static.bhphoto.com/images/categoryImages/1789434000000_24356.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/darkroom.jpg",
+   "bytes": 1863,
+   "sha256": "58b0077e2b6a4e185d2ae6c1e4a15c05793376f294f83564721e6f6045f28f0d",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_149741.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/digital-cameras.jpg",
+   "bytes": 3464,
+   "sha256": "1cd2a30100218e819453f50268682f217ca6755d0b4e61b7765b26d8f1dd78ee",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1935819.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/film-cameras.jpg",
+   "bytes": 4401,
+   "sha256": "ada225507f8ff6d9024a18244a8049bb9c12a607fa3678814ec038319cf8155c",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1834281.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/film.jpg",
+   "bytes": 5358,
+   "sha256": "afaf9d0b39a0e7bdac9e1396e122436ab970950170b20f94651753ae8cbc63a7",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_29170.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/flashes.jpg",
+   "bytes": 3303,
+   "sha256": "46c963ce05bba47dc3820dc7f78aa8c906afb64a9d5d4c6846e934f365ec9351",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1165079.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/lens-accessories.jpg",
+   "bytes": 4237,
+   "sha256": "2440022bdc41a6d5137bafb8cea783db57421aa45125961fcd640a3e913f66dc",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1314043.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/lens-filters.jpg",
+   "bytes": 1996,
+   "sha256": "ed73924b1b8c68f3268400ac799c3c022f16b22507862c53a3143a8ed63f0b5a",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_146978.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/lenses.jpg",
+   "bytes": 3276,
+   "sha256": "a10edd3e1197c031d4b29a1a9210bd1de25ae5d4eacecc1afe4783879d1a7da0",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1502500.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/lighting.jpg",
+   "bytes": 3560,
+   "sha256": "3c10db6624f8906c0d09838c4852fc482343a702e14f40edf609ba288e4d92df",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1119632.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/medium-format.jpg",
+   "bytes": 4870,
+   "sha256": "9810c295a6da11d8d83ca46f1309dd5e667efbc8b194efd5477a49cb4db9bc38",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_864324.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/memory-cards.jpg",
+   "bytes": 5812,
+   "sha256": "51cdeee63a174a04a094cd4d90614e3720e6b6a0c8b05d0c4f0961032ffe923b",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1692698.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/photo-accessories.jpg",
+   "bytes": 3181,
+   "sha256": "b5d01748c605bca42f868838540a17e46d0f72d44edb881b8963f14f20ef6165",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_925709.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/photography-hero.jpg",
+   "bytes": 411349,
+   "sha256": "dda30aa9539ca660abb9d842c7b1280f2fea7019333408877719de1c99a5d947",
+   "source_url": "https://www.bhphotovideo.com/bimages/BHUX-34656-OM_Hero.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/photography-promo-logo.webp",
+   "bytes": 1550,
+   "sha256": "b5f29f702cbfac9ebf191a7b67a149b0047746a53729da6bbde679b9e327fa78",
+   "source_url": "https://www.bhphotovideo.com/bimages/BHUX-34656-OM_Logo.png",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/portrait.jpg",
+   "bytes": 27462,
+   "sha256": "18bd57019f757b88de857781b98e0ad6d4f32cd6f74fecffddb495be10d216f1",
+   "source_url": "https://static.bhphoto.com/images/categoryImages/1778006537000_61959.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/presentation.jpg",
+   "bytes": 3786,
+   "sha256": "5a4e7294c13ba5527da26fc743451c6077525a7c677eb2752477084b3d9031d0",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_400410.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/printers.jpg",
+   "bytes": 3002,
+   "sha256": "c900161ca16bfa34443ad159b9558143e57176a51059229be2b8f1510a413d3b",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1770146448000_1873096.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/scanners.jpg",
+   "bytes": 3366,
+   "sha256": "94a7d34607b441e7a1a0ac084b5c3d46ad491b705c6e2e55c5ad16a06c463309",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1083201.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/software.jpg",
+   "bytes": 9877,
+   "sha256": "638f5c2180aa58bbd25887b463bdca97b0b70aae8c2b252864920a8833e7cc3b",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1392534.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/story-cable-finder.webp",
+   "bytes": 22836,
+   "sha256": "313b834af34e4b3bc7b6dbd43c625d41b43f62a48d66dd493f675595817cadd3",
+   "source_url": "https://www.bhphotovideo.com/bimages/BHP/BHP_photo_cat_cable_finder.png",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/story-destination-weddings.jpg",
+   "bytes": 5525,
+   "sha256": "df6db3f31dd5992d9dfdec05a52ca4641efbe2543fb9387112396711b06e9475",
+   "source_url": "https://www.bhphotovideo.com/cdn-cgi/image/fit=scale-down,width=150/https://static.bhphotovideo.com/explora/sites/default/files/the-logistics-of-shooting-destination-weddings-cs.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/story-exposing-right.jpg",
+   "bytes": 7821,
+   "sha256": "e80a8ed37f381e13481ec7b5060139beb377e0f8c0a2fd3d625e1e2085151b61",
+   "source_url": "https://www.bhphotovideo.com/cdn-cgi/image/fit=scale-down,width=150/https://static.bhphotovideo.com/explora/sites/default/files/CS-Exposing-to-the-Right.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/story-pen-evolution.jpg",
+   "bytes": 5301,
+   "sha256": "3914aed2e91340b3257615016ce9ab2c2621ebc33874476dfa79f036d2363290",
+   "source_url": "https://www.bhphotovideo.com/cdn-cgi/image/fit=scale-down,width=150/https://static.bhphotovideo.com/explora/sites/default/files/CS-Olympus-to-OM-SYSTEM-The-Evolution-of-the-PEN_0.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/story-travel-tripods.jpg",
+   "bytes": 6785,
+   "sha256": "0109653c1d444d755b9436d5837de63887fac5e02e7a0cf69264bae24e9dc3c8",
+   "source_url": "https://www.bhphotovideo.com/cdn-cgi/image/fit=scale-down,width=150/https://static.bhphotovideo.com/explora/sites/default/files/23719-cs.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/story-wedding-video.jpg",
+   "bytes": 5040,
+   "sha256": "78d17af7d78c8ca87e3808fd7e00f9323c26738bb3a1796181ce16a4b9d04883",
+   "source_url": "https://www.bhphotovideo.com/cdn-cgi/image/fit=scale-down,width=150/https://static.bhphotovideo.com/explora/sites/default/files/the-fundamentals-of-wedding-videography-for-beginners-cover.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/tripods.jpg",
+   "bytes": 2411,
+   "sha256": "89df460643a93fc0bb75ad9ded3f2d56d2c23b7314f62ca27ddee18416bc36d6",
+   "source_url": "https://static.bhphoto.com/images/images150x150/1789434000000_1367494.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/underwater.jpg",
+   "bytes": 33899,
+   "sha256": "941dc2ecde076a6383e1c2aeadaec0b25e4e2c74adb64b916cbb5683b57ffe90",
+   "source_url": "https://static.bhphoto.com/images/categoryImages/1789434000000_11585.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/volume.webp",
+   "bytes": 25258,
+   "sha256": "a6af4cf201ae4b6dfb6ed5a58099e19b43e6c3d87fac98fb21e387c08677420f",
+   "source_url": "https://static.bhphoto.com/images/categoryImages/1745952026000_58799.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
+  {
+   "path": "static/images/department/wedding.webp",
+   "bytes": 38968,
+   "sha256": "5555d9e2143103104c9f640f0e9552ffd0177ba91e0022f5fcc47e87f9f452b5",
+   "source_url": "https://static.bhphoto.com/images/categoryImages/1777931257000_62211.jpg",
+   "source_kind": "direct_asset_url",
+   "source_page": "https://www.bhphotovideo.com/c/browse/Photography/ci/989/N/4294538916",
+   "asset_role": "photography_department_visual"
+  },
   {
    "path": "static/images/products/3lcfmp.jpg",
    "bytes": 52512,
@@ -1127,7 +1425,7 @@
    "source_url": "https://www.bhphotovideo.com/images/fb/fiilex_flxg6clr_leko10_leko_lens_tube_for_1924247.jpg",
    "source_kind": "direct_asset_url",
    "source_page": "https://web.archive.org/web/20260204224901im_/https://www.bhphotovideo.com/images/fb/fiilex_flxg6clr_leko10_leko_lens_tube_for_1924247.jpg",
-   "product": "Fiilex Leko Lens Tube for G6 Color (10\u00b0)"
+   "product": "Fiilex Leko Lens Tube for G6 Color (10°)"
   },
   {
    "path": "static/images/products/fig6cleko26.jpg",
@@ -1136,7 +1434,7 @@
    "source_url": "https://www.bhphotovideo.com/images/fb/fiilex_flxg6clr_leko26_leko_lens_tube_for_1924249.jpg",
    "source_kind": "direct_asset_url",
    "source_page": "https://web.archive.org/web/20260311045624im_/https://www.bhphotovideo.com/images/fb/fiilex_flxg6clr_leko26_leko_lens_tube_for_1924249.jpg",
-   "product": "Fiilex Leko Lens Tube for G6 Color (26\u00b0)"
+   "product": "Fiilex Leko Lens Tube for G6 Color (26°)"
   },
   {
    "path": "static/images/products/fip3clrf1545.jpg",
@@ -1145,7 +1443,7 @@
    "source_url": "https://www.bhphotovideo.com/images/fb/fiilex_flxp3clr_frnl1545_fresnel_lens_for_p3_1924254.jpg",
    "source_kind": "direct_asset_url",
    "source_page": "https://web.archive.org/web/20260224053552im_/https://www.bhphotovideo.com/images/fb/fiilex_flxp3clr_frnl1545_fresnel_lens_for_p3_1924254.jpg",
-   "product": "Fiilex Fresnel Lens for P3 Color (15-45\u00b0)"
+   "product": "Fiilex Fresnel Lens for P3 Color (15-45°)"
   },
   {
    "path": "static/images/products/fiq5clrocta3.jpg",

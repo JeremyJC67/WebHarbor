@@ -10,50 +10,61 @@
 <body>
     <div class="promo-strip">
         <div class="shell promo-inner">
-            <span>Offline research mirror of bhphotovideo.com. Catalog facts come from archived B&amp;H pages; accounts, reviews, orders and inventory are generated test data. No live payment or fulfilment.</span>
-            <span class="promo-pill">No live payment</span>
+            <span class="utility-links">
+                <a href="{{ url_for('categories') }}">B2B, Gov, Students &amp; More</a>
+                <a href="{{ url_for('help_page') }}">News, Tips &amp; Reviews</a>
+                <a href="{{ url_for('deals') }}">B&amp;H Gift Cards</a>
+            </span>
+            <span class="professional-source">The Professional's Source Since 1973</span>
+            <span class="utility-links utility-links--right">
+                <a href="{{ url_for('store_pickup') }}">NYC SuperStore</a>
+                <a href="{{ url_for('contact') }}">About Us</a>
+                <a href="{{ url_for('help_page') }}">Help</a>
+                <a href="{{ url_for('compare') }}">Compare</a>
+            </span>
         </div>
     </div>
     <header class="site-header">
         <div class="shell header-top">
             <a class="brand-lockup" href="{{ url_for('index') }}">
                 <span class="brand-mark">B&amp;H<span>PHOTO&middot;VIDEO&middot;AUDIO</span></span>
-                <span class="brand-copy">
-                    <strong>Photo Video</strong>
-                    <small>Pro Audio</small>
-                </span>
+            </a>
+            <a class="expert-phone" href="{{ url_for('contact') }}">
+                <span aria-hidden="true">♙</span>
+                <span><small>Ask Our Experts</small><strong>212-444-6615</strong></span>
             </a>
             <form class="search-bar" action="{{ url_for('search') }}" method="get">
                 <input type="search" name="q" value="{{ request.args.get('q', '') if request.endpoint == 'search' else '' }}" placeholder="Search cameras, lenses, audio, lighting, storage...">
-                <button type="submit">Search</button>
+                <button type="submit" aria-label="Search">⌕</button>
             </form>
             <div class="header-actions">
-                <a href="{{ url_for('deals') }}">Deals</a>
-                <a href="{{ url_for('used') }}">Used</a>
-                <a href="{{ url_for('store_pickup') }}">Pickup</a>
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('account') }}">{{ current_user.display_name.split(' ')[0] }}</a>
-                    <a href="{{ url_for('logout') }}">Sign out</a>
+                    <a class="header-account" href="{{ url_for('account') }}"><span aria-hidden="true">♙</span><small>Hello, {{ current_user.display_name.split(' ')[0] }}<br><strong>Account &amp; Orders</strong></small></a>
                 {% else %}
-                    <a href="{{ url_for('login') }}">Sign in</a>
+                    <a class="header-account" href="{{ url_for('login') }}" aria-label="Sign in"><span aria-hidden="true">♙</span><small>Hello, Log In<br><strong>Account &amp; Orders</strong></small></a>
                 {% endif %}
-                <a href="{{ url_for('compare') }}">Compare <span class="count-chip">{{ compare_count }}</span></a>
-                <a href="{{ url_for('cart') if current_user.is_authenticated else url_for('login') }}">Cart <span class="count-chip">{{ cart_count }}</span></a>
+                <a class="header-cart" href="{{ url_for('cart') if current_user.is_authenticated else url_for('login') }}"><span aria-hidden="true">🛒</span><small>My Cart{% if cart_count %} ({{ cart_count }}){% endif %}</small></a>
             </div>
         </div>
         <nav class="primary-nav">
             <div class="shell nav-row">
-                <a href="{{ url_for('categories') }}">All Categories</a>
                 {% for category in top_categories %}
                     <a href="{{ url_for('category_view', slug=category.slug) }}">{{ category.name }}</a>
                 {% endfor %}
-                <a href="{{ url_for('bundles') }}">Bundles</a>
-                <a href="{{ url_for('help_page') }}">Help</a>
-                <a href="{{ url_for('contact') }}">Contact</a>
-                <a class="nav-accent" href="{{ url_for('used') }}">Used</a>
+                <a href="{{ url_for('search', q='camcorder') }}">Camcorders</a>
+                <a href="{{ url_for('search', q='television') }}">TVs &amp; Entertainment</a>
+                <a href="{{ url_for('search', q='audio visual') }}">Audio-Visual</a>
+                <a href="{{ url_for('search', q='optics') }}">Optics</a>
+                <a href="{{ url_for('search', q='mobile') }}">Mobile</a>
+                <a href="{{ url_for('search', q='surveillance') }}">Surveillance</a>
+                <a href="{{ url_for('categories') }}">More...</a>
+                <a href="{{ url_for('used') }}">Used</a>
                 <a href="{{ url_for('deals') }}">Specials</a>
             </div>
         </nav>
+        <div class="service-notice">
+            <div class="shell"><strong>OFFLINE RESEARCH MIRROR</strong> — Catalog facts come from archived B&amp;H pages; accounts, reviews, orders and inventory are generated test data. No live payment or fulfilment.</div>
+        </div>
     </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %}

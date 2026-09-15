@@ -1,6 +1,68 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title }} | B&H{% endblock %}
 {% block content %}
+{% if category.slug == "photography" %}
+<section class="department-photo-hero" style="background-image: url('{{ url_for('static', filename='images/department/photography-hero.jpg') }}')">
+    <div class="shell department-photo-hero-inner">
+        <div class="department-photo-breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a><span>›</span><span>{{ category.name }}</span>
+        </div>
+        <h1>{{ category.name }}</h1>
+        <a class="department-photo-promo" href="{{ url_for('deals') }}" aria-label="Explore featured photography offers">
+            <img src="{{ url_for('static', filename='images/department/photography-promo-logo.webp') }}" alt="OM System — Learn More">
+        </a>
+        <div class="department-expert-bar">
+            <span class="department-expert-icon" aria-hidden="true"><i></i></span>
+            <span><strong>Video Chat</strong> with a Photography Expert - <strong>Live</strong></span>
+            <a href="{{ url_for('contact') }}">Chat Now</a>
+        </div>
+    </div>
+</section>
+
+<div class="shell department-photo-layout">
+    <div class="department-photo-main">
+        <span class="visually-hidden">Shop Photography</span>
+        {% for section in department_sections %}
+            <section class="department-media-section department-media-section--{{ section.kind }}">
+                <h2>{{ section.title }}</h2>
+                <div class="department-media-grid department-media-grid--{{ section.kind }}">
+                    {% for item in section["items"] %}
+                        <a class="department-media-card" href="{{ item.href }}">
+                            <span class="department-media-frame">
+                                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.label }}" loading="eager">
+                            </span>
+                            <strong>{{ item.label }}</strong>
+                            {% if item.description %}<small>{{ item.description }}</small>{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+        <a class="department-shop-all" href="{{ url_for('category_view', slug=category.slug, view='list') }}">
+            Browse all {{ product_count }} photography products <span aria-hidden="true">›</span>
+        </a>
+    </div>
+
+    <aside class="department-story-panel" aria-label="Photography guides">
+        {% for story in department_stories %}
+            <a class="department-story" href="{{ story.href }}">
+                <img src="{{ url_for('static', filename=story.image) }}" alt="" loading="eager">
+                <span>
+                    {% if story.eyebrow %}<small>{{ story.eyebrow }}</small>{% endif %}
+                    <strong>{{ story.title }}</strong>
+                </span>
+            </a>
+        {% endfor %}
+    </aside>
+</div>
+
+<section class="shell department-editorial department-photo-editorial">
+    <h2>Photography</h2>
+    <p>B&amp;H has served photographers for more than 50 years, with cameras, lenses and accessories for beginners, enthusiasts and working professionals. Explore gear by format, shooting style and workflow, then compare the specifications that matter for your production.</p>
+    <h3>Find the right tools for the way you shoot</h3>
+    <p>Landscape, portrait, street, travel, wedding, sports, wildlife and macro photography all reward different combinations of camera, lens, support and storage. Start with a department above, then narrow the catalog by price, availability and technical details.</p>
+</section>
+{% else %}
 <section class="shell breadcrumb-row">
     <a href="{{ url_for('index') }}">Home</a>
     <span>/</span>
@@ -48,9 +110,7 @@
 
 {% for section in guide_sections %}
     <section class="shell department-section">
-        <div class="section-head">
-            <div><h2>{{ section.title }}</h2></div>
-        </div>
+        <div class="section-head"><div><h2>{{ section.title }}</h2></div></div>
         <div class="department-link-grid">
             {% for label, href in section.links %}
                 <a href="{{ href }}">
@@ -61,9 +121,5 @@
         </div>
     </section>
 {% endfor %}
-
-<section class="shell department-editorial">
-    <h2>Photography expertise for every production</h2>
-    <p>Explore cameras, lenses, memory, support and accessories through the same department-first shopping path used by B&amp;H. Browse by product type, shooting style, availability and price before comparing detailed specifications.</p>
-</section>
+{% endif %}
 {% endblock %}

@@ -226,6 +226,13 @@ class ShoppingPathTests(SiteFixture):
 
         self.assertIn('Shop Photography', landing)
         self.assertIn('Mirrorless Cameras', landing)
+        self.assertIn('department-photo-hero', landing)
+        self.assertIn('Video Chat</strong> with a Photography Expert', landing)
+        self.assertIn('Photography Bags &amp; Cases', landing)
+        self.assertGreaterEqual(
+            landing.count('<img'), 20,
+            'the department landing must retain the image-led density of the source page',
+        )
         self.assertNotIn('class="filters"', landing)
         self.assertIn('class="filters"', listing)
 

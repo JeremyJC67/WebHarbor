@@ -970,45 +970,88 @@ def category_view(slug: str, page: int = 1):
             products[0] if products else None,
         )
         guide_sections = []
+        department_sections = []
+        department_stories = []
         if category.slug == "photography":
-            guide_sections = [
+            department_sections = [
                 {
-                    "title": "Accessories and essentials",
-                    "links": [
-                        ("Camera Bags & Cases", url_for("search", q="camera bag")),
-                        ("Flashes & On-Camera Lighting", url_for("search", q="flash lighting")),
-                        ("Batteries & Power", url_for("search", q="camera battery")),
-                        ("Lens Filters", url_for("search", q="lens filter")),
-                        ("Cleaning & Care", url_for("search", q="camera cleaning")),
-                        ("Memory & Storage", url_for("category_view", slug="memory-cards-storage")),
+                    "title": "Cameras & Lenses",
+                    "kind": "primary",
+                    "items": [
+                        {
+                            "label": "Digital Cameras",
+                            "description": "Mirrorless Cameras, DSLR Cameras, Point & Shoot, and Full-Frame Digital Cameras",
+                            "image": "images/department/digital-cameras.jpg",
+                            "href": url_for("category_view", slug="mirrorless-cameras"),
+                        },
+                        {
+                            "label": "Lenses",
+                            "description": "Prime, Zoom, Wide Angle, Telephoto, Cine, and More",
+                            "image": "images/department/lenses.jpg",
+                            "href": url_for("category_view", slug="camera-lenses"),
+                        },
+                        {
+                            "label": "Film Cameras",
+                            "description": "35mm, Point & Shoot, Instant, Disposable, and More",
+                            "image": "images/department/film-cameras.jpg",
+                            "href": url_for("search", q="film camera"),
+                        },
+                    ],
+                },
+                {
+                    "title": "Accessories",
+                    "kind": "catalog",
+                    "items": [
+                        {"label": "Photo Tripods & Support", "image": "images/department/tripods.jpg", "href": url_for("category_view", slug="tripods-supports")},
+                        {"label": "Photography Bags & Cases", "image": "images/department/camera-bags.jpg", "href": url_for("search", q="camera bag")},
+                        {"label": "Memory Cards & Accessories", "image": "images/department/memory-cards.jpg", "href": url_for("category_view", slug="memory-cards-storage")},
+                        {"label": "Batteries & Power Accessories", "image": "images/department/batteries.jpg", "href": url_for("search", q="camera battery")},
+                        {"label": "Flashes & On Camera Lighting", "image": "images/department/flashes.jpg", "href": url_for("search", q="flash lighting")},
+                        {"label": "Lens Filters", "image": "images/department/lens-filters.jpg", "href": url_for("search", q="lens filter")},
+                        {"label": "Lens Accessories", "image": "images/department/lens-accessories.jpg", "href": url_for("search", q="lens accessory")},
+                        {"label": "Photo Accessories", "image": "images/department/photo-accessories.jpg", "href": url_for("search", q="photo accessory")},
+                        {"label": "Medium & Large Format Accessories", "image": "images/department/medium-format.jpg", "href": url_for("search", q="medium format")},
+                        {"label": "Film", "image": "images/department/film.jpg", "href": url_for("search", q="film")},
+                        {"label": "All Content Creator Accessories", "image": "images/department/content-creator.jpg", "href": url_for("search", q="content creator")},
                     ],
                 },
                 {
                     "title": "What would you like to shoot?",
-                    "links": [
-                        ("Portrait Photography", url_for("category_view", slug="camera-lenses", focal_length="medium-telephoto")),
-                        ("Sports & Wildlife", url_for("category_view", slug="camera-lenses", focal_length="super-telephoto")),
-                        ("Travel & Everyday", url_for("category_view", slug="mirrorless-cameras")),
-                        ("Video & Content Creation", url_for("category_view", slug="mirrorless-cameras", view="grid")),
+                    "kind": "shooting",
+                    "items": [
+                        {"label": "Portrait Photography", "image": "images/department/portrait.jpg", "href": url_for("category_view", slug="camera-lenses", focal_length="medium-telephoto")},
+                        {"label": "Wedding Photography", "image": "images/department/wedding.webp", "href": url_for("search", q="wedding photography")},
+                        {"label": "Volume Photography", "image": "images/department/volume.webp", "href": url_for("search", q="studio lighting")},
+                        {"label": "Underwater Photography", "image": "images/department/underwater.jpg", "href": url_for("search", q="underwater photography")},
                     ],
                 },
                 {
                     "title": "More in Photography",
-                    "links": [
-                        ("Used Photo Gear", url_for("used", within="camera")),
-                        ("Photo Deals", url_for("deals", within="camera")),
-                        ("Camera Bundles", url_for("bundles", q="camera")),
-                        ("Store Pickup", url_for("store_pickup")),
+                    "kind": "compact",
+                    "items": [
+                        {"label": "Lighting & Studio", "image": "images/department/lighting.jpg", "href": url_for("category_view", slug="lighting")},
+                        {"label": "Darkroom Equipment", "image": "images/department/darkroom.jpg", "href": url_for("search", q="darkroom")},
+                        {"label": "Photo Software", "image": "images/department/software.jpg", "href": url_for("search", q="photo software")},
+                        {"label": "Books & Tutorials", "image": "images/department/books.jpg", "href": url_for("search", q="photography book")},
                     ],
                 },
                 {
-                    "title": "Scan, print and present",
-                    "links": [
-                        ("Printers & Scanners", url_for("category_view", slug="printers-scanners")),
-                        ("Displays & Monitors", url_for("category_view", slug="monitors")),
-                        ("Tripods & Presentation Support", url_for("category_view", slug="tripods-supports")),
+                    "title": "Scan, Print & Present",
+                    "kind": "primary",
+                    "items": [
+                        {"label": "Scanners", "image": "images/department/scanners.jpg", "href": url_for("category_view", slug="printers-scanners")},
+                        {"label": "Photo Printers", "image": "images/department/printers.jpg", "href": url_for("search", q="photo printer")},
+                        {"label": "Presentation & Archiving", "image": "images/department/presentation.jpg", "href": url_for("search", q="presentation archiving")},
                     ],
                 },
+            ]
+            department_stories = [
+                {"eyebrow": "Tips and Solutions", "title": "The Fundamentals of Wedding Videography for Beginners", "image": "images/department/story-wedding-video.jpg", "href": url_for("search", q="video")},
+                {"eyebrow": "Features", "title": "The Logistics of Shooting Destination Weddings", "image": "images/department/story-destination-weddings.jpg", "href": url_for("search", q="wedding")},
+                {"eyebrow": "Buying Guide", "title": "Recommended Travel Tripods", "image": "images/department/story-travel-tripods.jpg", "href": url_for("category_view", slug="tripods-supports")},
+                {"eyebrow": "Features", "title": "Olympus to OM SYSTEM: The Evolution of the PEN", "image": "images/department/story-pen-evolution.jpg", "href": url_for("category_view", slug="mirrorless-cameras")},
+                {"eyebrow": "Tips and Solutions", "title": "Exposing to the Right", "image": "images/department/story-exposing-right.jpg", "href": url_for("category_view", slug="mirrorless-cameras")},
+                {"eyebrow": "", "title": "Looking for photo cables? Find the right cable for your photography needs.", "image": "images/department/story-cable-finder.webp", "href": url_for("search", q="cable")},
             ]
         return render_template(
             "department_landing.html",
@@ -1018,6 +1061,8 @@ def category_view(slug: str, page: int = 1):
             product_count=len(products),
             hero_product=hero_product,
             guide_sections=guide_sections,
+            department_sections=department_sections,
+            department_stories=department_stories,
         )
 
     results = apply_product_filters(products, request.args)
