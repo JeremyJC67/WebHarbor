@@ -97,12 +97,14 @@ passed.
 
 ### Asset delivery status
 
-`.assets-revision` is pinned to `refs/pr/91`, the interim HF dataset ref that adds
-`berkeley.tar.gz` (HF dataset PR
-[#91](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/91), still open).
-Every other registered site's archive on that ref has the same size and LFS oid as on
-the previous pin `b7e605c0ec5fc47de85b09e7427162cc50e38980`, so the pin change adds the
-UC Berkeley bundle without altering any other site's assets:
+`.assets-revision` is pinned to `c32018ca3b3d67e7b858b1b85fb101aea5090cd7`, the
+head commit of HF dataset `main` and the squash-merge commit of HF dataset PR
+[#91](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/91)
+("berkeley: synthetic imagery bundle (164 files)", merged 2026-09-15T04:00:54Z).
+Every other registered site's archive on that commit has the same size and LFS oid
+as on the previous pin `b7e605c0ec5fc47de85b09e7427162cc50e38980`, and all 30 site
+archives are byte-identical to the ones the interim `refs/pr/91` pin served, so the
+pin change adds the UC Berkeley bundle without altering any other site's assets:
 
 - the pinned revision carries 32 `*.tar.gz` (30 registered sites plus
   `bandcamp.tar.gz` and `drugs_com.tar.gz`, which `fetch_assets.sh` ignores for
