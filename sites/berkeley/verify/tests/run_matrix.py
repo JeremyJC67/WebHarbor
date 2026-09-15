@@ -418,7 +418,8 @@ def grade(run_dir: Path) -> dict[str, Any]:
             "infra_error": bool(verdict.get("infra_error"))}
 
 
-def emit_cells(number: int, facts: dict, out_root: Path, base_url: str) -> list[tuple[str, Path, bool]]:
+def emit_cells(number: int, facts: dict, out_root: Path, base_url: str,
+               wanted: set[str] | None = None) -> list[tuple[str, Path, bool]]:
     """Build every run directory for one task; returns (cell, run_dir, expects_pass)."""
     from playwright.sync_api import sync_playwright  # noqa: PLC0415 - optional dependency at runtime
 
@@ -433,6 +434,8 @@ def emit_cells(number: int, facts: dict, out_root: Path, base_url: str) -> list[
                                    ("wrong_answer", False), ("collateral_write", False),
                                    ("state_mismatch", False)):
             if cell == "state_mismatch" and not workflow.get("login"):
+                continue
+            if wanted and cell not in wanted:
                 continue
             run_dir = out_root / f"task_{number:02d}" / cell
             run_dir.mkdir(parents=True, exist_ok=True)
@@ -478,9 +481,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default=str(DEFAULT_OUT))
     parser.add_argument("--tasks", default="", help="comma-separated task numbers (default: all)")
+    parser.add_argument("--cells", default="",
+                        help="comma-separated cell names to drive (default: all), e.g. no_op")
     parser.add_argument("--grade-only", action="store_true",
                         help="re-grade the run directories under --out without driving browsers")
     args = parser.parse_args()
+    wanted_cells = {value.strip() for value in args.cells.split(",") if value.strip()} or None
 
     out_root = Path(args.out).resolve()
     out_root.mkdir(parents=True, exist_ok=True)
@@ -496,7 +502,8 @@ def main() -> int:
             cells = [(cell.name, cell, cell.name == "pass")
                      for cell in sorted((out_root / f"task_{number:02d}").iterdir()) if cell.is_dir()]
         else:
-            cells = emit_cells(number, facts_by_task[number], out_root, f"http://localhost:{DEFAULT_PORT}")
+            cells = emit_cells(number, facts_by_task[number], out_root,
+                               f"http://localhost:{DEFAULT_PORT}", wanted_cells)
         for cell, run_dir, expects_pass in cells:
             verdict = grade(run_dir)
             ok = verdict["pass"] is expects_pass

@@ -34,12 +34,11 @@
         <p style="font-size: 18px; font-style: italic; color: var(--gray-dark); line-height: 1.6; margin: 0;">{{ article.summary }}</p>
       </div>
 
-      <!-- Article image placeholder -->
-      <div style="background: var(--blue); height: 280px; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 32px;">
-        <div style="text-align: center; color: rgba(255,255,255,0.4); font-family: Arial, sans-serif;">
-          <div style="font-size: 56px;">&#127907;</div>
-          <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;">Berkeley News</div>
-        </div>
+      <!-- Article image -->
+      <div class="media-4x3" style="margin-bottom: 32px;">
+        <img src="{{ article_image(article) }}"
+             alt="{{ article.category }} — Berkeley News"
+             width="1024" height="768" loading="eager">
       </div>
 
       <!-- Body content -->

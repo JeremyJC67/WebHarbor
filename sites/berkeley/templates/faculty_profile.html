@@ -13,9 +13,9 @@
 <div class="page-header">
   <div class="container">
     <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
-      <div style="width: 80px; height: 80px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: var(--blue); font-family: Arial, sans-serif; flex-shrink: 0;">
-        {{ member.name[0] }}
-      </div>
+      <img class="avatar-media" src="{{ faculty_image(member) }}"
+           alt="Initials avatar for {{ member.name }}"
+           width="80" height="80" loading="eager">
       <div>
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 4px;">
           <h1 style="font-size: 32px;">{{ member.name }}</h1>

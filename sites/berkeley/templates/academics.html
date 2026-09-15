@@ -2,7 +2,10 @@
 {% block title %}Academics — UC Berkeley{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header has-media">
+  <div class="header-media">
+    <img src="{{ campus_image('campus-lecture-hall') }}" alt="" width="1024" height="768">
+  </div>
   <div class="container">
     <h1>Academics at Berkeley</h1>
     <p>{{ colleges|length }} schools and colleges · {{ total_programs }}+ degree programs · {{ total_depts }}+ departments</p>
@@ -32,6 +35,10 @@
   <div class="card-grid">
     {% for college in colleges %}
     <div class="card">
+      <div class="card-img">
+        <img class="card-img-media" src="{{ college_image(college) }}"
+             alt="{{ college.name }}" width="1024" height="768" loading="lazy">
+      </div>
       <div class="card-body">
         <h3 class="card-title" style="font-size: 18px; margin-bottom: 12px;">
           <a href="{{ url_for('programs') }}?college={{ college.slug }}">{{ college.name }}</a>

@@ -314,6 +314,59 @@ def load_user(user_id):
         return None
     return db.session.get(User, value)
 
+# ─── Generated imagery ────────────────────────────────────────────────────────
+# Slot names, sizes and subject policy live in scripts/IMAGE_PLAN.md; the
+# files ship from the pinned Hugging Face tarball (.requires-images) and are
+# declared in generated_asset_inventory.json, which check_generated_assets.py
+# gates at build time. Every variant binds to the row's primary key, never to a
+# render index, so a listing card and a detail banner agree on the same file and
+# pagination cannot reselect it.
+NEWS_CATEGORIES = ['Research', 'Campus Life', 'Faculty', 'Student', 'Athletics',
+                   'Science', 'Arts']
+# The seed carries one 'Academics' article outside this taxonomy; it uses the
+# campus-life family (IMAGE_PLAN.md §6.2).
+NEWS_FALLBACK_CATEGORY = 'Campus Life'
+EVENT_CATEGORIES = ['Lecture', 'Sports', 'Arts', 'Career', 'Health', 'Social', 'Virtual']
+EVENT_FALLBACK_CATEGORY = 'Lecture'
+
+
+def campus_image(scene):
+    return url_for('static', filename=f'images/campus/{scene}.webp')
+
+
+def college_image(college):
+    return url_for('static', filename=f'images/colleges/{college.slug}.webp')
+
+
+def centre_image(centre):
+    return url_for('static', filename=f'images/research/{centre.slug}.webp')
+
+
+def faculty_image(member):
+    return url_for('static', filename=f'images/faculty/{member.slug}.png')
+
+
+def dept_image(dept):
+    """A department shows its parent college's scene (IMAGE_PLAN.md §6.1)."""
+    if dept.college:
+        return college_image(dept.college)
+    return campus_image('campus-lecture-hall')
+
+
+def article_image(article):
+    category = (article.category if article.category in NEWS_CATEGORIES
+                else NEWS_FALLBACK_CATEGORY)
+    return url_for('static',
+                   filename=f'images/news/{slugify(category)}-{(article.id % 3) + 1}.webp')
+
+
+def event_image(event):
+    category = (event.category if event.category in EVENT_CATEGORIES
+                else EVENT_FALLBACK_CATEGORY)
+    return url_for('static',
+                   filename=f'images/events/{slugify(category)}-{(event.id % 2) + 1}.webp')
+
+
 # ─── Context Processors ───────────────────────────────────────────────────────
 
 @app.context_processor
@@ -321,6 +374,13 @@ def inject_globals():
     return {
         'now': BENCHMARK_NOW,
         'colleges': College.query.order_by(College.name).all(),
+        'article_image': article_image,
+        'event_image': event_image,
+        'centre_image': centre_image,
+        'college_image': college_image,
+        'faculty_image': faculty_image,
+        'campus_image': campus_image,
+        'dept_image': dept_image,
     }
 
 # ─── Routes ───────────────────────────────────────────────────────────────────

@@ -2,7 +2,10 @@
 {% block title %}Berkeley News{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header has-media">
+  <div class="header-media">
+    <img src="{{ campus_image('campus-newsroom') }}" alt="" width="1024" height="768">
+  </div>
   <div class="container">
     <h1>Berkeley News</h1>
     <p>The latest research discoveries, campus stories, and faculty achievements from UC Berkeley</p>
@@ -51,6 +54,9 @@
     {% for article in articles %}
     <div class="card">
       <div class="card-img" style="background: {% if article.category == 'Research' %}#003262{% elif article.category == 'Science' %}#2E6C8B{% elif article.category == 'Athletics' %}#8A5A07{% elif article.category == 'Arts' %}#5A3383{% else %}#003262{% endif %};">
+        <img class="card-img-media" src="{{ article_image(article) }}"
+             alt="{{ article.category }} — Berkeley News"
+             width="1024" height="768" loading="lazy">
         <span class="card-img-label">{{ article.category }}</span>
         {% if article.featured %}<span style="position: absolute; top: 8px; right: 8px;" class="badge badge-gold">Featured</span>{% endif %}
       </div>

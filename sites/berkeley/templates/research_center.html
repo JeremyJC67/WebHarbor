@@ -10,7 +10,10 @@
   </div>
 </div>
 
-<div class="page-header">
+<div class="page-header has-media">
+  <div class="header-media">
+    <img src="{{ centre_image(center) }}" alt="" width="1024" height="768">
+  </div>
   <div class="container">
     <h1>{{ center.name }}</h1>
     {% if center.college %}<p>{{ center.college.name }}</p>{% endif %}

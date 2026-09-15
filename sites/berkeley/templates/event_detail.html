@@ -21,6 +21,11 @@
 <div class="container py-4">
   <div class="sidebar-layout">
     <div>
+      <div class="media-4x3" style="margin-bottom: 24px;">
+        <img src="{{ event_image(event) }}"
+             alt="{{ event.category }} event at Berkeley"
+             width="1024" height="768" loading="eager">
+      </div>
       <h2 class="section-heading">About This Event</h2>
       <p style="font-size: 17px; line-height: 1.8;">{{ event.description }}</p>
 

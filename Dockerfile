@@ -70,10 +70,14 @@ RUN cd /opt/WebSyn/healthline && test -f instance_seed/healthline.db && \
     PYTHONHASHSEED=0 python3 migrate_seed.py && \
     python3 prune_unreferenced_images.py --apply && rm -rf instance
 
-# Berkeley: all data is code-generated (no scraped images → no HF asset), so the
-# seed DB is generated here from tracked source — see .build-generated-seed. No
-# wall clock and no random salt reaches a row, so the artifact is byte-reproducible;
-# websyn_start.sh copies it into instance/ at boot.
+# Berkeley's generated imagery ships in the pinned asset bundle while its SQLite
+# seed stays build-generated from tracked source — see .build-generated-seed. The
+# inventory gate enforces exact coverage + per-file SHA-256 + decode at the planned
+# dimensions of all 164 generated images (82 FLUX scenes + 82 Pillow avatars), the
+# same contract as the webmd_doctor / compass / walmart_careers inventories.
+RUN python3 /opt/WebSyn/berkeley/check_generated_assets.py
+# No wall clock and no random salt reaches a row, so the artifact is
+# byte-reproducible; websyn_start.sh copies it into instance/ at boot.
 RUN cd /opt/WebSyn/berkeley && rm -rf instance instance_seed && \
     PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
 

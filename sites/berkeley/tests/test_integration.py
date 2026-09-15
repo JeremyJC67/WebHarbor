@@ -66,7 +66,13 @@ def test_dockerfile_exposes_the_current_range_and_builds_the_seed() -> None:
 def test_build_generated_seed_marker_and_fetch_exemption() -> None:
     marker = SITE / ".build-generated-seed"
     assert marker.is_file(), "missing .build-generated-seed marker"
-    assert "no Hugging Face asset archive" in marker.read_text()
+    # The marker speaks for the *seed* only: since the imagery PR the site does
+    # carry an archive (static/images/), so the text must claim the seed is
+    # build-generated and the images ship from Hugging Face — not the pre-imagery
+    # "the site has no Hugging Face asset archive", which is now false.
+    text = marker.read_text()
+    assert "generates instance_seed/berkeley.db deterministically" in text
+    assert "ships from the pinned Hugging Face archive" in text
     fetch = (ROOT / "scripts/fetch_assets.sh").read_text()
     assert ".build-generated-seed" in fetch, "fetch_assets.sh no longer honours the marker"
 

@@ -2,7 +2,10 @@
 {% block title %}Events — UC Berkeley{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header has-media">
+  <div class="header-media">
+    <img src="{{ campus_image('campus-events-green') }}" alt="" width="1024" height="768">
+  </div>
   <div class="container">
     <h1>Berkeley Events</h1>
     <p>Lectures, performances, career fairs, and more on and around campus</p>
@@ -50,6 +53,11 @@
   <div class="card-grid">
     {% for event in events %}
     <div class="card">
+      <div class="card-img card-img--tall">
+        <img class="card-img-media" src="{{ event_image(event) }}"
+             alt="{{ event.category }} event at Berkeley"
+             width="1024" height="768" loading="lazy">
+      </div>
       <div style="background: {% if event.category == 'Lecture' %}#003262{% elif event.category == 'Sports' %}#8A5A07{% elif event.category == 'Arts' %}#5A3383{% elif event.category == 'Career' %}#1E7E34{% elif event.category == 'Health' %}#0F7A5A{% elif event.category == 'Virtual' %}#55595E{% else %}#2E6C8B{% endif %}; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
           <div style="font-family: Arial, sans-serif; font-size: 32px; font-weight: bold; line-height: 1;">{{ event.start_datetime.strftime('%d') }}</div>

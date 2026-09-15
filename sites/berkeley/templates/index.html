@@ -4,7 +4,15 @@
 {% block content %}
 <!-- Hero -->
 <section style="background: var(--blue); color: white; padding: 60px 0; position: relative; overflow: hidden;">
-  <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #003262 60%, #2E6C8B 100%);"></div>
+  {# Decorative: the h1 beside it already names the page, and a non-empty alt
+     would make a screen reader announce the hero twice (IMAGE_PLAN.md §6.5). #}
+  <img class="hero-media" src="{{ campus_image('campus-quad') }}" alt=""
+       width="1024" height="768" loading="eager">
+  {# The scrim sits over a photograph now, so both stops are computed for the
+     worst case (a pure-white pixel behind): white heading 8.7:1, the 18px
+     paragraph 7.3:1, the gold eyebrow 4.8:1 — all above the 4.5:1 floor, and
+     better than the opaque gradient's own light end (gold was 3.25:1). #}
+  <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(0,50,98,0.90) 45%, rgba(0,50,98,0.86) 100%);"></div>
   <div class="container" style="position: relative; z-index: 1;">
     <div style="max-width: 640px;">
       <p style="color: var(--gold); font-family: Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">Est. 1868 · Berkeley, California</p>
@@ -57,11 +65,10 @@
     <!-- Lead story -->
     <div style="margin-bottom: 32px; background: var(--off-white); border-radius: 4px; overflow: hidden; border: 1px solid var(--gray-light);">
       <div class="split-2-3">
-        <div style="background: var(--blue); min-height: 240px; display: flex; align-items: center; justify-content: center; padding: 32px;">
-          <div style="text-align: center; color: rgba(255,255,255,0.5); font-family: Arial, sans-serif;">
-            <div style="font-size: 48px; margin-bottom: 8px;">&#127758;</div>
-            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Berkeley News</div>
-          </div>
+        <div class="media-4x3" style="min-height: 240px;">
+          <img src="{{ article_image(featured_news[0]) }}"
+               alt="{{ featured_news[0].category }} — Berkeley News"
+               width="1024" height="768" loading="eager">
         </div>
         <div style="padding: 32px;">
           <span class="card-category">{{ featured_news[0].category }}</span>
@@ -80,6 +87,9 @@
       {% for article in featured_news[1:] %}
       <div class="card">
         <div class="card-img" style="background: var(--{% if loop.index % 3 == 0 %}light-blue{% elif loop.index % 3 == 1 %}blue{% else %}blue{% endif %}); height: 120px;">
+          <img class="card-img-media" src="{{ article_image(article) }}"
+               alt="{{ article.category }} — Berkeley News"
+               width="1024" height="768" loading="lazy">
           <span class="card-img-label">{{ article.category }}</span>
         </div>
         <div class="card-body">
@@ -105,6 +115,11 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;">
       {% for event in upcoming_events %}
       <div class="card">
+        <div class="card-img card-img--tall">
+          <img class="card-img-media" src="{{ event_image(event) }}"
+               alt="{{ event.category }} event at Berkeley"
+               width="1024" height="768" loading="lazy">
+        </div>
         <div style="background: var(--blue); padding: 20px; text-align: center; color: white;">
           <div style="font-family: Arial, sans-serif; font-size: 36px; font-weight: bold; color: var(--gold);">{{ event.start_datetime.strftime('%d') }}</div>
           <div style="font-family: Arial, sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">{{ event.start_datetime.strftime('%B %Y') }}</div>
@@ -133,6 +148,10 @@
     <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
       {% for center in recent_research %}
       <div class="card">
+        <div class="card-img">
+          <img class="card-img-media" src="{{ centre_image(center) }}"
+               alt="{{ center.name }}" width="1024" height="768" loading="lazy">
+        </div>
         <div class="card-body">
           <h3 class="card-title" style="font-size: 16px;"><a href="{{ url_for('research_center', slug=center.slug) }}">{{ center.name }}</a></h3>
           <p class="card-text">{{ center.description[:140] }}{% if center.description|length > 140 %}...{% endif %}</p>

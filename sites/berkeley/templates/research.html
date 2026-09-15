@@ -13,6 +13,10 @@
   <!-- Overview -->
   <div class="split-3-2" style="background: var(--off-white); border-radius: 4px; padding: 32px; margin-bottom: 40px;">
     <div>
+      <div class="media-4x3" style="margin-bottom: 24px;">
+        <img src="{{ campus_image('campus-labs') }}" alt=""
+             width="1024" height="768" loading="lazy">
+      </div>
       <h2 style="color: var(--blue); font-size: 28px; margin-bottom: 16px;">The World's Top Public Research University</h2>
       <p style="font-size: 16px; line-height: 1.8; margin-bottom: 16px;">UC Berkeley is home to more than 200 research institutes, centers, and programs. Our faculty and students conduct groundbreaking research across every discipline, from artificial intelligence to environmental science, from genomics to urban planning.</p>
       <p style="font-size: 16px; line-height: 1.8;">Berkeley researchers have developed the technology behind the internet, discovered fundamental particles, sequenced genomes, and modeled the climate. Every year, Berkeley generates more than $1 billion in research expenditures.</p>
@@ -30,6 +34,10 @@
   <div class="card-grid">
     {% for center in centers %}
     <div class="card">
+      <div class="card-img">
+        <img class="card-img-media" src="{{ centre_image(center) }}"
+             alt="{{ center.name }}" width="1024" height="768" loading="lazy">
+      </div>
       <div class="card-body">
         <h3 class="card-title"><a href="{{ url_for('research_center', slug=center.slug) }}">{{ center.name }}</a></h3>
         {% if center.college %}

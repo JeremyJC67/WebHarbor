@@ -10,7 +10,12 @@
   </div>
 </div>
 
-<div class="page-header">
+<div class="page-header has-media">
+  <div class="header-media">
+    {# The department's parent college scene — IMAGE_PLAN.md §6.1. Decorative:
+       the h1 beside it already names the department. #}
+    <img src="{{ dept_image(dept) }}" alt="" width="1024" height="768">
+  </div>
   <div class="container">
     <h1>{{ dept.name }}</h1>
     {% if dept.college %}<p>{{ dept.college.name }}</p>{% endif %}
