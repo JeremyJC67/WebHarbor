@@ -36,17 +36,17 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 25 sites today, scaling to 100+ together
+- **Community-driven** — 31 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40024:40000-40024 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40030:40000-40030 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40024` to explore 25 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, and BoardGameGeek`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40030` to explore 31 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, and BoardGameGeek`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -63,9 +63,168 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 ./scripts/build.sh                                 # docker build -t webharbor:dev .
 ```
 
+### Local BoardGameGeek review candidate
+
+This branch registers **31 sites**, the 31 entries listed above. Current `main` ends
+with UC Berkeley at index 29; BoardGameGeek is appended as registry index 30,
+container port 40030 (local review host port 48030). The
+published-image quickstart above is not a claim that this review candidate has been
+published or accepted.
+
+| Site | Registry position | Container port | Local review host port |
+| --- | --- | --- | --- |
+| UC Berkeley | 29 | 40029 | 48029 |
+| BoardGameGeek | 30 | 40030 | 48030 |
+
+`websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
+site's `tasks.jsonl` `web` URL agree on 31 sites and `40000-40030`;
+`scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
+drift.
+
+After preparing the candidate assets and building `webharbor:dev`, the local
+review deployment uses:
+
+```bash
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48030:40000-40030 webharbor:dev
+```
+
+BoardGameGeek inherits the original site contribution from @hqhq1025
+([#35](https://github.com/aiming-lab/WebHarbor/pull/35)); this reviewer continuation
+preserves that authorship while integrating the site on the current registry.
+
+### Asset delivery status
+
+`.assets-revision` is pinned to `c32018ca3b3d67e7b858b1b85fb101aea5090cd7`, the
+head commit of HF dataset `main` and the squash-merge commit of HF dataset PR
+[#91](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/91)
+("berkeley: synthetic imagery bundle (164 files)", merged 2026-09-15T04:00:54Z).
+Every pre-existing registered site's archive on that commit has the same size and LFS oid
+as on the previous pin `b7e605c0ec5fc47de85b09e7427162cc50e38980`, and all 30 pre-existing site
+archives are byte-identical to the ones the interim `refs/pr/91` pin served, so the
+pin change adds the UC Berkeley bundle without altering any other site's assets:
+
+- the pinned revision carries 32 `*.tar.gz` (the 30 sites on upstream `main` plus
+  `bandcamp.tar.gz` and `drugs_com.tar.gz`, which `fetch_assets.sh` ignores for
+  sites this checkout does not register);
+- `nvidia.tar.gz` at that revision is the same 37-member archive as at the previous
+  pin, so `scripts/validate_asset_archive.py nvidia.tar.gz nvidia` prints
+  `[fetch] validated 37 managed members for nvidia` and exits 0;
+- `berkeley.tar.gz` at that revision has 171 managed members, so
+  `scripts/validate_asset_archive.py berkeley.tar.gz berkeley` prints
+  `[fetch] validated 171 managed members for berkeley`;
+- on upstream `main`, `./scripts/fetch_assets.sh` at this pin extracts all 30
+  registered sites (`[fetch] done — 30 site(s) extracted into sites/`).
+
+BoardGameGeek's archive is not yet present at this mainline pin. The reviewed bundle
+is frozen at HF dataset PR
+[#25](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/25), commit
+`6737719a7eeb8d9b5fba77072d455e0d9afd2a93`, with archive SHA-256
+`970c6618e39a37920b228abd976d4756db126239ab4b4fa48b37b03b81cad6d1`.
+Review builds therefore use the current pin for the 30 mainline sites and overlay
+that immutable BoardGameGeek archive. Before merging this code PR, maintainers must
+merge HF PR #25, confirm the archive hash is unchanged, and update this pin to the
+resulting dataset `main` commit.
+
+The previous pin `b7e605c0ec5fc47de85b09e7427162cc50e38980` is the squash-merge
+commit of HF dataset PR
+[#85](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/85) on the
+dataset's `main`. It sits on top of PR
+[#84](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/84) and PR
+[#75](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/75), which
+added the first reviewed NVIDIA bundle.
+
+| Artifact | Members | Bytes | SHA-256 |
+| --- | --- | --- | --- |
+| `nvidia.tar.gz` at the current pin | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| `berkeley.tar.gz` at the current pin (HF PR #91) | 171 | 6,951,483 | `ab9d2716ae8d06540a181b5e60c37f613d87b103864b467511da546b1b173789` |
+| previous pin's `nvidia.tar.gz` (HF PR #84, superseded) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
+
+PR #85 replaces five product images and adds three dedicated hero images (see
+"Image and verifier follow-up" below). Its archive passes
+`validate_asset_archive.py` (`validated 37 managed members`) and a clean-room
+extract in which all 36 images have distinct SHA-256 values, the seed database is
+byte-identical to the previous pin
+(`2143c954def96cc921760ab2bea79fe119de3d73212d1b01daf6c61792c2b38d`) and every
+`products.image` path resolves.
+
+The revisions rejected in earlier rounds are kept here for the record: the older
+candidate archive from HF PR #38
+(`2707761e4041a492379ea227f09b3bd9ea838a02`, sha256
+`89e0d0d21000bb94acaeaa329fd28a1264afa05f40834c0f3e3cee5c3a2ae9a1`) passes the
+validator but carries a stale seed (the Jetson descriptions lost the kit/module
+identity text, the RTX 5060 Ti is named without `16GB` and its
+`recommended_psu_watts` is 550 while the page's own source note says 600 W), and a
+revision with no `nvidia.tar.gz` cannot prepare this candidate at all.
+
+### Image and verifier follow-up
+
+HF PR #84 replaced twelve product images that were byte-identical duplicates of
+another SKU (RTX 5060/5060 Ti, RTX 5070/5070 Ti, RTX 4070 SUPER/4080 SUPER) or
+depicted something other than the named product. The follow-up round replaced the
+remaining mismatched or near-identical assets with official NVIDIA media, so
+`static/images` now holds 36 files with 36 distinct SHA-256 values and no
+within-page image reuse on `/`, the two series pages or any listing:
+
+- `geforce-rtx-5080.png` and `geforce-rtx-5090.png` use NVIDIA's own per-SKU og
+  renders instead of two crops of one mirror-bundle strip;
+- `geforce-rtx-5070.png`, `rtx-6000-ada.png` and `shield-tv-pro.png` now carry
+  official renders, which brings every product image into a 1.77–1.90 aspect
+  range;
+- `static/images/heroes/*.jpg` adds three dedicated hero images, so the home hero,
+  the 50-series hero and the 40-series hero no longer reuse a product-card file;
+- captions state what each file shows (`dgx-b200`, `h200-tensor-core`, and the two
+  family assets that share one vendor artwork).
+
+The same round closed the 20-task audit's findings in the graders and in the site:
+the T6 phrasing false negative (blocker), the unit-first spec-row phrasing, the
+bare-price and single-product evidence gates, the driver-series evidence scope,
+the newsletter `topic` check, the whole-catalog search scoring, the price-ordered
+series grid, the leaky sort options, the `Email`/`Search` accessible-name
+collisions, and the scroll-hint and footprint defects. The per-item disposition and
+evidence are in `_wh_review_tools/pr107-audit/agent-{a,b,c}/summary.md`,
+`_wh_review_tools/orch/integration/logs/pr107-fixall/{00-issue-list,01-disposition,02-site-reverify,06-images}.md`
+and `review-reports/PR-107-FINAL-AUDIT.md`.
+
+### Scope note: external references
+
+Several pages render links to `nvidia.com`, `marketplace.nvidia.com` and
+`store.nvidia.com` as dated source references. They are labelled as leaving the
+local mirror, no route fetches them (0 external requests over 114 routes at 1440,
+768, 390 and 320 px), and the site verifiers treat any navigation outside the
+mirror's loopback origin as a failure, so a run that follows one fails rather than
+silently grading against an unreachable page.
+
+### Validation record for this review candidate
+
+The commands below are the ones actually run for the review rounds; raw outputs
+live under `/data/zhaoyang-user-projects/websyn/_wh_review_tools/`
+(`pr107-fixes/` for the phase-1/phase-2 review, `pr107-audit/` for the 20-task
+audit, `pr107-fixall/` for the follow-up round).
+
+```bash
+# site suites (the driver suite is skipped unless its explicit input/output paths are set)
+python3 -B sites/nvidia/tests/test_verifiers.py --seed <seed.db> --out <new-dir>   # 316 cases
+WH_CONTAINER=<container> TEST_OUT=<outside-source-dir> python3 -B -m unittest discover -s sites/nvidia/tests
+#   -> 44 tests when DRIVER_TEST_INPUTS is unset (two classes skipped),
+#      73 tests when it is set (29 driver cases included)
+DRIVER_TEST_INPUTS=<dir-with-initial/after.db> DRIVER_TEST_OUT=<new-dir> \
+  python3 -B -m unittest discover -s sites/nvidia/tests -p 'test_driver_qualifier.py'   # 29 tests
+python3 -B sites/nvidia/test_ui_contract.py --output <new-dir>                     # 15 tests
+python3 -B sites/nvidia/tests/test_t7_verifier.py                                   # 23 tests (parser regressions)
+# verifier CLI contract and the mechanical negative-sample matrix
+WH_CONTAINER=<container> TEST_OUT=<dir> python3 -B -m unittest discover -s sites/nvidia/tests -p 'test_verifier_contract.py'   # 11 tests
+./scripts/check_assets.sh                                                          # exit 0, 36 inventoried assets
+```
+
+The earlier draft of this section quoted "44 unit tests pass" for the site suites;
+44 is the count when the driver regression class is skipped, and that class used to
+fail its own `test_other_information_task_not_relaxed` case in the PR head. Both are
+fixed and the current counts are the ones listed above. The GitHub PR description
+itself cannot be edited from this repository.
+
 ## 🤝 Contribute
 
-We have built 25 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
+We have built 31 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
 
 There are two ways to join the author list:
 
