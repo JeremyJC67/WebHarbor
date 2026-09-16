@@ -36,17 +36,17 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 29 sites today, scaling to 100+ together
+- **Community-driven** — 32 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40028:40000-40028 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40031:40000-40031 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40028` to explore 29 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, and NVIDIA`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40031` to explore 32 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, and Versus`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -63,19 +63,23 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 ./scripts/build.sh                                 # docker build -t webharbor:dev .
 ```
 
-### Local NVIDIA review candidate
+### Site registry
 
-This branch registers **29 sites**, the 29 entries listed above; NVIDIA is the last
-entry, registry index 28, container port 40028 (local review host port 48028). The
-published-image quickstart above is not a claim that this review candidate has been
-published or accepted.
+This checkout registers **32 sites**. NVIDIA remains at index 28, UC Berkeley
+remains at index 29, B&H Photo remains at index 30, and Versus is appended at
+index 31. Build the image from
+this checkout to use this registry; publishing source does not update the
+published Docker image automatically.
 
-| Site | Registry position | Container port | Local review host port |
+| Site | Registry position | Container port | Example local review host port |
 | --- | --- | --- | --- |
 | NVIDIA | 28 | 40028 | 48028 |
+| UC Berkeley | 29 | 40029 | 48029 |
+| B&H Photo | 30 | 40030 | 48030 |
+| Versus | 31 | 40031 | 48031 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 29 sites and `40000-40028`;
+site's `tasks.jsonl` `web` URL agree on 32 sites and `40000-40031`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -83,7 +87,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48028:40000-40028 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48031:40000-40031 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -95,28 +99,34 @@ passed.
 
 ### Asset delivery status
 
-`.assets-revision` is pinned to `b7e605c0ec5fc47de85b09e7427162cc50e38980`, the
-squash-merge commit of HF dataset PR
+`.assets-revision` pins the merged dataset commit `fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f`
+from [HF asset PR #92](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92).
+Its complete asset tree matches the tested candidate commit
+`f09e586eec8bf1bca0bc0881e08b77f3c2a5508e`.
+
+This revision adds `bh_photo.tar.gz` and preserves all 32 existing archives from
+`c32018ca3b3d67e7b858b1b85fb101aea5090cd7` byte-for-byte, including Berkeley and
+NVIDIA. It carries 33 archives for 31 registered sites plus the unregistered
+Bandcamp and Drugs.com archives, which `fetch_assets.sh` ignores. A clean asset
+fetch downloaded and extracted all 31 registered sites successfully.
+
+B&H's archive contains images and external cache. The Docker build validates
+its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked
+catalog. No manually prepared B&H database is required for a fresh build.
+
+The earlier pin `b7e605c0ec5fc47de85b09e7427162cc50e38980` is the squash-merge
+commit of HF dataset PR
 [#85](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/85) on the
 dataset's `main`. It sits on top of PR
 [#84](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/84) and PR
 [#75](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/75), which
-added the first reviewed NVIDIA bundle. Those PRs are merged, the pinned commit is
-on `main`, and the earlier "PR not merged" and "archive rejected by the
-validator" blockers are cleared:
-
-- the pinned revision carries 31 `*.tar.gz` (one per registered site plus
-  `bandcamp.tar.gz` and `drugs_com.tar.gz`, which `fetch_assets.sh` ignores for
-  sites this checkout does not register);
-- `nvidia.tar.gz` at that revision has 37 file members and no directory members,
-  so `scripts/validate_asset_archive.py nvidia.tar.gz nvidia` prints
-  `[fetch] validated 37 managed members for nvidia` and exits 0;
-- `./scripts/fetch_assets.sh` at this pin extracts all 29 registered sites
-  (`[fetch] done — 29 site(s) extracted into sites/`).
+added the first reviewed NVIDIA bundle.
 
 | Artifact | Members | Bytes | SHA-256 |
 | --- | --- | --- | --- |
-| `nvidia.tar.gz` at the current pin (HF PR #85) | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| `nvidia.tar.gz` at the current pin | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| `berkeley.tar.gz` at the current pin (HF PR #91) | 171 | 6,951,483 | `ab9d2716ae8d06540a181b5e60c37f613d87b103864b467511da546b1b173789` |
+| `bh_photo.tar.gz` at the current pin (HF PR #92) | 511 | 79,658,793 | `867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a` |
 | previous pin's `nvidia.tar.gz` (HF PR #84, superseded) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
 
 PR #85 replaces five product images and adds three dedicated hero images (see
@@ -204,7 +214,7 @@ itself cannot be edited from this repository.
 
 ## 🤝 Contribute
 
-We have built 29 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
+We have built 30 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
 
 There are two ways to join the author list:
 
