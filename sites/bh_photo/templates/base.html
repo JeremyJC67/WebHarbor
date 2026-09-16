@@ -30,20 +30,32 @@
                 <span class="brand-mark">B&amp;H<span>PHOTO&middot;VIDEO&middot;AUDIO</span></span>
             </a>
             <a class="expert-phone" href="{{ url_for('contact') }}">
-                <span aria-hidden="true">♙</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M4 13V11a8 8 0 0 1 16 0v2M4 12H3v6h4v-6H4ZM20 12h1v6h-4v-6h3ZM20 18a4 4 0 0 1-4 4h-3"/>
+                </svg>
                 <span><small>Ask Our Experts</small><strong>212-444-6615</strong></span>
             </a>
             <form class="search-bar" action="{{ url_for('search') }}" method="get">
-                <input type="search" name="q" value="{{ request.args.get('q', '') if request.endpoint == 'search' else '' }}" placeholder="Search cameras, lenses, audio, lighting, storage...">
+                <input type="search" name="q" aria-label="Search products" value="{{ request.args.get('q', '') if request.endpoint == 'search' else '' }}" placeholder="Search cameras, lenses, audio, lighting, storage...">
                 <button type="submit" aria-label="Search">⌕</button>
             </form>
             <div class="header-actions">
                 {% if current_user.is_authenticated %}
-                    <a class="header-account" href="{{ url_for('account') }}"><span aria-hidden="true">♙</span><small>Hello, {{ current_user.display_name.split(' ')[0] }}<br><strong>Account &amp; Orders</strong></small></a>
+                    <a class="header-account" href="{{ url_for('account') }}">
                 {% else %}
-                    <a class="header-account" href="{{ url_for('login') }}" aria-label="Sign in"><span aria-hidden="true">♙</span><small>Hello, Log In<br><strong>Account &amp; Orders</strong></small></a>
+                    <a class="header-account" href="{{ url_for('login') }}" aria-label="Sign in">
                 {% endif %}
-                <a class="header-cart" href="{{ url_for('cart') if current_user.is_authenticated else url_for('login') }}"><span aria-hidden="true">🛒</span><small>My Cart{% if cart_count %} ({{ cart_count }}){% endif %}</small></a>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2Z"/>
+                    </svg>
+                    <small>Hello, {{ current_user.display_name.split(' ')[0] if current_user.is_authenticated else 'Log In' }}<br><strong>Account &amp; Orders</strong></small>
+                </a>
+                <a class="header-cart" href="{{ url_for('cart') if current_user.is_authenticated else url_for('login') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M2 3h3l3 12h11l3-9H6M8 15l-1 3h12"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/>
+                    </svg>
+                    <small>My Cart{% if cart_count %} ({{ cart_count }}){% endif %}</small>
+                </a>
             </div>
         </div>
         <nav class="primary-nav">

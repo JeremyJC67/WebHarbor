@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--14: Bob adds a named card to his cart at quantity 2."""
-from verify_lib import (Judge, cart_for, changed_tables_excluding, check_common, load_run,
-                        login_submitted_as, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, trajectory_urls, visited_path)
+from verify_lib import (
+    Judge,
+    cart_for,
+    changed_tables_excluding,
+    check_common,
+    exact_addition,
+    load_run,
+    login_submitted_as,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    trajectory_urls,
+    user_id_for,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--14'
 EMAIL = 'bob.c@test.com'
@@ -41,6 +54,12 @@ def main():
                 f'quantity={now.get(SLUG)}')
     untouched = {slug: qty for slug, qty in before.items() if now.get(slug) != qty}
     judge.check('other_cart_lines_untouched', not untouched, f'changed={untouched}')
+    target_id = row_dicts(initial, 'SELECT id FROM products WHERE slug=?', (SLUG,))[0]['id']
+    judge.check('only_requested_cart_entry_added', exact_addition(initial, after, 'cart_items',
+                {'user_id': user_id_for(initial, EMAIL), 'product_id': target_id,
+                 'quantity': WANTED_QUANTITY, 'variant_label': '', 'bundle_label': ''}),
+                'only the requested card added; existing rows unchanged')
+
     judge.check('no_unrelated_state_written',
                 only_allowed_tables_changed(initial, after, ALLOWED),
                 f'changed={sorted(changed_tables_excluding(initial, after, ALLOWED))}')

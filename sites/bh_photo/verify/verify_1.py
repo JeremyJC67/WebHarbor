@@ -6,9 +6,21 @@ lives here and never in the agent-facing task file.
 """
 import re
 
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
-                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    affirmative_contains,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_measurement,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--1'
 SLUG = 'canon-eos-90d-dslr-camera-body-only'
@@ -42,12 +54,12 @@ def main():
     judge.check('ground_truth_readable', bool(resolution and battery),
                 f'resolution={resolution!r} battery={battery!r}')
 
-    judge.check('opened_the_body_only_page', visited_path(trajectory, '/product/' + SLUG), SLUG)
+    judge.check('opened_the_body_only_page', visited_path(trajectory, '/product/' + SLUG + '/specs'), SLUG + '/specs')
     normalized = normalize_text(answer)
 
-    numbers = re.findall(r'\d+', resolution)
+    numbers = re.findall(r'\d[\d,]*(?:\.\d+)?', resolution)
     judge.check('answer_gives_screen_resolution',
-                bool(numbers) and all(number in normalized for number in numbers[:2]),
+                bool(numbers) and states_measurement(answer, float(numbers[0].replace(',', '')), {r'dots?': 1}),
                 f'expected={resolution!r} answer={answer!r}')
 
     # the battery row reads like "1x LP-E6N Rechargeable Lithium-Ion, 7.2 VDC, ..."
@@ -55,7 +67,7 @@ def main():
     judge.check('ground_truth_battery_model', bool(model), f'battery={battery!r}')
     if model:
         judge.check('answer_names_the_battery_model',
-                    normalize_text(model.group(1)) in normalized,
+                    affirmative_contains(answer, model.group(1)),
                     f'expected={model.group(1)!r} answer={answer!r}')
 
     judge.check('did_not_answer_from_the_kit_page',

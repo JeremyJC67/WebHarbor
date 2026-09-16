@@ -40,7 +40,7 @@
                 <button type="submit" class="cta small">Add to Cart</button>
             </form>
             <form action="{{ url_for('toggle_wishlist', product_slug=product.slug) }}" method="post">
-                <button type="submit" class="quiet-btn">Add to Wish List</button>
+                <button type="submit" class="quiet-btn" aria-pressed="{{ 'true' if product.id in wishlist_product_ids else 'false' }}">{{ 'Remove from Wish List' if product.id in wishlist_product_ids else 'Add to Wish List' }}</button>
             </form>
             <form action="{{ url_for('add_compare', product_slug=product.slug) }}" method="post">
                 <button type="submit" class="quiet-btn">Add to Compare</button>

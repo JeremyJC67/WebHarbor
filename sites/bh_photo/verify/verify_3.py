@@ -2,9 +2,21 @@
 """Verifier for B&H Photo--3: two detail-only rows from the 16-inch ThinkPad T1g."""
 import re
 
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
-                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_measurement,
+    states_resolution,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--3'
 SLUG = 'lenovo-16-thinkpad-t1g-gen-8-multi-touch-laptop'
@@ -36,18 +48,18 @@ def main():
     judge.check('ground_truth_readable', bool(resolution and weight),
                 f'resolution={resolution!r} weight={weight!r}')
 
-    judge.check('opened_the_product_page', visited_path(trajectory, '/product/' + SLUG), SLUG)
+    judge.check('opened_the_product_page', visited_path(trajectory, '/product/' + SLUG + '/specs'), SLUG + '/specs')
     normalized = normalize_text(answer)
 
     numbers = re.findall(r'\d+', resolution)
     judge.check('answer_gives_native_resolution',
-                bool(numbers) and all(number in normalized for number in numbers[:2]),
+                len(numbers) >= 2 and states_resolution(answer, int(numbers[0]), int(numbers[1])),
                 f'expected={resolution!r} answer={answer!r}')
 
     pounds = re.search(r'([\d.]+)\s*lb', weight)
     judge.check('ground_truth_weight_in_pounds', bool(pounds), f'weight={weight!r}')
     if pounds:
-        judge.check('answer_gives_weight_in_pounds', pounds.group(1) in normalized,
+        judge.check('answer_gives_weight_in_pounds', states_measurement(answer, float(pounds.group(1)), {r'lb(?:s)?\.?|pounds?': 1}),
                     f'expected={pounds.group(1)} answer={answer!r}')
 
     if initial and after:

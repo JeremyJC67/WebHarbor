@@ -16,10 +16,11 @@
                     <p class="stock-line {{ 'good' if item.product.availability == 'In Stock' else 'warn' }}">{{ item.product.availability }}</p>
                 </div>
                 <form action="{{ url_for('update_cart', item_id=item.id) }}" method="post" class="inline-form">
-                    <input type="number" name="quantity" min="1" value="{{ item.quantity }}">
+                    <label for="quantity-{{ item.id }}">Quantity</label>
+                    <input id="quantity-{{ item.id }}" aria-label="Quantity for {{ item.product.name }}" type="number" name="quantity" min="1" value="{{ item.quantity }}">
                     <button type="submit" class="quiet-btn">Update</button>
                 </form>
-                <strong>{{ item.line_total|currency }}</strong>
+                <div class="cart-line-price"><small>{{ item.unit_price|currency }} each</small><span>Line subtotal</span><strong>{{ item.line_total|currency }}</strong></div>
                 <form action="{{ url_for('remove_cart_item', item_id=item.id) }}" method="post">
                     <button type="submit" class="quiet-btn">Remove</button>
                 </form>

@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--18: Carol turns SMS pickup alerts on."""
-from verify_lib import (Judge, account_fields, changed_tables_excluding, check_common,
-                        load_run, login_submitted_as, only_allowed_tables_changed,
-                        parse_args, resolve_db, submitted_from_path, visited_path)
+from verify_lib import (
+    Judge,
+    account_fields,
+    changed_tables_excluding,
+    check_common,
+    load_run,
+    login_submitted_as,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    submitted_from_path,
+    user_id_for,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--18'
 EMAIL = 'carol.d@test.com'
@@ -35,6 +47,13 @@ def main():
                  ('display_name', 'company', 'role', 'preferred_store')
                  if before.get(field) != now.get(field)}
     judge.check('other_account_fields_unchanged', not unchanged, f'changed={unchanged}')
+    expected = row_dicts(initial, 'SELECT * FROM users ORDER BY id')
+    for user in expected:
+        if user['id'] == user_id_for(initial, EMAIL):
+            user['sms_opt_in'] = 1
+    judge.check('only_sms_setting_changed', row_dicts(after, 'SELECT * FROM users ORDER BY id') == expected,
+                'all other fields and all other users must match the initial database')
+
     judge.check('no_unrelated_state_written',
                 only_allowed_tables_changed(initial, after, ALLOWED),
                 f'changed={sorted(changed_tables_excluding(initial, after, ALLOWED))}')

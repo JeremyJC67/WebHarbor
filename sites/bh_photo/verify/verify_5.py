@@ -4,25 +4,25 @@
 The agent must reach the filtered listing rather than guess; the answer must
 carry both the match count and the cheapest match.
 """
-from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
-                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, states_count, trajectory_urls, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    names_product,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_count,
+    visited_path,
+    visited_query,
+)
 
 TASK_ID = 'B&H Photo--5'
 PRICE_CAP = 150.0
-
-
-def used_mount_filter(trajectory) -> bool:
-    """True when a listing URL carried a Sony E mount filter."""
-    for url in trajectory_urls(trajectory):
-        lowered = url.lower().replace('%20', ' ').replace('+', ' ')
-        if 'mount=' in lowered and 'sony e' in lowered:
-            return True
-    return False
-
-
-def used_price_filter(trajectory) -> bool:
-    return any('max_price=' in url.lower() for url in trajectory_urls(trajectory))
 
 
 def main():
@@ -48,8 +48,8 @@ def main():
     judge.check('reached_a_lens_listing',
                 visited_path(trajectory, '/c/camera-lenses') or visited_path(trajectory, '/c/photography'),
                 'lens or photography listing')
-    judge.check('applied_mount_filter', used_mount_filter(trajectory), 'mount=Sony E in a listing URL')
-    judge.check('applied_price_filter', used_price_filter(trajectory), 'max_price in a listing URL')
+    judge.check('applied_mount_filter', visited_query(trajectory, '/c/camera-lenses', {'mount': 'Sony E', 'max_price': '150'}), 'mount and max_price=150 on the same lens listing')
+    judge.check('applied_price_filter', visited_query(trajectory, '/c/camera-lenses', {'mount': 'Sony E', 'max_price': '150'}), 'max_price=150 on the same lens listing')
     judge.check('answer_gives_match_count',
                 # plural forms only: the count here is two, and the singular
                 # "lens" collides with the aperture in a product name - "f/2

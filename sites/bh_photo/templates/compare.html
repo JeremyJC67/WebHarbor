@@ -21,24 +21,23 @@
                 </article>
             {% endfor %}
         </div>
-        <div class="compare-table-wrap">
+        <div class="compare-table-wrap" role="region" aria-label="Product specifications comparison" tabindex="0">
+            <table class="compare-table">
+                <thead><tr><th scope="col">Specification</th>{% for product in products %}<th scope="col"><a href="{{ url_for('product_detail', product_slug=product.slug) }}">{{ product.name }}</a></th>{% endfor %}</tr></thead>
             {% for group_name, rows in compare_rows.items() %}
-                <section class="compare-group">
-                    <h2>{{ group_name }}</h2>
-                    <table class="compare-table">
                         <tbody>
+                            <tr class="compare-group-heading"><th colspan="{{ products|length + 1 }}">{{ group_name }}</th></tr>
                             {% for row in rows %}
                                 <tr class="{{ 'different' if row.different else '' }}">
-                                    <th>{{ row.name }}</th>
+                                    <th scope="row">{{ row.name }}</th>
                                     {% for product in products %}
                                         <td>{{ row['cells'].get(product.id, '--') }}</td>
                                     {% endfor %}
                                 </tr>
                             {% endfor %}
                         </tbody>
-                    </table>
-                </section>
             {% endfor %}
+            </table>
         </div>
     {% else %}
         <div class="empty-state">

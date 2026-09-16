@@ -4,10 +4,24 @@
 The target is derived from the seed at verify time rather than named here, so a
 catalogue change moves the answer instead of breaking the task.
 """
-from verify_lib import (names_product, Judge, cart_for, changed_tables_excluding, check_common,
-                        final_answer, has_number, load_run, login_submitted_as,
-                        normalize_text, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    cart_totals,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    has_number,
+    load_run,
+    login_submitted_as,
+    names_product,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    rows_unchanged_except,
+    states_price,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--19'
 EMAIL = 'alice.j@test.com'
@@ -16,10 +30,10 @@ ALLOWED = ['cart_items', 'search_logs']
 
 def priced_cart(db_path):
     return row_dicts(db_path, """
-        SELECT p.slug, p.name, p.price, c.quantity
+        SELECT c.id, p.slug, p.name, p.price, c.quantity
         FROM cart_items c JOIN products p ON p.id = c.product_id
         JOIN users u ON u.id = c.user_id
-        WHERE u.email = ? ORDER BY p.price DESC
+        WHERE u.email = ? ORDER BY p.price * c.quantity DESC
     """, (EMAIL,))
 
 
@@ -41,7 +55,7 @@ def main():
     if len(before) != 2:
         judge.emit()
     dearer, cheaper = before[0], before[1]
-    judge.check('ground_truth_prices_differ', dearer['price'] > cheaper['price'],
+    judge.check('ground_truth_prices_differ', dearer['price'] * dearer['quantity'] > cheaper['price'] * cheaper['quantity'],
                 f"{dearer['price']} vs {cheaper['price']}")
 
     now = {row['slug']: row for row in priced_cart(after)}
@@ -71,6 +85,16 @@ def main():
     judge.check('answer_is_not_the_pre_removal_figure',
                 not has_number(answer, old_subtotal) or has_number(answer, expected_total),
                 f'pre_removal={old_subtotal} answer={answer!r}')
+
+    judge.check('only_expensive_line_deleted',
+                rows_unchanged_except(initial, after, 'cart_items', [dearer['id']])
+                and not row_dicts(after, 'SELECT id FROM cart_items WHERE id=?', (dearer['id'],)),
+                'all other rows and quantities, including other users, unchanged')
+    final_rows = priced_cart(after)
+    judge.check('exactly_one_original_line_remains', len(final_rows) == 1
+                and final_rows[0] == cheaper, repr(final_rows))
+    judge.check('answer_matches_final_cart_total', states_price(answer, cart_totals(final_rows)['total']),
+                repr(cart_totals(final_rows)))
 
     judge.check('no_unrelated_state_written',
                 only_allowed_tables_changed(initial, after, ALLOWED),

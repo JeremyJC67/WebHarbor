@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--6: carry a card format from a camera page to a card page."""
-import re
 
-from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
-                        has_number, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    affirmative_contains,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    names_product,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_price,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--6'
 CAMERA = 'canon-eos-r1-mirrorless-camera-with-essentials-kit'
@@ -44,7 +56,7 @@ def main():
     judge.check('opened_a_matching_card_page',
                 any(visited_path(trajectory, '/product/' + card['slug']) for card in cards),
                 f'candidates={[card["slug"] for card in cards]}')
-    judge.check('answer_states_card_format', FORMAT_TOKEN in normalize_text(answer),
+    judge.check('answer_states_card_format', affirmative_contains(answer, FORMAT_TOKEN),
                 f'answer={answer!r}')
 
     named = [card for card in cards if names_product(answer, card['name'])]
@@ -58,7 +70,7 @@ def main():
                 f'named={[c["slug"] for c in named]} '
                 f'opened={[c["slug"] for c in cards if visited_path(trajectory, "/product/" + c["slug"])]}')
     judge.check('answer_states_that_card_price',
-                any(has_number(answer, card['price']) for card in opened),
+                any(states_price(answer, card['price']) for card in opened),
                 f'prices={[card["price"] for card in opened]} answer={answer!r}')
 
     # a Type A card is the trap: the R1 does not take one

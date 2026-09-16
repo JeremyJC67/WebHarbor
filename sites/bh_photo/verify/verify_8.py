@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--8: report what the Q&A answer says about store pickup."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
-                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_pickup_policy,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--8'
 SLUG = 'canon-eos-r1-mirrorless-camera-with-essentials-kit'
@@ -35,7 +46,7 @@ def main():
     # pickup depends on the counter stock the page shows
     normalized = normalize_text(answer)
     judge.check('answer_reports_pickup_is_offered',
-                'pickup' in normalized and ('stock' in normalized or 'counter' in normalized),
+                states_pickup_policy(answer),
                 f'published={published!r} answer={answer!r}')
     judge.check('answer_is_not_the_question_restated',
                 normalize_text(rows[0]['question']) not in normalized or len(normalized) > len(normalize_text(rows[0]['question'])) + 12,

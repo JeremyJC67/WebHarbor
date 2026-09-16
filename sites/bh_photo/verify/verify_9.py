@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--9: report the review headline and its star rating."""
-from verify_lib import (number_labelled, Judge, changed_tables_excluding, check_common, final_answer,
-                        has_number, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    affirmative_contains,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    has_number,
+    load_run,
+    number_labelled,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--9'
 SLUG = 'canon-eos-r1-mirrorless-camera-with-essentials-kit'
@@ -21,7 +33,7 @@ def main():
 
     reviews = row_dicts(initial, """
         SELECT r.headline, r.rating FROM product_reviews r JOIN products p ON p.id = r.product_id
-        WHERE p.slug = ? ORDER BY r.id
+        WHERE p.slug = ? ORDER BY r.created_at DESC, r.id DESC
     """, (SLUG,)) if initial else []
     judge.check('ground_truth_readable', bool(reviews), f'reviews={len(reviews)}')
     if not reviews:
@@ -31,7 +43,7 @@ def main():
     judge.check('opened_reviews_page', visited_path(trajectory, f'/product/{SLUG}/reviews'),
                 f'{SLUG}/reviews')
     judge.check('answer_gives_review_headline',
-                normalize_text(review['headline']) in normalize_text(answer),
+                affirmative_contains(answer, review['headline']),
                 f"expected={review['headline']!r} answer={answer!r}")
     judge.check('answer_gives_review_rating',
                 number_labelled(answer, review['rating'],

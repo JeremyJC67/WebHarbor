@@ -542,9 +542,11 @@ def load_user(user_id: str):
 
 
 def tokenized(text: str) -> list[str]:
+    text = re.sub(r"\bfibre\b", "fiber", (text or "").lower())
+    singular = {"monopods": "monopod", "lenses": "lens", "cameras": "camera", "cards": "card"}
     return [
-        token
-        for token in re.split(r"[^a-zA-Z0-9]+", (text or "").lower())
+        singular.get(token, token)
+        for token in re.split(r"[^a-zA-Z0-9]+", text)
         if token and token not in STOP_WORDS and len(token) > 1
     ]
 
@@ -584,7 +586,17 @@ def product_search_score(product: Product, query: str) -> int:
             product.category.name if product.category else "",
         ]
     ).lower()
-    return sum(1 for token in tokens if token in text)
+    text = re.sub(r"\bfibre\b", "fiber", text)
+    # Type A and Type B are incompatible formats, not stop words. Keep this
+    # phrase even though single letters are omitted from ordinary token search.
+    formats = re.findall(r"\bcfexpress\s+(?:\d+(?:\.\d+)?\s+)?type\s+([ab])\b", query.lower())
+    if formats and not all(re.search(rf"\bcfexpress\s+(?:\d+(?:\.\d+)?\s+)?type\s+{kind}\b", product.name.lower()) for kind in formats):
+        return 0
+    words = set(tokenized(text))
+    if not all(token in words for token in tokens):
+        return 0
+    name_words = set(tokenized(product.name))
+    return len(tokens) + sum(token in name_words for token in tokens)
 
 
 def apply_product_filters(products: list[Product], args, *, query_text: str = "") -> list[Product]:
@@ -884,6 +896,7 @@ def inject_globals():
         "cart_count": metrics["count"],
         "compare_count": len(current_compare_products()),
         "wishlist_count": len(current_user.wishlist_items) if current_user.is_authenticated else 0,
+        "wishlist_product_ids": {item.product_id for item in current_user.wishlist_items} if current_user.is_authenticated else set(),
         "demo_notice": "Offline research mirror. Catalog facts are sourced from archived B&H pages; accounts, reviews and orders are generated test data.",
     }
 

@@ -92,6 +92,16 @@ os.makedirs('instance_seed', exist_ok=True); \
 shutil.copy2('instance/rotten_tomatoes.db', 'instance_seed/rotten_tomatoes.db'); \
 print('Rotten Tomatoes seed DB generated at build time.')" && rm -rf /opt/WebSyn/rotten_tomatoes/instance
 
+# B&H's asset bundle contains images; generate the reset seed from its tracked
+# catalog in the image so a fresh checkout needs no locally prepared database.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/bh_photo
+RUN cd /opt/WebSyn/bh_photo && rm -rf instance instance_seed && PYTHONHASHSEED=0 python3 -c "\
+import app; \
+import os, shutil; \
+os.makedirs('instance_seed', exist_ok=True); \
+shutil.copy2('instance/bh_photo.db', 'instance_seed/bh_photo.db'); \
+print('B&H Photo seed DB generated at build time.')" && rm -rf instance
+
 EXPOSE 8101 40000-40029
 
 CMD ["/opt/websyn_start.sh"]

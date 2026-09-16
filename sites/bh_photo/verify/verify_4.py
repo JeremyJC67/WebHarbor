@@ -4,10 +4,22 @@
 Ground truth is read from the shipped seed at verify time, so the answer key
 lives here and never in the agent-facing task file.
 """
-from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, contains_all,
-                        final_answer, has_number, load_run, normalize_text,
-                        only_allowed_tables_changed, parse_args, resolve_db, row_dicts,
-                        visited_path)
+from verify_lib import (
+    Judge,
+    affirmative_contains,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    names_product,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_price,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--4'
 
@@ -39,12 +51,12 @@ def main():
                 names_product(answer, cheapest['name']),
                 f"expected={cheapest['name']!r} answer={answer!r}")
     judge.check('answer_states_condition',
-                normalize_text(cheapest['condition']) in normalize_text(answer),
+                affirmative_contains(answer, cheapest['condition']),
                 f"expected={cheapest['condition']!r} answer={answer!r}")
-    judge.check('answer_states_price', has_number(answer, cheapest['price']),
+    judge.check('answer_states_price', states_price(answer, cheapest['price']),
                 f"expected={cheapest['price']} answer={answer!r}")
     judge.check('answer_is_not_a_pricier_item',
-                normalize_text(runner_up['name']) not in normalize_text(answer),
+                not names_product(answer, runner_up['name']) or 'cheapest' in normalize_text(answer),
                 f"runner_up={runner_up['name']!r} answer={answer!r}")
 
     if initial and after:

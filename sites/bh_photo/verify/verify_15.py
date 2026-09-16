@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--15: Carol reserves a named item for store pickup."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, load_run,
-                        login_submitted_as, only_allowed_tables_changed, parse_args,
-                        reservations_for, resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    exact_addition,
+    load_run,
+    login_submitted_as,
+    only_allowed_tables_changed,
+    parse_args,
+    reservations_for,
+    resolve_db,
+    row_dicts,
+    user_id_for,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--15'
 EMAIL = 'carol.d@test.com'
@@ -36,6 +48,14 @@ def main():
     judge.check('reservation_exists_afterwards', SLUG in now, f'after={now}')
     judge.check('exactly_one_reservation_added', len(now) == len(before) + 1,
                 f'before={len(before)} after={len(now)}')
+    target_id = row_dicts(initial, 'SELECT id FROM products WHERE slug=?', (SLUG,))[0]['id']
+    stores = row_dicts(initial, "SELECT id FROM store_locations WHERE name='B&H SuperStore'")
+    judge.check('ground_truth_pickup_store', len(stores) == 1, repr(stores))
+    judge.check('active_reservation_at_requested_store', bool(stores) and exact_addition(
+                initial, after, 'store_reservations', {'user_id': user_id_for(initial, EMAIL),
+                'product_id': target_id, 'store_id': stores[0]['id'], 'quantity': 1, 'status': 'Reserved'}),
+                'one new Reserved item at B&H SuperStore; all existing reservations preserved')
+
     judge.check('no_unrelated_state_written',
                 only_allowed_tables_changed(initial, after, ALLOWED),
                 f'changed={sorted(changed_tables_excluding(initial, after, ALLOWED))}')

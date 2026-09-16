@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--10: the kit containing the Canon EOS C80 cinema camera."""
-from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
-                        has_number, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    names_product,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_price,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--10'
 
@@ -39,7 +51,7 @@ def main():
         visited_path(trajectory, '/bundle/' + kit['slug']),
         f"expected=/bundle/{kit['slug']}",
     )
-    judge.check('answer_states_kit_price', has_number(answer, kit['bundle_price']),
+    judge.check('answer_states_kit_price', states_price(answer, kit['bundle_price']),
                 f"expected={kit['bundle_price']} answer={answer!r}")
     missing = [name for name in others if not names_product(answer, name)]
     judge.check('answer_names_both_other_items', not missing, f'missing={missing}')

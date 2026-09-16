@@ -4,9 +4,20 @@
 Ground truth is read from the shipped seed database at verify time, so the
 answer key lives here and never in the agent-facing task file.
 """
-from verify_lib import (Judge, changed_tables_excluding, check_common, contains_any,
-                        final_answer, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_measurement,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--0'
 SLUG = '7artisans-6mm-f-2-fisheye-lens-micro-four-thirds'
@@ -38,10 +49,10 @@ def main():
 
     judge.check('opened_product_page', visited_path(trajectory, '/product/' + SLUG),
                 f'slug={SLUG}')
-    # the published value is "220°"; accept the number with or without the degree sign
+    # The reported value must carry its angular unit.
     digits = ''.join(ch for ch in value if ch.isdigit())
     judge.check('answer_states_angle_of_view',
-                bool(digits) and digits in normalize_text(answer),
+                bool(digits) and states_measurement(answer, float(digits), {r'°|degrees?': 1}),
                 f'expected={value!r} answer={answer!r}')
     judge.check('answer_is_not_just_the_product_name',
                 normalize_text(answer) != normalize_text('7Artisans 6mm f/2 Fisheye Lens (Micro Four Thirds)'),

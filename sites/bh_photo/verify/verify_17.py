@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--17: report the order number that is still processing."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, final_answer,
-                        load_run, login_submitted_as, normalize_text,
-                        only_allowed_tables_changed, orders_for, parse_args, resolve_db,
-                        visited_path)
+from verify_lib import (
+    Judge,
+    affirmative_contains,
+    changed_tables_excluding,
+    check_common,
+    clauses,
+    final_answer,
+    load_run,
+    login_submitted_as,
+    normalize_text,
+    only_allowed_tables_changed,
+    orders_for,
+    parse_args,
+    resolve_db,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--17'
 EMAIL = 'bob.c@test.com'
@@ -34,10 +46,10 @@ def main():
     judge.check('signed_in_as_the_named_account', login_submitted_as(trajectory, EMAIL), EMAIL)
     judge.check('opened_order_history', visited_path(trajectory, '/account/orders'), '/account/orders')
     judge.check('answer_gives_the_processing_order_number',
-                normalize_text(processing[0]['order_number']) in normalize_text(answer),
+                affirmative_contains(answer, processing[0]['order_number']),
                 f"expected={processing[0]['order_number']!r} answer={answer!r}")
     wrong = [row['order_number'] for row in others
-             if normalize_text(row['order_number']) in normalize_text(answer)]
+             if any(affirmative_contains(claim, row['order_number']) and 'delivered' not in claim for claim in clauses(answer))]
     judge.check('answer_does_not_give_a_delivered_order', not wrong, f'also named={wrong}')
     judge.check('no_state_written', only_allowed_tables_changed(initial, after, ALLOWED),
                 f'changed={sorted(changed_tables_excluding(initial, after, ALLOWED))}')

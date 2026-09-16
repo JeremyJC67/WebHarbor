@@ -10,6 +10,7 @@
     "mirrorless-cameras",
     "dslr-cameras",
     "camera-lenses",
+    "lens-accessories",
     "tripods-supports",
     "memory-cards-storage"
    ]
@@ -68,7 +69,8 @@
   "monitors": "Monitors",
   "printers-scanners": "Printers & Scanners",
   "lighting-kits": "Lighting",
-  "drones": "Drones"
+  "drones": "Drones",
+  "lens-accessories": "Lens Accessories"
  },
  "product_count": 296,
  "products": [
@@ -721,8 +723,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmc6t4llaac.jpg",
+   "image_sha256": "096a3d529166e3f819a4657cb693177ed0507ce2f6c7727ad195dcaa15764d74",
    "specs": [
     {
      "group": "Key Specs",
@@ -1512,7 +1514,7 @@
     {
      "group": "Storage and Expansion",
      "label": "Storage Drive Type",
-     "value": "1x 512 TB / M.2 NVMe SSD"
+     "value": "512 GB SSD (not user-upgradeable)"
     },
     {
      "group": "Storage and Expansion",
@@ -1650,7 +1652,15 @@
     "archive_url": "https://web.archive.org/web/20251103174932/https://www.bhphotovideo.com/c/product/1925478-REG/apple_mde44ll_a_14_macbook_pro_m5.html",
     "archive_timestamp": "20251103174932",
     "fetched_at": "2026-09-13T08:41:38Z"
-   }
+   },
+   "source_corrections": [
+    {
+     "field": "Storage Drive Type",
+     "before": "1x 512 TB / M.2 NVMe SSD",
+     "after": "512 GB SSD (not user-upgradeable)",
+     "basis": "The same source lists Total Installed Storage as 512 GB and Storage Expansion as Fixed Storage / Cannot Be Upgraded. Removed contradictory capacity and unsupported M.2 designation."
+    }
+   ]
   },
   {
    "slug": "apple-15-macbook-air-m4-70w-power-adapter-midnight",
@@ -1671,8 +1681,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmw1l3ll70w.jpg",
+   "image_sha256": "8d24d1d54983527c914e6fadba98be99ea82601db02c37e499bc643e4ca37ca2",
    "specs": [
     {
      "group": "Key Specs",
@@ -1976,8 +1986,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/apmc7d4ll70w.jpg",
+   "image_sha256": "52c40ff83e6dc6ef6d9f2b1fce31692ab2d14dc3f47db11a5e379a4175d3fdcb",
    "specs": [
     {
      "group": "Key Specs",
@@ -2956,8 +2966,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hebm5y7ua.jpg",
+   "image_sha256": "f6f9541a74248a37c33caf2cfcde4c3ef0ef3ab296fbd482916aeceb5f34aef6",
    "specs": [
     {
      "group": "Key Specs",
@@ -4246,8 +4256,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/atomsun008.jpg",
+   "image_sha256": "941e37098ae634000b123b9bc878bfc4fb153b8f1c43986dc60cf1891ba5b547",
    "specs": [
     {
      "group": "Specifications",
@@ -4296,8 +4306,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dep2225h10k.jpg",
+   "image_sha256": "e1d6143571a7424f1ab88cb115298de181fe901b27f8dbc3d2bffa66ebd03c54",
    "specs": [
     {
      "group": "Key Specs",
@@ -4551,8 +4561,8 @@
    "connectivity": "No",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dylyd8b.jpg",
+   "image_sha256": "7e7e575c8951049a75bf08949cd8f72b6e3ec5243dd6c756c381fa2557244abf",
    "specs": [
     {
      "group": "Key Specs",
@@ -4746,8 +4756,8 @@
    "connectivity": "No",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/ge8341arw.jpg",
+   "image_sha256": "16a0663fe7fedaf0137b40b30888e0430441726e9f4a6707a7aebc8aeb0c50e1",
    "specs": [
     {
      "group": "Key Specs",
@@ -5221,8 +5231,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/jbc25avb.jpg",
+   "image_sha256": "e8ba17ae1c3bae831518cdf69968b1a37e1163ae4bc92fa42e8f816cd378059d",
    "specs": [
     {
      "group": "Key Specs",
@@ -5616,8 +5626,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/wo282500.jpg",
+   "image_sha256": "4e36ae0b526a1848cce113031227297b1b4a2fffe8a99e90946528be3aef6612",
    "specs": [
     {
      "group": "Specifications",
@@ -5676,8 +5686,8 @@
    "connectivity": "Wi-Fi",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/brads4900w.jpg",
+   "image_sha256": "237d9408ca7246c1aca5a64d79a9532b8fd3c264c5b9a5c5a6eaab68ce4aece4",
    "specs": [
     {
      "group": "Key Specs",
@@ -5876,8 +5886,8 @@
    "connectivity": "Wi-Fi | *Via Included Adapter",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/brsp1.jpg",
+   "image_sha256": "59f9cfa000d1eb59735f2d40820bc9ccc763ae59f3d2ac425bb9a0914d8199b8",
    "specs": [
     {
      "group": "Key Specs",
@@ -6051,8 +6061,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/caicmf3010vp.jpg",
+   "image_sha256": "f0eb230ab7ff3f77ab1b7f4e1969b9a641da5df8f64d3969ff00c02e753da817",
    "specs": [
     {
      "group": "Key Specs",
@@ -6421,8 +6431,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/epds730n.jpg",
+   "image_sha256": "fb9ae9bc733d9193a7f474d4f68b83218c227f1e4a697714e2cc57cc4047a2cf",
    "specs": [
     {
      "group": "Key Specs",
@@ -7051,8 +7061,8 @@
    "connectivity": "802.11b/g Wi-Fi",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/epwf2960.jpg",
+   "image_sha256": "a31cd2500ff8faac913e19ee7a1731a0a1b95093bd4287deca9fcac7d3945253",
    "specs": [
     {
      "group": "Key Specs",
@@ -7396,8 +7406,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hem507dn.jpg",
+   "image_sha256": "d8f4d504c29b74f648daa7e48bc7c2937fae1a1d940ede06536fae90a9f97fd6",
    "specs": [
     {
      "group": "Key Specs",
@@ -11296,8 +11306,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": 22,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/djneocombo.jpg",
+   "image_sha256": "9e481846b58bf9ccd8ef71d558e98a8ccbb922420add1cf0c4c2dccc65b3c093",
    "specs": [
     {
      "group": "Key Specs",
@@ -11941,8 +11951,8 @@
    "connectivity": "Wi-Fi / Bluetooth LE",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/djop3dlim9k.jpg",
+   "image_sha256": "422ec76f80f46e35d5eaafadf1b8f87343f1b35a62f15d93a1e33ceaf9298a25",
    "specs": [
     {
      "group": "Imaging",
@@ -12111,8 +12121,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hohft500.jpg",
+   "image_sha256": "21a4b44844271ec8cb7b3c914ac63c444e431825b233e5e161e72c3bda97bd0c",
    "specs": [
     {
      "group": "Specifications",
@@ -12161,8 +12171,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/al2016.jpg",
+   "image_sha256": "1c37061e95d0b398d4648c55fa3f46a51efd48c8468cc4f321a5e6e6e19b8c16",
    "specs": [
     {
      "group": "Specifications",
@@ -12496,8 +12506,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/aps3179a30.jpg",
+   "image_sha256": "7c09b7835fa6c7517489531b8c59f286f4ef833fe06c6153f4a6fb12a51a0ae8",
    "specs": [
     {
      "group": "Key Specs",
@@ -12591,8 +12601,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/bi450wt13wer.jpg",
+   "image_sha256": "883a33e0a9c05b4a01e3d4d6f1184a4442b3ffc3e9922ceb047215395d505c0b",
    "specs": [
     {
      "group": "Key Specs",
@@ -12831,8 +12841,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/drbd500k.jpg",
+   "image_sha256": "41e1f2048a78ff5386ba8a2ba581f83c953a57eb01e72be641127eb4b60b7ac9",
    "specs": [
     {
      "group": "Specifications",
@@ -12891,8 +12901,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/fiflxp3clsb1.jpg",
+   "image_sha256": "a50d036c9fcabbc59bc932c4b3251ca69bef49a5a5fab838045bf01b76193162",
    "specs": [
     {
      "group": "Key Specs",
@@ -12991,8 +13001,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/fodlxt6602.jpg",
+   "image_sha256": "b8ac77bd53242afba361caf1e6f0de7215e597a39b27c8c8d12e8d41c50a70b1",
    "specs": [
     {
      "group": "Key Specs",
@@ -13756,8 +13766,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gola200bikit.jpg",
+   "image_sha256": "5db8920e01b0cac22230e817d9f0bb5bbbf9c02976a7d85ed18fad358b89501b",
    "specs": [
     {
      "group": "Key Specs",
@@ -14081,8 +14091,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/goulbocta180.jpg",
+   "image_sha256": "58719d850a3527de64cbccc0e34bbaa11cf8c1f6b1d4b735f3d863e142d6e0bc",
    "specs": [
     {
      "group": "Key Specs",
@@ -14186,8 +14196,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/linbag1x1.jpg",
+   "image_sha256": "e2cd2bba4cbba4bd59e4982c9cfe8a21a6d1748385c38b891e932a340bf91a19",
    "specs": [
     {
      "group": "Key Specs",
@@ -14291,8 +14301,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/rorltitanx2y.jpg",
+   "image_sha256": "2f45d0a4b21255b3e673b4963edc45fe88a5ffce3ae2b7b2f76a3ee9df7db92f",
    "specs": [
     {
      "group": "Key Specs",
@@ -14576,8 +14586,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sads009.jpg",
+   "image_sha256": "63f2e5561c1281bc41c65afcf2ff350790f5617556ce3b4b08fc623649a54313",
    "specs": [
     {
      "group": "Key Specs",
@@ -15266,8 +15276,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/relpa3ss.jpg",
+   "image_sha256": "befbd904b0608c5a6800e70a8c65f484ea9a6ef1a785da8d541b91e0477db8b4",
    "specs": [
     {
      "group": "Specifications",
@@ -15346,8 +15356,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/relpa5ss.jpg",
+   "image_sha256": "c37ff7fd9181138a2a7daa9063c077298cec921063b55535cf70077310bf2dc6",
    "specs": [
     {
      "group": "Specifications",
@@ -15426,8 +15436,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/7a2518nz.jpg",
+   "image_sha256": "3cbb81766ee469595229664dc665cd32b7b90d96fd6da3a74d6f8085402a4ec1",
    "specs": [
     {
      "group": "Specifications",
@@ -15626,8 +15636,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/7a1277lfa.jpg",
+   "image_sha256": "58e5d8d30a27af7e487d08632ea1c3c46b23d1660204163c082fdb731797a209",
    "specs": [
     {
      "group": "Specifications",
@@ -16511,8 +16521,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dz75vpl.jpg",
+   "image_sha256": "16d002b5daf72fa0330180245ede532b7e55602dd9adc04b392a2e9a660e1c7d",
    "specs": [
     {
      "group": "Key Specs",
@@ -16686,8 +16696,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/fauwl09f.jpg",
+   "image_sha256": "3baf227441b080b541e4c853eed4b12e263eb22afe5040f464dca840a185e437",
    "specs": [
     {
      "group": "Housing Lens",
@@ -16771,8 +16781,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/flll1.jpg",
+   "image_sha256": "d195bd55be112b47118c6e160b2b03161ca16062c677937ad8851b9145665e92",
    "specs": [
     {
      "group": "Specifications",
@@ -16826,8 +16836,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hecu255.jpg",
+   "image_sha256": "8efb3f8bf005ececb0ebd02c07789ac33f9b698043227a59ba2ff4023dbd9900",
    "specs": [
     {
      "group": "Specifications",
@@ -16901,8 +16911,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hecu262.jpg",
+   "image_sha256": "8efb3f8bf005ececb0ebd02c07789ac33f9b698043227a59ba2ff4023dbd9900",
    "specs": [
     {
      "group": "Specifications",
@@ -16976,8 +16986,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hecu367.jpg",
+   "image_sha256": "4fecf96e4ff924820a851f000ceb4d1fb9e18f18460633ae07c9e2b74d30ce99",
    "specs": [
     {
      "group": "Specifications",
@@ -17051,8 +17061,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/hecu277.jpg",
+   "image_sha256": "8efb3f8bf005ececb0ebd02c07789ac33f9b698043227a59ba2ff4023dbd9900",
    "specs": [
     {
      "group": "Specifications",
@@ -17231,8 +17241,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/irilc45li.jpg",
+   "image_sha256": "6160edf2e9705464bb68042e7b1cd8d12d9303ead26dcfa546c9b07645b3f74f",
    "specs": [
     {
      "group": "Key Specs",
@@ -17406,8 +17416,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/kf011085.jpg",
+   "image_sha256": "47e448516488cfa98e04774161525a192bfde0f62164bd7ecb185f138ab28b3f",
    "specs": [
     {
      "group": "Specifications",
@@ -17486,8 +17496,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/kf011086.jpg",
+   "image_sha256": "47e448516488cfa98e04774161525a192bfde0f62164bd7ecb185f138ab28b3f",
    "specs": [
     {
      "group": "Specifications",
@@ -17566,8 +17576,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/kf011087.jpg",
+   "image_sha256": "47e448516488cfa98e04774161525a192bfde0f62164bd7ecb185f138ab28b3f",
    "specs": [
     {
      "group": "Specifications",
@@ -17646,8 +17656,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lel1004002m4.jpg",
+   "image_sha256": "9feed98b8dc52ab81b737423a472c234331b526158cd8da5081a0148a82ed23e",
    "specs": [
     {
      "group": "Specifications",
@@ -17701,8 +17711,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lelcn600flm5.jpg",
+   "image_sha256": "bde707c04d6bad000f5e81e8738f47ab696b43171e858914fc72ca0d30e0255d",
    "specs": [
     {
      "group": "Specifications",
@@ -17756,8 +17766,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lelcnexiiim5.jpg",
+   "image_sha256": "00d9167efe2d5663998f2de8f9455d170379f844524104295c765732b308697e",
    "specs": [
     {
      "group": "Specifications",
@@ -17811,8 +17821,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lels150600c5.jpg",
+   "image_sha256": "ab3ba5966b8037553421f2b5963fe7b0e6213547164ae0fd7d8ba27c87062973",
    "specs": [
     {
      "group": "Specifications",
@@ -17866,8 +17876,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lelt15060025.jpg",
+   "image_sha256": "92fd9404716fd0d8b7e020ec57ae1e891aa2cb718f33310274b6cea36b11038c",
    "specs": [
     {
      "group": "Specifications",
@@ -17921,8 +17931,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lelt150600m5.jpg",
+   "image_sha256": "f12e54a6a312f588c88024a40d310969e59f663bef52ad12b328e96814e646ea",
    "specs": [
     {
      "group": "Specifications",
@@ -17976,8 +17986,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/lelcn400flm5.jpg",
+   "image_sha256": "661924c83d0929f60ab491f9bf372635d455e512c70939101446be4b402f0cc1",
    "specs": [
     {
      "group": "Specifications",
@@ -18261,8 +18271,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/ni20050056vw.jpg",
+   "image_sha256": "d94f90cc33dbf63207e3297064137cddd4377b52f42c98a3ab17378a594c40f0",
    "specs": [
     {
      "group": "Key Specs",
@@ -18801,8 +18811,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/so2820feclg.jpg",
+   "image_sha256": "545035ed7586657a33b88bd7123b0af1cf21c7418131fc9251ab4ed29fd78b04",
    "specs": [
     {
      "group": "Specifications",
@@ -19246,8 +19256,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/ttc1020bx.jpg",
+   "image_sha256": "8847039ddc29353e72d61745596e8bea92f615837fc432cd283407696fb54ee3",
    "specs": [
     {
      "group": "Specifications",
@@ -19651,8 +19661,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/tokpc3003pl.jpg",
+   "image_sha256": "b82a066547d9d98715bd6b78a22489107024ed480d2c563752dd9587d722d813",
    "specs": [
     {
      "group": "Key Specs",
@@ -19826,8 +19836,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/tokpc3105pl.jpg",
+   "image_sha256": "980256d7eac06f3d4202d8b4af37c8b7d879e9668da213106a098585900afd53",
    "specs": [
     {
      "group": "Key Specs",
@@ -20331,8 +20341,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/yoyn50mmiic.jpg",
+   "image_sha256": "eaf51b20190765189601256bc95ff13fb250b36f7294669ed97752f78d7abd42",
    "specs": [
     {
      "group": "Specifications",
@@ -20446,8 +20456,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/zelk5cp-3pl.jpg",
+   "image_sha256": "13da3077d49d460c7727d59f0eeb886bd76b799b2e87a81cb28ef5e6f8224ecd",
    "specs": [
     {
      "group": "Key Specs",
@@ -20826,8 +20836,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/bedxamicropp.jpg",
+   "image_sha256": "f6b38cd905fb07f3dd0ec85cc528b308240b041b7cb82ecf7c494094fdd7ea73",
    "specs": [
     {
      "group": "Specifications",
@@ -20941,8 +20951,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/cac1769.jpg",
+   "image_sha256": "ae8e3ad28bde1386040511cb5fdca1090617174e4962218456c70d46dbcb7843",
    "specs": [
     {
      "group": "Specifications",
@@ -24261,8 +24271,8 @@
    "connectivity": "Wi-Fi 4 (802.11n)",
    "megapixels": 24.24,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/pekfbb50k.jpg",
+   "image_sha256": "7798ccff404ad25ff9af87b23c20df0ee8a7beaf2189bcc050c8a1067a15e8a8",
    "specs": [
     {
      "group": "Key Specs",
@@ -24671,8 +24681,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/rupqx115bv2.jpg",
+   "image_sha256": "833ed2294931629650568f7cda439e0a9cf8dd8c3491c6628c5b44541ae2bb15",
    "specs": [
     {
      "group": "Key Specs",
@@ -24821,8 +24831,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/tibt003v.jpg",
+   "image_sha256": "e0a75b372725c927104d3057cb4454197f06f79f4f3368ad6f6a9c240e9ab0d1",
    "specs": [
     {
      "group": "Specifications",
@@ -25141,8 +25151,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sads4ssd.jpg",
+   "image_sha256": "2a4fe5802d3372a0593c1af7adcb93bf093ae680309d02e131b5fb449a3c00a4",
    "specs": [
     {
      "group": "Key Specs",
@@ -26089,10 +26099,10 @@
    "sensor_size": "Full-Frame",
    "focal_length": null,
    "connectivity": "Wi-Fi 6E (802.11ax) / Bluetooth 5.3",
-   "megapixels": null,
+   "megapixels": 24.2,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/caer1ek.jpg",
+   "image_sha256": "ec9eacaf380f9c2a839061fcbe96273be4288e861c706a494a60144a5df07a21",
    "specs": [
     {
      "group": "Key Specs",
@@ -26519,10 +26529,10 @@
    "sensor_size": "APS-C",
    "focal_length": null,
    "connectivity": "802.11b/g Wi-Fi / Bluetooth 4.2",
-   "megapixels": null,
+   "megapixels": 24.1,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/caer1001845e.jpg",
+   "image_sha256": "0e14e16e751c2b560a75d34127b15474e360326ab5973259a9fe67ddab96a965",
    "specs": [
     {
      "group": "Key Specs",
@@ -26939,7 +26949,7 @@
    "sensor_size": "APS-C",
    "focal_length": null,
    "connectivity": "802.11b/g Wi-Fi / Bluetooth 4.2",
-   "megapixels": null,
+   "megapixels": 24.1,
    "capacity_gb": null,
    "image_path": "images/products/caer1001845k.jpg",
    "image_sha256": "46710628e1422feedc97de49d30a8b8b3bdf53df5d073b2aef9c3aed57580aab",
@@ -27361,8 +27371,8 @@
    "connectivity": "802.11b/g Wi-Fi / Bluetooth 4.2",
    "megapixels": 24.1,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/caer1002dzlk.jpg",
+   "image_sha256": "841334de656e535275e649bbfa92308c5f1fad6544152c70be3f972defe8f4d9",
    "specs": [
     {
      "group": "Key Specs",
@@ -27774,10 +27784,10 @@
    "sensor_size": "APS-C",
    "focal_length": "18 to 45mm (35mm Equivalent: 29 to 72mm)",
    "connectivity": "Wi-Fi 4 (802.11n) / Bluetooth 4.2",
-   "megapixels": null,
+   "megapixels": 24.2,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/caer501850wk.jpg",
+   "image_sha256": "14602465affcc4973b00dba78a03aba11c840b7453b0b31df327344d7f67eb6d",
    "specs": [
     {
      "group": "Key Specs",
@@ -28649,8 +28659,8 @@
    "bh_sku": "MEMKRFAF1",
    "mpn": "MK-RF-AF1",
    "department_slug": "photography",
-   "subcategory_slug": "mirrorless-cameras",
-   "product_type": "Mirrorless Camera",
+   "subcategory_slug": "lens-accessories",
+   "product_type": "Macro Extension Tube",
    "price_usd": 39.99,
    "availability": "In Stock",
    "condition": "New",
@@ -28714,7 +28724,7 @@
    "sensor_size": "Full-Frame",
    "focal_length": null,
    "connectivity": "Wi-Fi 5 (802.11ac) / Bluetooth 5.0",
-   "megapixels": null,
+   "megapixels": 24.5,
    "capacity_gb": null,
    "image_path": "images/products/niz522450ak.jpg",
    "image_sha256": "9b996915f687e6f47d668ac421d510c2c178af36301d9155b85a367a046753af",
@@ -29144,7 +29154,7 @@
    "sensor_size": "Full-Frame",
    "focal_length": null,
    "connectivity": "Wi-Fi 5 (802.11ac) / Bluetooth 5.0",
-   "megapixels": null,
+   "megapixels": 24.5,
    "capacity_gb": null,
    "image_path": "images/products/niz52ak.jpg",
    "image_sha256": "04f9a0f7a5552b8f3f43950b2878571b23ceaaee023cd78383b7062c78722c01",
@@ -29574,11 +29584,16 @@
    "sensor_size": null,
    "focal_length": null,
    "connectivity": "Wi-Fi 5 (802.11ac) / Bluetooth 5.0",
-   "megapixels": null,
+   "megapixels": 24.5,
    "capacity_gb": null,
    "image_path": "images/products/nizfs2470k.jpg",
    "image_sha256": "93475e6ab617face86b71407c51fd31cde0c547b7586dac3eeafddbdbe793a20",
    "specs": [
+    {
+     "group": "Key Specs",
+     "label": "Effective Sensor Resolution",
+     "value": "24.5 Megapixels"
+    },
     {
      "group": "Key Specs",
      "label": "ISO/Gain Sensitivity",
@@ -29760,7 +29775,17 @@
     "archive_url": "https://web.archive.org/web/20251116130233/https://www.bhphotovideo.com/c/product/1918832-REG/nikon_2016_zf_mirrorless_camera_with.html",
     "archive_timestamp": "20251116130233",
     "fetched_at": "2026-09-13T08:41:37Z"
-   }
+   },
+   "source_supplements": [
+    {
+     "url": "https://imaging.nikon.com/imaging/lineup/mirrorless/z_f/",
+     "field": "Effective Sensor Resolution",
+     "source_value": "Number of effective pixels: 24.5 million",
+     "retrieved_at": "2026-09-16",
+     "source_sha256": "153a76077b9805c5b252677371e147c5f4023f7937b64669a8c7ea30f1515be2",
+     "note": "Manufacturer specification for the Zf body, also used in this lens kit."
+    }
+   ]
   },
   {
    "slug": "panasonic-lumix-g97-mirrorless-camera-with-12-60mm-f-3-5-5-6-lens",
@@ -29779,7 +29804,7 @@
    "sensor_size": "Four Thirds",
    "focal_length": "12 to 60mm (35mm Equivalent: 24 to 120mm)",
    "connectivity": "Wi-Fi 4 (802.11n) / Bluetooth 5.0",
-   "megapixels": null,
+   "megapixels": 20.3,
    "capacity_gb": null,
    "image_path": "images/products/padcg97mkq.jpg",
    "image_sha256": "c536b9a28da038d89f9c79801f96b05a51c47c4c2064edd3df253e1b765ac66f",
@@ -30756,8 +30781,8 @@
    "connectivity": "Wi-Fi 4 (802.11n)",
    "megapixels": 16.0,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/padmcg7ksbk.jpg",
+   "image_sha256": "ba09899a747bbd9efced94dfac629e8abc2351c33721acc948b90f9ed485da6c",
    "specs": [
     {
      "group": "Key Specs",
@@ -31241,8 +31266,8 @@
    "connectivity": "Bluetooth 5.0 / Wi-Fi 5 (802.11ac)",
    "megapixels": 24.2,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/padcs91840bq.jpg",
+   "image_sha256": "964c9a688958777e4d343dacafdb59a7bbd3d1be7362fbbb1e31aadd7b1aef7f",
    "specs": [
     {
      "group": "Key Specs",
@@ -32404,7 +32429,7 @@
    "sensor_size": "APS-C",
    "focal_length": "16 to 50mm (35mm Equivalent: 24 to 75mm)",
    "connectivity": "Wi-Fi 4 (802.11n) / Bluetooth 4.1",
-   "megapixels": null,
+   "megapixels": 24.2,
    "capacity_gb": null,
    "image_path": "images/products/sozve10kw.jpg",
    "image_sha256": "3ff788def79e966ef056ba71c2b83059283ddfd06a8da22453b93bdb73aa3995",
@@ -33721,8 +33746,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/bebv10dl08k.jpg",
+   "image_sha256": "2577adf18c7cc78d067ea645e92c0f279830d9311dbd989996b69fb14acdbdff",
    "specs": [
     {
      "group": "Head",
@@ -33841,8 +33866,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/bebv8dl08k.jpg",
+   "image_sha256": "34bca58550371c156dbe35c9b4ee178ab6b886e33b2b616a688653488452f6e2",
    "specs": [
     {
      "group": "Head",
@@ -34271,8 +34296,8 @@
    "connectivity": "Bluetooth 5.1",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/djrs3mpmk.jpg",
+   "image_sha256": "693b86b128a7ba6d1357030a424b81564668f0580a2c33a9802b7cb8bf262113",
    "specs": [
     {
      "group": "Key Specs",
@@ -34456,8 +34481,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/eieg05a2.jpg",
+   "image_sha256": "9a99379b127f788f48c475732e7b220e9bc8cefcee4ebd8b8fbecf51a238c371",
    "specs": [
     {
      "group": "Key Specs",
@@ -34896,8 +34921,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gigt3533lsus.jpg",
+   "image_sha256": "dce2d52407b75edd150a339d060dd1b8fc26cc7e416aef83364758c8f9bda6c7",
    "specs": [
     {
      "group": "Key Specs",
@@ -35316,8 +35341,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gigt4533lsus.jpg",
+   "image_sha256": "b86139e675d69d56cf51a157a9059ad343b58e8833bd5fea6d1fef3331677b7b",
    "specs": [
     {
      "group": "Key Specs",
@@ -35596,8 +35621,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gigt4553sus.jpg",
+   "image_sha256": "bce4533da2a533021e772ed95d8fc0dd1144b04d9775f0a0543c85e47409fc2e",
    "specs": [
     {
      "group": "Key Specs",
@@ -35736,8 +35761,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gigt5533lsus.jpg",
+   "image_sha256": "0e900b9d5ac16af086c7c04f4d0922fa25d4c84f7b0b12e27e2f0eab3111928c",
    "specs": [
     {
      "group": "Key Specs",
@@ -36206,8 +36231,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/mamha01.jpg",
+   "image_sha256": "7e4edbab4fd8c467915a0db37d108728d0bdc88724aee02e438ab58fa816afe3",
    "specs": [
     {
      "group": "Specifications",
@@ -36381,8 +36406,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/mamkbfrlabhu.jpg",
+   "image_sha256": "4e752d1f386e7df159093a9b57f8a21d416b792c246c0a4aa0f741f53064c44f",
    "specs": [
     {
      "group": "Key Specs",
@@ -36711,8 +36736,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/mamt055cxprk.jpg",
+   "image_sha256": "1d8445fb10c49a5baf493cedf5d2581438ae0fd5e5fd0deca5f34f79d08a8252",
    "specs": [
     {
      "group": "Key Specs",
@@ -36856,8 +36881,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/mat055cxprok.jpg",
+   "image_sha256": "f895c35cad864882ce752508c77a412bfbcf982ad3f5f75e1a8326bdf53251e5",
    "specs": [
     {
      "group": "Key Specs",
@@ -37231,8 +37256,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/moptmms.jpg",
+   "image_sha256": "47cf2fc0abbaaa55c67873226d8101ca4a0b2a5a4f55800e93e692028ba5e36b",
    "specs": [
     {
      "group": "Specifications",
@@ -37306,8 +37331,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/nitab.jpg",
+   "image_sha256": "81fa6eaa8528e5fb82edda9c7449bdeff9b5b6abc2c9cecb52957772a8b09d22",
    "specs": [
     {
      "group": "Specifications",
@@ -37736,8 +37761,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/obct3565bz21.jpg",
+   "image_sha256": "d20a9bb81267585e652c1c74315bafb4153c7df5282c6339fa42e09f1321673f",
    "specs": [
     {
      "group": "Key Specs",
@@ -37926,8 +37951,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/obct3586bz22.jpg",
+   "image_sha256": "679b0fa5646b42ca09ba68fba6effd56471b147ef96830ea2da9cc1034ecf26d",
    "specs": [
     {
      "group": "Key Specs",
@@ -38226,8 +38251,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/peptauplb.jpg",
+   "image_sha256": "e3380ae8a5863779573c245b4b9b71048d98e985fbf39fdc8447c33ad0e5baef",
    "specs": [
     {
      "group": "General",
@@ -38301,8 +38326,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/peptlbk.jpg",
+   "image_sha256": "716c2194d1ab314d107878075144474e855cef76a6fd3d5ebcb75d26dfe93e98",
    "specs": [
     {
      "group": "Key Specs",
@@ -38636,8 +38661,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sm5564.jpg",
+   "image_sha256": "aed9ed5ffa6a20f2c9d3aa67287834a887adfe154e9d6c429fb2ab022113dd7b",
    "specs": [
     {
      "group": "Key Specs",
@@ -38791,8 +38816,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sm5565.jpg",
+   "image_sha256": "ba1a7a7357f51caee50ccc138546ec7a5e831718d27e1d5fc1698e7b50651479",
    "specs": [
     {
      "group": "Key Specs",
@@ -38941,8 +38966,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/su620031bl.jpg",
+   "image_sha256": "78f1a201e3981ec75c1ee327b37aa789e20083685a9707de6d885b5c59c0c68d",
    "specs": [
     {
      "group": "Key Specs",
@@ -39121,8 +39146,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/swpct.jpg",
+   "image_sha256": "796c8d08f678f2620071e8abbdddc7e06f9d9ac0f84fe580f052b7bde8e343be",
    "specs": [
     {
      "group": "Key Specs",
@@ -39261,8 +39286,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/vimp15.jpg",
+   "image_sha256": "2ea59e0e8a7f7399b22f74548b777ed2687f5ca4f06d96888989c1e945061e2a",
    "specs": [
     {
      "group": "Key Specs",
@@ -39611,8 +39636,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/arhp1.jpg",
+   "image_sha256": "cbb51951ab46788a38167a65e20928b282c531c5d607231aca8f94824347e723",
    "specs": [
     {
      "group": "Key Specs",
@@ -39766,8 +39791,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/aspathfinder.jpg",
+   "image_sha256": "07bf20bc67926ca388dbe60ed8500ae9b18d0f83b1ba7e409a4e41141e2a52fd",
    "specs": [
     {
      "group": "Key Specs",
@@ -39926,8 +39951,8 @@
    "connectivity": "Bluetooth",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/besolo3wblk.jpg",
+   "image_sha256": "ef98260126af13578350df17168c0aa647aa041dfa2c75bf51bed0403f344aaf",
    "specs": [
     {
      "group": "Key Specs",
@@ -40856,8 +40881,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/whthsr.jpg",
+   "image_sha256": "6962111f22a3dd902e803197787fed4cc451adab7b5779250d9b254d762e7e04",
    "specs": [
     {
      "group": "General",
@@ -40906,8 +40931,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/akd5k.jpg",
+   "image_sha256": "eaa48a84bc083ac59ed33e7c5eea2ccb54d807d2855365678b513ca736d9a230",
    "specs": [
     {
      "group": "Key Specs",
@@ -41136,8 +41161,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/astspirit.jpg",
+   "image_sha256": "d55e8c3c61325607d365cfb314ed5dfd0abe96fabac9d7d975e90450851399d7",
    "specs": [
     {
      "group": "Key Specs",
@@ -41421,8 +41446,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/azsmx15.jpg",
+   "image_sha256": "26d4c2e12cbd2349fc0524c9f658cf211be5cc856b87ebf097498047ae044f29",
    "specs": [
     {
      "group": "Key Specs",
@@ -42321,8 +42346,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/djmic21txpw.jpg",
+   "image_sha256": "c6daffd8fc86726fc9d0d74ae32a04431364f651988b503371045e7ab07b2980",
    "specs": [
     {
      "group": "Key Specs",
@@ -43286,8 +43311,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4060occc03.jpg",
+   "image_sha256": "0041dd694b8d44081ca739378630030eddf862bd1981d770f4b15dab162170db",
    "specs": [
     {
      "group": "Key Specs",
@@ -43421,8 +43446,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4060occw10.jpg",
+   "image_sha256": "6860554612317e08b0de6a366e68651fbb0bf028ccfa284821a497918fea8492",
    "specs": [
     {
      "group": "Key Specs",
@@ -43556,8 +43581,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4061occc00.jpg",
+   "image_sha256": "0041dd694b8d44081ca739378630030eddf862bd1981d770f4b15dab162170db",
    "specs": [
     {
      "group": "Key Specs",
@@ -43686,8 +43711,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4061occc10.jpg",
+   "image_sha256": "0041dd694b8d44081ca739378630030eddf862bd1981d770f4b15dab162170db",
    "specs": [
     {
      "group": "Key Specs",
@@ -43996,8 +44021,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4063occf00.jpg",
+   "image_sha256": "c9e3cbcf698b6cd6936c289c39dde457d4d20852fd3a65dc1ae875ab91769226",
    "specs": [
     {
      "group": "Key Specs",
@@ -44126,8 +44151,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp488dcb00lh.jpg",
+   "image_sha256": "25ec4ccee1b1f459bd36ca7981b748423a9656d0fbce24bfa038b50e98dcdd57",
    "specs": [
     {
      "group": "Key Specs",
@@ -44261,8 +44286,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4266cfb1lh.jpg",
+   "image_sha256": "004d3860d39e2d9ac0ec4e061703b86e19f4e95dc9946ea0fb017b67f44f1ce6",
    "specs": [
     {
      "group": "Key Specs",
@@ -44391,8 +44416,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4018vbsl1.jpg",
+   "image_sha256": "5cc11ac1d039fc08f66e2e5435959eed8238b5edbe4ddcdb1dab7daa4030660f",
    "specs": [
     {
      "group": "Specifications",
@@ -44486,8 +44511,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4018vlbse5.jpg",
+   "image_sha256": "02d84f7fe994146ef0241f7c64bd1e56d264a6a5059a91c0fc1b680ee6eeb63d",
    "specs": [
     {
      "group": "Specifications",
@@ -44581,8 +44606,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4018vlbsl1.jpg",
+   "image_sha256": "02f707874b41aad2673cbb0f1cbdc0ae53658dd5c0483746d00c3542d3a97f8d",
    "specs": [
     {
      "group": "Physical",
@@ -44676,8 +44701,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4188dcfs1m.jpg",
+   "image_sha256": "0e9fa5ce1d54d02b5e34931b2b9af1819d79c13ca75a026348ca53461cf4bd00",
    "specs": [
     {
      "group": "Key Specs",
@@ -44806,8 +44831,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4188dcbs1m.jpg",
+   "image_sha256": "45fc2436ecf69dfb1791d6e9790a1000221cca99b1c704760c1a23968da46b6f",
    "specs": [
     {
      "group": "Key Specs",
@@ -44936,8 +44961,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/dp4266occs1m.jpg",
+   "image_sha256": "e1210a7750e07f7bb945494d14ec1793ad3d5923dd342956cb35bfcd70745af7",
    "specs": [
     {
      "group": "Key Specs",
@@ -45561,8 +45586,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gawmicclmp16.jpg",
+   "image_sha256": "05bb90de2fac115a1b0886859d2744775ed8a2210321ac1296bbcbb08b43eea1",
    "specs": [
     {
      "group": "Specifications",
@@ -45636,8 +45661,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/gagfwmicqrtp.jpg",
+   "image_sha256": "f277e8d9b96058c5b8c4384b885f81465fb73cdca7879055f2332e96821f686d",
    "specs": [
     {
      "group": "Specifications",
@@ -45746,8 +45771,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/icufo.jpg",
+   "image_sha256": "aea544fb9c644d61193083cffcaabaa102c09d80a135d94df960b88986267fc2",
    "specs": [
     {
      "group": "Inputs/Outputs",
@@ -46041,8 +46066,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/le749710.jpg",
+   "image_sha256": "6d5136c1dc7e2f1d6453fa53b8abaebab2df969f219e544dc046cde337845cd8",
    "specs": [
     {
      "group": "Specifications",
@@ -46091,8 +46116,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/mopm10.jpg",
+   "image_sha256": "31e2eba39f0650586385d5ab38c1f7da034313f9d87e9d281c2e7883bdea7c97",
    "specs": [
     {
      "group": "Key Specs",
@@ -46366,8 +46391,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/netlm103mt.jpg",
+   "image_sha256": "3db1f93827a46e979b301c2318991741080088ed79d5f5cfd4e28166a3c7781d",
    "specs": [
     {
      "group": "Key Specs",
@@ -46546,8 +46571,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/oc51900b.jpg",
+   "image_sha256": "ad6ef44ed7fa0d0a8e673afa1d0f536c4a3daf569478cc448931697c506c4dcf",
    "specs": [
     {
      "group": "Key Specs",
@@ -46686,8 +46711,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/rontg4pwk.jpg",
+   "image_sha256": "d0b299631e8f384af59f243b2d0109a5c2b83d2484139ea47235dfcbe9146a60",
    "specs": [
     {
      "group": "Key Specs",
@@ -47361,8 +47386,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sac11anwil3b.jpg",
+   "image_sha256": "33631bbae429766f9e10ab31cca52258819abc61151349bf9c317c0a361072a2",
    "specs": [
     {
      "group": "Key Specs",
@@ -47506,8 +47531,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sac11anwil3w.jpg",
+   "image_sha256": "508ca9e04f582e85b0e57dcdb927b16615b06a7ad472f307ac447832df39b3f1",
    "specs": [
     {
      "group": "Key Specs",
@@ -47641,8 +47666,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sa11wnwil3be.jpg",
+   "image_sha256": "e54b0e625808062a418eca6b1a9cc6cde4ade05c5c47e07e44056c0713e6c90f",
    "specs": [
     {
      "group": "Key Specs",
@@ -47786,8 +47811,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sac11anzal3b.jpg",
+   "image_sha256": "33631bbae429766f9e10ab31cca52258819abc61151349bf9c317c0a361072a2",
    "specs": [
     {
      "group": "Key Specs",
@@ -47931,8 +47956,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sac11anlunbe.jpg",
+   "image_sha256": "e54b0e625808062a418eca6b1a9cc6cde4ade05c5c47e07e44056c0713e6c90f",
    "specs": [
     {
      "group": "Key Specs",
@@ -48076,8 +48101,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/sac11anlunb.jpg",
+   "image_sha256": "7be69e1626c20c03425464ba359a29a210c3cdd48f2ba42d8c295134eb9b3c69",
    "specs": [
     {
      "group": "Key Specs",
@@ -48221,8 +48246,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/semkh416p48w.jpg",
+   "image_sha256": "cf7f03c5a3b920d893bd08ed82611e5e92ddba44b0ca872f9471d467132ba919",
    "specs": [
     {
      "group": "Key Specs",
@@ -48736,8 +48761,8 @@
    "connectivity": "No",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/tutl023c.jpg",
+   "image_sha256": "5c8395ec39ee04000eb1da3c5cfcb521441f8ef3ab793d73e81980cb228e389c",
    "specs": [
     {
      "group": "Key Specs",
@@ -48906,8 +48931,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/wibpsn5212t.jpg",
+   "image_sha256": "32ebd05e196e57a8c0e959e2420220b64182e00a8444fbaa8a46c2375bc21475",
    "specs": [
     {
      "group": "General",
@@ -48971,8 +48996,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/wibpshadx1mt.jpg",
+   "image_sha256": "63ed0d852fc20e343327bf2fa3b00f229077916179a6a4e7ca57cfa9782c8499",
    "specs": [
     {
      "group": "General",
@@ -49041,8 +49066,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/wibpshulxdw.jpg",
+   "image_sha256": "5f0d2ffe0a52d60d41b6667ce628bd7041dc23ab85a75b7316ab439fd1ce5c77",
    "specs": [
     {
      "group": "General",
@@ -49881,8 +49906,8 @@
    "connectivity": "Bluetooth",
    "megapixels": 21.2,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/bl6kpkcampk.jpg",
+   "image_sha256": "02cf4efc8be651449844a073f55759ba2bf7d84cde8b5e57d7dac0655e37feca",
    "specs": [
     {
      "group": "Key Specs",
@@ -50751,8 +50776,8 @@
    "connectivity": "Wi-Fi 5 (802.11ac)",
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/caec802470k1.jpg",
+   "image_sha256": "05513e030402045af2b04e8818dd0d4039642b3eeffcf1c65ad4dc8967daa428",
    "specs": [
     {
      "group": "Key Specs",
@@ -51361,8 +51386,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/re7900753.jpg",
+   "image_sha256": "04fbfd1da254673c5f74b2c43d5ffdc616292798a9ca997bed57459142a1837e",
    "specs": [
     {
      "group": "General",
@@ -54331,8 +54356,8 @@
    "connectivity": null,
    "megapixels": null,
    "capacity_gb": null,
-   "image_path": null,
-   "image_sha256": null,
+   "image_path": "images/products/atsumo19se.jpg",
+   "image_sha256": "16adefdd592e35c85aa0bdcf7eb110ce28492ebf827d690be5bdc34ef71778e7",
    "specs": [
     {
      "group": "Key Specs",

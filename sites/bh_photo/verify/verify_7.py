@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--7: which of three laptops lists an Intel processor."""
-from verify_lib import (names_product, Judge, changed_tables_excluding, check_common, final_answer,
-                        load_run, normalize_text, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    clauses,
+    compare_members_seen,
+    final_answer,
+    load_run,
+    names_product,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+)
 
 TASK_ID = 'B&H Photo--7'
 CANDIDATES = [
@@ -42,14 +54,21 @@ def main():
               for slug in CANDIDATES if slug != winner_slug]
 
     judge.check('inspected_all_three',
-                all(visited_path(trajectory, '/product/' + slug) for slug in CANDIDATES)
-                or visited_path(trajectory, '/compare'),
+                compare_members_seen(trajectory, CANDIDATES, initial, after),
                 'three product pages or the compare page')
     judge.check('answer_names_the_intel_laptop',
                 names_product(answer, winner),
                 f'expected={winner!r} answer={answer!r}')
-    named_losers = [name for name in losers if normalize_text(name) in normalize_text(answer)]
-    judge.check('answer_names_only_one_laptop', not named_losers, f'also named={named_losers}')
+    # Describing a non-Intel processor does not select that laptop as Intel.
+    named_losers = []
+    for slug in CANDIDATES:
+        if slug == winner_slug:
+            continue
+        name = row_dicts(initial, 'SELECT name FROM products WHERE slug=?', (slug,))[0]['name']
+        for claim in clauses(answer):
+            if names_product(claim, name) and normalize_text(specs[slug]) not in claim:
+                named_losers.append(name)
+    judge.check('answer_selects_only_the_intel_laptop', not named_losers, f'other selections={named_losers}')
 
     if initial and after:
         judge.check('no_state_written', only_allowed_tables_changed(initial, after, ['search_logs']),

@@ -213,6 +213,21 @@ def build_kits(members: list[tuple], wanted: int) -> list[tuple[str, list]]:
         ("Field Audio Kit", ["microphones", "memory-cards-storage"]),
     ]
     by_shelf: dict[str, list] = {}
+    entries = {product.id: entry for product, entry in members}
+
+    def compatible_storage(anchor, candidate):
+        slots = " ".join(row['value'] for row in entries[anchor.id]['specs']
+                         if row['label'] == 'Media/Memory Card Slot').lower()
+        name = candidate.name.lower()
+        if 'cfexpress type b' in slots:
+            return bool(re.search(r'cfexpress(?:\s+\d+(?:\.\d+)?)?\s+type b', name))
+        if 'cfexpress type a' in slots:
+            return bool(re.search(r'cfexpress(?:\s+\d+(?:\.\d+)?)?\s+type a', name))
+        if 'microsd' in slots:
+            return 'microsd' in name
+        if 'sd/' in slots or 'sdxc' in slots or 'sdhc' in slots:
+            return ('sdxc' in name or 'sdhc' in name) and 'microsd' not in name
+        return False
     for product, entry in sorted(members, key=lambda item: -item[0].price):
         by_shelf.setdefault(entry["subcategory_slug"], []).append(product)
 
@@ -226,7 +241,9 @@ def build_kits(members: list[tuple], wanted: int) -> list[tuple[str, list]]:
             for shelf in shelves:
                 for product in by_shelf.get(shelf, []):
                     prefix = " ".join(product.name.split()[:4]).lower()
-                    if product.id in used or prefix in prefixes:
+                    if (product.id in used and shelf != "memory-cards-storage") or prefix in prefixes:
+                        continue
+                    if shelf == 'memory-cards-storage' and kit and not compatible_storage(kit[0], product):
                         continue
                     kit.append(product)
                     prefixes.add(prefix)
@@ -334,7 +351,7 @@ def seed_database(db, models, base_dir: str):
             availability=entry.get("availability") or "In Stock",
             stock_level=4 + digest("stock", seed_key) % 18,
             pickup_available=digest("pickup", seed_key) % 4 != 0,
-            pickup_message="Ready in 2 hours",
+            pickup_message="Ready in 2 hours" if digest("pickup", seed_key) % 4 != 0 else "Pickup unavailable",
             shipping_message="Free Expedited Shipping",
             return_window="30-Day Return Window",
             warranty="Manufacturer warranty as stated by B&H",
@@ -351,7 +368,7 @@ def seed_database(db, models, base_dir: str):
             megapixels=entry.get("megapixels") or 0,
             capacity_gb=entry.get("capacity_gb") or 0,
             connectivity=entry.get("connectivity") or "",
-            pickup_store_count=1,
+            pickup_store_count=1 if digest("pickup", seed_key) % 4 != 0 else 0,
             # products whose photo the archive does not hold fall back to a
             # placeholder committed to the repo, so the page never shows a broken
             # image and the gap stays visible to a reviewer
@@ -391,9 +408,13 @@ def seed_database(db, models, base_dir: str):
 
         seed_key = entry.get("bh_sku") or entry["slug"]
         review_total = 1 + digest("reviews", seed_key) % 4
+        if product.slug == "canon-eos-r1-mirrorless-camera-with-essentials-kit":
+            review_total = max(2, review_total)
         ratings = []
         for number in range(review_total):
             rating = 3 + digest("rating", seed_key, number) % 3
+            if product.slug == "canon-eos-r1-mirrorless-camera-with-essentials-kit" and number == 1:
+                rating = 5 if ratings[0] != 5 else 4
             ratings.append(rating)
             db.session.add(ProductReview(
                 product_id=product.id,
@@ -460,7 +481,7 @@ def seed_database(db, models, base_dir: str):
             shelf_label = SUBCATEGORY_TITLES.get(chosen[0].subcategory_slug, "Gear")
             bundle = Bundle(
                 title=title, slug=slugify(title),
-                description=("A package of compatible items sold together at a kit price. "
+                description=("A package of items sold together at a kit price. "
                              "Each item in the kit is listed below."),
                 image_path=chosen[0].image_path,
                 bundle_price=round(total * 0.93, 2), list_price=round(total, 2),

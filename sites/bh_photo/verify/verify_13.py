@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
 """Verifier for B&H Photo--13: Alice saves a named microphone to her wishlist."""
-from verify_lib import (Judge, changed_tables_excluding, check_common, load_run,
-                        login_submitted_as, only_allowed_tables_changed, parse_args,
-                        resolve_db, row_dicts, trajectory_urls, visited_path, wishlist_for)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    exact_addition,
+    load_run,
+    login_submitted_as,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    trajectory_urls,
+    user_id_for,
+    visited_path,
+    wishlist_for,
+)
 
 TASK_ID = 'B&H Photo--13'
 EMAIL = 'alice.j@test.com'
@@ -39,6 +52,11 @@ def main():
     judge.check('product_is_in_the_wishlist_afterwards', SLUG in now, f'after={sorted(now)}')
     judge.check('no_other_wishlist_change', now - before == {SLUG} and not before - now,
                 f'added={sorted(now - before)} removed={sorted(before - now)}')
+    target_id = row_dicts(initial, 'SELECT id FROM products WHERE slug=?', (SLUG,))[0]['id']
+    judge.check('only_requested_wishlist_entry_added', exact_addition(initial, after, 'wishlist_items',
+                {'user_id': user_id_for(initial, EMAIL), 'product_id': target_id}),
+                'exactly one new target entry; every existing entry, including other users, unchanged')
+
     judge.check('no_unrelated_state_written',
                 only_allowed_tables_changed(initial, after, ALLOWED),
                 f'changed={sorted(changed_tables_excluding(initial, after, ALLOWED))}')

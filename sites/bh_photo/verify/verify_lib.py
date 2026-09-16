@@ -91,6 +91,11 @@ def normalize_text(value: Any) -> str:
     return re.sub(r"\s+", " ", text).strip().casefold()
 
 
+def clauses(text: Any) -> list[str]:
+    """Keep decimal points and model numbers intact when separating claims."""
+    return re.split(r"(?<!\d)[.!?](?!\d)|[;\n]+|\b(?:while|whereas|but|however)\b", normalize_text(text))
+
+
 def final_answer(trajectory: dict[str, Any]) -> str:
     return str(trajectory.get("final_answer") or "").strip()
 
@@ -276,7 +281,7 @@ NEGATIONS = {"not", "no", "never", "without", "isn't", "isnt", "wasn't", "wasnt"
 
 
 def _negated_before(text: str, start: int) -> bool:
-    clause = re.split(r"[.!?;:\n]+|\b(?:and|but|however|instead)\b", text[:start])[-1]
+    clause = re.split(r"(?<!\d)[.!?](?!\d)|[;\n]+|\b(?:and|but|however|instead)\b", text[:start])[-1]
     words = re.findall(r"[a-z0-9]+(?:'[a-z]+)?", clause)
     return any(word in NEGATIONS for word in words)
 
@@ -310,7 +315,14 @@ def names_product(text: Any, product_name: str) -> bool:
     (Sony E)`, which let a rival lens clear the threshold without ever naming
     the brand or the focal length.
     """
-    haystack = re.sub(r"[^a-z0-9]+", " ", normalize_text(text))
+    text = re.sub(r"(\d)\s+(gb|tb|mb|mm|w|wh|mah)\b", r"\1\2", normalize_text(text))
+    return any(_names_product_claim(claim, product_name) for claim in clauses(text))
+
+
+def _names_product_claim(text: str, product_name: str) -> bool:
+    if re.search(r"\b(?:not|never|isn't|isnt|wasn't|wasnt)\b", text):
+        return False
+    haystack = re.sub(r"[^a-z0-9]+", " ", text)
     generic = {"the", "and", "with", "for", "kit", "camera", "lens", "laptop", "mirrorless",
                "memory", "card", "monitor", "inch", "black", "silver", "multi", "touch",
                "digital", "in", "line", "pc", "gen", "series", "photo", "video"}
@@ -367,11 +379,125 @@ def states_count(text: Any, value: int, nouns: Sequence[str]) -> bool:
     agree with the count: a singular noun next to a count of two is far more
     likely to be part of a product name than a claim about how many matched.
     """
-    normalized = re.sub(r"[^a-z0-9]+", " ", normalize_text(text))
+    normalized = normalize_text(text)
     forms = [str(value)] + ([NUMBER_WORDS[value]] if value in NUMBER_WORDS else [])
     quantity = "|".join(re.escape(form) for form in forms)
     thing = "|".join(re.escape(normalize_text(noun)) for noun in nouns)
-    return bool(re.search(rf"\b(?:{quantity})\s+(?:\w+\s+)?(?:{thing})\b", normalized))
+    patterns = [rf"\b(?:{quantity})\s+(?:matching\s+)?(?:{thing})\b",
+                rf"\b(?:result\s+count|match\s+count|count|number of (?:{thing}))\s*(?:is|=|:)\s*(?:{quantity})\b"]
+    return any(not _negated_before(normalized, m.start()) and not _negated_after(normalized, m.end())
+               for pattern in patterns for m in re.finditer(pattern, normalized))
+
+
+def states_measurement(text: Any, value: float, units: dict[str, float]) -> bool:
+    """Match an affirmative quantity including its unit and scale.
+
+    Units map regexes to multipliers in the specification's base unit. Extra
+    numbers in model names cannot satisfy a measurement check.
+    """
+    normalized = normalize_text(str(text).replace('Mb/s', 'megabits/s').replace('Gb/s', 'gigabits/s'))
+    number = r"(?<![\w.-])(\d[\d,]*(?:\.\d+)?)\s*(million|thousand)?\s*"
+    found = []
+    for unit, factor in units.items():
+        for match in re.finditer(number + rf"(?:{unit})(?![a-z])", normalized):
+            if _negated_before(normalized, match.start()) or _negated_after(normalized, match.end()):
+                continue
+            scale = {'million': 1e6, 'thousand': 1e3}.get(match.group(2), 1)
+            found.append(float(match.group(1).replace(',', '')) * scale * factor)
+    return bool(found) and all(abs(number - value) < 0.001 for number in found)
+
+
+def states_price(text: Any, value: float) -> bool:
+    """A number must be presented as money, not an unrelated reference ID."""
+    normalized = normalize_text(text)
+    for match in number_matches(normalized, value):
+        before, after = normalized[:match.start()], normalized[match.end():]
+        if (re.search(r'(?:\$|\busd\s*)$', before)
+                or re.match(r'\s*(?:usd|dollars)\b', after)
+                or re.search(r'\b(?:price|total|costs?|priced at)\s*(?:is|of|:|=)?\s*$', before)):
+            return True
+    return False
+
+
+def states_resolution(text: Any, width: int, height: int) -> bool:
+    normalized = normalize_text(text)
+    pattern = rf'(?<!\d){width}\s*(?:x|×|by)\s*{height}(?!\d)'
+    return any(not _negated_before(normalized, m.start()) and not _negated_after(normalized, m.end())
+               for m in re.finditer(pattern, normalized))
+
+
+def states_pickup_policy(text: Any) -> bool:
+    """Recognize the benchmark policy: collection is possible if local stock is shown."""
+    for claim in clauses(text):
+        if re.search(r"\b(?:never|not|no|regardless|isn't|isnt|cannot|can't)\b", claim):
+            continue
+        collection = re.search(r'\b(?:pickup|pick[ -]?up|collect(?:ion)?|collect it)\b', claim)
+        local = re.search(r'\b(?:store|shop|counter|local)\b', claim)
+        stock = re.search(r'\b(?:stock|inventory)\b', claim)
+        conditional = re.search(r'\b(?:if|when|wherever|provided|depending|depends|subject|as long as)\b', claim)
+        offered = re.search(r'\b(?:can|may|available|offered|possible|allowed|collect)\b', claim)
+        if collection and local and stock and conditional and offered:
+            return True
+    return False
+
+
+def relevant_search(trajectory: dict[str, Any], words: Sequence[str]) -> bool:
+    for url in trajectory_urls(trajectory):
+        if not is_site_url(url, trajectory):
+            continue
+        params = parse_qs(urlparse(url).query)
+        query = normalize_text(' '.join(params.get('q', []) + params.get('within', []))).replace('fibre', 'fiber')
+        query = re.sub(r'\bmonopods\b', 'monopod', query)
+        query = re.sub(r'\bmonopods\b', 'monopod', query)
+        if all(re.search(rf'\b{re.escape(word)}\b', query) for word in words):
+            return True
+    return False
+
+
+def product_page_seen(trajectory: dict[str, Any], slug: str) -> bool:
+    return any(visited_path(trajectory, '/product/' + slug + suffix)
+               for suffix in ('', '/specs', '/reviews', '/qa'))
+
+
+def compare_members_seen(trajectory: dict[str, Any], slugs: Sequence[str], initial: str, after: str) -> bool:
+    if all(product_page_seen(trajectory, slug) for slug in slugs):
+        return True
+    # Guest comparisons live in the session; signed-in comparisons live in SQLite.
+    # A compare URL alone says nothing about its members. Require observed add
+    # transitions, or the matching signed-in list in the final snapshot.
+    if not visited_path(trajectory, '/compare'):
+        return False
+    if all(visited_path(trajectory, '/compare/add/' + slug) for slug in slugs):
+        return True
+    email = last_entered_email(trajectory)
+    return bool(email and login_submitted_as(trajectory, email)
+                and set(slugs) <= {row['slug'] for row in compare_for(after, email)})
+
+
+def rows_unchanged_except(initial: str, after: str, table: str, allowed_ids: Iterable[int]) -> bool:
+    """Allow writes to exact row IDs, preserving every other row and column."""
+    ids = set(allowed_ids)
+    before = [row for row in row_dicts(initial, f'SELECT * FROM "{table}" ORDER BY id') if row['id'] not in ids]
+    now = [row for row in row_dicts(after, f'SELECT * FROM "{table}" ORDER BY id') if row['id'] not in ids]
+    return before == now
+
+
+def new_rows(initial: str, after: str, table: str) -> list[dict[str, Any]]:
+    ids = {row['id'] for row in row_dicts(initial, f'SELECT id FROM "{table}"')}
+    return [row for row in row_dicts(after, f'SELECT * FROM "{table}" ORDER BY id') if row['id'] not in ids]
+
+
+def exact_addition(initial: str, after: str, table: str, expected: dict[str, Any]) -> bool:
+    added = new_rows(initial, after, table)
+    return (len(added) == 1 and all(added[0].get(key) == value for key, value in expected.items())
+            and rows_unchanged_except(initial, after, table, [added[0]['id']]))
+
+
+def cart_totals(rows: list[dict[str, Any]]) -> dict[str, float]:
+    subtotal = round(sum(row['price'] * row['quantity'] for row in rows), 2)
+    shipping = 0.0 if subtotal >= 99 or not rows else 14.95
+    tax = round(subtotal * 0.08875, 2)
+    return dict(subtotal=subtotal, shipping=shipping, tax=tax, total=round(subtotal + shipping + tax, 2))
 
 
 def has_number(text: Any, value: int | float) -> bool:

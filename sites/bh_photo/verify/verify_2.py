@@ -4,9 +4,20 @@
 Ground truth is read from the shipped seed database at verify time, so the
 answer key lives here and never in the agent-facing task file.
 """
-from verify_lib import (Judge, changed_tables_excluding, check_common, contains_any,
-                        final_answer, load_run, normalize_text, only_allowed_tables_changed,
-                        parse_args, resolve_db, row_dicts, visited_path)
+from verify_lib import (
+    Judge,
+    changed_tables_excluding,
+    check_common,
+    final_answer,
+    load_run,
+    normalize_text,
+    only_allowed_tables_changed,
+    parse_args,
+    resolve_db,
+    row_dicts,
+    states_measurement,
+    visited_path,
+)
 
 TASK_ID = 'B&H Photo--2'
 SLUG = 'sony-1920gb-cfexpress-4-0-type-a-tough-memory-card'
@@ -44,7 +55,7 @@ def main():
     judge.check('ground_truth_has_read_speed', bool(number), f'spec={value!r}')
     if number:
         judge.check('answer_states_read_speed',
-                    number.group(1).replace(',', '') in normalize_text(answer).replace(',', ''),
+                    bool(number) and states_measurement(answer, float(number.group(1).replace(',', '')), {r'mb/s': 1, r'gb/s': 1000, r'kb/s': 0.001}),
                     f'expected={number.group(1)} answer={answer!r}')
     write_rows = row_dicts(initial, """
         SELECT s.value FROM product_specs s JOIN product_spec_groups g ON g.id = s.group_id

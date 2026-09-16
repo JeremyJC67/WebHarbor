@@ -218,6 +218,13 @@ class StaticAssetTests(SiteFixture):
 
 
 class ShoppingPathTests(SiteFixture):
+    def test_search_matches_plural_words_and_requires_all_terms(self):
+        client = self.app.test_client()
+        results = client.get('/search?q=test+cameras').get_data(as_text=True)
+        unrelated = client.get('/search?q=unrelated+cameras').get_data(as_text=True)
+        self.assertIn('href="/product/test-camera"', results)
+        self.assertNotIn('href="/product/test-camera"', unrelated)
+
     def test_department_is_a_landing_page_before_the_listing(self):
         client = self.app.test_client()
 

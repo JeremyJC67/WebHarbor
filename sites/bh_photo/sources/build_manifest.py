@@ -124,7 +124,7 @@ def spec_lookup(specs: list[dict], labels: tuple[str, ...]) -> str | None:
 
 def parse_megapixels(specs: list[dict], name: str) -> float | None:
     """Read effective megapixels from the published sensor resolution row."""
-    value = spec_lookup(specs, ("Sensor Resolution", "Effective Pixels", "Resolution"))
+    value = spec_lookup(specs, ("Effective Sensor Resolution", "Sensor Resolution", "Effective Pixels"))
     if value:
         effective = re.search(r"Effective:\s*([\d.]+)\s*Megapixel", value, re.I)
         if effective:
