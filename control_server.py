@@ -29,7 +29,8 @@ SITES = [
     'cambridge_dictionary', 'coursera', 'espn', 'merriam_webster',
     'ikea', 'phys_org', 'target', 'ted',
     'osu', 'rotten_tomatoes', 'compass', 'walmart_careers',
-    'fedex', 'webmd_doctor', 'healthline', 'kaggle', 'babycenter',
+    'fedex', 'webmd_doctor', 'healthline', 'kaggle',
+    'nvidia', 'berkeley', 'bh_photo', 'babycenter',
 ]
 BASE_PORT = 40000
 WEBSYN_DIR = '/opt/WebSyn'
