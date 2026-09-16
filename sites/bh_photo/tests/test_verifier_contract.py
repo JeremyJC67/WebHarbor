@@ -59,7 +59,7 @@ class AnswerContractTests(unittest.TestCase):
         self.assertFalse(helpers.affirmative_contains("It is not BH-20260412-0201; it is BH-99999999-0000.", "BH-20260412-0201"))
 
     def test_empty_compare_is_not_three_products(self):
-        trajectory = {"start_url": "http://localhost:40029/", "steps": [{"url": "http://localhost:40029/compare"}]}
+        trajectory = {"start_url": "http://localhost:40030/", "steps": [{"url": "http://localhost:40030/compare"}]}
         self.assertFalse(helpers.compare_members_seen(trajectory, ["apple", "lenovo", "asus"], "", ""))
 
 
