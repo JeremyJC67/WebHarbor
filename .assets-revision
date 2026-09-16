@@ -1,9 +1,10 @@
 # Hugging Face dataset holding WebHarbor's heavy static assets.
 # Pin an immutable commit SHA; never a moving branch or refs/pr/<n>.
 #
-# Interim pin: the reviewed head of HF asset PR #92 (awaiting dataset-main merge).
+# Merged dataset-main commit from HF asset PR #92.
 # https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92
-# Before merging the code PR, replace this with the merged dataset commit SHA.
+# Its complete asset tree matches the tested candidate commit
+# f09e586eec8bf1bca0bc0881e08b77f3c2a5508e.
 #
 # Adds bh_photo.tar.gz: 79,658,793 bytes, 511 managed archive members.
 # SHA-256: 867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a
@@ -14,4 +15,4 @@
 # B&H's bundle contains images and external cache; Docker generates its seed
 # from tracked catalog data (sites/bh_photo/.build-generated-seed).
 repo: ChilleD/WebHarbor
-revision: f09e586eec8bf1bca0bc0881e08b77f3c2a5508e
+revision: fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f

@@ -97,10 +97,10 @@ passed.
 
 ### Asset delivery status
 
-`.assets-revision` currently pins the immutable commit `f09e586eec8bf1bca0bc0881e08b77f3c2a5508e`
+`.assets-revision` pins the merged dataset commit `fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f`
 from [HF asset PR #92](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92).
-The asset PR is awaiting merge; replace the interim pin with its merged dataset
-commit before merging the code PR.
+Its complete asset tree matches the tested candidate commit
+`f09e586eec8bf1bca0bc0881e08b77f3c2a5508e`.
 
 This revision adds `bh_photo.tar.gz` and preserves all 32 existing archives from
 `c32018ca3b3d67e7b858b1b85fb101aea5090cd7` byte-for-byte, including Berkeley and
@@ -124,7 +124,7 @@ added the first reviewed NVIDIA bundle.
 | --- | --- | --- | --- |
 | `nvidia.tar.gz` at the current pin | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
 | `berkeley.tar.gz` at the current pin (HF PR #91) | 171 | 6,951,483 | `ab9d2716ae8d06540a181b5e60c37f613d87b103864b467511da546b1b173789` |
-| `bh_photo.tar.gz` at the interim pin (HF PR #92) | 511 | 79,658,793 | `867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a` |
+| `bh_photo.tar.gz` at the current pin (HF PR #92) | 511 | 79,658,793 | `867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a` |
 | previous pin's `nvidia.tar.gz` (HF PR #84, superseded) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
 
 PR #85 replaces five product images and adds three dedicated hero images (see
