@@ -207,6 +207,17 @@ class VerifierTests(unittest.TestCase):
             (run / 'trajectory.json').write_text('{broken')
             self.assertEqual(subprocess.run(command, capture_output=True).returncode, 2)
 
+    def test_newer_harness_contract_without_start_url(self):
+        # The newer harness contract omits start_url; the local origin derives
+        # from recorded step URLs, and a no-op run stays a healthy FAIL.
+        traj = trajectory(2)
+        traj.pop('start_url')
+        self.assertTrue(evaluate(2, traj, self.before, self.after[2])['pass'])
+        noop = dict(task_id='Bandcamp--2', query='q', steps=[], final_answer='', status='NO_OP')
+        verdict = evaluate(2, noop, self.before, self.before)
+        self.assertFalse(verdict['pass'])
+        self.assertEqual(verdict['reason'], 'final_answer_nonempty')
+
     def test_mapping_and_rubrics(self):
         tasks = [json.loads(line) for line in (HERE.parent / 'tasks.jsonl').read_text().splitlines()]
         self.assertEqual(len(tasks), 18)

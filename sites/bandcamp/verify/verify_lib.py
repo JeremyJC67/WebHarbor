@@ -190,7 +190,21 @@ PAGES = {
 
 
 def navigation_ok(index, traj, before=None):
-    start = urlsplit(traj['start_url'])
+    raw = traj.get('start_url')
+    if isinstance(raw, str) and raw:
+        start = urlsplit(raw)
+    else:
+        # Newer harness contract: trajectories carry no start_url. Derive the
+        # local origin from the first recorded step URL instead; a no-op run
+        # with no steps simply has no navigation evidence.
+        first = None
+        for step in traj.get('steps', []):
+            if isinstance(step, dict) and isinstance(step.get('url'), str) and step.get('url'):
+                first = step['url']
+                break
+        if first is None:
+            return False
+        start = urlsplit(first)
     if start.scheme not in ('http', 'https') or start.hostname not in ('localhost', '127.0.0.1', '::1') or start.username or start.password:
         raise ValueError('invalid local start origin')
     origin = (start.scheme, start.hostname, start.port)
@@ -589,7 +603,7 @@ def answer_ok(index, answer, before=None):
 def evaluate(task_index, traj, initial_db='', after_db='', container=None):
     if not isinstance(traj, dict) or traj.get('task_id') != f'Bandcamp--{task_index}':
         raise ValueError('trajectory task identity mismatch')
-    if not isinstance(traj.get('steps'), list) or not isinstance(traj.get('final_answer'), str) or not isinstance(traj.get('start_url'), str):
+    if not isinstance(traj.get('steps'), list) or not isinstance(traj.get('final_answer'), str) or (traj.get('start_url') is not None and not isinstance(traj.get('start_url'), str)):
         raise ValueError('invalid trajectory schema')
     before, schema, before_fk = snapshot(initial_db)
     after, after_schema, after_fk = snapshot(after_db)
