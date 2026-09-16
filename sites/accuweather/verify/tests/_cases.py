@@ -13,7 +13,7 @@ def _s(*paths):
 CASES = {
  0: dict(steps=_s("/search?q=Phoenix", "/weather/phoenix-az"),
          answer="Phoenix: temperature 104°F, RealFeel 115°F, humidity 18%.",
-         gate="visited_weather_phoenix",
+         gate="searched_for_phoenix-az",
          wrong=[("temperature 115°F, RealFeel 104°F, humidity 18%", "answer_temperature"),
                 ("Phoenix: 104°, RealFeel 115°, humidity 61%", "answer_humidity")],
          also_pass=["104° / RealFeel 115° / 18% humidity", "Temp: 104 F; Feels like 115 F; Humidity: 18 percent"]),
@@ -69,7 +69,7 @@ CASES = {
           also_pass=["cloudy / 75 percent humidity / 30.05 inHg"]),
  11: dict(steps=_s("/search?q=New+Orleans", "/weather/new-orleans-la", "/radar/new-orleans-la", "/weather/new-orleans-la"),
           answer="Radar page is for New Orleans; current condition: Showers.",
-          gate="searched_for_new-orleans-la",
+          gate="radar_then_current_weather",
           wrong=[("Radar confirmed; current condition: Cloudy.", "answer_condition")]),
  12: dict(steps=_s("/search?q=Los+Angeles", "/weather/los-angeles-ca", "/air-quality/los-angeles-ca", "/search?q=San+Francisco", "/weather/san-francisco-ca", "/air-quality/san-francisco-ca"),
           answer="Los Angeles 41, San Francisco 18 — San Francisco has better air quality.",

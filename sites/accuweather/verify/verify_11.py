@@ -28,6 +28,7 @@ TASK_ID = "AccuWeather--11"
 def run_checks(judge, t, initial_db, after_db):
     check_trajectory_identity(judge, t, TASK_ID)
     a = final_answer(t)
+    check_paths_in_order(judge, t, "radar_then_current_weather", ["/radar/new-orleans-la", "/weather/new-orleans-la"])
     check_search_surfaces(judge, t, "new-orleans-la")
     check_visited_path(judge, t, "visited_radar_new_orleans", "/radar/new-orleans-la")
     check_visited_path(judge, t, "visited_weather_new_orleans", "/weather/new-orleans-la")

@@ -35,8 +35,8 @@ def run_checks(judge, t, initial_db, after_db):
     judge.check("carol_other_columns_unchanged", bool(before and after) and {k: v for k, v in before.items() if k != "unit"} == {k: v for k, v in after.items() if k != "unit"}, "email/name/password_hash identical")
     judge.check("other_users_unchanged", bool(before) and rows_unchanged_except(initial_db, after_db, "user", [before["id"]]), "user rows other than carol identical")
     check_tables_unchanged(judge, initial_db, after_db, ("saved_location", "alert"))
-    judge.check("answer_temperature_celsius", contains_fact(a, 26, unit="temp", label=TEMP_LABEL), f"expected 26, answer={a!r}")
-    judge.check("answer_realfeel_celsius", contains_fact(a, 28, unit="temp", label=REALFEEL_LABEL), f"expected 28, answer={a!r}")
+    judge.check("answer_temperature_celsius", contains_fact(a, 26, unit="celsius", label=TEMP_LABEL), f"expected 26, answer={a!r}")
+    judge.check("answer_realfeel_celsius", contains_fact(a, 28, unit="celsius", label=REALFEEL_LABEL), f"expected 28, answer={a!r}")
 
 
 def main() -> None:

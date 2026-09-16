@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
-    AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
+    confirms_alerts, AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
     TEMP_LABEL, VISIBILITY_LABEL, WIND_LABEL, Judge, alert_rows, check_paths_in_order, check_read_only,
     check_saved_delta, check_search_surfaces, check_signed_in_as, check_tables_unchanged,
     check_trajectory_identity, check_visited_path, city_label, contains_all, contains_any,
@@ -32,6 +32,7 @@ def run_checks(judge, t, initial_db, after_db):
     check_trajectory_identity(judge, t, TASK_ID)
     check_signed_in_as(judge, t, "bob.smith@test.com")
     check_paths_in_order(judge, t, "login_then_chicago_alerts", ["/login", "/alerts/chicago-il"])
+    judge.check("answer_confirms_alerts", confirms_alerts(final_answer(t)), "confirm the enabled Severe weather and Rain starting soon preferences")
     before, after = alert_rows(initial_db), alert_rows(after_db)
     judge.check("alerts_initially_empty", before == set(), f"initial_alerts={sorted(before)}")
     judge.check("alerts_exactly_severe_and_rain_for_chicago", after == EXPECTED_ALERTS, f"expected={sorted(EXPECTED_ALERTS)}, observed={sorted(after)}")

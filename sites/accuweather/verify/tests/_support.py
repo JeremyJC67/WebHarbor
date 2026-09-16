@@ -111,11 +111,11 @@ def build_seed(path: Path) -> Path:
         conditions = [condition, "Mostly sunny", "Partly sunny", "Mostly cloudy", "Showers", "Cloudy", "Sunny"]
         for i, label in enumerate(DAY_LABELS):
             con.execute("INSERT INTO forecast VALUES (?,?,?,?,?,?,?,?,?)",
-                        (fid, lid, i, label, temp + (i % 3) - 2, temp - 12 - (i % 4), conditions[i], icons[i], (i * 17 + lid * 3) % 71))
+                        (fid, lid, i, label, temp + 3 if i == 0 else temp + (i % 3) - 2, temp - 12 - (i % 4), conditions[i], icons[i], (i * 17 + lid * 3) % 71))
             fid += 1
         for i in range(12):
             con.execute("INSERT INTO hourly VALUES (?,?,?,?,?,?,?,?)",
-                        (hid, lid, i, HOUR_LABELS[i], temp + (3 - abs(i - 4)), conditions[i % 7], icons[i % 7], (i * 11 + lid) % 66))
+                        (hid, lid, i, HOUR_LABELS[i], temp if i == 0 else temp + (3 - abs(i - 4)), conditions[i % 7], icons[i % 7], (i * 11 + lid) % 66))
             hid += 1
     con.execute("INSERT INTO saved_location VALUES (1, 1, ?)", (SLUG_ID["new-york-ny"],))
     con.execute("INSERT INTO saved_location VALUES (2, 1, ?)", (SLUG_ID["boston-ma"],))

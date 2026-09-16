@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
-    AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
+    entity_fact, AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
     TEMP_LABEL, VISIBILITY_LABEL, WIND_LABEL, Judge, alert_rows, check_paths_in_order, check_read_only,
     check_saved_delta, check_search_surfaces, check_signed_in_as, check_tables_unchanged,
     check_trajectory_identity, check_visited_path, city_label, contains_all, contains_any,
@@ -31,8 +31,8 @@ def run_checks(judge, t, initial_db, after_db):
     check_search_surfaces(judge, t, "portland-or")
     check_visited_path(judge, t, "visited_weather_portland_or", "/weather/portland-or")
     check_visited_path(judge, t, "visited_weather_portland_me", "/weather/portland-me")
-    judge.check("answer_oregon_temperature", contains_fact(a, 69, unit="temp", label=city_label("oregon", "portland, or", "portland or", "portland, oregon")), f"expected Oregon 69, answer={a!r}")
-    judge.check("answer_maine_temperature", contains_fact(a, 70, unit="temp", label=city_label("maine", "portland, me", "portland me", "portland, maine")), f"expected Maine 70, answer={a!r}")
+    judge.check("answer_oregon_temperature", entity_fact(a, 69, ['oregon', 'portland, or', 'portland or', 'portland, oregon'], ['maine', 'portland, me', 'portland me', 'portland, maine'], label=TEMP_LABEL, unit="temp"), f"expected Oregon 69, answer={a!r}")
+    judge.check("answer_maine_temperature", entity_fact(a, 70, ['maine', 'portland, me', 'portland me', 'portland, maine'], ['oregon', 'portland, or', 'portland or', 'portland, oregon'], label=TEMP_LABEL, unit="temp"), f"expected Maine 70, answer={a!r}")
     judge.check("answer_names_warmer_city", names_winner(a, ["maine", "portland, me", "portland, maine"], ["oregon", "portland, or", "portland, oregon"], ["warmer", "hotter", "higher", "warmest", "hottest"], ["cooler", "colder", "lower", "coolest"]), f"expected Maine warmer, answer={a!r}")
     check_read_only(judge, initial_db, after_db)
 

@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
-    AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
+    entity_fact, AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
     TEMP_LABEL, VISIBILITY_LABEL, WIND_LABEL, Judge, alert_rows, check_paths_in_order, check_read_only,
     check_saved_delta, check_search_surfaces, check_signed_in_as, check_tables_unchanged,
     check_trajectory_identity, check_visited_path, city_label, contains_all, contains_any,
@@ -32,8 +32,8 @@ def run_checks(judge, t, initial_db, after_db):
     check_search_surfaces(judge, t, "san-francisco-ca")
     check_visited_path(judge, t, "visited_air_quality_los_angeles", "/air-quality/los-angeles-ca")
     check_visited_path(judge, t, "visited_air_quality_san_francisco", "/air-quality/san-francisco-ca")
-    judge.check("answer_los_angeles_value", contains_fact(a, 41, label=city_label("los angeles", "la", "l.a.")), f"expected LA 41, answer={a!r}")
-    judge.check("answer_san_francisco_value", contains_fact(a, 18, label=city_label("san francisco", "sf")), f"expected SF 18, answer={a!r}")
+    judge.check("answer_los_angeles_value", entity_fact(a, 41, ['los angeles', 'la', 'l.a.'], ['san francisco', 'sf'], label=AQ_LABEL), f"expected LA 41, answer={a!r}")
+    judge.check("answer_san_francisco_value", entity_fact(a, 18, ['san francisco', 'sf'], ['los angeles', 'la', 'l.a.'], label=AQ_LABEL), f"expected SF 18, answer={a!r}")
     judge.check("answer_names_better_city", names_winner(a, ["san francisco", "sf"], ["los angeles", "la", "l.a."], ["better", "lower", "cleaner", "best", "lowest", "healthier"], ["worse", "higher", "worst", "highest", "poorer"]), f"expected San Francisco better, answer={a!r}")
     check_read_only(judge, initial_db, after_db)
 

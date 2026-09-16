@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
-    AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
+    confirms_saved, AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
     TEMP_LABEL, VISIBILITY_LABEL, WIND_LABEL, Judge, alert_rows, check_paths_in_order, check_read_only,
     check_saved_delta, check_search_surfaces, check_signed_in_as, check_tables_unchanged,
     check_trajectory_identity, check_visited_path, city_label, contains_all, contains_any,
@@ -31,7 +31,7 @@ def run_checks(judge, t, initial_db, after_db):
     check_signed_in_as(judge, t, "alice.j@test.com")
     check_paths_in_order(judge, t, "login_then_seattle_then_account", ["/login", "/weather/seattle-wa", "/account"])
     check_saved_delta(judge, initial_db, after_db, "alice.j@test.com", added={"seattle-wa"}, removed=set())
-    judge.check("answer_mentions_seattle", mentions(a, ["seattle"]), f"answer={a!r}")
+    judge.check("answer_mentions_seattle", confirms_saved(a, "seattle"), f"answer={a!r}")
 
 
 def main() -> None:

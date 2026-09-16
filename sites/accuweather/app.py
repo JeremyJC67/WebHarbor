@@ -65,9 +65,9 @@ def seed_database():
  for row in LOCATIONS:
   loc=Location(slug=row[0],city=row[1],region=row[2],country=row[3],postal=row[4],temp=row[5],realfeel=row[6],condition=row[7],icon=row[8],humidity=row[9],wind=row[10],visibility=row[11],pressure=row[12],uv=row[13],air_quality=row[14]); db.session.add(loc); db.session.flush()
   icons=[loc.icon,"02","03","06","12","07","01"]; conditions=[loc.condition,"Mostly sunny","Partly sunny","Mostly cloudy","Showers","Cloudy","Sunny"]
-  for i,label in enumerate(["Today","Thu","Fri","Sat","Sun","Mon","Tue"]): db.session.add(Forecast(location_id=loc.id,day_index=i,label=label,high=loc.temp+(i%3)-2,low=loc.temp-12-(i%4),condition=conditions[i],icon=icons[i],precip=(i*17+loc.id*3)%71))
+  for i,label in enumerate(["Today","Thu","Fri","Sat","Sun","Mon","Tue"]): db.session.add(Forecast(location_id=loc.id,day_index=i,label=label,high=loc.temp+3 if i==0 else loc.temp+(i%3)-2,low=loc.temp-12-(i%4),condition=conditions[i],icon=icons[i],precip=(i*17+loc.id*3)%71))
   for i in range(12):
-   hour=(12+i)%24; label="Now" if i==0 else datetime.strptime(str(hour),"%H").strftime("%-I %p"); db.session.add(Hourly(location_id=loc.id,hour_index=i,label=label,temp=loc.temp+(3-abs(i-4)),condition=conditions[i%7],icon=icons[i%7],precip=(i*11+loc.id)%66))
+   hour=(12+i)%24; label="Now" if i==0 else datetime.strptime(str(hour),"%H").strftime("%-I %p"); db.session.add(Hourly(location_id=loc.id,hour_index=i,label=label,temp=loc.temp if i==0 else loc.temp+(3-abs(i-4)),condition=conditions[i%7],icon=icons[i%7],precip=(i*11+loc.id)%66))
  db.session.commit()
 def seed_preferences():
  if SavedLocation.query.first() or Alert.query.first(): return

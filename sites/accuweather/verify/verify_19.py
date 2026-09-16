@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from verify_lib import (  # noqa: E402
-    AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
+    entity_fact, AQ_LABEL, HIGH_LABEL, HUMIDITY_LABEL, LOW_LABEL, PRECIP_LABEL, PRESSURE_LABEL, REALFEEL_LABEL,
     TEMP_LABEL, VISIBILITY_LABEL, WIND_LABEL, Judge, alert_rows, check_paths_in_order, check_read_only,
     check_saved_delta, check_search_surfaces, check_signed_in_as, check_tables_unchanged,
     check_trajectory_identity, check_visited_path, city_label, contains_all, contains_any,
@@ -31,10 +31,10 @@ def run_checks(judge, t, initial_db, after_db):
     check_search_surfaces(judge, t, "new-orleans-la")
     check_visited_path(judge, t, "visited_weather_phoenix", "/weather/phoenix-az")
     check_visited_path(judge, t, "visited_weather_new_orleans", "/weather/new-orleans-la")
-    judge.check("answer_phoenix_temperature", contains_fact(a, 104, unit="temp", label=TEMP_LABEL), f"expected 104, answer={a!r}")
-    judge.check("answer_phoenix_humidity", contains_fact(a, 18, unit="percent", label=HUMIDITY_LABEL, allow_bare=False), f"expected 18%, answer={a!r}")
-    judge.check("answer_new_orleans_temperature", contains_fact(a, 89, unit="temp", label=TEMP_LABEL), f"expected 89, answer={a!r}")
-    judge.check("answer_new_orleans_humidity", contains_fact(a, 75, unit="percent", label=HUMIDITY_LABEL, allow_bare=False), f"expected 75%, answer={a!r}")
+    judge.check("answer_phoenix_temperature", entity_fact(a, 104, ["phoenix"], ["new orleans"], unit="temp", label=TEMP_LABEL), f"expected 104, answer={a!r}")
+    judge.check("answer_phoenix_humidity", entity_fact(a, 18, ["phoenix"], ["new orleans"], unit="percent", label=HUMIDITY_LABEL, allow_bare=False), f"expected 18%, answer={a!r}")
+    judge.check("answer_new_orleans_temperature", entity_fact(a, 89, ["new orleans"], ["phoenix"], unit="temp", label=TEMP_LABEL), f"expected 89, answer={a!r}")
+    judge.check("answer_new_orleans_humidity", entity_fact(a, 75, ["new orleans"], ["phoenix"], unit="percent", label=HUMIDITY_LABEL, allow_bare=False), f"expected 75%, answer={a!r}")
     judge.check("answer_names_higher_heat_index_city", names_winner(a, ["phoenix"], ["new orleans", "nola"], ["higher", "hotter", "greater", "highest", "hottest", "larger"], ["lower", "cooler", "lowest", "smaller", "less"]), f"expected Phoenix higher, answer={a!r}")
     check_read_only(judge, initial_db, after_db)
 

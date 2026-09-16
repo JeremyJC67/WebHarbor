@@ -52,6 +52,18 @@ class FactMatchers(unittest.TestCase):
         self.assertTrue(L.contains_clock_time("at 16:00", "4 PM") and L.contains_clock_time("4:00 p.m.", "4 PM"))
         self.assertFalse(L.contains_clock_time("4 AM", "4 PM"))
 
+    def test_navigation_uses_before_then_after_order(self):
+        base = "http://localhost:41024"
+        weather, radar = "/weather/new-orleans-la", "/radar/new-orleans-la"
+        trajectory = {"start_url": base + "/", "steps": [
+            {"url_before": base + weather, "url": base + radar, "url_after": base + radar}],
+            "final_url": base + radar}
+        judge = L.Judge("AccuWeather--11", True)
+        self.assertFalse(L.check_paths_in_order(judge, trajectory, "order", [radar, weather]))
+        trajectory['steps'].append({"url_before": base + radar, "url": base + weather, "url_after": base + weather})
+        trajectory['final_url'] = base + weather
+        self.assertTrue(L.check_paths_in_order(judge, trajectory, "order", [radar, weather]))
+
     def test_names_winner(self) -> None:
         w, l = ["denver"], ["austin"]
         kw, inv = ["cooler", "lower"], ["warmer", "hotter"]

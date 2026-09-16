@@ -28,6 +28,8 @@ TASK_ID = "AccuWeather--0"
 def run_checks(judge, t, initial_db, after_db):
     check_trajectory_identity(judge, t, TASK_ID)
     a = final_answer(t)
+    check_search_surfaces(judge, t, "phoenix-az")
+    check_paths_in_order(judge, t, "search_then_phoenix", ["/search", "/weather/phoenix-az"])
     check_visited_path(judge, t, "visited_weather_phoenix", "/weather/phoenix-az")
     judge.check("answer_temperature", contains_fact(a, 104, unit="temp", label=TEMP_LABEL), f"expected 104, answer={a!r}")
     judge.check("answer_realfeel", contains_fact(a, 115, unit="temp", label=REALFEEL_LABEL), f"expected 115, answer={a!r}")

@@ -158,7 +158,7 @@ def trajectory_urls(traj) -> list[str]:
     for step in traj.get("steps") or []:
         if not isinstance(step, dict):
             continue
-        for key in ("url", "url_before", "url_after"):
+        for key in ("url_before", "url", "url_after"):
             if step.get(key):
                 urls.append(str(step[key]))
     if traj.get("final_url"):
@@ -369,31 +369,45 @@ def contains_number(text, value) -> bool:
     return _affirmative_search(_num_pattern(value), normalize_text(text))
 
 
-_UNIT_PATTERNS = {
-    "temp": r"(?:°|º|˚|degrees?|deg\b|f\b|c\b|fahrenheit|celsius)",
-    "percent": r"(?:%|percent|pct\b|per cent)",
-    "mph": r"(?:mph|mi/h|miles? per hour|miles?/h|km/?h|kph)",
-    "mi": r"(?:mi\b|miles?\b|km\b)",
-    "inhg": r"(?:in\b|inhg|inches|\"|mb\b|hpa)",
-}
+# Units are parsed in full before checking their dimension. In particular a
+# degree sign must not consume the prefix of an explicitly wrong °C / °F unit.
+_UNIT_TOKEN = re.compile(
+    r'\s*(?P<unit>(?:°|º|˚|degrees?\b|deg\b)\s*(?:fahrenheit\b|celsius\b|[fc]\b)?'
+    r'|fahrenheit\b|celsius\b|[fc]\b|%|percent\b|pct\b|per cent\b'
+    r'|miles? per hour\b|miles?/h\b|mi/h\b|mph\b|km/?h\b|kph\b'
+    r'|miles?\b|mi\b|km\b|inches(?: of mercury)?\b|inhg\b|in\b|"|hpa\b|mb\b)')
+
+
+def _unit_kind(raw):
+    token = raw.strip()
+    if re.search(r"celsius|\bc$", token): return "celsius"
+    if re.search(r"fahrenheit|\bf$", token): return "temp"
+    if re.match(r"°|º|˚|deg", token): return "degrees"
+    if token in {"%", "percent", "pct", "per cent"}: return "percent"
+    if token in {"km/h", "kmh", "kph"}: return "kph"
+    if re.search(r"hour|/h|mph", token): return "mph"
+    if token in {"mi", "mile", "miles"}: return "mi"
+    if token == "km": return "km"
+    if token in {"hpa", "mb"}: return "hpa"
+    return "inhg"
+
+
+def _unit_matches(text, end, unit, allow_bare):
+    match = _UNIT_TOKEN.match(text, end)
+    if not match:
+        return allow_bare or unit is None
+    actual = _unit_kind(match['unit'])
+    if unit is None: return False  # AQI / postal values have no physical unit
+    if actual == "degrees" and unit in {"temp", "celsius"}:
+        # A shared unit declaration ("both in Celsius") applies to bare degrees.
+        stated = set(re.findall(r"\b(?:fahrenheit|celsius)\b", text))
+        return not stated or stated == {"celsius" if unit == "celsius" else "fahrenheit"}
+    return actual == unit
 
 
 def contains_measure(text, value, unit: str | None = None, label: str | None = None,
                      allow_bare: bool = False) -> bool:
-    """`value` immediately followed by a unit of kind `unit` (``104°``, ``104 F``,
-    ``18%``, ``8 mph``), OR preceded within the same clause by `label`
-    (``humidity: 18``, ``wind speed of 8``). `allow_bare` accepts a standalone
-    number with neither unit nor label."""
-    t = normalize_text(text)
-    num = _num_pattern(value)
-    patterns = []
-    if unit:
-        patterns.append(rf"{num}\s*(?:°\s*)?{_UNIT_PATTERNS[unit]}")
-    if label:
-        patterns.append(rf"(?:{label})[^.;\n]{{0,40}}?{num}")
-    if allow_bare or not patterns:
-        patterns.append(num)
-    return any(_affirmative_search(p, t) for p in patterns)
+    return contains_fact(text, value, unit=unit, label=label, allow_bare=allow_bare)
 
 
 def contains_temperature(text, value, label: str | None = None) -> bool:
@@ -453,18 +467,96 @@ def labeled_values(text, label: str) -> list[str]:
     return found
 
 
+def _bound_numbers(text, label):
+    """Metric → number adjacency, without skipping another metric or city."""
+    glue = (r"[\s:=()\[\]~–—-]*(?:(?:currently|now|has|a|an|the|is|was|of|at|"
+            r"reads|reading|around|about|approximately|roughly|value|index|level|"
+            r"shows|showing|reported|as|in|comes|sits|stands|not)\b[\s:=()\[\]~-]*)*")
+    for label_match in re.finditer(label, text):
+        match = re.match(glue + rf"(?P<number>{_NUM_RE})(?![\d.]|,\d)", text[label_match.end():])
+        if match:
+            start = label_match.end() + match.start('number')
+            yield next(re.finditer(_NUM_RE, text[start:])).group(), start, label_match.end() + match.end('number')
+
+
 def contains_fact(text, expected, unit: str | None = None, label: str | None = None, allow_bare: bool = True) -> bool:
-    """Ground-truth number check. If the answer binds a number to `label`, that
-    number must be `expected` (swap detection); otherwise fall back to unit
-    adjacency (``104°``) or, with `allow_bare`, a standalone number."""
+    """Accept the requested assertion, reject conflicting assertions of the same
+    metric, and never let a label or bare-number fallback override explicit units.
+    Units omitted in a compact answer inherit the displayed unit (task contract).
+    """
+    t = normalize_text(text)
+    bound = list(_bound_numbers(t, label)) if label else []
     exp = _num_norm(expected)
-    if label:
-        bound = labeled_values(text, label)
-        if bound:
-            if not any(v == exp for v in bound):
-                return False
-            return contains_measure(text, expected, unit=unit, label=None, allow_bare=True)
-    return contains_measure(text, expected, unit=unit, label=None, allow_bare=allow_bare)
+    if bound:
+        supported = False
+        for number, start, end in bound:
+            # Reuse the clause polarity rules for the exact numeric occurrence.
+            match = re.compile(_NUM_RE).match(t, start)
+            affirmative = _match_is_affirmative(t, match)
+            equal = _num_norm(number) == exp and _unit_matches(t, end, unit, True)
+            if affirmative and not equal: return False
+            if not affirmative and equal: return False
+            supported |= affirmative and equal
+        return supported
+    # Compact/unlabelled values are allowed, but a different metric's number
+    # cannot satisfy this one (e.g. RealFeel 104 must not stand in for Temp 104).
+    other_labels = [TEMP_LABEL, REALFEEL_LABEL, HUMIDITY_LABEL, WIND_LABEL,
+                    VISIBILITY_LABEL, PRESSURE_LABEL, AQ_LABEL, PRECIP_LABEL,
+                    HIGH_LABEL, LOW_LABEL, UV_LABEL]
+    occupied = {start for other in other_labels if other != label
+                for _, start, _ in _bound_numbers(t, other)} if label else set()
+    candidates = [m for m in re.finditer(_num_pattern(expected), t) if m.start() not in occupied]
+    return bool(candidates) and all(
+        _match_is_affirmative(t, m) and _unit_matches(t, m.end(), unit, allow_bare)
+        for m in candidates)
+
+
+def entity_fact(text, expected, entity, others, *, unit=None, label=None, allow_bare=True):
+    """Evaluate only the clauses owned by this city, up to the next named city.
+    City labels may precede multiple metrics. Repeated city assertions must agree.
+    """
+    t = normalize_text(text)
+    own, other = _term_pattern(entity), _term_pattern(others)
+    matches = list(re.finditer(f"{own}|{other}", t))
+    support = False
+    for i, match in enumerate(matches):
+        if not re.fullmatch(own, match.group()): continue
+        end = matches[i+1].start() if i+1 < len(matches) else len(t)
+        clause = t[match.end():end].lstrip("'s :")
+        if not re.search(_NUM_RE, clause): continue
+        # Ignore unrelated comparison numbers attached to a named metric.
+        if label and not list(_bound_numbers(clause, label)):
+            metrics = [TEMP_LABEL, REALFEEL_LABEL, HUMIDITY_LABEL, AQ_LABEL]
+            if any(list(_bound_numbers(clause, m)) for m in metrics if m != label):
+                # Unlabelled temperature may precede a labelled humidity.
+                first_metric = min((m.start() for pat in metrics for m in re.finditer(pat, clause)), default=len(clause))
+                clause = clause[:first_metric]
+                if not re.search(_NUM_RE, clause): continue
+        if not contains_fact(clause, expected, unit=unit, label=label, allow_bare=allow_bare): return False
+        support = True
+    return support
+
+
+def confirms_saved(text, city, *, present=True):
+    t = normalize_text(text)
+    positive = negative = False
+    for clause in re.split(r"[.;!?]|\bbut\b", t):
+        if not re.search(_term_pattern([city]), clause): continue
+        absent = bool(re.search(r"\b(?:removed|deleted|missing|absent)\b|no longer|not (?:still )?(?:saved|listed|shown|present|in|appear)|does not appear|doesn't appear", clause))
+        saved = bool(re.search(r"\b(?:saved|listed|shown|appears?|present|added)\b", clause))
+        if absent: negative = True
+        elif saved: positive = True
+    return (positive and not negative) if present else (negative and not positive)
+
+
+def confirms_alerts(text):
+    t = normalize_text(text)
+    if not mentions(t, ['severe weather']) or not mentions(t, ['rain starting soon']): return False
+    if not re.search(r"\b(?:enabled|checked|selected|saved|on)\b", t): return False
+    for clause in re.split(r"[.;!?]|\bbut\b", t):
+        if re.search(r"severe|rain|all alerts|preferences", clause) and re.search(r"disabled|unchecked|not saved|no .*saved|\boff\b|not enabled|not checked", clause): return False
+        if 'temperature' in clause and not re.search(r"off|disabled|unchecked|not (?:enabled|checked|selected)", clause): return False
+    return True
 
 
 _MERIDIEM = {"am": r"a\.?\s*m\b\.?", "pm": r"p\.?\s*m\b\.?"}
@@ -504,12 +596,19 @@ def contains_day_label(text, label: str) -> bool:
 
 
 def contains_condition(text, condition: str) -> bool:
-    """``Mostly cloudy`` / ``mostly-cloudy`` / ``MOSTLY  CLOUDY``."""
-    words = normalize_text(condition).split()
-    pattern = r"\b" + r"[\s-]+".join(re.escape(w) for w in words) + r"\b"
-    if len(words) == 1:  # ``Cloudy`` must not be satisfied by ``Mostly cloudy``
-        pattern = r"(?<!mostly )(?<!partly )(?<!mainly )(?<!mostly-)(?<!partly-)" + pattern
-    return _affirmative_search(pattern, normalize_text(text))
+    """Match complete condition names and reject contradictory condition claims.
+    Negated alternatives ("cloudy, not sunny") remain valid.
+    """
+    t = normalize_text(text)
+    conditions = r"\b(?:mostly[ -]+cloudy|mostly[ -]+sunny|partly[ -]+sunny|cloudy|sunny|showers)\b"
+    support = False
+    for match in re.finditer(conditions, t):
+        equal = match.group().replace('-', ' ') == normalize_text(condition)
+        affirmative = _match_is_affirmative(t, match)
+        if affirmative and not equal: return False
+        if not affirmative and equal: return False
+        support |= affirmative and equal
+    return support
 
 
 def mentions(text, terms: Iterable[str]) -> bool:
@@ -591,7 +690,7 @@ EXPECTED_INITIAL_COUNTS = {"location": 20, "forecast": 140, "hourly": 240, "user
 EXPECTED_INITIAL_SAVED = {("alice.j@test.com", "new-york-ny"), ("alice.j@test.com", "boston-ma")}
 # sha256 over the location/forecast/hourly rows of the build-generated seed
 # (sites/accuweather/app.py seeds them from constants; see verify/README.md).
-CATALOG_FINGERPRINT = "05807dac4bd73c96fa663d5950d2fe98142590875f841f140ae1dad116abff3c"
+CATALOG_FINGERPRINT = "d2e9da2a5e92c805fb92395767ac6c8a9c97e961fac6ee1c88b76ac138389b1b"
 
 
 def db_query(db_path, sql: str, params: Sequence[Any] = ()) -> list[sqlite3.Row]:

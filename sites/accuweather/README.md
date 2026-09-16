@@ -13,10 +13,9 @@ a temperature-unit setting.
   tile or a real radar image. The heading names the city; nothing else on the
   page is a fact a task may depend on.
 - **Forecasts are generated from the current temperature** (`app.py`,
-  `seed_database`): today's high is `current - 2`, the hourly peak is 4 PM for
+  `seed_database`): today's high is `current + 3` and the hourly `Now` temperature equals current weather, the hourly peak is 4 PM for
   every city, and the lowest daily low is Saturday for every city. This makes
-  the list-scan pattern identical across cities. It is deterministic and
-  self-consistent, but it is not realistic per-city weather.
+  the list-scan pattern identical across cities. Today’s range contains every displayed hourly temperature. It is deterministic, but it is not realistic per-city weather.
 - **Content is synthetic.** No value is a real-world fact, so no task can be
   answered from model knowledge.
 
@@ -71,3 +70,24 @@ Arial with no further change.
 Deterministic verifiers for all 20 tasks live in `verify/`; see
 `verify/README.md` for the contract and `verify/tests/` for the unit harness
 and the real-browser matrix.
+
+## Review corrections
+
+The September 2026 review corrected mobile search/flash overlap, form choices,
+menu destinations, radar legend colors and the overall AQI scale. The home
+cards now link to available weather features. UV Index is visible on Current
+Weather; task 5 uses postal code, pressure and AQI to cover disambiguation and
+two detail tabs, not because UV is missing.
+
+Task 8 explicitly requests an alert confirmation; task 17 explicitly requests
+the numeric maximum as well as its first hour and precipitation chance. Grading
+rejects explicit wrong units, city/value swaps and contradictory confirmations.
+The deterministic parser accepts metric labels, common city aliases and compact
+value lists; it does not attempt unrestricted natural-language inference.
+
+AccuWeather's bundle is pinned independently in `.assets-revision` to the
+immutable commit of [HF resource PR #66](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/66).
+`./scripts/fetch_assets.sh accuweather` resolves that pin automatically; the
+other sites keep the existing global revision. An explicit `ASSETS_REVISION`
+overrides both the global and scoped pins. Remote PR #66 remains open; no
+resource merge or publication is needed for this reproducible local build.

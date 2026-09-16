@@ -62,21 +62,27 @@ Seattle, Miami, Chicago, Boston, Austin, Denver) the trajectory must contain a
 
 ## Answer matchers
 
-`contains_fact(text, value, unit, label)` accepts a standalone number, a number with
-its unit (`104°`, `104 F`, `18%`, `8 mph`, `29.89 in`), or a number bound to its label
-(`humidity: 18`); when the answer binds a *different* number to that label
-(`temperature 115, RealFeel 104`) the check fails, so value/label swaps are caught
-whenever the agent labels its values. Numbers are matched as whole values (`104`
-never matches `1040` or `104.5`). Conditions are matched as phrases and single-word
-conditions reject qualified variants (`Cloudy` ≠ `Mostly cloudy`). Clock times accept
-`4 PM`, `4:00 p.m.`, `16:00`; day labels accept `Sat` / `Saturday`. Comparison tasks use
-`names_winner`, which attributes the comparative word (`cooler`, `better`, `warmer`,
-`higher`) to the nearest city in the sentence and rejects the inverse attribution.
-All matchers are negation-aware (`not 18%` does not count).
+`contains_fact` keeps metric, value and unit together. Explicit Fahrenheit,
+Celsius, mph, miles, inches of mercury and percentages are distinct. Values must
+match the displayed scale; bare values/degrees inherit the task's displayed unit.
+Explicit wrong units never fall back to bare-number matching. Repeated assertions
+of one metric must agree. Qualified condition names stay distinct, and
+contradictory condition claims fail. Common negative alternatives remain valid
+(e.g. “cloudy, not sunny”).
 
-Known limit: when an agent reports two same-unit values with no labels at all
-(`103°, 82°`) a swap between them is not detectable; the winner check still has to
-name the right city.
+Comparison tasks use `entity_fact` to scope numbers to each named city and metric,
+plus `names_winner` for the comparison. Compact city/value pairs and common aliases
+are accepted. Unattributed lists of numbers cannot establish a city comparison.
+Saved-location tasks require affirmative confirmation of the requested presence
+or absence, alongside exact DB deltas. Task 8 now explicitly requests an alert
+confirmation. Task 0 requires search; task 11 requires Radar before the return to
+Current Weather; task 17 explicitly requests the numeric maximum.
+
+These deterministic text rules cover common concise prose, city/value lists,
+metric labels, time variants and day abbreviations. They are not a general
+natural-language reasoner. The synthetic audit controls in
+`tests/answer_controls.json` document accepted paraphrases and rejected units,
+swaps and contradictions independently of GUI evidence.
 
 ## Tests
 
