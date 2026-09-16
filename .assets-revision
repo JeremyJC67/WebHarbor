@@ -10,9 +10,13 @@
 # SHA-256: 867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a
 # All 32 pre-existing archives are unchanged from the previous main pin
 # c32018ca3b3d67e7b858b1b85fb101aea5090cd7 (Berkeley, HF PR #91).
-# This revision has archives for all 31 registered sites. The two additional
-# archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
+# This revision has archives for the 31 sites registered before AccuWeather.
+# The two additional archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
 # B&H's bundle contains images and external cache; Docker generates its seed
 # from tracked catalog data (sites/bh_photo/.build-generated-seed).
 repo: ChilleD/WebHarbor
 revision: fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f
+
+# AccuWeather HF PR #66; immutable archive validated in the task review.
+# Other sites retain their merged and validated asset revision above.
+site.accuweather: 0a73c1c1ac2e47513389a8a1a67601f75c8c4150
