@@ -36,17 +36,17 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 30 sites today, scaling to 100+ together
+- **Community-driven** — 31 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40029:40000-40029 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40030:40000-40030 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40029` to explore 30 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, and UC Berkeley`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40030` to explore 31 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, and IMDb`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -63,21 +63,22 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 ./scripts/build.sh                                 # docker build -t webharbor:dev .
 ```
 
-### Local NVIDIA review candidate
+### Local review candidate
 
-This branch registers **30 sites**, the 30 entries listed above; NVIDIA took index 28
-when #107 merged, so UC Berkeley (the site under review here) is the last entry,
-registry index 29, container port 40029 (local review host port 48029). The
-published-image quickstart above is not a claim that this review candidate has been
-published or accepted.
+This branch registers **31 sites**, the 31 entries listed above; NVIDIA took index 28
+when #107 merged and UC Berkeley index 29 when #116 merged, so IMDb (the site under
+review here) is the last entry, registry index 30, container port 40030 (local review
+host port 48030). The published-image quickstart above is not a claim that this
+review candidate has been published or accepted.
 
 | Site | Registry position | Container port | Local review host port |
 | --- | --- | --- | --- |
 | NVIDIA | 28 | 40028 | 48028 |
 | UC Berkeley | 29 | 40029 | 48029 |
+| IMDb | 30 | 40030 | 48030 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 30 sites and `40000-40029`;
+site's `tasks.jsonl` `web` URL agree on 31 sites and `40000-40030`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -85,7 +86,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48029:40000-40029 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48030:40000-40030 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -217,7 +218,7 @@ itself cannot be edited from this repository.
 
 ## 🤝 Contribute
 
-We have built 30 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
+We have built 31 high-quality mirrors covering the [WebVoyager](https://github.com/MinorJerry/WebVoyager) benchmark. The next goal is **100+ sites**, covering everything in [Online-Mind2Web](https://huggingface.co/datasets/osunlp/Online-Mind2Web). We are inviting the community to build this together.
 
 There are two ways to join the author list:
 
