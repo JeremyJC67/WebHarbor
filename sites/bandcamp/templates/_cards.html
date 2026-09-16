@@ -1,9 +1,10 @@
 {% macro album_card(album, show_scene=True) %}
 <article class="release-card">
-    <a class="release-cover" href="{{ url_for('album_page', slug=album.slug) }}">
+    <button class="release-cover cover-play" type="button" aria-label="Play {{ album.title }}">
         <img src="{{ url_for('static', filename=album.cover_image) }}" alt="{{ album.title }} cover" loading="lazy">
         <span class="format-rail">{{ album.primary_genre.name }}</span>
-    </a>
+        <span class="play-badge">▶</span>
+    </button>
     <div class="release-meta">
         <h3><a href="{{ url_for('album_page', slug=album.slug) }}">{{ album.title }}</a></h3>
         <p class="release-byline">by <a href="{{ url_for('artist_page', slug=album.artist.slug) }}">{{ album.artist.name }}</a></p>

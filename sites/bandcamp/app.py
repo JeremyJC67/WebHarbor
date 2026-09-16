@@ -623,6 +623,55 @@ def inject_globals():
     }
 
 
+COUNTRY_FLAGS = {
+    "united states": "🇺🇸", "united kingdom": "🇬🇧", "japan": "🇯🇵", "germany": "🇩🇪",
+    "canada": "🇨🇦", "australia": "🇦🇺", "france": "🇫🇷", "brazil": "🇧🇷", "mexico": "🇲🇽",
+}
+
+
+def relative_time(moment: datetime | None) -> str:
+    if not moment:
+        return "recently"
+    seconds = max(0, int((MIRROR_REFERENCE_NOW - moment).total_seconds()))
+    if seconds < 60:
+        return f"{seconds} seconds ago"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    days = hours // 24
+    return f"{days} day{'s' if days != 1 else ''} ago"
+
+
+def support_feed(limit: int = 10) -> list[dict]:
+    rows = []
+    for item in latest_support_items(limit):
+        country = (item.order.shipping_country or "").lower()
+        rows.append({
+            "item": item,
+            "flag": COUNTRY_FLAGS.get(country, "🏳️"),
+            "when": relative_time(item.order.placed_at),
+        })
+    return rows
+
+
+def daily_stories(limit: int = 8) -> list[dict]:
+    editorial = Album.query.filter_by(is_editorial=True).order_by(Album.release_date.desc()).all()
+    recent = Album.query.order_by(Album.release_date.desc()).limit(16).all()
+    seen: set[int] = set()
+    merged: list[Album] = []
+    for album in editorial + recent:
+        if album.id not in seen:
+            seen.add(album.id)
+            merged.append(album)
+    return [
+        {"kicker": ["Album of the Day", "Scene Report", "Label Focus", "Artist Profile"][index % 4], "album": album}
+        for index, album in enumerate(merged[:limit])
+    ]
+
+
 @app.route("/")
 def index():
     return render_template(
@@ -632,27 +681,23 @@ def index():
         editorial=Album.query.filter_by(is_editorial=True).order_by(Album.release_date.desc()).limit(4).all(),
         featured_merch=MerchItem.query.filter_by(is_featured=True).order_by(MerchItem.release_date.desc()).limit(8).all(),
         scenes=Scene.query.order_by(Scene.name.asc()).limit(9).all(),
-        support_items=latest_support_items(9),
+        support_feed=support_feed(10),
         support_total=round(sum(order.total for order in Order.query.all()), 2),
+        daily=daily_stories(4),
+        album_of_the_day=(Album.query.filter_by(is_editorial=True).order_by(Album.release_date.desc()).first()
+                          or Album.query.order_by(Album.release_date.desc()).first()),
     )
+
+
+@app.route("/artists")
+def artists_page():
+    artists = Artist.query.order_by(Artist.follow_count.desc()).all()
+    return render_template("artists.html", artists=artists)
 
 
 @app.route("/editorial")
 def editorial_page():
-    editorial = Album.query.filter_by(is_editorial=True).order_by(Album.release_date.desc()).all()
-    recent = Album.query.order_by(Album.release_date.desc()).limit(16).all()
-    seen: set[int] = set()
-    merged: list[Album] = []
-    for album in editorial + recent:
-        if album.id not in seen:
-            seen.add(album.id)
-            merged.append(album)
-    features = merged[:8]
-    daily = [
-        {"kicker": ["Album of the Day", "Scene Report", "Label Focus", "Artist Profile"][index % 4], "album": album}
-        for index, album in enumerate(features)
-    ]
-    return render_template("editorial.html", daily=daily,
+    return render_template("editorial.html", daily=daily_stories(8),
                            scenes=Scene.query.order_by(Scene.name.asc()).limit(6).all())
 
 
