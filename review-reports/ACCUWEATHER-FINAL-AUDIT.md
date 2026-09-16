@@ -1,5 +1,10 @@
 # AccuWeather final task and UI audit
 
+This is the original September 9 audit. The subsequent GUI audit corrections and
+current integration checks are recorded in [accuweather-pr98-fixes.md](accuweather-pr98-fixes.md).
+
+This is the original audit. See [the subsequent corrections and integration checks](accuweather-pr98-fixes.md) for the revised PR.
+
 Audit date: 2026-09-09. Branch: `add-accuweather-mirror`.
 
 The site was reset before every task and browser cookies were cleared. Every run began at `http://localhost:41024/` and used Playwright visible-element locators to search, open results, select tabs, sign in, change preferences, and submit forms. No task used a direct destination URL, database lookup, or source-code answer.
