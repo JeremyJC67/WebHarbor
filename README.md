@@ -97,28 +97,22 @@ passed.
 
 ### Asset delivery status
 
-`.assets-revision` is pinned to `c32018ca3b3d67e7b858b1b85fb101aea5090cd7`, the
-head commit of HF dataset `main` and the squash-merge commit of HF dataset PR
-[#91](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/91)
-("berkeley: synthetic imagery bundle (164 files)", merged 2026-09-15T04:00:54Z).
-Every other registered site's archive on that commit has the same size and LFS oid
-as on the previous pin `b7e605c0ec5fc47de85b09e7427162cc50e38980`, and all 30 site
-archives are byte-identical to the ones the interim `refs/pr/91` pin served, so the
-pin change adds the UC Berkeley bundle without altering any other site's assets:
+`.assets-revision` currently pins the immutable commit `f09e586eec8bf1bca0bc0881e08b77f3c2a5508e`
+from [HF asset PR #92](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92).
+The asset PR is awaiting merge; replace the interim pin with its merged dataset
+commit before merging the code PR.
 
-- the pinned revision carries 32 `*.tar.gz` (30 registered sites plus
-  `bandcamp.tar.gz` and `drugs_com.tar.gz`, which `fetch_assets.sh` ignores for
-  sites this checkout does not register);
-- `nvidia.tar.gz` at that revision is the same 37-member archive as at the previous
-  pin, so `scripts/validate_asset_archive.py nvidia.tar.gz nvidia` prints
-  `[fetch] validated 37 managed members for nvidia` and exits 0;
-- `berkeley.tar.gz` at that revision has 171 managed members, so
-  `scripts/validate_asset_archive.py berkeley.tar.gz berkeley` prints
-  `[fetch] validated 171 managed members for berkeley`;
-- `./scripts/fetch_assets.sh` at this pin extracts all 30 registered sites
-  (`[fetch] done — 30 site(s) extracted into sites/`).
+This revision adds `bh_photo.tar.gz` and preserves all 32 existing archives from
+`c32018ca3b3d67e7b858b1b85fb101aea5090cd7` byte-for-byte, including Berkeley and
+NVIDIA. It carries 33 archives for 31 registered sites plus the unregistered
+Bandcamp and Drugs.com archives, which `fetch_assets.sh` ignores. A clean asset
+fetch downloaded and extracted all 31 registered sites successfully.
 
-The previous pin `b7e605c0ec5fc47de85b09e7427162cc50e38980` is the squash-merge
+B&H's archive contains images and external cache. The Docker build validates
+its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked
+catalog. No manually prepared B&H database is required for a fresh build.
+
+The earlier pin `b7e605c0ec5fc47de85b09e7427162cc50e38980` is the squash-merge
 commit of HF dataset PR
 [#85](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/85) on the
 dataset's `main`. It sits on top of PR
@@ -130,6 +124,7 @@ added the first reviewed NVIDIA bundle.
 | --- | --- | --- | --- |
 | `nvidia.tar.gz` at the current pin | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
 | `berkeley.tar.gz` at the current pin (HF PR #91) | 171 | 6,951,483 | `ab9d2716ae8d06540a181b5e60c37f613d87b103864b467511da546b1b173789` |
+| `bh_photo.tar.gz` at the interim pin (HF PR #92) | 511 | 79,658,793 | `867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a` |
 | previous pin's `nvidia.tar.gz` (HF PR #84, superseded) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
 
 PR #85 replaces five product images and adds three dedicated hero images (see
