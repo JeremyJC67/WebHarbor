@@ -82,16 +82,29 @@ for archive in "${INCLUDES[@]}"; do
     revision=${SITE_REVISIONS[$site]}
     if [[ "$revision" != "$REVISION" ]]; then
         echo "[fetch] $site scoped pin: $revision"
-        hf download "$REPO" "$archive" --repo-type dataset --revision "$revision" \
+        hf download "$REPO" --include "$archive" --repo-type dataset --revision "$revision" \
             --local-dir "sites/.cache/tarballs/$revision"
     fi
 done
+AVAILABLE_TARBALLS=()
 for tarball in "${TARBALLS[@]}"; do
     if [[ ! -f "$tarball" ]]; then
+        site=$(basename "$tarball" .tar.gz)
+        # Build-generated sites need no archive only when they also need no
+        # downloaded images or external cache. Required assets still fail closed.
+        if [[ -f "sites/$site/.build-generated-seed" &&
+              ! -f "sites/$site/.requires-images" &&
+              ! -f "sites/$site/.requires-external-cache" ]]; then
+            echo "[fetch] $site: build-generated seed, no archive — skipping"
+            if [[ -n "$ONLY_SITE" ]]; then exit 0; fi
+            continue
+        fi
         echo "fetch_assets: expected archive: $tarball" >&2
         exit 1
     fi
+    AVAILABLE_TARBALLS+=("$tarball")
 done
+TARBALLS=("${AVAILABLE_TARBALLS[@]}")
 extracted=0
 for tarball in "${TARBALLS[@]}"; do
     site=$(basename "$tarball" .tar.gz)

@@ -90,4 +90,11 @@ immutable commit of [HF resource PR #66](https://huggingface.co/datasets/ChilleD
 `./scripts/fetch_assets.sh accuweather` resolves that pin automatically; the
 other sites keep the existing global revision. An explicit `ASSETS_REVISION`
 overrides both the global and scoped pins. Remote PR #66 remains open; no
-resource merge or publication is needed for this reproducible local build.
+resource merge or publication is needed for this reproducible build.
+
+## Integrated runtime
+
+AccuWeather is registered at index 31, container port `40031`; task URLs use
+`http://localhost:40031/`. The Dockerfile generates `instance_seed/accuweather.db`
+from the tracked application during the build, then startup and resets copy it
+to `instance/`. The preview used for the GUI audit remains on host port `41024`.
