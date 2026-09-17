@@ -23,3 +23,6 @@ site.accuweather: 0a73c1c1ac2e47513389a8a1a67601f75c8c4150
 
 # Recreation.gov PR #66: preserve main's assets and scope the original site bundle.
 site.recreation_gov: 00faedd20a96b4b10d5013a1c07ace9472d7ee80
+
+# BoardGameGeek HF PR #25: immutable reviewed bundle; preserve all other pins.
+site.boardgamegeek: 6737719a7eeb8d9b5fba77072d455e0d9afd2a93
