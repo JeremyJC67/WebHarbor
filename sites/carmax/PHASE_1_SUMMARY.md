@@ -1,5 +1,11 @@
 # CarMax mirror — Phase 1 Summary
 
+Historical contributor notes: the commands and site counts below describe the
+original contribution, not the current registry. For current setup use the root
+README (CarMax index 37, port 40037), `scripts/verify_carmax.sh`, and
+`verify/README.md`. The recovered image supplement needs separate publication;
+see `recovered_assets.json`.
+
 Phase 1 of the WebHarbor contribution pipeline for `carmax.com`. Code is
 complete; the remaining boot-and-freeze + Docker verification must run
 on your local Windows host (sandbox limits prevent it from this side).

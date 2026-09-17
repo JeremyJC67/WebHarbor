@@ -99,12 +99,12 @@
         <div class="pagination">
           {% set prev = page - 1 %}
           {% set nxt = page + 1 %}
-          {% if page > 1 %}<a href="?{{ request.query_string.decode() }}&amp;page={{ prev }}">&laquo; Prev</a>{% endif %}
+          {% if page > 1 %}<a href="{{ page_url(prev) }}">&laquo; Prev</a>{% endif %}
           {% for p in range(1, pages + 1) %}
             {% if p == page %}<span class="current">{{ p }}</span>
-            {% else %}<a href="?{{ request.query_string.decode() }}&amp;page={{ p }}">{{ p }}</a>{% endif %}
+            {% else %}<a href="{{ page_url(p) }}">{{ p }}</a>{% endif %}
           {% endfor %}
-          {% if page < pages %}<a href="?{{ request.query_string.decode() }}&amp;page={{ nxt }}">Next &raquo;</a>{% endif %}
+          {% if page < pages %}<a href="{{ page_url(nxt) }}">Next &raquo;</a>{% endif %}
         </div>
       {% endif %}
     </div>

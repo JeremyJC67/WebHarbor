@@ -26,3 +26,6 @@ site.recreation_gov: 00faedd20a96b4b10d5013a1c07ace9472d7ee80
 
 # BoardGameGeek HF PR #25: immutable reviewed bundle; preserve all other pins.
 site.boardgamegeek: 6737719a7eeb8d9b5fba77072d455e0d9afd2a93
+
+# CarMax original asset PR #15, immutable reviewed seed and stock imagery.
+site.carmax: 189b9cdcfd41a21b99ce4797f3bec152d8564a7f

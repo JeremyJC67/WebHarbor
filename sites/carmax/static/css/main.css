@@ -219,3 +219,25 @@ table.data tr:last-child td { border-bottom: none; }
 
 .empty-state { text-align: center; padding: 60px 20px; color: var(--cmx-text-light); }
 .empty-state h2 { color: var(--cmx-text); margin: 0 0 8px; }
+
+/* Let grid children shrink; keep wide data tables locally scrollable. */
+.grid > *, .search-layout > *, .vdetail > *, .form-grid-2 > * { min-width: 0; }
+.table-scroll { max-width: 100%; overflow-x: auto; margin-block: 16px; }
+.table-scroll:focus-visible { outline: 2px solid var(--cmx-blue); }
+.facet-section input { min-width: 0; }
+.pagination, .vcard-actions, .toolbar { flex-wrap: wrap; gap: 8px; }
+@media (max-width: 1100px) {
+  .site-header .container { flex-wrap: wrap; gap: 12px 20px; }
+  .site-header nav { order: 3; flex-basis: 100%; flex-wrap: wrap; }
+  .site-header .user-tools { margin-left: auto; flex-wrap: wrap; }
+}
+@media (max-width: 640px) {
+  .hero h1 { font-size: 32px; }
+  .hero .hero-search input[type=text] { min-width: 0; width: 100%; flex-basis: 100%; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .site-header .user-tools { gap: 12px; }
+  .site-header nav a { padding: 10px 0; }
+  .facets { position: static; }
+  .kpi .v { font-size: 23px; overflow-wrap: anywhere; }
+  .site-footer .footer-grid > * { min-width: 0; overflow-wrap: anywhere; }
+}

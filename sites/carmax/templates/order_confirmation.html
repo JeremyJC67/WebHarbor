@@ -19,7 +19,7 @@
   </div>
 
   <h2 style="margin-top:32px">Totals</h2>
-  <table class="data">
+  <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="data">
     <tr><td>Vehicle price</td><td style="text-align:right">{{ order.subtotal|money }}</td></tr>
     {% if order.transfer_fee %}<tr><td>Transfer fee</td><td style="text-align:right">{{ order.transfer_fee|money }}</td></tr>{% endif %}
     <tr><td>Sales tax</td><td style="text-align:right">{{ order.tax|money }}</td></tr>
@@ -28,7 +28,7 @@
     {% if order.maxcare_plan %}<tr><td>MaxCare ({{ order.maxcare_plan|capitalize }})</td><td style="text-align:right">{{ order.maxcare_price|money }}</td></tr>{% endif %}
     {% if order.trade_in_value %}<tr><td>Trade-in</td><td style="text-align:right">-{{ order.trade_in_value|money }}</td></tr>{% endif %}
     <tr style="font-weight:700"><td>Total</td><td style="text-align:right">{{ order.total|money }}</td></tr>
-  </table>
+  </table></div>
 
   {% if order.payment_method != 'cash' %}
   <h2 style="margin-top:24px">Financing</h2>

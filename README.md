@@ -36,7 +36,7 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 37 sites today, scaling to 100+ together
+- **Community-driven** — 38 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
@@ -44,10 +44,10 @@ Build this checkout to run its registered web environments (published image tags
 
 ```bash
 ./scripts/build.sh webharbor:dev
-docker run -p 8101:8101 -p 40000-40036:40000-40036 webharbor:dev
+docker run -p 8101:8101 -p 40000-40037:40000-40037 webharbor:dev
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40036` to explore 37 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, and BoardGameGeek`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40037` to explore 38 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, and CarMax`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -66,10 +66,11 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **37 sites**. NVIDIA remains at index 28, UC Berkeley
+This checkout registers **38 sites**. NVIDIA remains at index 28, UC Berkeley
 remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
 31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at
-index 34. Recreation.gov remains at index 35; BoardGameGeek is appended at index 36. Build the image from
+index 34. Recreation.gov remains at index 35; BoardGameGeek remains at index 36,
+and CarMax is appended at index 37. Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
@@ -84,9 +85,10 @@ published Docker image automatically.
 | NBA | 34 | 40034 | 48034 |
 | Recreation.gov | 35 | 40035 | 48035 |
 | BoardGameGeek | 36 | 40036 | 48036 |
+| CarMax | 37 | 40037 | 48037 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 37 sites and `40000-40036`;
+site's `tasks.jsonl` `web` URL agree on 38 sites and `40000-40037`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -94,7 +96,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48036:40000-40036 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48037:40000-40037 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken

@@ -237,15 +237,26 @@ class Vehicle(db.Model):
     def get_gallery(self):
         try:
             paths = json.loads(self.gallery_images or '[]')
-            return [p for p in paths if p]
+            return [p for p in paths if self.local_image_exists(p)]
         except Exception:
             return []
 
+    @staticmethod
+    def local_image_exists(path):
+        if not path or not path.startswith('/static/images/') or '..' in path.split('/'):
+            return False
+        return os.path.isfile(os.path.join(BASE_DIR, path.lstrip('/')))
+
+    @property
+    def image_url(self):
+        images = self.all_images()
+        return images[0] if images else '/static/images/_pending.svg'
+
     def all_images(self):
         gallery = self.get_gallery()
-        if self.image and self.image not in gallery:
+        if self.local_image_exists(self.image) and self.image not in gallery:
             return [self.image] + gallery
-        return gallery or ([self.image] if self.image else [])
+        return gallery
 
     def has_feature(self, feat):
         f = feat.lower()
@@ -967,11 +978,17 @@ def _do_search(scope_label, extra_filters=None):
     items, total = search_vehicles(query=q, filters=filters, sort=sort,
                                    page=page, per_page=24)
     facets = _facets(filters)
+    def page_url(number):
+        args = request.args.to_dict(flat=False)
+        # Route variables win over redundant form query fields on scoped pages.
+        args.update(request.view_args)
+        args['page'] = number
+        return url_for(request.endpoint, **args)
     return render_template('search.html',
                            items=items, total=total, page=page, per_page=24,
                            pages=(total + 23) // 24,
                            query=q, sort=sort, filters=filters,
-                           facets=facets, scope_label=scope_label)
+                           facets=facets, scope_label=scope_label, page_url=page_url)
 
 
 @app.route('/cars')
@@ -1339,6 +1356,19 @@ def value_index():
              .group_by(Vehicle.make, Vehicle.make_slug)
              .order_by(Vehicle.make.asc()).all())
     return render_template('value.html', makes=makes)
+
+
+@app.route('/value/<make>')
+def value_make(make):
+    make_slug = slugify(make)
+    models = (db.session.query(Vehicle.model, Vehicle.model_slug)
+              .filter(Vehicle.make_slug == make_slug)
+              .distinct().order_by(Vehicle.model).all())
+    if not models:
+        abort(404)
+    sample = Vehicle.query.filter_by(make_slug=make_slug).first()
+    return render_template('value_make.html', make=sample.make,
+                           make_slug=make_slug, models=models)
 
 
 @app.route('/value/<make>/<model>')

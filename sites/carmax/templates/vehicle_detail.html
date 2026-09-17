@@ -14,7 +14,7 @@
     <div>
       <div class="vdetail-gallery">
         <div class="main-img">
-          <img id="vdetail-hero" src="{{ vehicle.image or '/static/images/_pending.svg' }}"
+          <img id="vdetail-hero" src="{{ vehicle.image_url }}"
                alt="{{ vehicle.title }}" onerror="this.src='/static/images/_pending.svg'">
         </div>
         {% if vehicle.all_images()|length > 1 %}
@@ -28,6 +28,7 @@
         {% endif %}
       </div>
 
+      <p class="meta">{% if vehicle.all_images() %}Representative stock photos; trim and color may differ from this benchmark vehicle.{% else %}Photo unavailable for this model year.{% endif %}</p>
       <section class="section">
         <h2>Highlights</h2>
         <div class="spec-grid">

@@ -44,7 +44,7 @@ VIEW_MAP = {
 # Our seed's model_slug → carmax CDN URL model slug.
 # Carmax sometimes uses a different convention from our slugify().
 SLUG_REMAP = {
-    'f-150':     'f150',
+    'f-150':     'f-150',
     'silverado': 'silverado-1500',
     # 'cr-v' stays 'cr-v', 'model-3' stays 'model-3', etc.
     # 'c-class' is the carmax URL slug for Mercedes C-Class.
