@@ -20,3 +20,7 @@ revision: fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f
 # AccuWeather HF PR #66; immutable archive validated in the task review.
 # Other sites retain their merged and validated asset revision above.
 site.accuweather: 0a73c1c1ac2e47513389a8a1a67601f75c8c4150
+
+# Reviewed GOV.UK seed, HF PR #93 (merge requires dataset-maintainer access).
+# Archive SHA256: 1c483241887bde14e3b629ff4acc10d5f54b46283c22bf8abfde2794360743fd
+site.gov_uk: 7c4daf7a6714654c609a9ccf97ab3b2431381791
