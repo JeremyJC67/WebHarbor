@@ -36,17 +36,17 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 33 sites today, scaling to 100+ together
+- **Community-driven** — 34 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40032:40000-40032 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40033:40000-40033 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40032` to explore 33 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, and GOV.UK`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40033` to explore 34 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, and IMDb`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -65,9 +65,10 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **33 sites**. NVIDIA remains at index 28, UC Berkeley
-remains at index 29, B&H Photo remains at index 30, and AccuWeather is appended
-at index 31. Build the image from
+This checkout registers **34 sites**. NVIDIA remains at index 28, UC Berkeley
+remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
+31 and GOV.UK remains at index 32, so IMDb (the site under review here) is the
+last entry, registry index 33. Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
@@ -78,9 +79,10 @@ published Docker image automatically.
 | B&H Photo | 30 | 40030 | 48030 |
 | AccuWeather | 31 | 40031 | 48031 |
 | GOV.UK | 32 | 40032 | 48032 |
+| IMDb | 33 | 40033 | 48033 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 33 sites and `40000-40032`;
+site's `tasks.jsonl` `web` URL agree on 34 sites and `40000-40033`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -88,7 +90,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48032:40000-40032 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48033:40000-40033 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -100,25 +102,28 @@ passed.
 
 ### Asset delivery status
 
-GOV.UK is registered at index 32 / port 40032 in builds of this source revision.
+GOV.UK is registered at index 32 / port 40032 and IMDb at index 33 / port 40033 in
+builds of this source revision.
 The published Docker Hub image is updated in a separate release. Its reviewed seed uses the
 immutable per-site commit `7c4daf7a6714654c609a9ccf97ab3b2431381791` from
 [HF asset PR #93](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/93).
-The bundle contains 78 articles and 62 structured guidance sections. The HF PR
-is awaiting maintainer merge; the immutable pin downloads the reviewed bundle
-without changing other sites’ asset revisions.
+The bundle contains 78 articles and 62 structured guidance sections. That archive
+is now part of the pinned dataset revision, and the per-site pin below resolves to
+the same reviewed bundle.
 
 
-`.assets-revision` pins the merged dataset commit `fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f`
-from [HF asset PR #92](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92).
-Its complete asset tree matches the tested candidate commit
-`f09e586eec8bf1bca0bc0881e08b77f3c2a5508e`.
+`.assets-revision` pins the merged dataset commit `e8f59470b76b95d607f288958186cb9b73681d9e`
+from [HF asset PR #57](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/57).
 
-This revision adds `bh_photo.tar.gz` and preserves all 32 existing archives from
-`c32018ca3b3d67e7b858b1b85fb101aea5090cd7` byte-for-byte, including Berkeley and
-NVIDIA. It carries 33 archives for 31 registered sites plus the unregistered
-Bandcamp and Drugs.com archives, which `fetch_assets.sh` ignores. A clean asset
-fetch downloaded and extracted all 31 registered sites successfully.
+This revision adds `imdb.tar.gz` (39,111,545 bytes) and `gov_uk.tar.gz`
+(53,891 bytes); all 33 archives present at
+`fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f` are byte-for-byte unchanged, including
+Berkeley, NVIDIA, B&H Photo and GOV.UK. It carries archives for 33 of the 34
+registered sites; AccuWeather uses its own immutable per-site pin
+`0a73c1c1ac2e47513389a8a1a67601f75c8c4150` in the same file. The remaining entries
+are the unregistered Bandcamp and Drugs.com archives, which `fetch_assets.sh`
+ignores. A clean asset fetch downloaded and extracted all 34 registered sites
+successfully and validated 4,536 managed members for IMDb.
 
 B&H's archive contains images and external cache. The Docker build validates
 its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked
