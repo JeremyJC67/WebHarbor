@@ -36,17 +36,17 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 30 sites today, scaling to 100+ together
+- **Community-driven** — 34 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40029:40000-40029 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40033:40000-40033 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40029` to explore 30 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, and NBA`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40033` to explore 34 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, and IMDb`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -63,20 +63,26 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 ./scripts/build.sh                                 # docker build -t webharbor:dev .
 ```
 
-### Local review candidate registry
+### Site registry
 
-This branch registers **30 sites**. NVIDIA remains at registry index 28 and NBA is
-appended at index 29, container port 40029 (local review host port 48029), so no
-existing site is remapped. The published-image quickstart above is not a claim that
-this review candidate has been published or accepted.
+This checkout registers **34 sites**. NVIDIA remains at index 28, UC Berkeley
+remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
+31 and GOV.UK remains at index 32, so IMDb (the site under review here) is the
+last entry, registry index 33. Build the image from
+this checkout to use this registry; publishing source does not update the
+published Docker image automatically.
 
-| Site | Registry position | Container port | Local review host port |
+| Site | Registry position | Container port | Example local review host port |
 | --- | --- | --- | --- |
 | NVIDIA | 28 | 40028 | 48028 |
-| NBA | 29 | 40029 | 48029 |
+| UC Berkeley | 29 | 40029 | 48029 |
+| B&H Photo | 30 | 40030 | 48030 |
+| AccuWeather | 31 | 40031 | 48031 |
+| GOV.UK | 32 | 40032 | 48032 |
+| IMDb | 33 | 40033 | 48033 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 30 sites and `40000-40029`;
+site's `tasks.jsonl` `web` URL agree on 34 sites and `40000-40033`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -84,7 +90,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48029:40000-40029 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48033:40000-40033 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -96,28 +102,46 @@ passed.
 
 ### Asset delivery status
 
-`.assets-revision` is pinned to the immutable candidate commit
-`65a85a1494688f3b9e82217e50a1dd3a5c6f1a8a` in open HF dataset PR
-[#88](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/88). It is cut
-from dataset `main` at `b7e605c0ec5fc47de85b09e7427162cc50e38980` (the merged
-HF PR #85 NVIDIA revision) and adds the reviewed `nba.tar.gz` without changing
-the other archives. A maintainer must merge HF PR #88 and re-pin this file to its
-merge commit before release:
+GOV.UK is registered at index 32 / port 40032 and IMDb at index 33 / port 40033 in
+builds of this source revision.
+The published Docker Hub image is updated in a separate release. Its reviewed seed uses the
+immutable per-site commit `7c4daf7a6714654c609a9ccf97ab3b2431381791` from
+[HF asset PR #93](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/93).
+The bundle contains 78 articles and 62 structured guidance sections. That archive
+is now part of the pinned dataset revision, and the per-site pin below resolves to
+the same reviewed bundle.
 
-- the pinned revision carries 32 `*.tar.gz` (one per registered site plus
-  `bandcamp.tar.gz` and `drugs_com.tar.gz`, which `fetch_assets.sh` ignores for
-  sites this checkout does not register);
-- `nba.tar.gz` is 26,495,947 bytes with SHA-256
-  `4ade0429edc12ffbfa1ee42a8f0192fc3009647912ff57a8d232d52abe7b349d`;
-- `nvidia.tar.gz` at that revision has 37 file members and no directory members,
-  so `scripts/validate_asset_archive.py nvidia.tar.gz nvidia` prints
-  `[fetch] validated 37 managed members for nvidia` and exits 0;
-- `./scripts/fetch_assets.sh` at this pin extracts all 30 registered sites.
+
+`.assets-revision` pins the merged dataset commit `e8f59470b76b95d607f288958186cb9b73681d9e`
+from [HF asset PR #57](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/57).
+
+This revision adds `imdb.tar.gz` (39,111,545 bytes) and `gov_uk.tar.gz`
+(53,891 bytes); all 33 archives present at
+`fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f` are byte-for-byte unchanged, including
+Berkeley, NVIDIA, B&H Photo and GOV.UK. It carries archives for 33 of the 34
+registered sites; AccuWeather uses its own immutable per-site pin
+`0a73c1c1ac2e47513389a8a1a67601f75c8c4150` in the same file. The remaining entries
+are the unregistered Bandcamp and Drugs.com archives, which `fetch_assets.sh`
+ignores. A clean asset fetch downloaded and extracted all 34 registered sites
+successfully and validated 4,536 managed members for IMDb.
+
+B&H's archive contains images and external cache. The Docker build validates
+its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked
+catalog. No manually prepared B&H database is required for a fresh build.
+
+The earlier pin `b7e605c0ec5fc47de85b09e7427162cc50e38980` is the squash-merge
+commit of HF dataset PR
+[#85](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/85) on the
+dataset's `main`. It sits on top of PR
+[#84](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/84) and PR
+[#75](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/75), which
+added the first reviewed NVIDIA bundle.
 
 | Artifact | Members | Bytes | SHA-256 |
 | --- | --- | --- | --- |
-| `nba.tar.gz` at the current HF PR #88 pin | — | 26,495,947 | `4ade0429edc12ffbfa1ee42a8f0192fc3009647912ff57a8d232d52abe7b349d` |
-| `nvidia.tar.gz` carried forward from merged HF PR #85 | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| `nvidia.tar.gz` at the current pin | 37 | 16,340,955 | `617a3e3740ba6706bcab786c8a5c3f9a22ecbb39eff5728ad2c12e4992cb098b` |
+| `berkeley.tar.gz` at the current pin (HF PR #91) | 171 | 6,951,483 | `ab9d2716ae8d06540a181b5e60c37f613d87b103864b467511da546b1b173789` |
+| `bh_photo.tar.gz` at the current pin (HF PR #92) | 511 | 79,658,793 | `867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a` |
 | previous pin's `nvidia.tar.gz` (HF PR #84, superseded) | 34 | 9,927,312 | `ee8c6ba966e7a8f7fb5ad2d7ff0134ab98e7b80d6cc77f3328217405b8b34e2f` |
 
 PR #85 replaces five product images and adds three dedicated hero images (see

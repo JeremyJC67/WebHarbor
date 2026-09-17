@@ -1,26 +1,37 @@
-# Hugging Face dataset holding webharbor's heavy static assets
-# (instance_seed/*.db, static/images/, static/external_cache/).
+# Hugging Face dataset holding WebHarbor's heavy static assets.
+# Pin an immutable commit SHA; never a moving branch or refs/pr/<n>.
 #
-# fetch_assets.sh uses the `hf download` CLI. The pin below
-# is a git revision (branch name like `main`, a tag, or a specific commit
-# sha). Override at runtime with the ASSETS_REVISION env var.
+# Merged dataset-main commit from HF asset PR #57 (IMDb review, #33).
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/57
 #
-# The revision is a commit sha, never a moving branch name.
-#
-# Current pin = immutable candidate commit from HF dataset PR #88
-# (https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/88), verified
-# 2026-09-14. It is based on dataset `main` at
-# b7e605c0ec5fc47de85b09e7427162cc50e38980 and adds the reviewed NBA archive.
-# It is not yet a merged dataset revision; after HF PR #88 merges, this file and
-# the shared pin assertion must move to the HF merge commit before release.
-#
-# The revision carries 32 archives: one for every registered site (30 of 30),
-# plus bandcamp.tar.gz and drugs_com.tar.gz, which this checkout does not use.
-# The NBA archive is byte-identical to the reviewed candidate:
-#   nba.tar.gz sha256
-#   4ade0429edc12ffbfa1ee42a8f0192fc3009647912ff57a8d232d52abe7b349d
-#   size 26495947 bytes
-# The base revision already contains the validated Kaggle and NVIDIA archives;
-# NBA is the only archive added by PR #88.
+# Adds imdb.tar.gz: 39,111,545 bytes, LFS oid
+# 0663d30fe90ed2a0659dfe78ecf7ab1718970f565a64c6855a2c6aaadc606513,
+# and gov_uk.tar.gz: 53,891 bytes, LFS oid
+# 1c483241887bde14e3b629ff4acc10d5f54b46283c22bf8abfde2794360743fd.
+# The 33 archives present at the previous main pin
+# fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f (B&H Photo, HF PR #92) are byte-for-byte
+# unchanged, as are the archives from c32018ca3b3d67e7b858b1b85fb101aea5090cd7
+# (Berkeley, HF PR #91).
+# This revision carries an archive for every registered site except accuweather and
+# nba, which are pinned per-site below.
+# The two further archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
+# B&H's bundle contains images and external cache; Docker generates its seed
+# from tracked catalog data (sites/bh_photo/.build-generated-seed).
 repo: ChilleD/WebHarbor
-revision: 65a85a1494688f3b9e82217e50a1dd3a5c6f1a8a
+revision: e8f59470b76b95d607f288958186cb9b73681d9e
+
+# AccuWeather HF PR #66; immutable archive validated in the task review.
+# Other sites retain their merged and validated asset revision above.
+site.accuweather: 0a73c1c1ac2e47513389a8a1a67601f75c8c4150
+
+# Reviewed GOV.UK seed, HF PR #93 (merge requires dataset-maintainer access).
+# Archive SHA256: 1c483241887bde14e3b629ff4acc10d5f54b46283c22bf8abfde2794360743fd
+site.gov_uk: 7c4daf7a6714654c609a9ccf97ab3b2431381791
+
+# NBA review, HF dataset PR #88 (still open); its immutable candidate commit carries
+# nba.tar.gz: 26,495,947 bytes, LFS oid
+# 4ade0429edc12ffbfa1ee42a8f0192fc3009647912ff57a8d232d52abe7b349d.
+# The global pin above predates that archive, so NBA is pinned per-site. Once HF PR
+# #88 merges into the dataset's main branch this line can collapse into the revision
+# above and `scripts/fetch_assets.sh --` keeps working unchanged.
+site.nba: 65a85a1494688f3b9e82217e50a1dd3a5c6f1a8a
