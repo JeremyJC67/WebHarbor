@@ -488,6 +488,9 @@ class Campsite(db.Model):
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     facility_id = db.Column(db.Integer, db.ForeignKey("facility.id"), nullable=False)
+    # Imported public reviews have no benchmark account. Never infer ownership
+    # from an editable display name; all newly submitted reviews carry the ID.
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     author = db.Column(db.String(120), nullable=False)
     rating = db.Column(db.Integer, default=5)
     body = db.Column(db.Text, nullable=False)
@@ -992,7 +995,7 @@ def _detail_resources(facility: Facility) -> list[dict[str, str]]:
 def _site_pass_context(facility: Facility) -> dict[str, str]:
     content = {**SITE_PASS_CONTENT["default"], **SITE_PASS_CONTENT.get(facility.slug, {})}
     hero_image = content.get("hero_image") or facility.image_url
-    if hero_image and not str(hero_image).startswith("http"):
+    if hero_image and not str(hero_image).startswith(("/", "http://", "https://")):
         hero_image = url_for("static", filename=f"images/{hero_image}")
     return {
         "page_title": content["page_title"],
@@ -1212,9 +1215,6 @@ def facility_detail(slug: str):
     related = Facility.query.filter(Facility.inventory_type == facility.inventory_type, Facility.id != facility.id).order_by(Facility.rating.desc()).limit(4).all()
     detail_map_entries = [_map_entry(item, rank=index + 1) for index, item in enumerate([facility] + related[:3])]
     recent_reviews = Review.query.filter_by(facility_id=facility.id).order_by(Review.id.desc()).limit(48).all()
-    current_author = ""
-    if current_user.is_authenticated:
-        current_author = current_user.display_name or current_user.username
     is_site_pass = facility.inventory_type == "passes" and "site pass" in facility.name.lower()
     template_name = "site_pass_detail.html" if is_site_pass else "facility_detail.html"
     return render_template(
@@ -1228,7 +1228,6 @@ def facility_detail(slug: str):
         important_dates=_important_dates(facility),
         review_breakdown=_review_breakdown(facility),
         recent_reviews=recent_reviews,
-        current_review_author=current_author,
         detail_resources=_detail_resources(facility),
         detail_map_markers=[entry["point"] for entry in detail_map_entries],
         state_name=STATE_NAMES.get(facility.state, facility.state),
@@ -1251,6 +1250,7 @@ def add_review(slug: str):
         return redirect(url_for("facility_detail", slug=slug, _anchor="reviews"))
     review = Review(
         facility_id=facility.id,
+        user_id=current_user.id,
         author=current_user.display_name or current_user.username,
         rating=rating,
         body=body,
@@ -1292,8 +1292,8 @@ def cart():
 @login_required
 def add_to_cart(facility_id: int):
     facility = Facility.query.get_or_404(facility_id)
-    if not facility.reservable:
-        flash("This location is informational only and cannot be reserved.", "warning")
+    if not facility.reservable or not facility.available:
+        flash("This location is not available to reserve for the featured window.", "warning")
         return redirect(url_for("facility_detail", slug=facility.slug))
     start_date = request.form.get("start_date") or facility.checkin_date
     end_date = request.form.get("end_date") or facility.checkout_date

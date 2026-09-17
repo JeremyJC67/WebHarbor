@@ -1,15 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ facility.name }} - Recreation.gov{% endblock %}
-{% block extra_head %}
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-{% endblock %}
-{% block extra_scripts %}
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer crossorigin=""></script>
-{% endblock %}
 {% block content %}
 <section class="detail-panorama">
   <img src="{{ gallery_images[0].src }}" alt="{{ gallery_images[0].alt }}">
-  <button class="view-photos-btn" type="button">▣ View Photos</button>
+  <a class="view-photos-btn" href="#media-gallery">▣ View Photos</a>
 </section>
 
 {% if detail_alert %}
@@ -127,14 +121,14 @@
             </div>
             <div class="calendar-selected-status" data-calendar-status>{{ booking_config.selected_status_label }} selected</div>
           </div>
-          {% if facility.reservable %}
+          {% if facility.reservable and facility.available %}
             {% if current_user.is_authenticated %}
               <button class="btn detail-book-btn" type="submit">{{ booking_config.primary_cta }}</button>
             {% else %}
               <a class="btn detail-book-btn" href="{{ url_for('login', next=url_for('facility_detail', slug=facility.slug)) }}">Log In to Book</a>
             {% endif %}
           {% else %}
-            <button class="btn detail-book-btn" type="button" disabled>Informational Listing</button>
+            <button class="btn detail-book-btn" type="button" disabled>{{ 'Unavailable for this window' if facility.reservable else 'Informational Listing' }}</button>
           {% endif %}
           <a class="btn ghost detail-secondary-btn" href="#overview">Detailed Availability</a>
         </form>
@@ -273,17 +267,17 @@
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2>Map</h2>
-        <p class="muted">Zoom and compare the destination with nearby alternatives.</p>
+        <h2>Location overview</h2>
+        <p class="muted">Offline mirror: map tiles are not included. Compare locations below or search nearby.</p>
       </div>
       <a class="btn secondary" href="{{ url_for('search', q=facility.location, inventory_type=facility.inventory_type) }}">Search Nearby</a>
     </div>
-    <div class="detail-live-map"
-         data-leaflet-map
-         data-map-lat="{{ detail_map_markers[0].lat }}"
-         data-map-lng="{{ detail_map_markers[0].lng }}"
-         data-map-markers='{{ detail_map_markers|tojson }}'>
-    </div>
+    <ul class="offline-locations" aria-label="Destination and related locations">
+      {% for entry in detail_map_entries %}
+        <li><a href="{{ entry.point.href }}">{{ entry.point.name }}</a>
+          <span>{{ entry.point.location }}</span><span>{{ entry.point.price_display }}</span></li>
+      {% endfor %}
+    </ul>
   </div>
 </section>
 

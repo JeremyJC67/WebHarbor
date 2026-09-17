@@ -51,7 +51,7 @@
       {% endif %}
 
       {% for review in recent_reviews %}
-        {% set is_own_review = current_review_author and review.author == current_review_author %}
+        {% set is_own_review = current_user.is_authenticated and review.user_id == current_user.id %}
         <article class="detail-review-card{% if is_own_review %} is-own-review{% endif %}{% if loop.index > 20 %} is-hidden-review{% endif %}" data-review-card>
           <div class="detail-review-card-top">
             <div>

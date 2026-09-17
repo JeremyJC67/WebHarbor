@@ -26,7 +26,7 @@
         <span aria-hidden="true">⌕</span>
         <input name="q" placeholder="What are you looking for?">
       </form>
-      <nav class="nav-links" aria-label="Main navigation">
+      <nav class="nav-links" id="main-navigation" aria-label="Main navigation">
         <a href="{{ url_for('search') }}">Explore All</a>
         <a href="{{ url_for('camping') }}">Camping & Lodging</a>
         <a href="{{ url_for('tickets') }}">Tickets & Tours</a>
@@ -44,7 +44,7 @@
           <a href="{{ url_for('login') }}">Log In</a>
         {% endif %}
       </div>
-      <button class="menu-button" type="button" aria-label="Navigation Menu"><span></span><span></span><span></span></button>
+      <button class="menu-button" type="button" aria-label="Navigation Menu" aria-controls="main-navigation" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </header>
 

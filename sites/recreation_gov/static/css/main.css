@@ -554,6 +554,15 @@ label { font-weight: 800; font-size: 13px; color: #354553; display: block; margi
   border-color: #d5dce4 !important;
 }
 .nav-links { display: none; }
+.topbar .nav { position: relative; }
+.nav-links.is-open {
+  display: flex; position: absolute; z-index: 1000; top: 100%; right: 0;
+  width: min(360px, 100%); padding: 24px; flex-direction: column;
+  background: white; border: 1px solid #d5dce4; box-shadow: 0 8px 18px #0002;
+}
+.offline-locations { list-style: none; padding: 0; display: grid; gap: 12px; }
+.offline-locations li { display: grid; gap: 5px; padding: 18px; background: white; border: 1px solid #d5dce4; border-radius: 6px; }
+.offline-locations a { font-weight: 700; }
 .nav-actions { flex: 0 0 auto; gap: 24px; }
 .nav-actions a { color: #0066b3; font-weight: 800; }
 .menu-button {

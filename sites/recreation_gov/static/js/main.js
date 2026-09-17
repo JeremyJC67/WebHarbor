@@ -1,10 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const createBaseLayer = () => (
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-      maxZoom: 19,
-    })
-  );
+  const menu = document.querySelector('.menu-button');
+  const navigation = document.getElementById('main-navigation');
+  const setMenu = (open) => {
+    if (!menu || !navigation) return;
+    menu.setAttribute('aria-expanded', String(open));
+    navigation.classList.toggle('is-open', open);
+  };
+  menu?.addEventListener('click', () => setMenu(menu.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu?.getAttribute('aria-expanded') === 'true') {
+      setMenu(false);
+      menu.focus();
+    }
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.topbar')) setMenu(false);
+  });
 
   document.querySelectorAll("[data-dismiss]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -166,41 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       const firstMarker = root.querySelector("[data-marker-id]");
       if (firstMarker) activateMapItem(root, firstMarker.dataset.markerId, firstMarker.dataset.panelKey);
-    }
-  });
-
-  document.querySelectorAll("[data-leaflet-map]").forEach((node) => {
-    if (typeof window.L === "undefined") return;
-    const centerLat = parseFloat(node.dataset.mapLat || "39.5");
-    const centerLng = parseFloat(node.dataset.mapLng || "-98.35");
-    let markers = [];
-    try {
-      markers = JSON.parse(node.dataset.mapMarkers || "[]");
-    } catch (_) {
-      markers = [];
-    }
-
-    const map = L.map(node, { scrollWheelZoom: true }).setView([centerLat, centerLng], 9);
-    createBaseLayer().addTo(map);
-
-    const leafletMarkers = [];
-    markers.forEach((marker) => {
-      const leafletMarker = L.marker([marker.lat, marker.lng]).addTo(map);
-      const popup = `
-        <strong>${marker.name}</strong><br>
-        <span>${marker.location}</span><br>
-        <span>${marker.price_display}</span><br>
-        <a href="${marker.href}">Open details</a>
-      `;
-      leafletMarker.bindPopup(popup);
-      leafletMarkers.push(leafletMarker);
-    });
-
-    if (leafletMarkers.length > 1) {
-      const group = L.featureGroup(leafletMarkers);
-      map.fitBounds(group.getBounds().pad(0.22));
-    } else if (leafletMarkers[0]) {
-      leafletMarkers[0].openPopup();
     }
   });
 

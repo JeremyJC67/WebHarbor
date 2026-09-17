@@ -1,264 +1,126 @@
-#!/usr/bin/env python3
-"""verify_lib.py — shared deterministic + LLM utilities for recreation_gov task verification.
+"""Offline primary grading: saved evidence, exact navigation, precise DB deltas.
 
-Philosophy: DETERMINISTIC FIRST.
-  1. Trajectory navigation check (anti knowledge-shortcut): the agent MUST have
-     opened the relevant on-site page; a correct answer with no matching navigation
-     is a memory-recall shortcut = FAIL.
-  2. Answer check: exact / regex / token-containment against frozen ground truth.
-  3. DB after-state check (stateful tasks): query the SQLite instance DB directly —
-     the strongest deterministic signal (saved row, cart row, reservation status,
-     profile field, newly registered user, new review).
-  4. The LLM text-match utility (llm_text_match) is used ONLY where exact matching
-     is brittle, and is ALWAYS anchored on ground truth: the model verifies that the
-     agent's answer is consistent with given content, it never supplies knowledge.
-     One call each; SKIPs (never fail-closes) when the LLM is unconfigured/unreachable.
-
-Input signature (per task):
-  --run_dir DIR      agent trajectory dir: trajectory.json + screenshots/step_NNN.png
-  --initial_db PATH  initial-state SQLite DB (default: fetched instance_seed from container)
-  --after_db PATH    after-state  SQLite DB (default: fetched live instance DB from container)
-  --container NAME   docker container to fetch DBs from (default: $WH_CONTAINER or wh-review)
-  --no_llm           skip LLM-based checks (run deterministic-only)
-Output: JSON {task_id, pass, reason, evidence[]} to stdout; exit 0 on PASS, 1 on FAIL.
+No network or Docker access occurs during grading. A missing snapshot is an
+evidence error, never a silent switch to mutable live state.
 """
-import json, os, re, sqlite3, subprocess, sys, tempfile, urllib.request
+import argparse
+import json
+import sys
 from pathlib import Path
-from dataclasses import dataclass
+from urllib.parse import parse_qs, unquote, urlsplit
 
-SITE = "recreation_gov"
+from answers import answer_ok, norm
+from state import snapshot, verify_delta
 
-# The four benchmark users seeded by seed_benchmark_users() in sites/recreation_gov/app.py.
-# Used by "create a new account" tasks to tell a freshly-registered user apart from seed rows.
-SEED_EMAILS = ["alice.j@test.com", "bob.c@test.com", "carol.d@test.com", "david.k@test.com"]
+DETAILS = {
+    0: ['yosemite-creek-campground', 'porcupine-flat-campground'],
+    1: ['point-reyes-national-seashore-campground'],
+    2: ['inyo-national-forest-wilderness-permits'],
+    3: ['san-francisco-maritime-historic-park-tours', 'fort-point-national-historic-site-tours'],
+    4: ['hemlock-cabin'], 5: ['apostle-islands-camping-permits'],
+    9: ['yosemite-national-park-site-pass', 'denali-national-park-site-pass', 'grand-teton-national-park-site-pass'],
+    10: ['voyageurs-national-park-tours'], 11: ['fort-point-national-historic-site-tours'],
+    16: ['fort-point-national-historic-site-tours'], 17: ['cumberland-island-camping-permits'],
+    18: ['aravaipa-canyon-wilderness-permits'], 19: ['yellowstone-national-park-fishing-permit'],
+}
+ROUTES = {6: ['/help'], 7: ['/articles/play-it-safe-trip-planning'],
+          8: ['/articles/celebrate-america-250'], 11: ['/saved'],
+          12: ['/checkout', '/reservations'], 13: ['/reservations'], 14: ['/account'],
+          15: ['/register', '/account'], 19: ['/cart']}
 
-# ---------------------------------------------------------------- trajectory
-def load_run(run_dir):
-    d = Path(run_dir)
-    traj = json.loads((d / "trajectory.json").read_text())
-    traj["_run_dir"] = d
-    return traj
 
-def step_urls(traj):
-    return [s.get("url", "") for s in traj.get("steps", [])]
+def origin(url):
+    parsed = urlsplit(url)
+    if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
+        raise ValueError('Invalid mirror URL')
+    return parsed.scheme, parsed.hostname, parsed.port or (443 if parsed.scheme == 'https' else 80)
 
-def navigated_to(traj, substr, times=1):
-    """Deterministic: at least `times` trajectory steps have a URL containing substr."""
-    return sum(1 for u in step_urls(traj) if substr in u) >= times
 
-def navigated_any(traj, substrs):
-    return any(navigated_to(traj, s) for s in substrs)
+def page_urls(trajectory):
+    for step in trajectory.get('steps', []):
+        if step.get('action_result', {}).get('error'):
+            continue
+        # The standard agent logs pre-action URL, newer recorders also save
+        # post-action URL. Never use action.params.url as proof it loaded.
+        for key in ('url', 'url_after'):
+            value = step.get(key)
+            if value:
+                yield step, value
 
-def final_answer(traj):
-    return (traj.get("final_answer") or "").strip()
 
-# ---------------------------------------------------------------- deterministic answer match
-def norm(s):
-    return re.sub(r"\s+", " ", (s or "").strip()).casefold()
-
-def contains_all(final, tokens):
-    f = norm(final)
-    return all(norm(t) in f for t in tokens)
-
-def contains_any(final, tokens):
-    f = norm(final)
-    return any(norm(t) in f for t in tokens)
-
-def count_present(final, tokens):
-    """How many of `tokens` appear in the (normalized) answer, as whole words/phrases
-    (word-boundary match, not substring) so short tokens like 'date' don't false-positive
-    inside 'updated'/'candidate'. For 'name >=N of these'."""
-    f = norm(final)
-    return sum(1 for t in tokens
-               if re.search(rf"(?<!\w){re.escape(norm(t))}(?!\w)", f))
-
-# ---------------------------------------------------------------- DB state
-def fetch_db(container, kind):
-    """kind: 'instance' (after-state) or 'instance_seed' (initial-state). docker cp -> temp file."""
-    src = f"{container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db"
-    fd, path = tempfile.mkstemp(suffix=".db")
-    os.close(fd)
-    r = subprocess.run(["docker", "cp", src, path], capture_output=True, text=True)
-    if r.returncode != 0:
+def navigate_check(task, trajectory, expected_origin=None):
+    start = trajectory.get('start_url', '')
+    allowed = origin(expected_origin or start)
+    if origin(start) != allowed:
+        raise ValueError('Run start URL differs from configured mirror')
+    pages = []
+    for step, url in page_urls(trajectory):
         try:
-            os.unlink(path)
-        except OSError:
-            pass
-        raise RuntimeError(f"docker cp {src} failed: {r.stderr.strip()}")
-    return path
+            if origin(url) == allowed:
+                pages.append((step, urlsplit(url)))
+        except ValueError:
+            continue
+    paths = {unquote(p.path).rstrip('/') or '/' for _, p in pages}
+    required = ['/facility/' + slug for slug in DETAILS.get(task, [])] + ROUTES.get(task, [])
+    if not all(path in paths for path in required):
+        raise ValueError('Missing required on-site pages: ' + ', '.join(p for p in required if p not in paths))
+    if task == 4:
+        if not any(p.path == '/search' and (
+                any('alaska' == norm(q) for q in parse_qs(p.query).get('q', []))
+                or any(norm(q) in ('ak', 'alaska') for q in parse_qs(p.query).get('state', [])))
+                   for _, p in pages):
+            raise ValueError('Missing Alaska browse results')
+    if task == 1:
+        # Anchor navigation is available through View Photos. A recorder may
+        # instead attest section visibility or an explicit successful scroll.
+        viewed = any(p.path == '/facility/point-reyes-national-seashore-campground' and (
+            p.fragment == 'media-gallery'
+            or 'media-gallery' in step.get('visible_sections', [])
+            or (step.get('action') == 'scroll' and '#media-gallery' in str(step.get('params', {}).get('target', '')))
+        ) for step, p in pages)
+        if not viewed:
+            raise ValueError('Missing gallery viewing evidence (anchor/visible section/recorded scroll)')
+    return True
 
-def resolve_db(arg, container, kind):
-    if arg:
-        return arg
+
+def evaluate(task, run_dir, initial_db=None, after_db=None, expected_origin=None):
+    evidence = []
+    verdict = {'task_id': f'RecreationGov--{task}', 'pass': False, 'reason': '', 'evidence': evidence}
     try:
-        return fetch_db(container, kind)
-    except Exception:
-        return None  # caller treats None as "unavailable" and FAILs that check
-
-def db_query(db_path, sql, params=()):
-    con = sqlite3.connect(db_path)
-    try:
-        return con.execute(sql, params).fetchall()
-    finally:
-        con.close()
-
-def saved_slugs_for(db_path, email="alice.j@test.com"):
-    """Facility slugs the user has saved, or None if db unavailable."""
-    if not db_path:
-        return None
-    rows = db_query(db_path,
-        "SELECT f.slug FROM saved_item s JOIN user u ON u.id=s.user_id "
-        "JOIN facility f ON f.id=s.facility_id WHERE u.email=?", (email,))
-    return [r[0] for r in rows]
-
-def cart_slugs_for(db_path, email="alice.j@test.com"):
-    """Facility slugs in the user's cart, or None if db unavailable."""
-    if not db_path:
-        return None
-    rows = db_query(db_path,
-        "SELECT f.slug FROM cart_item c JOIN user u ON u.id=c.user_id "
-        "JOIN facility f ON f.id=c.facility_id WHERE u.email=?", (email,))
-    return [r[0] for r in rows]
-
-def reservations_for(db_path, email="alice.j@test.com"):
-    """List of (facility_slug, confirmation_code, status) for the user, or None."""
-    if not db_path:
-        return None
-    rows = db_query(db_path,
-        "SELECT f.slug, r.confirmation_code, r.status FROM reservation r "
-        "JOIN user u ON u.id=r.user_id JOIN facility f ON f.id=r.facility_id "
-        "WHERE u.email=? ORDER BY r.id", (email,))
-    return [(r[0], r[1], r[2]) for r in rows]
-
-def user_row(db_path, email):
-    """(username, display_name, phone, home_city) for the user, or None if absent/unavailable."""
-    if not db_path:
-        return None
-    rows = db_query(db_path,
-        "SELECT username, display_name, phone, home_city FROM user WHERE email=?", (email,))
-    return rows[0] if rows else None
-
-def reviews_for(db_path, slug, author=None):
-    """List of (author, rating, body, visit_date) reviews on a facility (optionally by author)."""
-    if not db_path:
-        return None
-    sql = ("SELECT rv.author, rv.rating, rv.body, rv.visit_date FROM review rv "
-           "JOIN facility f ON f.id=rv.facility_id WHERE f.slug=?")
-    params = [slug]
-    if author is not None:
-        sql += " AND rv.author=?"
-        params.append(author)
-    return [(r[0], r[1], r[2], r[3]) for r in db_query(db_path, sql, tuple(params))]
-
-# ---------------------------------------------------------------- shared LLM utilities (anchored)
-# Unified LLM config, same env vars as agent.py / eval_judge.py:
-#   OPENAI_API_KEY, OPENAI_BASE_URL, JUDGE_MODEL
-import simpleArgParser as sap
-
-# When --no_llm is set (via Judge), the llm_* helpers short-circuit so verifiers
-# that call them directly (before j.check(llm=True)) still make ZERO LLM calls.
-_NO_LLM = False
+        run = Path(run_dir).resolve()
+        trajectory = json.loads((run / 'trajectory.json').read_text())
+        if trajectory.get('task_id') != verdict['task_id']:
+            raise ValueError('Task ID mismatch')
+        navigate_check(task, trajectory, expected_origin)
+        evidence.append('Required on-site navigation and workflow evidence present')
+        answer = trajectory.get('final_answer') or ''
+        if not answer_ok(task, answer):
+            raise ValueError('Answer does not establish the required affirmative facts/associations')
+        evidence.append('Offline answer contract satisfied')
+        initial = Path(initial_db).resolve() if initial_db else run / 'initial.db'
+        after = Path(after_db).resolve() if after_db else run / 'after.db'
+        if not initial.is_file() or not after.is_file():
+            raise ValueError('Evidence error: both initial.db and after.db snapshots are required')
+        verify_delta(task, snapshot(initial), snapshot(after), answer)
+        evidence.append('Exact whole-database state delta satisfied using saved snapshots')
+        verdict['pass'] = True
+    except (OSError, ValueError, TypeError, KeyError, IndexError, json.JSONDecodeError) as exc:
+        verdict['reason'] = str(exc)
+    except Exception as exc:
+        # Emit the grading contract on corrupt SQLite/schema input too.
+        verdict['reason'] = f'Evidence error: {type(exc).__name__}: {exc}'
+    return verdict
 
 
-def _llm_config():
-    """Resolve (api_key, api_base, model) from env once per process."""
-    key = os.environ.get("OPENAI_API_KEY", "")
-    base = os.environ.get("OPENAI_BASE_URL", "")
-    model = os.environ.get("JUDGE_MODEL", "")
-    return key, base, model
-
-
-def _chat(messages, max_tokens=1024):
-    """One LLM call against the configured OpenAI-compatible endpoint. Returns text or None."""
-    if _NO_LLM:
-        return None
-    key, base, model = _llm_config()
-    if not (key and base and model):
-        return None  # no LLM configured -> callers treat as non-PASS
-    payload = {"model": model, "messages": messages,
-               "max_tokens": max_tokens, "temperature": 1.0}
-    req = urllib.request.Request(base,
-                                 data=json.dumps(payload).encode(),
-                                 headers={"Content-Type": "application/json",
-                                          "Authorization": f"Bearer {key}"})
-    try:
-        data = json.loads(urllib.request.urlopen(req, timeout=180).read())
-    except Exception:
-        return None  # caller treats None as a non-PASS; never raises
-    try:
-        return data["choices"][0]["message"]["content"]
-    except Exception:
-        return None
-
-def _verdict(out):
-    """Normalize an LLM reply to (verdict, text). verdict is:
-      True  -> LLM confirms the answer,
-      False -> LLM actively contradicts it (a real reply starting FAIL),
-      None  -> no reply (unconfigured/unreachable) -> caller SKIPS, never fail-closes."""
-    if not out:
-        return None, "[llm unavailable]"   # unconfigured / unreachable -> skip, don't fail-close
-    s = out.strip()
-    return s.upper().startswith("PASS"), s
-
-def llm_text_match(agent_answer, ground_truth, question):
-    """One LLM call: does agent_answer correctly answer question AND stay consistent
-    with the frozen ground truth? The model is given the ground truth as an anchor
-    and is told NOT to use its own knowledge. Returns (verdict, text); verdict is
-    None when the LLM is unavailable/unconfigured, so the caller SKIPS rather than
-    fail-closing (see _verdict)."""
-    if _NO_LLM:
-        return None, "[skipped: --no_llm]"
-    out = _chat([{"role": "user", "content":
-        f"You are a STRICT binary grader.\nQuestion: {question}\n"
-        f"Ground-truth answer (ANCHOR — judge against THIS, never use your own knowledge): {ground_truth}\n"
-        f"Agent's answer: {agent_answer}\n"
-        f"Decide PASS or FAIL ignoring case/punctuation/word order/surrounding prose. "
-        f"PASS only if the agent's answer is consistent with the ground truth AND actually answers the question. "
-        f"Line 1: PASS or FAIL. Line 2: one-sentence reason."}])
-    return _verdict(out)
-
-# ---------------------------------------------------------------- judge harness + CLI
-class Judge:
-    def __init__(self, task_id, no_llm=False):
-        global _NO_LLM
-        _NO_LLM = bool(no_llm)   # gate the llm_* helpers at the source
-        self.task_id = task_id
-        self.no_llm = no_llm
-        self.ok = True
-        self.reason = ""
-        self.evidence = []
-
-    def check(self, name, cond, evidence="", llm=False):
-        # LLM checks are secondary: skipped under --no_llm, and skipped when the
-        # LLM was unavailable (cond is None) so a missing LLM never fails an
-        # otherwise-correct answer. A real LLM reply (True/False) still gates.
-        if llm and (self.no_llm or cond is None):
-            self.evidence.append(f"[SKIP] {name}: {evidence or '(--no_llm or llm unavailable)'}")
-            return True
-        if cond:
-            self.evidence.append(f"[PASS] {name}: {evidence}")
-        else:
-            self.ok = False
-            if not self.reason:
-                self.reason = name   # record the FIRST failing check
-            self.evidence.append(f"[FAIL] {name}: {evidence}")
-        return bool(cond)
-
-    def emit(self):
-        print(json.dumps({"task_id": self.task_id, "pass": self.ok,
-                          "reason": self.reason, "evidence": self.evidence}, indent=2))
-        sys.exit(0 if self.ok else 1)
-
-def parse_args():
-    @dataclass
-    class VerifyArgs:
-        run_dir: str = ""
-        initial_db: str = ""
-        after_db: str = ""
-        container: str = os.environ.get("WH_CONTAINER", "wh-review")
-        no_llm: bool = False
-
-        def post_process(self):
-            if not self.run_dir:
-                raise SystemExit("--run_dir is required")
-    return sap.parse_args(VerifyArgs)
+def main(task):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--run_dir', required=True)
+    parser.add_argument('--initial_db')
+    parser.add_argument('--after_db')
+    parser.add_argument('--origin', help='Optional trusted mirror origin; otherwise use runner-supplied start_url')
+    parser.add_argument('--no_llm', nargs='?', const='True', help='Compatibility only: primary grading is always offline')
+    parser.add_argument('--container', help='Deprecated compatibility option; live DBs are never read')
+    args = parser.parse_args()
+    verdict = evaluate(task, args.run_dir, args.initial_db, args.after_db, args.origin)
+    print(json.dumps(verdict, indent=2))
+    sys.exit(0 if verdict['pass'] else 1)
