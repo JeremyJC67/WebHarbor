@@ -36,6 +36,24 @@ Task 3 uses the existing inventory under 60,000 miles; no catalog mileage was
 invented. Tasks 13 and 16 remove misleading wording. Rubrics describe rules,
 not secret answers. The mirror freezes benchmark business dates in May 2026.
 
+Tasks 12, 16 and 19 now require account-specific, multi-page research:
+
+- 12: Carol's saved appraisal plus both selling-policy FAQs.
+- 16: Bob's existing financing result plus the named article and financing FAQ.
+- 19: Dan's order plus all service-plan tiers, an upgrade calculation, and the
+  warranty FAQ.
+
+All three are read-only: logging in does not authorize a new application,
+appraisal, purchase, or changes to existing records. Every requested source and
+fact is required. The verifiers enforce those contracts, not a minimum click
+count or a single prescribed click sequence. Previous one-page answers are no
+longer complete answers to these revised tasks.
+
+For tier comparisons, put each tier's price and months/miles limits together
+(for example, one table row or sentence per tier). Keep the upgrade price,
+months and miles together, naming both tiers. This preserves attribution in the
+offline parser; arbitrary free-form prose remains the secondary judge's domain.
+
 Run helper and route tests:
 
 ```bash

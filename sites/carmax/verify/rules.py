@@ -4,6 +4,16 @@ import re
 from deterministic import date_in, field, has, measure, money, norm, number
 
 
+def matching_clauses(answer, label):
+    """Keep related facts in one sentence/line; do not split decimal prices."""
+    return [norm(c) for c in re.split(r'\n|;|(?<=[.!?])\s+', answer)
+            if re.search(label, norm(c))]
+
+
+def affirmative(clause):
+    return not re.search(r'\b(?:not|never|no|incorrect|excluded|unavailable)\b', clause)
+
+
 def evaluate(r):
     n, answer = r.task, r.answer
     text = norm(answer)
@@ -161,8 +171,24 @@ def evaluate(r):
                 r.check('affirmative active reservation', has(answer, 'active') and positive('active|reserv'))
 
     elif n == 12:
+        user = r.row('users', email='carol.l@test.com')
+        a = r.row('appraisals', user_id=user['id'], status='active')
+        r.require_nav('/account/appraisals')
         r.require_nav('/faq/selling-a-car/how-long-is-my-appraisal-offer-good-for')
+        r.require_nav('/faq/selling-a-car/can-i-get-both-an-online-and-in-store-appraisal')
+        r.vehicle_answer(a, trim=True)
+        r.check('saved appraisal amount', money(answer, a['offer_amount']))
+        r.check('saved appraisal expiry', date_in(answer, a['offer_valid_until']))
         r.check('appraisal offer validity', (measure(answer, 7, 'days') or has(answer, 'seven days')) and positive('7 days|seven days'))
+        r.check('online offer requires in-store verification', any(
+            re.search(r'in[- ](?:store|person)|at (?:a |the )?store|to (?:a |the )?store', c)
+            and re.search(r'verif(?:y|ication|ied)', c) and affirmative(c)
+            for c in matching_clauses(answer, r'online|instant offer')))
+        r.check('same outright sale and trade-in price', any(
+            re.search(r'sell|sale|outright', c) and re.search(r'trad', c)
+            and re.search(r'same|equal|unchanged|does not change|no (?:price )?difference', c)
+            and not re.search(r'not (?:the )?same|different|higher|lower', c)
+            for c in matching_clauses(answer, 'price|amount|offer')))
 
     elif n == 13:
         user = r.row('users', email='alice.j@test.com')
@@ -214,6 +240,19 @@ def evaluate(r):
         r.check('home delivery available', has(answer, 'home delivery') and positive('home delivery'))
 
     elif n == 16:
+        user = r.row('users', email='bob.k@test.com')
+        r.require_nav('/pre-qual/result')
+        r.require_nav('/faq/financing/what-is-pre-qualification')
+        r.check('saved APR with percent units', any(
+            re.search(number(user['pre_qual_apr']) + r'\s*(?:%|percent)', c)
+            for c in matching_clauses(answer, r'apr')))
+        r.check('saved loan term', any(measure(c, user['pre_qual_term_months'], 'months|mo')
+                                     for c in matching_clauses(answer, r'term|loan')))
+        r.check('saved down payment', any(money(c, user['pre_qual_down_payment'])
+                                        for c in matching_clauses(answer, r'down')))
+        r.check('saved prequalification expiry', date_in(answer, user['pre_qual_expires_at']))
+        r.check('policy validity duration', any(measure(c, 30, 'days') or has(c, 'thirty days')
+                                              for c in matching_clauses(answer, r'valid|policy')))
         article = next(a for a in r.initial['articles'] if a['title'].startswith('Getting Pre-Qualified:'))
         r.require_nav('/articles/' + article['slug'])
         r.check('prequalification soft inquiry', bool(re.search(r'pre[- ]qualif[^.;]{0,65}\bsoft\b', text)))
@@ -243,9 +282,34 @@ def evaluate(r):
                 or field(answer, r'(?:count|in stock|inventory count)', len(values)))
 
     elif n == 19:
+        user = r.row('users', email='dan.m@test.com')
+        order = r.row('orders', user_id=user['id'])
+        vehicle = r.row('vehicles', id=order['vehicle_id'])
+        r.require_nav('/order/' + order['order_number'])
         r.require_nav('/car-buying-process/maxcare-service-plans')
-        for name, value in [('silver',1495), ('gold',1895), ('platinum',2395)]:
-            r.check(name + ' price', bool(re.search(name + r'(?:[^$;\n]{0,65})\$\s*' + number(value), text)))
-        r.check('Gold minus Silver difference', field(answer, r'(?:gold\s*(?:minus|-)\s*silver|difference)', 400))
-        r.check('Platinum months', measure(answer, 60, 'months|mo') or bool(re.search(r'platinum[^.;]{0,20}\b60mo\b', text)))
-        r.check('Platinum miles', measure(answer, 100000, 'miles|mi') or bool(re.search(r'platinum[^.;]{0,30}100k\b', text)) and not has(answer, 'kilometers'))
+        r.require_nav('/faq/warranty-and-returns/what-does-maxcare-cover')
+        r.check('order number', has(answer, order['order_number']))
+        r.vehicle_answer(vehicle, trim=True)
+        r.check('ordered MaxCare tier and charge', any(
+            has(c, order['maxcare_plan']) and money(c, order['maxcare_price']) and affirmative(c)
+            for c in matching_clauses(answer, r'order|current|included')))
+        plans = {'silver': (1495, 36, 50000), 'gold': (1895, 48, 75000), 'platinum': (2395, 60, 100000)}
+        for name, (cost, months, miles) in plans.items():
+            parts = [c for c in matching_clauses(answer, r'\b' + name + r'\b')
+                     if not any(has(c, other) for other in plans if other != name)]
+            r.check(name + ' price and coverage', any(money(c, cost)
+                    and measure(c, months, 'months|mo') and measure(c, miles, 'miles|mi')
+                    and affirmative(c) for c in parts))
+        current = plans[order['maxcare_plan']]
+        difference = tuple(a - b for a, b in zip(plans['platinum'], current))
+        r.check('upgrade price and coverage differences', any(
+            has(c, 'platinum') and has(c, order['maxcare_plan'])
+            and money(c, difference[0]) and measure(c, difference[1], 'months|mo')
+            and measure(c, difference[2], 'miles|mi') and affirmative(c)
+            for c in matching_clauses(answer, r'upgrade|additional|extra|difference')))
+        r.check('rental daily reimbursement cap', any(
+            re.search(r'\$\s*40(?:\.00)?\s*(?:/\s*day|per day|daily)|40\s*(?:dollars|usd)\s*(?:per day|daily)', c)
+            and affirmative(c) for c in matching_clauses(answer, 'rental')))
+        r.check('Canada included in coverage', any(
+            re.search(r'cover|includ', c) and affirmative(c)
+            for c in matching_clauses(answer, r'\bcanada\b')))
