@@ -5,7 +5,7 @@
     <div class="section-head">
         <div>
             <h1>Receipt {{ order.order_number }}</h1>
-            <p>{{ order.status }} / placed {{ order.placed_at|longdate }}</p>
+            <p>{{ order.status|capitalize }} · {{ order.placed_at|longdate }}</p>
         </div>
     </div>
     <div class="cart-layout">

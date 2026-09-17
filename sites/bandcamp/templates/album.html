@@ -6,7 +6,7 @@
 <section class="container album-hero">
     <nav class="album-tabs" aria-label="Release sections">
         <a class="active" href="{{ url_for('album_page', slug=album.slug) }}">music</a>
-        <a href="{{ url_for('artist_page', slug=album.artist.slug) }}">merch</a>
+        <a href="{{ url_for('artist_page', slug=album.artist.slug) }}#merch">merch</a>
         <a href="#comments">community</a>
     </nav>
 
@@ -72,7 +72,7 @@
                             {% endfor %}
                         </select>
                     </label>
-                    <label>Quantity
+                    <label class="qty-label">Quantity
                         <input type="number" name="quantity" min="1" value="1">
                     </label>
                     <button class="button-primary" type="submit">Add to cart</button>

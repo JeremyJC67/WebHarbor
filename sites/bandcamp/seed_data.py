@@ -56,7 +56,7 @@ LABELS = [
     ("Night School Annex", "New York, United States", "Jazz-leaning independents with tactile design systems."),
     ("Lantern Union", "Melbourne, Australia", "Songwriter records and small-batch merch with printshop charm."),
     ("Obsidian Bloom", "Paris, France", "Heavy records with monochrome art direction and deluxe inserts."),
-    ("Harbor Circuit", "Global", "Cross-scene collaborations curated for the mirror benchmark."),
+    ("Harbor Circuit", "Global", "Cross-scene collaborations curated across the catalog."),
 ]
 
 GENRE_TAGS = {
@@ -815,16 +815,16 @@ def album_description(artist_name: str, title: str, genre_name: str, scene_name:
         f"{', '.join(tags[:3])}, tactile arrangements, and patient pacing."
     )
     story = (
-        f"Recorded for the WebHarbor Bandcamp mirror as a fully local release package, {title} leans on {tags[0]} "
-        f"energy while keeping the visual and written presentation tight enough for benchmark tasks."
+        f"Recorded as a fully local release package, {title} leans on {tags[0]} "
+        f"energy with a patient, tactile finish."
     )
     return desc, story
 
 
 def merch_description(title: str, album_title: str | None, artist_name: str, item_type: str) -> str:
     if album_title:
-        return f"{title} is a {item_type} release tied to {album_title}, printed locally for {artist_name} with clean benchmark-ready variant information."
-    return f"{title} is a {item_type} item from {artist_name}, created for the local mirror with deterministic colors and edition notes."
+        return f"{title} is a {item_type} release tied to {album_title}, printed locally for {artist_name} in a small numbered run."
+    return f"{title} is a {item_type} item from {artist_name}, created in small batches with hand-mixed colors and edition notes."
 
 
 def create_assets_for_artist(base_dir: str, artist_slug: str, artist_name: str, scene_name: str, albums: list[dict], merch_items: list[dict]) -> None:
@@ -961,10 +961,10 @@ def run_seed(db, base_dir: str, mirror_reference_now, models: dict) -> None:
             album.duration_seconds = total_duration
 
             album_variants = [
-                ("digital", "Digital Album", "MP3 + FLAC", "", album.price, 9999, True, "Instant download", "Unlimited streams in the mirror."),
+                ("digital", "Digital Album", "MP3 + FLAC", "", album.price, 9999, True, "Instant download", "Unlimited streaming."),
             ]
             if artist_spec["genre"] in {"ambient", "electronic", "techno", "metal", "folk", "jazz", "alternative", "rock", "pop"}:
-                album_variants.append(("vinyl", "Colored Vinyl", "12-inch", "Ocean Blue", round(album.price + 15.5, 2), 42 + artist_index % 35, False, "Ships in 3-5 days", "Limited mirror pressing."))
+                album_variants.append(("vinyl", "Colored Vinyl", "12-inch", "Ocean Blue", round(album.price + 15.5, 2), 42 + artist_index % 35, False, "Ships in 3-5 days", "Limited pressing."))
             if artist_spec["genre"] in {"ambient", "electronic", "hip-hop/rap", "punk", "experimental", "folk"}:
                 album_variants.append(("cassette", "Cassette", "Transparent Shell", "", round(album.price + 6.5, 2), 28 + artist_index % 21, False, "Ships in 2-4 days", "Numbered shell edition."))
             if artist_spec["genre"] in {"pop", "rock", "alternative", "jazz", "metal"}:
@@ -999,7 +999,7 @@ def run_seed(db, base_dir: str, mirror_reference_now, models: dict) -> None:
                     "item_type": "shirt",
                     "album": first_album_slug,
                     "price": 29.0 + (artist_index % 4),
-                    "short_blurb": "Standard artist tee with benchmark-ready sizing.",
+                    "short_blurb": "Standard artist tee cut true to size.",
                     "variants": [("shirt", "Tour Tee", size, "Black", 29.0 + (artist_index % 4)) for size in ["S", "M", "L", "XL"]],
                 },
                 {
@@ -1046,7 +1046,7 @@ def run_seed(db, base_dir: str, mirror_reference_now, models: dict) -> None:
                         inventory=18 + ((artist_index + merch_index + variant_index) % 24),
                         sku=f"{merch_slug}-{kind}-{variant_index}",
                         shipping_note="Ships in 2-5 days",
-                        edition_note="Locally generated merch photo and deterministic variant data.",
+                        edition_note="Made to order in a small run.",
                         is_default=variant_index == 1,
                     )
                 )

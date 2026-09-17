@@ -17,7 +17,7 @@
                 </div>
                 <div>
                     <strong>{{ order.total|money }}</strong>
-                    <span>{{ order.item_count() }} items</span>
+                    <span>{{ order.item_count() }} item{{ '' if order.item_count() == 1 else 's' }}</span>
                 </div>
             </a>
         {% endfor %}
