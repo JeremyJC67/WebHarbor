@@ -30,6 +30,9 @@ SITES = [
     'ikea', 'phys_org', 'target', 'ted',
     'osu', 'rotten_tomatoes', 'compass', 'walmart_careers',
     'fedex', 'webmd_doctor', 'healthline', 'kaggle',
+    'nvidia', 'berkeley', 'bh_photo', 'accuweather', 'gov_uk',
+    'imdb',
+    'nba',
 ]
 BASE_PORT = 40000
 WEBSYN_DIR = '/opt/WebSyn'
