@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 33 Flask mirror sites + control plane on :8101.
+# 34 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm
 
@@ -122,6 +122,6 @@ os.makedirs('instance_seed', exist_ok=True); \
 shutil.copy2('instance/accuweather.db', 'instance_seed/accuweather.db'); \
 print('AccuWeather seed DB generated at build time.')" && rm -rf /opt/WebSyn/accuweather/instance
 
-EXPOSE 8101 40000-40032
+EXPOSE 8101 40000-40033
 
 CMD ["/opt/websyn_start.sh"]
