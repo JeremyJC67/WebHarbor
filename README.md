@@ -111,28 +111,24 @@ passed.
 GOV.UK is registered at index 32 / port 40032, IMDb at index 33 / port 40033 and
 NBA at index 34 / port 40034 in
 builds of this source revision.
-The published Docker Hub image is updated in a separate release. Its reviewed seed uses the
-immutable per-site commit `7c4daf7a6714654c609a9ccf97ab3b2431381791` from
+The published Docker Hub image is updated in a separate release. GOV.UK's reviewed seed originated in
 [HF asset PR #93](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/93).
 The bundle contains 78 articles and 62 structured guidance sections. That archive
-is now part of the pinned dataset revision, and the per-site pin below resolves to
-the same reviewed bundle.
+is part of the consolidated pinned dataset revision below.
 
 
-`.assets-revision` pins the merged dataset commit `e8f59470b76b95d607f288958186cb9b73681d9e`
-from [HF asset PR #57](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/57).
-
-This revision adds `imdb.tar.gz` (39,111,545 bytes) and `gov_uk.tar.gz`
-(53,891 bytes); all 33 archives present at
-`fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f` are byte-for-byte unchanged, including
-Berkeley, NVIDIA, B&H Photo and GOV.UK. It carries archives for 33 of the 35
-registered sites; AccuWeather and NBA use their own immutable per-site pins
-(`0a73c1c1ac2e47513389a8a1a67601f75c8c4150` from HF PR #66 and
-`65a85a1494688f3b9e82217e50a1dd3a5c6f1a8a` from HF PR #88, still open) in the same
-file. The remaining entries are the unregistered Bandcamp and Drugs.com archives,
-which `fetch_assets.sh` ignores. A clean asset fetch downloaded and extracted all 35
-registered sites successfully, validating 120 managed members for NBA and 4,536 for
-IMDb.
+`.assets-revision` pins merged HF main commit
+`9d67d0088a7535e455a331a823b67e3a7d666161`, containing archives for all **38**
+registered sites. Original asset PRs #8 (Recreation.gov), #15 (CarMax),
+#25 (BoardGameGeek), and #66 (AccuWeather) are merged, followed by
+[CarMax photo supplement #95](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95).
+No site now depends on an open HF PR pin. All 36 archives from the previous
+global pin `2aaf9d598f3e71cddd17a4efcdfee7dd7c073337` are unchanged; the three
+non-CarMax scoped bundles also retain their reviewed bytes. CarMax adds 11
+source-backed model-year stock photos without changing its original files or
+seed. Seven other unavailable vehicle hero images remain explicit placeholders.
+The unregistered Bandcamp and Drugs.com archives are ignored by `fetch_assets.sh`.
+Tracked seed migrations and build-generated seeds still run during fetch/build.
 
 B&H's archive contains images and external cache. The Docker build validates
 its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked
