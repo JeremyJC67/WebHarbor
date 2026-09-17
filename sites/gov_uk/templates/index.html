@@ -56,8 +56,9 @@
     <h2 class="govuk-heading-m">Latest announcements</h2>
     <ul class="govuk-list">
       {% for a in latest %}
-      <li>
-        <a class="govuk-link" href="{{ url_for('announcements_index') }}#{{ a.slug }}">{{ a.title }}</a>
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="{{ url_for('announcement_detail', slug=a.slug) }}">{{ a.title }}</a>
+        <p class="govuk-body-s govuk-!-margin-bottom-1">{{ a.summary }}</p>
         <p class="govuk-body-s govuk-hint govuk-!-margin-bottom-2">{{ a.department.name }} &middot; {{ a.published_at.strftime('%d %B %Y') }}</p>
       </li>
       {% endfor %}

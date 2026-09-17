@@ -8,6 +8,7 @@
   <link rel="icon" sizes="48x48" href="{{ url_for('static', filename='icons/favicon.ico') }}">
   <link rel="icon" sizes="any" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/govuk-frontend.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mirror.css') }}">
 </head>
 <body class="govuk-template__body">
   <script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
@@ -17,7 +18,7 @@
   <header class="govuk-header" data-module="govuk-header">
     <div class="govuk-header__container govuk-width-container">
       <div class="govuk-header__logo">
-        <a href="{{ url_for('index') }}" class="govuk-header__link govuk-header__link--homepage">
+        <a href="{{ url_for('index') }}" class="govuk-header__homepage-link">
           <svg xmlns="http://www.w3.org/2000/svg" focusable="false" role="img"
                viewBox="0 0 324 60" height="30" width="162"
                fill="currentcolor" class="govuk-header__logotype" aria-label="GOV.UK">
@@ -38,6 +39,7 @@
           </svg>
         </a>
       </div>
+      <nav class="header-navigation" aria-label="Main"><a href="/browse">Topics</a><a href="/government/organisations">Departments</a><a href="/search">Search</a></nav>
     </div>
   </header>
 
@@ -46,7 +48,7 @@
       <p class="govuk-phase-banner__content">
         <strong class="govuk-tag govuk-phase-banner__content__tag">Mirror</strong>
         <span class="govuk-phase-banner__text">
-          This is a benchmark mirror of GOV.UK for offline agent evaluation. Content is illustrative.
+          This is a benchmark mirror of GOV.UK for offline agent evaluation. Reference date: 1 April 2025. News and organisation profiles are illustrative.
         </span>
       </p>
     </div>
@@ -62,7 +64,7 @@
         <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
           <h2 class="govuk-visually-hidden">Support links</h2>
           <ul class="govuk-footer__inline-list">
-            <li class="govuk-footer__inline-list-item"><a class="govuk-footer__link" href="{{ url_for('browse') }}">Help</a></li>
+            <li class="govuk-footer__inline-list-item"><a class="govuk-footer__link" href="{{ url_for('browse') }}">Browse topics</a></li>
             <li class="govuk-footer__inline-list-item"><a class="govuk-footer__link" href="{{ url_for('organisations') }}">Departments</a></li>
             <li class="govuk-footer__inline-list-item"><a class="govuk-footer__link" href="{{ url_for('announcements_index') }}">Announcements</a></li>
           </ul>

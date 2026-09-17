@@ -22,7 +22,7 @@
       {% for a in announcements %}
       <li class="govuk-!-margin-bottom-4">
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
-          <a class="govuk-link" href="{{ url_for('announcements_index') }}#{{ a.slug }}">{{ a.title }}</a>
+          <a class="govuk-link" href="{{ url_for('announcement_detail', slug=a.slug) }}">{{ a.title }}</a>
         </h3>
         <p class="govuk-body-s">{{ a.summary }}</p>
         <p class="govuk-body-s govuk-hint">
@@ -36,7 +36,7 @@
     <p class="govuk-body">No recent announcements.</p>
     {% endif %}
 
-    <h2 class="govuk-heading-l">Our services and information</h2>
+    <h2 class="govuk-heading-l" id="services">Our services and information</h2>
     {% if articles %}
     <ul class="govuk-list govuk-list--bullet">
       {% for a in articles %}
@@ -50,29 +50,12 @@
 
   <div class="govuk-grid-column-one-third">
     <aside class="govuk-related-navigation" role="complementary">
-      <h2 class="govuk-heading-m">About this organisation</h2>
-      <dl class="govuk-summary-list govuk-summary-list--no-actions">
-        {% if dept.minister %}
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Lead minister</dt>
-          <dd class="govuk-summary-list__value">{{ dept.minister }}</dd>
-        </div>{% endif %}
-        {% if dept.permanent_secretary %}
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Permanent secretary</dt>
-          <dd class="govuk-summary-list__value">{{ dept.permanent_secretary }}</dd>
-        </div>{% endif %}
-        {% if dept.employees %}
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Employees</dt>
-          <dd class="govuk-summary-list__value">{{ "{:,}".format(dept.employees) }}</dd>
-        </div>{% endif %}
-        {% if dept.established %}
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Established</dt>
-          <dd class="govuk-summary-list__value">{{ dept.established }}</dd>
-        </div>{% endif %}
-      </dl>
+      <h2 class="govuk-heading-m">About us</h2>
+      <p class="govuk-body">Read about our responsibilities, leadership and organisation.</p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ url_for('organisation_about', slug=dept.slug) }}">About {{ dept.abbreviation or dept.name }}</a></p>
+      <h2 class="govuk-heading-m">Find our publications</h2>
+      <p class="govuk-body"><a class="govuk-link" href="{{ url_for('search', department=dept.slug, type='guidance') }}">Guidance and services</a></p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ url_for('search', department=dept.slug, type='news', order='updated') }}">News and communications</a></p>
     </aside>
   </div>
 </div>

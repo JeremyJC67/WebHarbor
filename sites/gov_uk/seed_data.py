@@ -133,6 +133,9 @@ DEPARTMENTS = [
      "(part of DfT)", "Julie Lennard",
      6000, "1965",
      "DVLA maintains registers of drivers and vehicles, and collects vehicle excise duty."),
+    ("dvsa", "Driver and Vehicle Standards Agency", "DVSA", "Executive agency",
+     "(part of DfT)", "", 0, "2014",
+     "Carries out driving tests, approves driving instructors and checks that vehicles are safe to drive."),
     ("dwp", "Department for Work and Pensions", "DWP", "Ministerial department",
      "Rt Hon Liz Kendall MP", "Sir Peter Schofield KCB",
      82000, "2001",
@@ -256,7 +259,7 @@ ARTICLES = [
          _para(
             "Capital Gains Tax is a tax on the profit when you sell something — an asset — that has increased in value. It is the gain you make that is taxed, not the amount of money you receive.",
             "The annual exempt amount for the 2024 to 2025 tax year is £3,000 for individuals.",
-            "Basic rate taxpayers pay 10% on most gains and 18% on residential property. Higher and additional rate taxpayers pay 20% on most gains and 24% on residential property.",
+            "For disposals from 30 October 2024, the main rates are 18% within the basic rate band and 24% above it. Residential property gains are also taxed at 18% or 24%. Different rules apply to carried interest and gains qualifying for relief.",
          ),
          "guidance"),
         ("Report and pay your Capital Gains Tax",
@@ -322,7 +325,7 @@ ARTICLES = [
          "service"),
     ]),
     # ── Driving / Learning to drive ──
-    ("learning-to-drive", "dvla", [
+    ("learning-to-drive", "dvsa", [
         ("Book your theory test",
          "Book your car, motorcycle, lorry, bus or coach theory test.",
          _para(
@@ -334,7 +337,7 @@ ARTICLES = [
         ("Book your driving test",
          "Book your practical driving test for a car, motorcycle, lorry or bus.",
          _para(
-            "You can only book your practical driving test once you have passed the theory test.",
+            "You usually need to have passed the theory test before booking a practical driving test. Some tests, such as a tractor test or a test to upgrade an automatic car licence to manual, do not require a theory test.",
             "It costs £62 on a weekday or £75 on an evening, weekend or bank holiday.",
             "You will need your UK driving licence number, your theory test pass certificate number and a debit or credit card.",
          ),
@@ -681,11 +684,11 @@ ARTICLES = [
     # ── Disabilities / Blue Badge ──
     ("blue-badge", "department-for-transport", [
         ("Apply for or renew a Blue Badge",
-         "Apply for or renew a Blue Badge for free parking.",
+         "Check eligibility and apply for or renew a Blue Badge.",
          _para(
             "The Blue Badge scheme helps people with disabilities or health conditions park closer to their destination.",
             "You can apply online or contact your local council. It costs up to £10 in England and £20 in Scotland. It is free in Wales.",
-            "A Blue Badge usually lasts up to 3 years. You will get a reminder before it runs out.",
+            "A Blue Badge usually lasts up to 3 years. You must reapply before your current badge expires.",
          ),
          "service"),
     ]),
@@ -763,7 +766,9 @@ ARTICLES = [
          "Register to vote in UK elections and referendums.",
          _para(
             "You must register if you have been asked to do so and are eligible.",
-            "It usually takes about 5 minutes. You will need your National Insurance number, which can be found on your National Insurance card, payslips, P45 or P60, or letters about benefits.",
+            "Register online using the Register to vote service. Enter your name, address and date of birth, then follow the instructions to submit your application. It usually takes about 5 minutes.",
+            "You will be asked for your National Insurance number, but you can still register if you do not have one.",
+            "In England, Scotland and Wales, you can also register using a paper form. Print it, fill it in and send it to your local electoral registration office. You can contact that office for help. Northern Ireland uses a different form, returned to the Electoral Office for Northern Ireland.",
             "You only need to register once. You will need to register again only if you change your name, address or nationality.",
          ),
          "service"),
@@ -910,6 +915,8 @@ def seed_database(db):
     _seed_departments(db, Department)
     _seed_articles(db, Topic, Subtopic, Department, GuidanceArticle)
     _seed_announcements(db, Department, Announcement)
+    from seed_guidance import seed_guidance
+    seed_guidance(db)
 
 
 def _seed_topics(db, Topic):

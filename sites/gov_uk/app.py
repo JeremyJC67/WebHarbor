@@ -7,21 +7,27 @@ Mirrors the structure of www.gov.uk:
   Department       = a government organisation (HMRC, DfE, ...)
   Announcement     = press release / news story published by a Department
 
-Content here is *synthesized* in the spirit of GOV.UK guidance pages —
-no upstream copy is included. Tone and structure approximate the real
-site so an agent that navigates GOV.UK works against this mirror too.
+Expanded guidance uses authored summaries of official GOV.UK content, with
+historical rates pinned to 1 April 2025. Organisation profiles and news remain
+illustrative benchmark fixtures. All runtime content lives in SQLite.
+See CONTENT_SOURCES.md for provenance and the limits of this offline corpus.
 """
 import os
+import sys
 from datetime import datetime, date
 from pathlib import Path
 
 from flask import (
-    Flask, render_template, request, jsonify,
+    Flask, render_template, request, jsonify, abort, url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from search_index import ranked
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).resolve().parent
+
+# Seed functions import models from app; standalone startup must share this module.
+if __name__ == "__main__":
+    sys.modules["app"] = sys.modules[__name__]
 DB_DIR = BASE_DIR / "instance"
 DB_DIR.mkdir(exist_ok=True)
 
@@ -119,6 +125,21 @@ class GuidanceArticle(db.Model):
     first_published = db.Column(db.Date, default=date.today)
 
     department = db.relationship("Department", backref="articles")
+    sections = db.relationship("GuidanceSection", order_by="GuidanceSection.sort_order", cascade="all, delete-orphan", back_populates="article")
+
+
+class GuidanceSection(db.Model):
+    """Ordered guide parts or headings, compiled into the shipped seed."""
+    __tablename__ = "guidance_sections"
+    id = db.Column(db.Integer, primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey("guidance_articles.id"), nullable=False)
+    slug = db.Column(db.String(120), nullable=False)
+    title = db.Column(db.String(240), nullable=False)
+    body = db.Column(db.Text, nullable=False)  # trusted, locally authored HTML
+    sort_order = db.Column(db.Integer, nullable=False)
+    multipart = db.Column(db.Boolean, nullable=False, default=True)
+    article = db.relationship("GuidanceArticle", back_populates="sections")
+    __table_args__ = (db.UniqueConstraint("article_id", "slug"),)
 
 
 class Announcement(db.Model):
@@ -147,7 +168,7 @@ def inject_globals():
 def index():
     topics = Topic.query.order_by(Topic.sort_order, Topic.name).all()
     latest = (Announcement.query
-              .order_by(Announcement.published_at.desc())
+              .order_by(Announcement.published_at.desc(), Announcement.id.desc())
               .limit(5).all())
     departments_count = Department.query.count()
     articles_count = GuidanceArticle.query.count()
@@ -182,18 +203,27 @@ def subtopic_page(topic_slug, subtopic_slug):
 
 
 @app.route("/guidance/<slug>")
-def article_detail(slug):
+@app.route("/guidance/<slug>/<part_slug>")
+def article_detail(slug, part_slug=None):
     article = GuidanceArticle.query.filter_by(slug=slug).first_or_404()
     related = (GuidanceArticle.query
                .filter(GuidanceArticle.subtopic_id == article.subtopic_id,
                        GuidanceArticle.id != article.id)
                .limit(5).all())
+    sections = article.sections
+    multipart = bool(sections and sections[0].multipart)
+    current = next((section for section in sections if section.slug == part_slug), None) if part_slug else (sections[0] if multipart else None)
+    if part_slug and (not multipart or current is None):
+        abort(404)
+    position = sections.index(current) if current else -1
     paragraphs = [p for p in (article.body or "").split("\n\n") if p.strip()]
     return render_template(
         "article.html",
         article=article,
         related=related,
-        paragraphs=paragraphs,
+        paragraphs=paragraphs, sections=sections, multipart=multipart, current=current,
+        previous=sections[position-1] if position > 0 else None,
+        following=sections[position+1] if multipart and position+1 < len(sections) else None,
     )
 
 
@@ -214,7 +244,7 @@ def organisation_detail(slug):
                 .limit(20).all())
     announcements_list = (Announcement.query
                           .filter_by(department_id=dept.id)
-                          .order_by(Announcement.published_at.desc())
+                          .order_by(Announcement.published_at.desc(), Announcement.id.desc())
                           .limit(10).all())
     return render_template(
         "organisation.html",
@@ -224,51 +254,87 @@ def organisation_detail(slug):
     )
 
 
+@app.route("/government/organisations/<slug>/about")
+def organisation_about(slug):
+    dept = Department.query.filter_by(slug=slug).first_or_404()
+    return render_template("organisation_about.html", dept=dept)
+
+
 @app.route("/government/announcements")
 def announcements_index():
-    page = max(1, int(request.args.get("page", 1)))
+    try:
+        page = int(request.args.get("page", "1"))
+    except ValueError:
+        abort(400, description="Page must be a positive integer.")
+    if page < 1:
+        abort(400, description="Page must be a positive integer.")
     per_page = 15
-    q = Announcement.query.order_by(Announcement.published_at.desc())
+    q = Announcement.query.order_by(Announcement.published_at.desc(), Announcement.id.desc())
     total = q.count()
     items = q.offset((page - 1) * per_page).limit(per_page).all()
     pages = max(1, (total + per_page - 1) // per_page)
+    if page > pages:
+        abort(404)
     return render_template(
         "announcements.html",
         items=items, page=page, pages=pages, total=total,
     )
 
 
+@app.route("/government/news/<slug>")
+def announcement_detail(slug):
+    announcement = Announcement.query.filter_by(slug=slug).first_or_404()
+    related = GuidanceArticle.query.filter_by(department_id=announcement.department_id).order_by(GuidanceArticle.title).limit(10).all()
+    return render_template("announcement.html", announcement=announcement, related=related)
+
+
 @app.route("/search")
 def search():
     q = (request.args.get("q") or "").strip()
-    articles = []
-    found_announcements = []
-    departments = []
-    if q:
-        like = f"%{q}%"
-        articles = (GuidanceArticle.query
-                    .filter(or_(GuidanceArticle.title.ilike(like),
-                                GuidanceArticle.summary.ilike(like),
-                                GuidanceArticle.body.ilike(like)))
-                    .order_by(GuidanceArticle.last_updated.desc())
-                    .limit(30).all())
-        found_announcements = (Announcement.query
-                               .filter(or_(Announcement.title.ilike(like),
-                                           Announcement.summary.ilike(like)))
-                               .order_by(Announcement.published_at.desc())
-                               .limit(15).all())
-        departments = (Department.query
-                       .filter(or_(Department.name.ilike(like),
-                                   Department.description.ilike(like)))
-                       .limit(10).all())
-    return render_template(
-        "search.html",
-        q=q,
-        articles=articles,
-        announcements=found_announcements,
-        departments=departments,
-        total=len(articles) + len(found_announcements) + len(departments),
-    )
+    kind = request.args.get("type", "")
+    department = request.args.get("department", "")
+    sort = request.args.get("order", "relevance")
+    kinds = {"guidance": "Guidance", "service": "Services", "news": "News and communications", "organisation": "Organisations"}
+    departments = Department.query.order_by(Department.name).all()
+    if kind not in ("", *kinds) or sort not in ("relevance", "updated"):
+        abort(400)
+    if department and department not in {d.slug for d in departments}:
+        abort(400)
+    try:
+        page = int(request.args.get("page", "1"))
+    except ValueError:
+        abort(400)
+    if page < 1:
+        abort(400)
+    records = []
+    for a in GuidanceArticle.query.order_by(GuidanceArticle.id).all():
+        records.append(dict(title=a.title, summary=a.summary, body=a.body,
+            url=url_for("article_detail", slug=a.slug), kind="service" if a.kind == "service" else "guidance",
+            department=a.department.slug, publisher=a.department.name, updated=a.last_updated))
+    for a in Announcement.query.order_by(Announcement.id).all():
+        records.append(dict(title=a.title, summary=a.summary, body=a.body,
+            url=url_for("announcement_detail", slug=a.slug), kind="news", department=a.department.slug,
+            publisher=a.department.name, updated=a.published_at.date()))
+    for d in departments:
+        records.append(dict(title=d.name, summary=d.description, body=d.abbreviation,
+            url=url_for("organisation_detail", slug=d.slug), kind="organisation", department=d.slug,
+            publisher=d.name, updated=mirror_now().date()))
+    from types import SimpleNamespace
+    records = [SimpleNamespace(**r) for r in records]
+    records = ranked(records, q, ("title", "summary", "body")) if q else records
+    counts = {key: sum(r.kind == key and (not department or r.department == department) for r in records) for key in kinds}
+    records = [r for r in records if (not kind or r.kind == kind) and (not department or r.department == department)]
+    if sort == "updated":
+        records.sort(key=lambda r: r.updated, reverse=True)
+    total = len(records)
+    pages = max(1, (total + 9) // 10)
+    if page > pages:
+        abort(404)
+    def page_url(number):
+        return url_for("search", q=q, type=kind, department=department, order=sort, page=number)
+    return render_template("search.html", q=q, kind=kind, kinds=kinds, counts=counts,
+        departments=departments, department=department, sort=sort, total=total,
+        results=records[(page-1)*10:page*10], page=page, pages=pages, page_url=page_url)
 
 
 @app.route("/_health")

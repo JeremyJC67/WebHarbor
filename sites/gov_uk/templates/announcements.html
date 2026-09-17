@@ -13,9 +13,8 @@
       <strong class="govuk-tag govuk-tag--grey">{{ a.kind.replace('_', ' ').title() }}</strong>
       {{ a.department.name }} &middot; {{ a.published_at.strftime('%-d %B %Y') }}
     </p>
-    <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ a.title }}</h2>
+    <h2 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ url_for('announcement_detail', slug=a.slug) }}">{{ a.title }}</a></h2>
     <p class="govuk-body">{{ a.summary }}</p>
-    <p class="govuk-body">{{ a.body }}</p>
   </li>
   {% endfor %}
 </ul>
