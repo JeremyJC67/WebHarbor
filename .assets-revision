@@ -20,3 +20,6 @@ revision: 2aaf9d598f3e71cddd17a4efcdfee7dd7c073337
 # AccuWeather HF PR #66; immutable archive validated in the task review.
 # Other sites retain their merged and validated asset revision above.
 site.accuweather: 0a73c1c1ac2e47513389a8a1a67601f75c8c4150
+
+# Recreation.gov PR #66: preserve main's assets and scope the original site bundle.
+site.recreation_gov: 00faedd20a96b4b10d5013a1c07ace9472d7ee80
