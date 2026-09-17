@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "note": "Supplement to the original HF bundle. These files are prepared locally; publish the replacement bundle and update site.carmax before claiming a fresh-fetch release contains them.",
+  "note": "Supplement to original HF asset PR #15, published and merged through HF PR #95. The consolidated .assets-revision includes all 11 recovered model-year stock photos; these are not exact vehicle trim/color matches.",
   "assets": [
     {
       "path": "static/images/vehicles/09040449-front.jpg",

@@ -231,6 +231,23 @@ No cross-imports between `sites/<a>/` and `sites/<b>/`. Image runs one Python pr
 
 ## PR integration preference
 
+Code and required HF assets must be integrated together (user requirement,
+2026-09-17). Authorization to merge a reviewed code PR includes publishing and
+merging its required asset changes into `ChilleD/WebHarbor`; do not leave its
+asset dependencies on open HF PRs and call the integration complete.
+
+Before merging code, identify its original asset PRs and any locally modified
+bundles. Publish the reviewed replacements when needed, merge the required HF
+PRs in dependency order while preserving unrelated dataset assets, and verify
+the actual HF merge status. Update `.assets-revision` to tested immutable merged
+revisions, then freshly fetch and validate the combined code/assets, including
+the required build and reset checks. An accessible open-PR commit is not a merged
+asset revision. Tracked build-time seed generation/migrations need not cause an
+unnecessary archive rewrite, but their source asset dependencies must be merged.
+If HF integration is blocked, report it before merging code unless the user
+explicitly approves an exception. Docker image publication and deployment remain
+separate stages and are not implied by this requirement.
+
 For stacked contributions, preserve the original PR ancestry and integrate in
 dependency order: original contribution, reviewer continuation, then follow-up
 fixes. Do not replace that sequence with a copied/squashed integration PR unless
