@@ -177,8 +177,10 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .season-label { color: #aaa; margin: 0 0 12px; }
 .episode-bars { display: flex; align-items: flex-end; gap: 12px; padding: 12px 0; margin-bottom: 12px; border-bottom: 1px solid #333; }
 .episode-bars button { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 6px; color: #bbb; min-width: 0; font: inherit; font-size: 13px; padding: 0 0 8px; border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; }
-.episode-bar { display: block; width: 100%; max-width: 48px; border-radius: 4px 4px 0 0; background: #a08ff4; }
-.episode-bars button:hover .episode-bar { background: #c8bcff; }
+/* Episode rating bars stay in the homepage palette: the accent gold of .section-yellow and .star (#f5c518) for the bar itself, and the same hue one lightness step up (#f9dd76) for hover and for the selected episode. The bar is capped below its own height so it reads as a rating column rather than a tile. */
+.episode-bar { display: block; width: 100%; max-width: 32px; border-radius: 4px 4px 0 0; background: #f5c518; }
+.episode-bars button:hover .episode-bar,
+.episode-bars button[aria-pressed="true"] .episode-bar { background: #f9dd76; }
 .episode-bars button[aria-pressed="true"] { color: #f5c518; border-color: #f5c518; }
 .episode-score { color: #fff; font-size: 14px; }
 .snapshot-poster { display: block; }
