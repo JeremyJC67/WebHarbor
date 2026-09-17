@@ -229,6 +229,21 @@ No cross-imports between `sites/<a>/` and `sites/<b>/`. Image runs one Python pr
 | Byte-identity fails post-reset      | seed not fully idempotent                 | gate every `seed_*()` function             |
 | Image bloats > 4 GB                 | shipped `scraped_data/` or `instance/`    | `.dockerignore`                            |
 
+## PR integration preference
+
+For stacked contributions, preserve the original PR ancestry and integrate in
+dependency order: original contribution, reviewer continuation, then follow-up
+fixes. Do not replace that sequence with a copied/squashed integration PR unless
+the user explicitly requests it.
+
+If a combined replacement PR has already merged and the original PR history still
+needs integration, the user's preferred future recovery is a revert PR followed
+by the original PRs in dependency order and a new PR reapplying the reviewed fixes.
+Plan and validate the whole sequence, obtain authorization for the rollback/merges,
+and never force-push shared main. History-only reconciliation while retaining the
+replacement is an explicit exception chosen for PRs #35/#88 after #127, not the
+default for future cases (preference recorded 2026-09-17).
+
 ## When you finish
 
 Report what you actually verified, not what you intended to verify. The [pre-PR checks](#pre-pr-checks) above are the bar.
