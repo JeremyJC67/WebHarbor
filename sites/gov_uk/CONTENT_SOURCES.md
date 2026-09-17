@@ -78,4 +78,5 @@ This builds an isolated database and sorts named-index DDL before writing
 `instance_seed/gov_uk.db`. Populated startup is intentionally idempotent: it does
 not migrate an older populated fixture to the new guidance. Restore the corrected
 seed into an isolated `instance/` when testing. Source code and the corrected HF
-asset bundle must be released together; the old pinned bundle lacks these rows.
+asset bundle must be released together. `.assets-revision` pins the reviewed
+GOV.UK bundle with a `site.gov_uk` override; older bundles lack these rows.

@@ -69,3 +69,9 @@ may need reviewer judgment. Trajectory metadata and images cannot authenticate
 an untrusted recorder or prove which text was read; synthetic tests are never
 represented as browser attempts. The mirror is read-only, so completion is judged
 from navigation and answers; GUI regression also checks initial/final DB identity.
+
+Integration controls also cover swapped paper/online deadlines, an incorrect
+daily-penalty threshold, either valid pair of growth measures, photo units,
+reversed explicit width/height order and equivalent decimal fee notation.
+Task 9 accepts any two of infrastructure, planning and skills; task 10
+specifically requires infrastructure and planning as requested.

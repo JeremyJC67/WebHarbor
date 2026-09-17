@@ -120,8 +120,12 @@ def answer_checks(task, answer):
         require('payment_day', r'\bwednesday\b')
         checks['no_wrong_payment_day'] = not bool(re.search(r'\b(?:monday|tuesday|thursday|friday)\b',t))
     elif task == 2:
-        require('paper_date', r'\b(?:31(?:st)? october 2025|october 31(?:st)? 2025)\b')
-        require('online_date', r'\b(?:31(?:st)? january 2026|january 31(?:st)? 2026)\b')
+        # Keep each date associated with its filing method, even when both
+        # dates appear in one sentence. A list of the right dates is insufficient.
+        for method, month, year, other in [('paper', 'oct(?:ober)?', 2025, 'online'), ('online', 'jan(?:uary)?', 2026, 'paper')]:
+            deadline = rf'\b(?:31(?:st)? {month} {year}|{month} 31(?:st)? {year})\b'
+            gap = rf'(?:(?!\b(?:{other}|pay|payment)\b)[^;.!?]){{0,70}}'
+            require(method + '_date', rf'\b{method}\b{gap}{deadline}|{deadline}{gap}\b{method}\b')
         require('payment_date', r'\b(?:pay|payment|tax due).{0,70}(?:31(?:st)? january 2026|january 31(?:st)? 2026)')
         require('payment_reference', r'\b(?:utr|unique taxpayer reference)\b.{0,55}\bk\b')
     elif task == 3:
@@ -141,6 +145,7 @@ def answer_checks(task, answer):
         require('no_tax_exception', r'\b(?:even if|even when|even though|despite|regardless).{0,50}(?:no tax|owe no|tax (?:owed|due)|owing (?:no|0) tax)')
         require('daily_unit', r'\b(?:per day|a day|daily)\b')
         require('daily_limit', r'\b90 days?\b|£\s*900\b')
+        require('daily_threshold', r'\b(?:more than|over|after|once).{0,35}\b3 months?\b|\b3 months? late\b')
         checks['no_wrong_initial'] = not bool(re.search(r'initial penalty(?: is|:)?\s*£\s*(?!100\b)\d+',t))
     elif task == 6:
         cash('annual_exempt_amount',3000)
@@ -162,8 +167,16 @@ def answer_checks(task, answer):
         else: require('publisher', r'\b(?:hm treasury|treasury)\b')
         require('story', r'\bspring statement\b')
         require('publication_date', r'\b(?:28(?:th)? march 2025|march 28(?:th)? 2025)\b')
-        require('infrastructure', r'\binfrastructure.{0,100}(?:connect|business)|\b(?:connect|business).{0,100}infrastructure')
-        require('planning', r'\bplanning.{0,100}(?:home|housing|infrastructure|system)')
+        measures = {
+            'infrastructure': r'\binfrastructure.{0,100}(?:connect|business)|\b(?:connect|business).{0,100}infrastructure',
+            'planning': r'\bplanning.{0,100}(?:home|housing|infrastructure|system)',
+            'skills': r'\bskills.{0,100}(?:work|job|employment|growing sectors)',
+        }
+        if task == 9:
+            checks['two_distinct_measures'] = sum(asserted(t, p) for p in measures.values()) >= 2
+        else:
+            for name in ('infrastructure', 'planning'):
+                require(name, measures[name])
     elif task == 11:
         require('returns', number(11500000) + r'\s*(?:self assessment |tax )*returns?\b')
         checks['deadline'] = date_31_january(t)
@@ -174,9 +187,10 @@ def answer_checks(task, answer):
         require('publisher', r'\b(?:hmpo|(?:his majesty.s |hm )?passport office)\b')
         require('photo', r'\bdigital (?:passport )?photo(?:graph)?\b')
         require('card', r'\b(?:debit(?: or credit)?|credit(?: or debit)?) card\b')
-        require('online_fee', r'\bonline.{0,35}(?:£\s*88\.50|88\.50 pounds)')
+        require('online_fee', rf'\bonline.{{0,35}}(?:{money("88.50")})|(?:{money("88.50")}).{{0,35}}\bonline\b')
         require('paper_fee', r'\b(?:paper|post).{0,35}(?:£\s*100\b|100 pounds)|(?:£\s*100\b|100 pounds).{0,35}\b(?:paper|post)')
-        require('photo_dimensions', r'\b600\s*(?:pixels? (?:wide)?\s*(?:and|by|x|×)?|(?:by|x|×))\s*750(?:\s*pixels?)?')
+        require('photo_dimensions', r'\b600\s*(?:pixels? (?:wide)?\s*(?:and|by|x|×)?|(?:by|x|×))\s*750(?:\s*pixels?)?\b|\b750 pixels? (?:tall|high) (?:and|by) 600 pixels? wide\b')
+        require('photo_dimension_units', r'\b(?:600|750)\s*pixels?\b')
         require('photo_age', r'\b(?:last|past|within) (?:1 |a |the )?month\b')
     elif task == 13:
         cash('england_fee',10)

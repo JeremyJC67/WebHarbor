@@ -20,6 +20,20 @@ ANSWERS = ['The standard Personal Allowance is £12,570 per year. It reduces by 
 
 
 class AnswerControls(unittest.TestCase):
+    def test_fact_relationships_and_valid_alternatives(self):
+        cases = [
+            (2, False, ANSWERS[2].replace('paper filing', 'TEMP filing').replace('online filing', 'paper filing').replace('TEMP filing', 'online filing')),
+            (5, False, ANSWERS[5].replace('3 months late', '6 months late')),
+            (9, True, ANSWERS[9].replace('planning reform is intended to help homes and infrastructure move through the planning system.', 'Skills measures help people take up work in growing sectors.')),
+            (9, True, ANSWERS[9].replace('Infrastructure investment is intended to improve connections and support businesses;', 'Skills measures help people take up work in growing sectors;')),
+            (12, False, ANSWERS[12].replace('600 pixels wide and 750 pixels tall', '600 by 750')),
+            (12, True, ANSWERS[12].replace('£88.50', '£88.5')),
+            (12, True, ANSWERS[12].replace('600 pixels wide and 750 pixels tall', '750 pixels tall and 600 pixels wide')),
+        ]
+        for task, expected, answer in cases:
+            with self.subTest(task=task, answer=answer):
+                self.assertEqual(all(answer_checks(task, answer).values()), expected, answer_checks(task, answer))
+
     def test_valid_answers(self):
         for i, answer in enumerate(ANSWERS):
             with self.subTest(task=i):

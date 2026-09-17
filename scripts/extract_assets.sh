@@ -47,6 +47,9 @@ for site_dir in sites/*/; do
 
     members=()
     for sub in "${SUBPATHS[@]}"; do
+        if [[ "$sub" == "instance_seed" && -f "${site_dir}.build-generated-seed" ]]; then
+            continue
+        fi
         [[ -e "$site_dir$sub" ]] && members+=("$site/$sub")
     done
     if [[ ${#members[@]} -eq 0 ]]; then
@@ -54,7 +57,8 @@ for site_dir in sites/*/; do
     fi
 
     out="$TARGET/$site.tar.gz"
-    tar ${TAR_FLAGS[@]+"${TAR_FLAGS[@]}"} -czf "$out" -C sites "${members[@]}"
+    # Exclude AppleDouble sidecars as well as platform-specific metadata.
+    tar ${TAR_FLAGS[@]+"${TAR_FLAGS[@]}"} --exclude='._*' -czf "$out" -C sites "${members[@]}"
     sz=$(du -sh "$out" 2>/dev/null | cut -f1)
     printf "  %-22s -> %-30s %s\n" "$site" "$site.tar.gz" "$sz"
     count=$((count + 1))
