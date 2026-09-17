@@ -47,15 +47,15 @@ csrf = CSRFProtect(app)
 STOP_WORDS = {"the", "a", "an", "and", "or", "of", "for", "to", "in", "on", "with", "baby", "pregnancy"}
 
 ARTICLE_IMAGES = {
-    "viability-and-preterm-birth": "ultrasound.jpg",
-    "how-births-are-classified": "expecting-baby.jpg",
-    "what-prenatal-care-covers": "hero-pregnancy.jpg",
-    "prenatal-screening-explained": "ultrasound.jpg",
-    "first-second-third-trimester-screen": "ultrasound.jpg",
-    "amniocentesis": "ultrasound.jpg",
-    "chorionic-villus-sampling": "ultrasound.jpg",
+    "viability-and-preterm-birth": "preterm-care.jpg",
+    "how-births-are-classified": "mother-newborn.jpg",
+    "what-prenatal-care-covers": "prenatal-care.jpg",
+    "prenatal-screening-explained": "prenatal-blood-test.jpg",
+    "first-second-third-trimester-screen": "fetal-trimesters.png",
+    "amniocentesis": "amniocentesis.png",
+    "chorionic-villus-sampling": "chorionic-villus.png",
     "the-three-trimesters": "expecting-baby.jpg",
-    "fetal-growth-rate": "expecting-baby.jpg",
+    "fetal-growth-rate": "hero-pregnancy.jpg",
     "fetal-cognitive-development": "ultrasound.jpg",
     "breastfeeding-benefits": "breastfeeding.jpg",
     "infant-sleep-approaches": "baby-sleep.jpg",

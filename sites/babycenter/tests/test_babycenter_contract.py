@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import json
 import re
 from datetime import date
+from pathlib import Path
 
 import app as babycenter_app
+
+
+SITE_DIR = Path(__file__).resolve().parents[1]
 
 
 def test_pregnancy_weeks_use_the_fixed_benchmark_date_and_sourced_pages() -> None:
@@ -37,6 +42,22 @@ def test_primary_pages_render(client) -> None:
     for path in paths:
         response = client.get(path)
         assert response.status_code == 200, path
+
+
+def test_article_cards_use_distinct_inventoried_images() -> None:
+    corpus = json.loads((SITE_DIR / "source_data" / "corpus.json").read_text())
+    inventory = json.loads((SITE_DIR / "asset_inventory.json").read_text())
+    article_slugs = {article["slug"] for article in corpus["articles"]}
+    image_paths = {
+        row["path"].removeprefix("static/images/")
+        for row in inventory["assets"]
+        if row["path"].startswith("static/images/")
+    }
+
+    assert set(babycenter_app.ARTICLE_IMAGES) == article_slugs
+    assigned = list(babycenter_app.ARTICLE_IMAGES.values())
+    assert len(assigned) == len(set(assigned))
+    assert set(assigned) <= image_paths
 
 
 def test_tests_use_an_isolated_database() -> None:
