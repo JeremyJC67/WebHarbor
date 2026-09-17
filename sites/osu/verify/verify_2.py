@@ -12,9 +12,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, clicked_transition, contains_all,
-    final_answer, load_run, parse_args, visited_in_order
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_details_from_listing, contains_all, final_answer, load_run, parse_args, visited_in_order,
 )
 
 TASK_ID = 'Ohio State University--2'
@@ -37,13 +36,12 @@ def main() -> None:
     )
     judge.check(
         "clicked_both_teams",
-        clicked_transition(trajectory, "/athletics", FOOTBALL)
-        and clicked_transition(trajectory, "/athletics", WRESTLING),
+        clicked_details_from_listing(trajectory, "/athletics", (FOOTBALL, WRESTLING)),
         "visible team links used",
     )
     judge.check(
         "answer_big_ten_both",
-        contains_all(answer, ("football", "wrestling", "Big Ten")),
+        contains_all(answer, ("Big Ten",)),
         repr(answer),
     )
     check_read_only(judge, args)

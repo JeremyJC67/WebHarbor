@@ -12,11 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, affirmative_contains, check_common, check_read_only, clicked_transition,
-    contains_all, contains_word, final_answer, load_run, parse_args,
-    visited_in_order, visited_query
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_transition, final_answer, load_run, parse_args, visited_in_order, visited_query,
 )
+
+from answer_checks import date_matches, gre_optional, quantity
 
 TASK_ID = 'Ohio State University--16'
 
@@ -38,10 +38,9 @@ def main() -> None:
     )
     judge.check(
         "answer_mba_details",
-        contains_all(answer, ("April 1", "credits"))
-        and contains_word(answer, "60")
-        and contains_word(answer, "GRE")
-        and affirmative_contains(answer, "not required"),
+        date_matches(answer, 4, 1)
+        and quantity(answer, 60, ('credits?', 'credit hours?'))
+        and gre_optional(answer),
         repr(answer),
     )
     check_read_only(judge, args)

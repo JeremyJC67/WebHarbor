@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, clicked_transition, final_answer,
-    load_run, parse_args, text_bound_in_comparison, visited_in_order
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_details_from_listing, final_answer, load_run, parse_args, visited_in_order,
 )
+
+from answer_checks import venue_pair
 
 TASK_ID = 'Ohio State University--14'
 
@@ -37,18 +38,12 @@ def main() -> None:
     )
     judge.check(
         "clicked_both_teams",
-        clicked_transition(trajectory, "/athletics", FOOTBALL)
-        and clicked_transition(trajectory, "/athletics", BASKETBALL),
+        clicked_details_from_listing(trajectory, "/athletics", (FOOTBALL, BASKETBALL)),
         "visible team links used",
     )
     judge.check(
-        "football_venue_bound",
-        text_bound_in_comparison(answer, "Ohio Stadium", ("football",)),
-        repr(answer),
-    )
-    judge.check(
-        "basketball_venue_bound",
-        text_bound_in_comparison(answer, "Value City Arena", ("basketball",)),
+        "team_venues_bound",
+        venue_pair(answer, (("Ohio Stadium", ("football",)), ("Value City Arena", ("basketball",)))),
         repr(answer),
     )
     check_read_only(judge, args)

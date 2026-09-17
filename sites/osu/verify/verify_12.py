@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, clicked_transition, contains_all,
-    contains_word, final_answer, has_number, load_run, parse_args, visited_in_order
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_transition, contains_word, final_answer, load_run, parse_args, visited_in_order,
 )
+
+from answer_checks import duration_years, quantity
 
 TASK_ID = 'Ohio State University--12'
 
@@ -37,9 +38,8 @@ def main() -> None:
     judge.check(
         "answer_jd_details",
         contains_word(answer, "JD")
-        and has_number(answer, 90)
-        and has_number(answer, 3)
-        and contains_all(answer, ("credits", "years")),
+        and quantity(answer, 90, ('credits?', 'credit hours?'))
+        and duration_years(answer, 3),
         repr(answer),
     )
     check_read_only(judge, args)

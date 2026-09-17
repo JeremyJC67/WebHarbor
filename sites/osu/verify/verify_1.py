@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, contains_all, final_answer,
-    has_number, load_run, parse_args, visited_path
+from verify_lib import (
+    Judge, check_common, check_read_only, final_answer, load_run, parse_args, visited_path,
 )
+
+from answer_checks import varsity_count
 
 TASK_ID = 'Ohio State University--1'
 
@@ -29,7 +30,7 @@ def main() -> None:
     judge.check("opened_about", visited_path(trajectory, "/about"), "required=/about")
     judge.check(
         "answer_varsity_sports",
-        has_number(answer, 36) and contains_all(answer, ("varsity", "sports")),
+        varsity_count(answer),
         repr(answer),
     )
     check_read_only(judge, args)

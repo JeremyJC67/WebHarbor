@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, clicked_transition, contains_all,
-    final_answer, has_number, load_run, parse_args, visited_in_order
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_transition, final_answer, load_run, parse_args, visited_in_order,
 )
+
+from answer_checks import date_matches, money
 
 TASK_ID = 'Ohio State University--4'
 
@@ -36,7 +37,7 @@ def main() -> None:
     )
     judge.check(
         "answer_amount_date",
-        has_number(answer, 1.3) and contains_all(answer, ("billion", "September", "23", "2024")),
+        money(answer, 1_300_000_000) and date_matches(answer, 9, 23, 2024),
         repr(answer),
     )
     check_read_only(judge, args)

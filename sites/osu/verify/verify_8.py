@@ -12,11 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, affirmative_contains, check_common, check_read_only, contains_any,
-    final_answer, has_number, load_run, number_bound_in_comparison, parse_args,
-    visited_path
+from verify_lib import (
+    Judge, check_common, check_read_only, final_answer, load_run, parse_args, visited_path,
 )
+
+from answer_checks import bound_count, difference, winner
 
 TASK_ID = 'Ohio State University--8'
 
@@ -30,19 +30,17 @@ def main() -> None:
     judge.check("opened_academics", visited_path(trajectory, "/academics"), "required=/academics")
     judge.check(
         "engineering_count_bound",
-        number_bound_in_comparison(answer, 8000, ("Engineering",)),
+        bound_count(answer, 8000, ("Engineering",)),
         repr(answer),
     )
     judge.check(
         "fisher_count_bound",
-        number_bound_in_comparison(answer, 4500, ("Fisher",)),
+        bound_count(answer, 4500, ("Fisher",)),
         repr(answer),
     )
     judge.check(
         "difference_and_winner",
-        has_number(answer, 3500)
-        and affirmative_contains(answer, "Engineering")
-        and contains_any(answer, ("more", "higher")),
+        difference(answer, 3500) and winner(answer, ("Engineering",), ("Fisher",)),
         repr(answer),
     )
     check_read_only(judge, args)

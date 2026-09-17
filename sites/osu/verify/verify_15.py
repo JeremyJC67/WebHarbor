@@ -12,11 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, affirmative_contains, check_common, check_read_only, clicked_transition,
-    contains_any, final_answer, has_number, load_run, number_bound_in_comparison,
-    parse_args, visited_in_order
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_details_from_listing, final_answer, load_run, parse_args, visited_in_order,
 )
+
+from answer_checks import bound_count, difference, winner
 
 TASK_ID = 'Ohio State University--15'
 
@@ -38,25 +38,22 @@ def main() -> None:
     )
     judge.check(
         "clicked_both_teams",
-        clicked_transition(trajectory, "/athletics", WRESTLING)
-        and clicked_transition(trajectory, "/athletics", FENCING),
+        clicked_details_from_listing(trajectory, "/athletics", (WRESTLING, FENCING)),
         "visible team links used",
     )
     judge.check(
         "wrestling_titles_bound",
-        number_bound_in_comparison(answer, 8, ("wrestling",)),
+        bound_count(answer, 8, ("wrestling",)),
         repr(answer),
     )
     judge.check(
         "fencing_titles_bound",
-        number_bound_in_comparison(answer, 2, ("fencing",)),
+        bound_count(answer, 2, ("fencing",)),
         repr(answer),
     )
     judge.check(
         "winner_and_difference",
-        affirmative_contains(answer, "wrestling")
-        and contains_any(answer, ("more", "higher"))
-        and has_number(answer, 6),
+        difference(answer, 6) and winner(answer, ("wrestling",), ("fencing",)),
         repr(answer),
     )
     check_read_only(judge, args)

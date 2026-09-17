@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, clicked_transition, contains_all,
-    final_answer, load_run, parse_args, visited_in_order
+from verify_lib import (
+    Judge, check_common, check_read_only, clicked_transition, contains_all, final_answer, load_run, parse_args, visited_in_order,
 )
+
+from answer_checks import football_record
 
 TASK_ID = 'Ohio State University--3'
 
@@ -34,7 +35,7 @@ def main() -> None:
         and clicked_transition(trajectory, "/athletics", PATH),
         "athletics listing to football",
     )
-    judge.check("answer_coach_and_record", contains_all(answer, ("Ryan Day", "11-2")), repr(answer))
+    judge.check("answer_coach_and_record", contains_all(answer, ("Ryan Day",)) and football_record(answer), repr(answer))
     check_read_only(judge, args)
     judge.emit()
 

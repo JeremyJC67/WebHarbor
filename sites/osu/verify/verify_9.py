@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, contains_word, final_answer,
-    has_number, load_run, parse_args, visited_query
+from verify_lib import (
+    Judge, check_common, check_read_only, final_answer, load_run, parse_args, visited_query,
 )
+
+from answer_checks import engineering_degrees
 
 TASK_ID = 'Ohio State University--9'
 
@@ -33,15 +34,7 @@ def main() -> None:
     )
     judge.check(
         "answer_all_types",
-        all(contains_word(answer, value) for value in ("BS", "MS", "PhD")) and has_number(answer, 3),
-        repr(answer),
-    )
-    judge.check(
-        "no_extra_degree_types",
-        not any(
-            contains_word(answer, value)
-            for value in ("BA", "MA", "MBA", "JD", "MD", "MPH", "PharmD", "DVM", "OD")
-        ),
+        engineering_degrees(answer),
         repr(answer),
     )
     check_read_only(judge, args)

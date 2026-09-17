@@ -12,10 +12,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from verify_lib import (  # noqa: E402
-    Judge, check_common, check_read_only, final_answer, has_number, load_run,
-    number_bound_in_comparison, parse_args, visited_path
+from verify_lib import (
+    Judge, check_common, check_read_only, final_answer, load_run, parse_args, visited_path,
 )
+
+from answer_checks import bound_count, difference
 
 TASK_ID = 'Ohio State University--7'
 
@@ -29,15 +30,15 @@ def main() -> None:
     judge.check("opened_about", visited_path(trajectory, "/about"), "required=/about")
     judge.check(
         "undergraduate_bound",
-        number_bound_in_comparison(answer, 46820, ("undergraduate", "undergrads")),
+        bound_count(answer, 46820, ("undergraduate", "undergraduates", "undergrads")),
         repr(answer),
     )
     judge.check(
         "graduate_bound",
-        number_bound_in_comparison(answer, 14000, ("graduate", "graduate students")),
+        bound_count(answer, 14000, ("graduate", "graduates", "graduate students")),
         repr(answer),
     )
-    judge.check("exact_difference", has_number(answer, 32820), repr(answer))
+    judge.check("exact_difference", difference(answer, 32820), repr(answer))
     check_read_only(judge, args)
     judge.emit()
 
