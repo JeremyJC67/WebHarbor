@@ -1,21 +1,24 @@
 # Hugging Face dataset holding WebHarbor's heavy static assets.
 # Pin an immutable commit SHA; never a moving branch or refs/pr/<n>.
 #
-# Merged dataset-main commit from HF asset PR #92.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92
-# Its complete asset tree matches the tested candidate commit
-# f09e586eec8bf1bca0bc0881e08b77f3c2a5508e.
+# Merged dataset-main commit from HF asset PR #57 (IMDb review, #33).
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/57
 #
-# Adds bh_photo.tar.gz: 79,658,793 bytes, 511 managed archive members.
-# SHA-256: 867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a
-# All 32 pre-existing archives are unchanged from the previous main pin
-# c32018ca3b3d67e7b858b1b85fb101aea5090cd7 (Berkeley, HF PR #91).
-# This revision has archives for the 31 sites registered before AccuWeather.
-# The two additional archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
+# Adds imdb.tar.gz: 39,111,545 bytes, LFS oid
+# 0663d30fe90ed2a0659dfe78ecf7ab1718970f565a64c6855a2c6aaadc606513,
+# and gov_uk.tar.gz: 53,891 bytes, LFS oid
+# 1c483241887bde14e3b629ff4acc10d5f54b46283c22bf8abfde2794360743fd.
+# The 33 archives present at the previous main pin
+# fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f (B&H Photo, HF PR #92) are byte-for-byte
+# unchanged, as are the archives from c32018ca3b3d67e7b858b1b85fb101aea5090cd7
+# (Berkeley, HF PR #91).
+# This revision carries an archive for every registered site except accuweather,
+# which is pinned per-site below.
+# The two further archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
 # B&H's bundle contains images and external cache; Docker generates its seed
 # from tracked catalog data (sites/bh_photo/.build-generated-seed).
 repo: ChilleD/WebHarbor
-revision: fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f
+revision: e8f59470b76b95d607f288958186cb9b73681d9e
 
 # AccuWeather HF PR #66; immutable archive validated in the task review.
 # Other sites retain their merged and validated asset revision above.
