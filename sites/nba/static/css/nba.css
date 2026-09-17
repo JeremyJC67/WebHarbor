@@ -2525,6 +2525,7 @@ h1, h2, h3, p { margin-top: 0; }
   font-size: 11px;
   font-weight: 800;
 }
+.schedule-filter-actions { display: flex; gap: 12px; align-items: center; }
 .toggle-pill {
   border: 0;
   background: transparent;
@@ -2555,6 +2556,8 @@ h1, h2, h3, p { margin-top: 0; }
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,.2);
 }
+.toggle-pill[aria-pressed="false"] i { background: #cbd2dc; }
+.toggle-pill[aria-pressed="false"] i:after { right: 17px; }
 .official-week h2,
 .official-section > h2 {
   margin: 0 0 18px;

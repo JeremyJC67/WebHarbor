@@ -1014,6 +1014,93 @@ def official_schedule_context(teams_by_slug):
     return weeks
 
 
+# The Schedule page renders the frozen official schedule, so the filter values are
+# applied to that structure; a filter that only touched the Game table would leave
+# the visible list unchanged.
+PLAYOFF_ROUND_MARKERS = ("finals", "semifinals", "first round", "play-in")
+
+
+def schedule_day_position(label):
+    """Return (month, day) for a frozen day label such as 'Tuesday, May 19'."""
+    try:
+        parsed = datetime.strptime(label, "%A, %B %d")
+    except (TypeError, ValueError):
+        return None
+    return parsed.month, parsed.day
+
+
+def schedule_row_is_final(row):
+    return str(row.get("status", "")).strip().upper() == "FINAL"
+
+
+def schedule_row_is_playoff(row):
+    round_label = str(row.get("round", "")).lower()
+    return any(marker in round_label for marker in PLAYOFF_ROUND_MARKERS)
+
+
+def filter_official_schedule(weeks, season_type="All Games", month=None, team_slug="", status="",
+                             hide_previous=False, reference_date=None):
+    """Apply the Schedule page filters to the frozen official schedule.
+
+    Frozen day labels carry no year and the frozen weeks all belong to the mirror's
+    reference year, so 'hide previous dates' compares (month, day) with the mirror
+    clock instead of inventing a year. Empty days and weeks are dropped and each
+    remaining day count is recomputed from the rows that survive the filters.
+    """
+    reference = reference_date.date() if isinstance(reference_date, datetime) else reference_date
+    reference_position = (reference.month, reference.day) if reference else None
+    filtered_weeks = []
+    for week in weeks:
+        filtered_days = []
+        for day in week["days"]:
+            position = schedule_day_position(day.get("label", ""))
+            if month and (position is None or position[0] != month):
+                continue
+            if hide_previous and reference_position and position and position < reference_position:
+                continue
+            rows = []
+            for row in day["rows"]:
+                is_playoff = schedule_row_is_playoff(row)
+                if season_type == "Playoffs" and not is_playoff:
+                    continue
+                if season_type == "Regular Season" and is_playoff:
+                    continue
+                if team_slug and team_slug not in (row.get("away_slug"), row.get("home_slug")):
+                    continue
+                if status == "Final" and not schedule_row_is_final(row):
+                    continue
+                if status == "Scheduled" and schedule_row_is_final(row):
+                    continue
+                rows.append(row)
+            if rows:
+                filtered_days.append({
+                    "label": day["label"],
+                    "count": "1 Game" if len(rows) == 1 else "%d Games" % len(rows),
+                    "rows": rows,
+                })
+        if filtered_days:
+            filtered_weeks.append({"label": week["label"], "days": filtered_days})
+    return filtered_weeks
+
+
+def schedule_filter_summary(season_type, month, team_name, status, hide_previous):
+    """Describe the active Schedule filters for the empty state message."""
+    active = []
+    if season_type and season_type != "All Games":
+        active.append("Season Type: %s" % season_type)
+    if month:
+        active.append("Calendar: %02d/2026" % month)
+    if team_name:
+        active.append("Team: %s" % team_name)
+    if status == "Final":
+        active.append("Broadcaster: Completed Games")
+    elif status == "Scheduled":
+        active.append("Broadcaster: League Pass")
+    if hide_previous:
+        active.append("Hide Previous Dates: on")
+    return ", ".join(active)
+
+
 def draft_page_context(articles):
     all_articles = Article.query.order_by(Article.published_at.desc()).all()
     draft_slug = article_slug_match(all_articles, "draft")
@@ -1609,6 +1696,7 @@ def schedule():
     team_slug = request.args.get("team", "")
     season_type = request.args.get("season_type", "All Games")
     month = request.args.get("month", "")
+    hide_previous = request.args.get("hide_previous", "1") != "0"
     query = Game.query
     if status:
         query = query.filter_by(status=status)
@@ -1629,6 +1717,29 @@ def schedule():
         games_list = []
     months = sorted({game.game_date.month for game in Game.query.all()})
     teams_by_slug = {team.slug: team for team in Team.query.all()}
+    filter_month = None
+    if month:
+        try:
+            filter_month = int(month)
+        except ValueError:
+            month = ""
+    filter_team = Team.query.filter_by(slug=team_slug).first() if team_slug else None
+    filtered_schedule = filter_official_schedule(
+        official_schedule_context(teams_by_slug),
+        season_type=season_type,
+        month=filter_month,
+        team_slug=team_slug,
+        status=status,
+        hide_previous=hide_previous,
+        reference_date=MIRROR_REFERENCE_DATE,
+    )
+    filter_summary = schedule_filter_summary(
+        season_type,
+        filter_month,
+        filter_team.full_name if filter_team else team_slug,
+        status,
+        hide_previous,
+    )
     return render_template(
         "schedule.html",
         games=games_list,
@@ -1641,7 +1752,9 @@ def schedule():
         month=month,
         months=months,
         scoreboard_games_list=scoreboard_games(),
-        official_schedule=official_schedule_context(teams_by_slug),
+        official_schedule=filtered_schedule,
+        filter_summary=filter_summary,
+        hide_previous=hide_previous,
     )
 
 

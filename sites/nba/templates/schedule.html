@@ -17,24 +17,24 @@
       <a href="{{ url_for('account') }}">Add Games to Calendar</a>
     </div>
 
-    <form class="schedule-filters-official" method="get">
+    <form class="schedule-filters-official" method="get" onsubmit="if(!event.submitter || event.submitter.name !== 'hide_previous'){var i=document.createElement('input');i.type='hidden';i.name='hide_previous';i.value='{{ '1' if hide_previous else '0' }}';this.appendChild(i);}">
       <label>Season Type
-        <select name="season_type">
+        <select name="season_type" onchange="this.form.submit()">
           <option {% if season_type == 'All Games' %}selected{% endif %}>All Games</option>
           <option {% if season_type == 'Playoffs' %}selected{% endif %}>Playoffs</option>
           <option {% if season_type == 'Regular Season' %}selected{% endif %}>Regular Season</option>
         </select>
       </label>
       <label>Calendar
-        <select name="month">
-          <option value="">May</option>
+        <select name="month" onchange="this.form.submit()">
+          <option value="">All months</option>
           {% for item in months %}
             <option value="{{ item }}" {% if month|string == item|string %}selected{% endif %}>{{ "%02d"|format(item) }}/2026</option>
           {% endfor %}
         </select>
       </label>
       <label>Team
-        <select name="team">
+        <select name="team" onchange="this.form.submit()">
           <option value="">All Teams</option>
           {% for team in teams %}
             <option value="{{ team.slug }}" {% if team.slug == team_slug %}selected{% endif %}>{{ team.full_name }}</option>
@@ -42,21 +42,24 @@
         </select>
       </label>
       <label>Broadcaster
-        <select name="status">
+        <select name="status" onchange="this.form.submit()">
           <option value="">All Broadcasters</option>
           <option value="Scheduled" {% if status == 'Scheduled' %}selected{% endif %}>League Pass</option>
           <option value="Final" {% if status == 'Final' %}selected{% endif %}>Completed Games</option>
         </select>
       </label>
       <label>Broadcaster Region
-        <select>
-          <option>Hong Kong</option>
-          <option>United States</option>
+        <select disabled aria-label="Broadcaster region, display only" title="Frozen schedule rows carry no region field, so this control does not filter.">
+          <option selected>United States</option>
         </select>
       </label>
-      <button class="toggle-pill" type="submit" aria-label="Hide previous dates"><span>Hide Previous Dates</span><i></i></button>
+      <div class="schedule-filter-actions">
+        <button class="toggle-pill" type="submit" name="hide_previous" value="{{ '0' if hide_previous else '1' }}" aria-pressed="{{ 'true' if hide_previous else 'false' }}" aria-label="Hide previous dates"><span>Hide Previous Dates</span><i></i></button>
+        <button type="submit">Apply</button>
+      </div>
     </form>
 
+    {% if official_schedule %}
     {% for week in official_schedule %}
       <section class="official-week">
         <h2>{{ week.label }}</h2>
@@ -109,6 +112,9 @@
         {% endfor %}
       </section>
     {% endfor %}
+    {% else %}
+      <p class="empty-state">No games match the current filters{% if filter_summary %} ({{ filter_summary }}){% endif %}.</p>
+    {% endif %}
   </div>
 </section>
 {% endblock %}
