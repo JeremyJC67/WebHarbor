@@ -36,17 +36,17 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 32 sites today, scaling to 100+ together
+- **Community-driven** — 34 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
 One command to run all web environments:
 
 ```bash
-docker run -p 8101:8101 -p 40000-40031:40000-40031 battalion7244/webharbor:latest
+docker run -p 8101:8101 -p 40000-40033:40000-40033 battalion7244/webharbor:latest
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40031` to explore 32 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, and BabyCenter`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40033` to explore 34 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, and BabyCenter`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -65,8 +65,9 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **32 sites**. NVIDIA remains at index 28, UC Berkeley
-remains at index 29, B&H Photo remains at index 30, and BabyCenter is appended at index 31. Build the image from
+This checkout registers **34 sites**. NVIDIA remains at index 28, UC Berkeley
+remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
+31, GOV.UK remains at index 32, and BabyCenter is appended at index 33. Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
@@ -75,10 +76,12 @@ published Docker image automatically.
 | NVIDIA | 28 | 40028 | 48028 |
 | UC Berkeley | 29 | 40029 | 48029 |
 | B&H Photo | 30 | 40030 | 48030 |
-| BabyCenter | 31 | 40031 | 48031 |
+| AccuWeather | 31 | 40031 | 48031 |
+| GOV.UK | 32 | 40032 | 48032 |
+| BabyCenter | 33 | 40033 | 48033 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 32 sites and `40000-40031`;
+site's `tasks.jsonl` `web` URL agree on 34 sites and `40000-40033`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -86,7 +89,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48031:40000-40031 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48033:40000-40033 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -97,6 +100,22 @@ integration, not a claim that either PR was merged or that the NVIDIA review has
 passed.
 
 ### Asset delivery status
+
+GOV.UK is registered at index 32 / port 40032 in builds of this source revision.
+The published Docker Hub image is updated in a separate release. Its reviewed seed uses the
+immutable per-site commit `7c4daf7a6714654c609a9ccf97ab3b2431381791` from
+[HF asset PR #93](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/93).
+The bundle contains 78 articles and 62 structured guidance sections. The HF PR
+is awaiting maintainer merge; the immutable pin downloads the reviewed bundle
+without changing other sites’ asset revisions.
+
+BabyCenter is registered at index 33 / port 40033 in builds of this source
+revision. Its reviewed seed and image bundle are proposed in
+[HF asset PR #78](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78).
+The open asset candidate is used for review without changing the repository-wide
+asset pin; maintainers must merge the HF PR and update `.assets-revision` before
+release merge.
+
 
 `.assets-revision` pins the merged dataset commit `fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f`
 from [HF asset PR #92](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92).

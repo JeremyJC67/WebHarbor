@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 32 Flask mirror sites + control plane on :8101.
+# 34 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm
 
@@ -81,15 +81,6 @@ RUN python3 /opt/WebSyn/berkeley/check_generated_assets.py
 RUN cd /opt/WebSyn/berkeley && rm -rf instance instance_seed && \
     PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
 
-# BabyCenter validates its openly licensed editorial image bundle and rebuilds
-# the deterministic seed from its pinned, tracked source corpus.
-RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter
-RUN cd /opt/WebSyn/babycenter && \
-    rm -rf instance instance_seed && \
-    mkdir -p instance_seed && \
-    python3 -c "from app import app" && \
-    cp instance/babycenter.db instance_seed/babycenter.db
-
 COPY websyn_start.sh    /opt/websyn_start.sh
 COPY control_server.py  /opt/control_server.py
 COPY site_runner.py     /opt/site_runner.py
@@ -122,6 +113,15 @@ os.makedirs('instance_seed', exist_ok=True); \
 shutil.copy2('instance/bh_photo.db', 'instance_seed/bh_photo.db'); \
 print('B&H Photo seed DB generated at build time.')" && rm -rf instance
 
-EXPOSE 8101 40000-40031
+# AccuWeather uses genuine captured UI assets and freezes its deterministic seed.
+RUN test -n "$(ls -A /opt/WebSyn/accuweather/static/images)" && \
+    cd /opt/WebSyn/accuweather && rm -rf instance instance_seed && python3 -c "\
+import app; \
+import os, shutil; \
+os.makedirs('instance_seed', exist_ok=True); \
+shutil.copy2('instance/accuweather.db', 'instance_seed/accuweather.db'); \
+print('AccuWeather seed DB generated at build time.')" && rm -rf /opt/WebSyn/accuweather/instance
+
+EXPOSE 8101 40000-40033
 
 CMD ["/opt/websyn_start.sh"]
