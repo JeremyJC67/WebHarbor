@@ -43,5 +43,6 @@ older evidence requires an explicitly labelled field-name migration, not a
 claim that the older recording used the new prompt.
 
 The seed migration runs at fetch/build time, never during normal HTTP startup.
-HF PR #78 remains a release dependency until merged and repinned; the immutable
-candidate revision permits local validation but is not a merged release asset.
+HF PR #78 is merged and pinned at immutable revision
+`8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce`; the archive matches the reviewed
+bytes. The tracked migration corrects its seed without repacking the bundle.

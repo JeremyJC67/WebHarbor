@@ -131,11 +131,11 @@ seed. Seven other unavailable vehicle hero images remain explicit placeholders.
 The unregistered Bandcamp and Drugs.com archives are ignored by `fetch_assets.sh`.
 Tracked seed migrations and build-generated seeds still run during fetch/build.
 
-BabyCenter, the 39th site, currently uses the explicitly marked candidate scoped
-pin `0e05a5683963f564c111bdb68f00d34a9945c80c` from
+BabyCenter, the 39th site, uses the immutable merged scoped
+pin `8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce` from
 [HF asset PR #78](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78).
-Before merging this code, merge that asset PR and replace the scoped pin with a
-verified immutable merged revision, then repeat fresh-fetch/build validation.
+The merged archive matches the reviewed bytes and preserves all 43 pre-existing
+dataset files. Other sites retain their previously validated global pin.
 Its tracked idempotent seed migration corrects the week-18 excerpt during
 fetch/build; the existing image/archive bytes do not require repacking.
 
