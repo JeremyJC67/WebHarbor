@@ -19,7 +19,13 @@
 repo: ChilleD/WebHarbor
 revision: 9d67d0088a7535e455a331a823b67e3a7d666161
 
+# BabyCenter: immutable merged HF PR #78 revision, preserving all prior assets.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78
+# Archive SHA-256: 8b83000a1fad3969968290ae537af0bbf0e0a179284f915827cffadb0fe103f3
+# The tracked migration corrects the shipped seed during fetch/build.
+site.babycenter: 8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce
+
 # Versus bundle from HF PR #90, which remains open, at the immutable commit below.
 # versus.tar.gz is 12,183,876 bytes with SHA-256 093656316188dd7960177c9a187262de860e50c9f27a3b6658407f86d16f5cb3.
-# The archive contains 111 managed members. All other sites use the global revision.
+# The archive contains 111 managed members. All sites except BabyCenter and Versus use the global revision.
 site.versus: 464c121a3cc6dacd318df3f76f461e70901e6e24

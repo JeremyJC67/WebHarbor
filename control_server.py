@@ -32,7 +32,7 @@ SITES = [
     'fedex', 'webmd_doctor', 'healthline', 'kaggle',
     'nvidia', 'berkeley', 'bh_photo', 'accuweather', 'gov_uk',
     'imdb',
-    'nba', 'recreation_gov', 'boardgamegeek', 'carmax', 'versus',
+    'nba', 'recreation_gov', 'boardgamegeek', 'carmax', 'babycenter', 'versus',
 ]
 BASE_PORT = 40000
 WEBSYN_DIR = '/opt/WebSyn'
