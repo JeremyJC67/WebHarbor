@@ -131,4 +131,7 @@ EXPOSE 8101 40000-40040
 RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
     python3 /opt/WebSyn/babycenter/migrate_seed.py
 
+# Verify every Cookpad source-backed image before shipping the pinned seed.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/cookpad
+
 CMD ["/opt/websyn_start.sh"]

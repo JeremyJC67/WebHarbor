@@ -1,4 +1,4 @@
-﻿"""cookpad mirror health check."""
+"""cookpad mirror health check."""
 from healthcheck import random_user
 
 
@@ -8,7 +8,7 @@ def run(p):
     p.assert_get('search chicken', '/search?q=chicken', must_contain='chicken')
     p.assert_get(
         'recipe detail',
-        '/recipe/butter-chicken',
+        '/recipe/cookpad-365027',
         must_contain='Ingredients',
     )
 
@@ -36,7 +36,7 @@ def run(p):
     # Logout so /login renders a real form (register auto-logs-in).
     p.get('/logout')
 
-    # Login (fresh cookie jar path 鈥?registration auto-logs-in, but exercise
+    # Login (fresh cookie jar path — registration auto-logs-in, but exercise
     # login form explicitly for smoke coverage).
     html = p.assert_get('login page', '/login', must_contain='csrf_token')
     token = p.csrf(html)
@@ -66,4 +66,3 @@ def run(p):
         '/account',
         accept_status=(200, 302),
     )
-

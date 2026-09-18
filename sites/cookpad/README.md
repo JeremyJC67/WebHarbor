@@ -28,11 +28,10 @@ Restart preserves edits; control-plane reset restores the seed byte-identically.
 Required HF bundle: `cookpad/instance_seed/cookpad.db` plus the 60 files named
 by `source_catalog.json` and the two source brand images in `brand_assets.json`
 under `cookpad/static/images/`. Source HTML is review
-evidence, not a runtime dependency. The old Cookpad HF proposal is insufficient:
-it has the obsolete seed and no recipe photographs. The replacement archive
-must be published/merged and its immutable revision pinned together with the
-eventual code integration. Local successful tests are not proof the old pin
-contains these assets.
+evidence, not a runtime dependency. HF PR #35 (original contribution) and #99
+(reviewed replacement) are merged; `.assets-revision` pins the latter's immutable
+merged revision and archive SHA-256. Fetch with `./scripts/fetch_assets.sh cookpad`.
+Cookpad is appended at index 40 / port 40040, preserving existing site ports.
 
 See `tools/recover_sources.py --help` for the provenance recovery tool. A fresh
 recovery changes the snapshot and requires coordinated seed/task/rubric/verifier
