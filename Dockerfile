@@ -127,4 +127,8 @@ RUN cd /opt/WebSyn/recreation_gov && python3 migrate_seed.py
 
 EXPOSE 8101 40000-40038
 
+# Keep the downloaded BabyCenter seed aligned with tracked source corrections.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
+    python3 /opt/WebSyn/babycenter/migrate_seed.py
+
 CMD ["/opt/websyn_start.sh"]

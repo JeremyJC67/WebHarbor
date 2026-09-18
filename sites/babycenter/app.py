@@ -209,13 +209,17 @@ def pregnancy_week_for_due_date(due_date: date) -> int:
     Not every week has an upstream fact behind it, so the tracker points at the
     closest week that does instead of inventing a page.
     """
-    days_until_due = (due_date - REFERENCE_DATE).days
-    week = 40 - (days_until_due // 7)
+    week = gestational_age(due_date)[0]
     available = sourced_weeks()
     if not available:
         return max(4, min(42, week))
     week = max(available[0], min(available[-1], week))
     return min(available, key=lambda w: (abs(w - week), w))
+
+
+def gestational_age(due_date: date) -> tuple[int, int]:
+    """Completed weeks and days, separate from the nearest sourced guide."""
+    return divmod(max(0, 280 - (due_date - REFERENCE_DATE).days), 7)
 
 
 def baby_month_for_birthdate(birthdate: date | None) -> int | None:
@@ -262,7 +266,10 @@ def week_index():
     trimester = request.args.get("trimester", "")
     rows = PregnancyWeek.query.order_by(PregnancyWeek.week).all()
     if trimester:
-        low, high = {"first": (4, 12), "second": (13, 27), "third": (28, 42)}[trimester]
+        windows = {"first": (4, 12), "second": (13, 27), "third": (28, 42)}
+        if trimester not in windows:
+            abort(400, description="Choose first, second, or third trimester.")
+        low, high = windows[trimester]
         rows = [row for row in rows if low <= row.week <= high]
     return render_template("weeks.html", weeks=rows, trimester=trimester)
 
@@ -297,7 +304,8 @@ def due_date_calculator():
                 raise ValueError("cycle length")
             lmp = date.fromisoformat(last_period)
             due = lmp + timedelta(days=280 + (cycle - 28))
-            result = {"due": due, "week": pregnancy_week_for_due_date(due)}
+            result = {"due": due, "week": pregnancy_week_for_due_date(due),
+                      "age": gestational_age(due)}
         except ValueError:
             flash("Enter a valid date and a cycle length between 20 and 45 days.", "error")
     return render_template("due_date.html", result=result)
@@ -429,14 +437,19 @@ def account():
         if item.item_type == "article":
             target = Article.query.filter_by(slug=item.item_slug).first()
             item.display_title = target.title if target else item.item_slug
+            item.target_url = url_for("article_detail", slug=item.item_slug)
         elif item.item_type == "post":
             target = CommunityPost.query.filter_by(slug=item.item_slug).first()
             item.display_title = target.title if target else item.item_slug
+            item.target_url = url_for("community_detail", slug=item.item_slug)
         elif item.item_type == "week":
             item.display_title = f"Pregnancy week {item.item_slug}"
+            item.target_url = url_for("week_detail", week=int(item.item_slug))
         else:
             item.display_title = f"Baby month {item.item_slug}"
-    return render_template("account.html", user=user, week=week, month=month, saved=saved)
+            item.target_url = url_for("month_detail", month=int(item.item_slug))
+    return render_template("account.html", user=user, week=week, month=month, saved=saved,
+                           age=gestational_age(user.due_date))
 
 
 @app.route("/account/tracker", methods=["POST"])

@@ -212,8 +212,19 @@ def sentence_at(text: str, anchor: str) -> str:
     if i < 0:
         raise LookupError(anchor)
     start = max(text.rfind(". ", 0, i) + 2, text.rfind("\n", 0, i) + 1, 0)
-    m = re.compile(r"(?<=[.!?])(\s|$)").search(text, i + len(anchor))
-    end = m.start() if m else min(len(text), i + len(anchor) + 260)
+    # A period inside an abbreviation or parenthesis is not a sentence end.
+    # In particular the week-18 source contains "(i.e. twins)".
+    m = None
+    for candidate in re.finditer(r"(?<=[.!?])(?:\s|$)", text[i + len(anchor):]):
+        end_at = i + len(anchor) + candidate.start()
+        prefix = text[start:end_at]
+        if prefix.count("(") > prefix.count(")"):
+            continue
+        if re.search(r"\b(?:i\.e|e\.g|Dr|Mr|Mrs|Prof|vs)\.$", prefix, re.I):
+            continue
+        m = end_at
+        break
+    end = m if m is not None else len(text)
     return " ".join(text[start:end].split())
 
 

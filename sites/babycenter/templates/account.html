@@ -23,11 +23,11 @@
       <label>Display name <input name="display_name" maxlength="120" value="{{ user.display_name }}" required></label>
       <button type="submit">Update profile</button>
     </form>
-    <div class="tracker-card"><span>Pregnancy week</span><strong>Week {{ week.week }}</strong><a href="{{ url_for('week_detail', week=week.week) }}">{{ week.headline }}</a></div>
-    {% if month %}<div class="tracker-card"><span>Baby age</span><strong>Month {{ month.month }}</strong><a href="{{ url_for('month_detail', month=month.month) }}">{{ month.headline }}</a></div>{% endif %}
+    <div class="tracker-card"><span>Pregnancy age as of {{ reference_date }}</span><strong>Week {{ age[0] }} + {{ age[1] }} days</strong><p>Nearest sourced checkpoint: week {{ week.week }}. Guides cover selected weeks, not every gestational week.</p><a href="{{ url_for('week_detail', week=week.week) }}">{{ week.headline }}</a></div>
+    {% if month %}<div class="tracker-card"><span>Nearest sourced baby-age checkpoint as of {{ reference_date }}</span><strong>Month {{ month.month }}</strong><a href="{{ url_for('month_detail', month=month.month) }}">{{ month.headline }}</a></div>{% endif %}
     <h2>Saved items</h2>
     <div class="list-panel">
-      {% for item in saved %}<div class="list-row saved-row"><span><strong>{{ item.item_type|title }}: {{ item.display_title }}</strong><small>{{ item.note }}</small></span><form method="post" action="{{ url_for('remove_saved_item', item_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link-button danger" type="submit" aria-label="Remove {{ item.item_type }} {{ item.display_title }}">Remove</button></form></div>{% else %}<p class="empty-state">No saved items yet.</p>{% endfor %}
+      {% for item in saved %}<div class="list-row saved-row"><span><strong>{{ item.item_type|title }}: <a href="{{ item.target_url }}">{{ item.display_title }}</a></strong><small>{{ item.note }}</small></span><form method="post" action="{{ url_for('remove_saved_item', item_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link-button danger" type="submit" aria-label="Remove {{ item.item_type }} {{ item.display_title }}">Remove</button></form></div>{% else %}<p class="empty-state">No saved items yet.</p>{% endfor %}
     </div>
   </div>
 </section>

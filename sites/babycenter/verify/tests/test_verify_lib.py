@@ -6,19 +6,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from verify_lib import has_number, is_local_url, paths_in_order, phrase  # noqa: E402
+from verify_lib import is_local_url, paths_in_order  # noqa: E402
+from answers import fact, integer, norm  # noqa: E402
 
 
 def test_phrase_accepts_punctuation_and_case_but_rejects_negation() -> None:
-    assert phrase("The result is PAPP-A.", "papp a")
-    assert phrase("It is week 18!", "week 18")
-    assert not phrase("It is not week 18.", "week 18")
+    assert norm("Free β-hCG") == norm("free beta-hCG")
+    assert fact("A deliberate pincer grasp.", r"pincer grasp")
+    assert not fact("It is not a pincer grasp.", r"pincer grasp")
 
 
-def test_number_accepts_digits_and_common_number_words() -> None:
-    assert has_number("There are 3 saved items.", 3)
-    assert has_number("There are three saved items.", 3)
-    assert not has_number("There are 30 saved items.", 3)
+def test_number_requires_the_bound_json_value() -> None:
+    assert integer(3, 3)
+    assert not integer("There are 30 items. Reference 3.", 3)
+    assert not integer(True, 1)
 
 
 def test_url_and_order_checks_fail_closed() -> None:
@@ -27,7 +28,10 @@ def test_url_and_order_checks_fail_closed() -> None:
     trajectory = {
         "start_url": "http://localhost:40026/",
         "steps": [
-            {"url": "http://localhost:40026/login", "url_after": "http://localhost:40026/account"},
+            {
+                "url": "http://localhost:40026/login",
+                "url_after": "http://localhost:40026/account",
+            },
             {"url": "http://localhost:40026/account"},
         ],
     }

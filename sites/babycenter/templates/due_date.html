@@ -10,7 +10,7 @@
     <button type="submit">Calculate</button>
   </form>
   {% if result %}
-    <div class="result-card"><span>Estimated due date</span><strong>{{ result.due.strftime("%B %d, %Y") }}</strong><a href="{{ url_for('week_detail', week=result.week) }}">Open week {{ result.week }}</a></div>
+    <div class="result-card"><span>Estimated due date</span><strong>{{ result.due.strftime("%B %d, %Y") }}</strong><p>Pregnancy age as of {{ reference_date }}: week {{ result.age[0] }} + {{ result.age[1] }} days. The nearest sourced guide is week {{ result.week }}; not every week has a guide.</p><a href="{{ url_for('week_detail', week=result.week) }}">Open week {{ result.week }}</a></div>
   {% endif %}
 </section>
 {% endblock %}

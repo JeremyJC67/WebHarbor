@@ -120,16 +120,24 @@ is part of the consolidated pinned dataset revision below.
 
 `.assets-revision` pins merged HF main commit
 `9d67d0088a7535e455a331a823b67e3a7d666161`, containing archives for all **38**
-registered sites. Original asset PRs #8 (Recreation.gov), #15 (CarMax),
+previously registered sites. Original asset PRs #8 (Recreation.gov), #15 (CarMax),
 #25 (BoardGameGeek), and #66 (AccuWeather) are merged, followed by
 [CarMax photo supplement #95](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95).
-No site now depends on an open HF PR pin. All 36 archives from the previous
+Those 38 sites do not depend on open HF PR pins. All 36 archives from the previous
 global pin `2aaf9d598f3e71cddd17a4efcdfee7dd7c073337` are unchanged; the three
 non-CarMax scoped bundles also retain their reviewed bytes. CarMax adds 11
 source-backed model-year stock photos without changing its original files or
 seed. Seven other unavailable vehicle hero images remain explicit placeholders.
 The unregistered Bandcamp and Drugs.com archives are ignored by `fetch_assets.sh`.
 Tracked seed migrations and build-generated seeds still run during fetch/build.
+
+BabyCenter, the 39th site, currently uses the explicitly marked candidate scoped
+pin `0e05a5683963f564c111bdb68f00d34a9945c80c` from
+[HF asset PR #78](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78).
+Before merging this code, merge that asset PR and replace the scoped pin with a
+verified immutable merged revision, then repeat fresh-fetch/build validation.
+Its tracked idempotent seed migration corrects the week-18 excerpt during
+fetch/build; the existing image/archive bytes do not require repacking.
 
 B&H's archive contains images and external cache. The Docker build validates
 its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked

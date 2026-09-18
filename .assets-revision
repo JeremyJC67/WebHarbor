@@ -18,3 +18,8 @@
 # Tracked seed migrations/build-generation remain part of the build contract.
 repo: ChilleD/WebHarbor
 revision: 9d67d0088a7535e455a331a823b67e3a7d666161
+
+# BabyCenter review candidate: immutable, inventory-validated HF PR #78 head.
+# RELEASE GATE: merge HF #78 and replace this with its verified merged revision
+# before merging the code PR. The tracked migration corrects the shipped seed.
+site.babycenter: 0e05a5683963f564c111bdb68f00d34a9945c80c
