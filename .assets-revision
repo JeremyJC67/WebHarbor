@@ -1,18 +1,20 @@
 # Hugging Face dataset holding WebHarbor's heavy static assets.
-# Pin an immutable commit SHA; never a moving branch or refs/pr/<n>.
+# Pin an immutable merged commit SHA, never a moving branch or refs/pr/<n>.
 #
-# Merged dataset-main commit from HF asset PR #92.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92
-# Its complete asset tree matches the tested candidate commit
-# f09e586eec8bf1bca0bc0881e08b77f3c2a5508e.
+# Consolidated HF main after merging original asset PRs #8 (Recreation.gov),
+# #15 (CarMax), #25 (BoardGameGeek), #66 (AccuWeather), then CarMax supplement #95.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95
 #
-# Adds bh_photo.tar.gz: 79,658,793 bytes, 511 managed archive members.
-# SHA-256: 867363d5484eb114d647e236991017992d5ac91ae3415996ad43bf654d99bd9a
-# All 32 pre-existing archives are unchanged from the previous main pin
-# c32018ca3b3d67e7b858b1b85fb101aea5090cd7 (Berkeley, HF PR #91).
-# This revision has archives for all 31 registered sites. The two additional
-# archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
-# B&H's bundle contains images and external cache; Docker generates its seed
-# from tracked catalog data (sites/bh_photo/.build-generated-seed).
+# All 36 archives from the previous global pin
+# 2aaf9d598f3e71cddd17a4efcdfee7dd7c073337 are byte-for-byte unchanged.
+# Recreation.gov, BoardGameGeek and AccuWeather retain their previously reviewed
+# archive bytes. CarMax adds 11 source-backed stock photos; every original file,
+# including its seed, is unchanged. Provenance: sites/carmax/recovered_assets.json.
+# CarMax archive SHA-256:
+# 274ac06abebf353ebb6561ab0647fed5c8a048916dd8867b9dfa951963a8d81d
+#
+# This merged revision contains archives for all 38 registered sites. The two
+# additional archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
+# Tracked seed migrations/build-generation remain part of the build contract.
 repo: ChilleD/WebHarbor
-revision: fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f
+revision: 9d67d0088a7535e455a331a823b67e3a7d666161
