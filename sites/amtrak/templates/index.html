@@ -83,7 +83,7 @@
             </div>
             <div class="hero-actions">
               <a class="button-secondary" href="{{ url_for('route_detail', route_slug=route.slug) }}">Route details</a>
-              <a class="button-ghost" href="{{ url_for('booking_results', origin=route.origin_code, destination=route.destination_code, departure_date='2026-04-20') }}">Search later</a>
+              <a class="button-ghost" href="{{ url_for('booking_search') }}">Search later</a>
             </div>
           </div>
         </article>

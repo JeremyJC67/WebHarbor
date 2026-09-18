@@ -97,7 +97,7 @@
       <div>
         <div class="eyebrow">{{ option.route_label }}</div>
         <h3 class="card-title">{{ option.segment_details[0].origin_name }} to {{ option.segment_details[-1].destination_name }}</h3>
-        <p class="section-intro">{{ option.train_label }} · {{ option.duration_label }} · {{ option.transfer_count }} transfer{% if option.transfer_count != 1 %}s{% endif %}</p>
+        <p class="section-intro">{{ option.train_label }} · {{ option.duration_label }} total · {{ option.transfer_count }} transfer{% if option.transfer_count != 1 %}s{% endif %}</p>
         <div class="badge-row">
           <span class="badge">{{ option.departure_label }} depart</span>
           <span class="badge">{{ option.arrival_label }} arrive</span>
@@ -142,7 +142,7 @@
             <div class="meta-row">
               <span class="tag">{{ segment.departure_dt|dt_label }}</span>
               <span class="tag">{{ segment.arrival_dt|dt_label }}</span>
-              <span class="tag">{{ segment.duration_label }}</span>
+              <span class="tag">{{ segment.duration_label }} on board</span>
               <span class="tag">{{ segment.service_level }}</span>
             </div>
           </div>
