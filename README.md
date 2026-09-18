@@ -36,17 +36,18 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 34 sites today, scaling to 100+ together
+- **Community-driven** — 39 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
-One command to run all web environments:
+Build this checkout to run its registered web environments (published image tags may have an older registry):
 
 ```bash
-docker run -p 8101:8101 -p 40000-40033:40000-40033 battalion7244/webharbor:latest
+./scripts/build.sh webharbor:dev
+docker run -p 8101:8101 -p 40000-40038:40000-40038 webharbor:dev
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40033` to explore 34 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, and BabyCenter`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40038` to explore 39 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, and BabyCenter`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -65,9 +66,11 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **34 sites**. NVIDIA remains at index 28, UC Berkeley
+This checkout registers **39 sites**. NVIDIA remains at index 28, UC Berkeley
 remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
-31, GOV.UK remains at index 32, and BabyCenter is appended at index 33. Build the image from
+31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at
+index 34. Recreation.gov remains at index 35; BoardGameGeek remains at index 36,
+CarMax remains at index 37, and BabyCenter is appended at index 38. Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
@@ -78,10 +81,15 @@ published Docker image automatically.
 | B&H Photo | 30 | 40030 | 48030 |
 | AccuWeather | 31 | 40031 | 48031 |
 | GOV.UK | 32 | 40032 | 48032 |
-| BabyCenter | 33 | 40033 | 48033 |
+| IMDb | 33 | 40033 | 48033 |
+| NBA | 34 | 40034 | 48034 |
+| Recreation.gov | 35 | 40035 | 48035 |
+| BoardGameGeek | 36 | 40036 | 48036 |
+| CarMax | 37 | 40037 | 48037 |
+| BabyCenter | 38 | 40038 | 48038 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 34 sites and `40000-40033`;
+site's `tasks.jsonl` `web` URL agree on 39 sites and `40000-40038`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -89,7 +97,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48033:40000-40033 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48038:40000-40038 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -101,32 +109,27 @@ passed.
 
 ### Asset delivery status
 
-GOV.UK is registered at index 32 / port 40032 in builds of this source revision.
-The published Docker Hub image is updated in a separate release. Its reviewed seed uses the
-immutable per-site commit `7c4daf7a6714654c609a9ccf97ab3b2431381791` from
+GOV.UK is registered at index 32 / port 40032, IMDb at index 33 / port 40033 and
+NBA at index 34 / port 40034 in
+builds of this source revision.
+The published Docker Hub image is updated in a separate release. GOV.UK's reviewed seed originated in
 [HF asset PR #93](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/93).
-The bundle contains 78 articles and 62 structured guidance sections. The HF PR
-is awaiting maintainer merge; the immutable pin downloads the reviewed bundle
-without changing other sites’ asset revisions.
-
-BabyCenter is registered at index 33 / port 40033 in builds of this source
-revision. Its reviewed seed and image bundle are proposed in
-[HF asset PR #78](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78).
-The open asset candidate is used for review without changing the repository-wide
-asset pin; maintainers must merge the HF PR and update `.assets-revision` before
-release merge.
+The bundle contains 78 articles and 62 structured guidance sections. That archive
+is part of the consolidated pinned dataset revision below.
 
 
-`.assets-revision` pins the merged dataset commit `fa1e8a5b9e8e5d0e42764cd658825f4dea088d8f`
-from [HF asset PR #92](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/92).
-Its complete asset tree matches the tested candidate commit
-`f09e586eec8bf1bca0bc0881e08b77f3c2a5508e`.
-
-This revision adds `bh_photo.tar.gz` and preserves all 32 existing archives from
-`c32018ca3b3d67e7b858b1b85fb101aea5090cd7` byte-for-byte, including Berkeley and
-NVIDIA. It carries 33 archives for 31 registered sites plus the unregistered
-Bandcamp and Drugs.com archives, which `fetch_assets.sh` ignores. A clean asset
-fetch downloaded and extracted all 31 registered sites successfully.
+`.assets-revision` pins merged HF main commit
+`9d67d0088a7535e455a331a823b67e3a7d666161`, containing archives for all **38**
+registered sites. Original asset PRs #8 (Recreation.gov), #15 (CarMax),
+#25 (BoardGameGeek), and #66 (AccuWeather) are merged, followed by
+[CarMax photo supplement #95](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95).
+No site now depends on an open HF PR pin. All 36 archives from the previous
+global pin `2aaf9d598f3e71cddd17a4efcdfee7dd7c073337` are unchanged; the three
+non-CarMax scoped bundles also retain their reviewed bytes. CarMax adds 11
+source-backed model-year stock photos without changing its original files or
+seed. Seven other unavailable vehicle hero images remain explicit placeholders.
+The unregistered Bandcamp and Drugs.com archives are ignored by `fetch_assets.sh`.
+Tracked seed migrations and build-generated seeds still run during fetch/build.
 
 B&H's archive contains images and external cache. The Docker build validates
 its 508 declared assets and generates `instance_seed/bh_photo.db` from the tracked
