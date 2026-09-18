@@ -18,3 +18,9 @@
 # Tracked seed migrations/build-generation remain part of the build contract.
 repo: ChilleD/WebHarbor
 revision: 9d67d0088a7535e455a331a823b67e3a7d666161
+
+# BabyCenter: immutable merged HF PR #78 revision, preserving all prior assets.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78
+# Archive SHA-256: 8b83000a1fad3969968290ae537af0bbf0e0a179284f915827cffadb0fe103f3
+# The tracked migration corrects the shipped seed during fetch/build.
+site.babycenter: 8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce
