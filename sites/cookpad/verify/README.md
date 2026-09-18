@@ -1,28 +1,40 @@
-# Cookpad task verifiers
+# Cookpad task verification
 
-These 19 deterministic verifiers require both the frozen answer and the
-task-specific navigation recorded in `trajectory.json`. Tasks 12 and 13 also
-compare the seed and live SQLite databases, so self-reported shopping-list or
-meal-plan changes cannot pass unless the requested state was actually created.
-
-Run the complete positive and negative test matrix from the repository root:
+All 19 tasks use local browser navigation, natural answers and saved database
+evidence. Tasks 9, 10, 12, 13, 15, 16 and 18 change state; other tasks must leave
+the database unchanged. The initial snapshot must match the reviewed reset seed.
 
 ```bash
-python3 -m unittest discover -s sites/cookpad/verify -p 'test_*.py' -v
+python -m unittest discover -s sites/cookpad/verify -v
+python sites/cookpad/verify/verify_0.py --run_dir /path/to/run
+uv run --project agent_demo python agent_demo/eval_judge.py --run_dir /path/to/run --verifier True
 ```
 
-Run one verifier directly:
+Each run folder needs trajectory.json, initial.db and after.db. Explicit
+--initial_db / --after_db overrides are supported. There is NO fallback to a
+mutable live container or regenerated fixture. --container is accepted only
+for legacy CLI compatibility and is never read. Snapshot collection is the
+runner/reviewer's responsibility.
 
-```bash
-python3 sites/cookpad/verify/verify_0.py --run_dir runs/cookpad-0
-```
+Reviewer-only contracts.json and positive_answers.json are not agent-facing task
+instructions. The latter contains synthetic regression controls, not claimed
+independent browser discoveries. Expectations for facts come from the immutable
+seed; tasks.jsonl contains no answer key. Reviewer rubrics identify checkpoints.
 
-Or use the benchmark's unified grading entry point from `agent_demo/`:
+Checks include local-origin parsed paths/queries, relevant details and filters,
+entity-bound times/authors/saves, unit conversions, missing-time handling and
+contradictions covered by the controls. State checks compare all rows/schema,
+allow only the requested list/note/meal changes, and preserve other users.
 
-```bash
-uv run python eval_judge.py --run_dir runs/cookpad-0 --verifier True
-```
+Natural-answer parsing is deliberately bounded, not general semantic judgment.
+It supports full or documented distinctive short titles, sentences, bullets,
+Markdown tables, minutes/hours (including compounds), g/kg, common number words
+and source fraction notation. It is not a general pronoun resolver or multilingual
+parser; unusual paraphrases may need reviewer examination. The secondary LLM
+judge remains separate and should inspect visible evidence and contradictions.
+State-only tasks do not require a fixed confirmation phrase.
 
-For stateful tasks, `--initial_db` and `--after_db` can point to explicit
-snapshots. When omitted, the verifier copies `instance_seed/cookpad.db` and
-`instance/cookpad.db` from `$WH_CONTAINER` (default: `wh-review`).
+The test suite covers all nineteen positive fixtures, prose/table/unit
+equivalents, swapped/wrong/negated facts, foreign-origin and homepage-only
+trajectories, no-op writes, wrong owners, collateral deletion and missing/tampered
+snapshots. Synthetic controls are not a measured population-wide error rate.

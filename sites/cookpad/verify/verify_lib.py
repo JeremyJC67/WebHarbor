@@ -1,366 +1,325 @@
 #!/usr/bin/env python3
-"""Deterministic grading helpers for the Cookpad benchmark tasks.
+"""Snapshot-only deterministic grading, with bounded natural-answer parsing.
 
-Every task requires both a frozen answer and task-specific navigation. Tasks
-12 and 13 additionally compare seed and live SQLite databases so that a
-self-reported write cannot pass without the requested state transition.
+Not a general language-understanding system. See README for supported wording
+and regression controls. Expectations live only in reviewer-owned files.
 """
 import argparse
+from contextlib import closing
 import json
-import math
-import os
+from pathlib import Path
 import re
 import sqlite3
-import subprocess
 import sys
-import tempfile
-from pathlib import Path
-from urllib.parse import unquote
+import unicodedata
+from urllib.parse import urlsplit, parse_qs
 
-
-SITE = "cookpad"
-TASK_COUNT = 19
-STATEFUL_TASKS = {12, 13}
-
-
-def _alt(*groups):
-    """One valid navigation alternative made from required URL groups."""
-    return tuple(tuple(group) if isinstance(group, (list, tuple)) else (group,)
-                 for group in groups)
-
-
-NAV_ALTERNATIVES = {
-    0: (
-        _alt(("/category/breakfast", "/breakfast"), "/recipe/pancakes"),
-        _alt("/search", "/recipe/pancakes"),
-    ),
-    1: (_alt("/search", "q=banana", "/recipe/banana-bread"),),
-    2: (_alt("/category/japanese",
-             "/recipe/eggplant-lemon-pepper-bowl-japanese-137"),),
-    3: (_alt("/search", "q=miso", "/recipe/miso-soup"),),
-    4: (
-        _alt("/category/asian", (
-            "/recipe/creamy-tomato-rice-with-tofu-asian-",
-            "/recipe/herb-roasted-rice-with-tofu-asian-",
-            "/recipe/miso-butter-rice-with-tofu-asian-",
-            "/recipe/lemon-pepper-rice-with-tofu-asian-",
-            "/recipe/chili-crisp-rice-with-tofu-asian-",
-        )),
-        _alt("/search", "q=tofu", (
-            "/recipe/creamy-tomato-rice-with-tofu-asian-",
-            "/recipe/herb-roasted-rice-with-tofu-asian-",
-            "/recipe/miso-butter-rice-with-tofu-asian-",
-            "/recipe/lemon-pepper-rice-with-tofu-asian-",
-            "/recipe/chili-crisp-rice-with-tofu-asian-",
-        )),
-    ),
-    5: (_alt("/category/desserts", "/recipe/chocolate-chip-cookies"),),
-    6: (_alt("/recipe/banana-bread"),),
-    7: (_alt("/login", ("/favorites", "/recipe-box")),),
-    8: (_alt("/login", "/meal-plan"),),
-    9: (_alt("/login", "/shopping-list"),),
-    10: (_alt("/help", "q=shopping", "/help/shopping-list-overview"),),
-    11: (_alt("/authors/mika-tanaka"),),
-    12: (_alt("/login", "/shopping-list"),),
-    13: (_alt("/login", "/meal-plan"),),
-    14: (_alt("/login", ("/favorites", "/recipe-box")),),
-    15: (_alt("/login", "/shopping-list"),),
-    16: (_alt("/help", "q=saved", "/help/saving-recipes"),),
-    17: (_alt("/recipe/worlds-best-lasagna",
-              "/recipe/chocolate-chip-cookies"),),
-    18: (_alt("/category/meal-prep",
-              "/recipe/chicken-lemon-pepper-bowl-meal-prep-97"),),
+SITE = Path(__file__).resolve().parents[1]
+CONTRACTS = json.loads(Path(__file__).with_name('contracts.json').read_text())
+TASK_COUNT = len(CONTRACTS)
+STATEFUL_TASKS = {c['index'] for c in CONTRACTS if c['state']}
+ALIASES = {
+    24769889: ['Japanese-Inspired Veggie Pizza'],
+    25112278: ['Zoe Krill’s cous cous miso soup', 'Miso want cous cous'],
+    26394567: ['Crispy salt and pepper tofu', 'air-fryer salt and pepper tofu'],
+    26289796: ['Traditional Mapo Tofu plant-based', 'plant-based Mapo Tofu'],
+    25038367: ['Chicken Teriyaki'],
+    25797934: ['Marx Meal Prep Stir-Fry'],
 }
 
+def norm(value):
+    value = str(value).replace('⅓', ' 1/3').replace('⁄', '/')
+    value = unicodedata.normalize('NFKC', str(value)).casefold().replace('&', ' and ')
+    value = re.sub(r"['’]", '', value)
+    return re.sub(r'[^\w/.\s]', ' ', value).strip()
 
-PASS_ANSWERS = {
-    0: "Good Old-Fashioned Pancakes has a total time of 20 minutes.",
-    1: "The most-reviewed banana bread was authored by Shelley Albeluhn.",
-    2: "Eggplant Lemon Pepper Bowl has a total time of 1 hour.",
-    3: "Miso Soup takes 15 minutes and shows 1,820 reviews.",
-    4: "Creamy Tomato Rice with Tofu.",
-    5: "Chocolate Chip Cookies has 15,600 reviews.",
-    6: "Preheat oven to 350 degrees F (175 degrees C). Lightly grease a 9x5-inch loaf pan.",
-    7: "The saved recipe is Scallion and Pork Plate.",
-    8: "Guacamole is scheduled for Monday breakfast.",
-    9: "The first two items are lasagna noodles and ricotta cheese.",
-    10: "It is only local to the benchmark mirror; there is no grocery ordering or delivery integration.",
-    11: "Chicken Lemon Pepper Bowl is one of the most-reviewed recipes.",
-    12: "Created the Cookpad Staples shopping list.",
-    13: "Added Waffles to Sunday dinner.",
-    14: "Teriyaki Salmon is the first saved recipe shown.",
-    15: "The second ingredient is quinoa.",
-    16: "You can store notes about substitutions.",
-    17: "World's Best Lasagna takes longer.",
-    18: "Chicken Lemon Pepper Bowl is the top-reviewed recipe shown.",
-}
+def plain(value):
+    return re.sub(r'\s+', ' ', norm(value))
 
+def database(path):
+    path = Path(path)
+    if not path.is_file():
+        raise ValueError('missing saved database: ' + str(path))
+    with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)) as conn:
+        conn.row_factory = sqlite3.Row
+        schema = sorted(tuple(r) for r in conn.execute(
+            "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'"))
+        tables = {}
+        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"):
+            name = row[0]
+            quoted = '"' + name.replace('"', '""') + '"'
+            tables[name] = [dict(r) for r in conn.execute('SELECT * FROM ' + quoted + ' ORDER BY id')]
+        return schema, tables
 
-EXPECTED = {
-    0: "Good Old-Fashioned Pancakes; 20 minutes",
-    1: "Shelley Albeluhn",
-    2: "Eggplant Lemon Pepper Bowl; 1 hour",
-    3: "Miso Soup; 15 minutes; 1,820 reviews",
-    4: "one qualifying Asian tofu title",
-    5: "Chocolate Chip Cookies; 15,600 reviews",
-    6: "preheat to 350 F and grease a 9x5-inch loaf pan",
-    7: "Scallion and Pork Plate",
-    8: "Guacamole",
-    9: "lasagna noodles; ricotta cheese",
-    10: "local only; no grocery ordering or delivery integration",
-    11: "one of the three unique Mika Tanaka titles tied at 130 reviews",
-    12: "Cookpad Staples created for Bob, plus matching DB state",
-    13: "Waffles in Bob's Sunday dinner slot, plus matching DB state",
-    14: "Teriyaki Salmon",
-    15: "quinoa",
-    16: "substitutions, pantry reminders, or meal prep timing",
-    17: "World's Best Lasagna",
-    18: "Chicken Lemon Pepper Bowl",
-}
-
-
-def load_run(run_dir):
-    return json.loads((Path(run_dir) / "trajectory.json").read_text())
-
+def recipes():
+    return {r['id']: r for r in database(SITE/'instance_seed/cookpad.db')[1]['recipe']}
 
 def step_urls(traj):
-    return [unquote(str(step.get("url", ""))).casefold()
-            for step in traj.get("steps", [])]
+    origin = urlsplit(traj.get('start_url', ''))
+    return [urlsplit(str(s.get(k, ''))) for s in traj.get('steps', []) for k in ('url','url_after')
+            if s.get(k) and urlsplit(str(s[k])).netloc == origin.netloc
+            and urlsplit(str(s[k])).scheme == origin.scheme]
 
-
-def final_answer(traj):
-    return str(traj.get("final_answer") or "").strip()
-
-
-def _navigation_ok(task_index, traj):
+def navigation_ok(c, traj):
     urls = step_urls(traj)
-    for alternative in NAV_ALTERNATIVES[task_index]:
-        if all(any(any(needle.casefold() in url for needle in group)
-                   for url in urls) for group in alternative):
-            return True, urls
-    return False, urls
+    paths = {u.path.rstrip('/') or '/' for u in urls}
+    # Details are useful for read facts and explicitly comparing recipes, not
+    # mandatory extra clicks for importing ingredients or editing an existing note.
+    if c['facts'] and not all('/recipe/cookpad-'+str(i) in paths for i in c['recipes']):
+        return False
+    nav = c['navigation']
+    if nav and ':' in nav:
+        kind, token = nav.split(':', 1)
+        route = '/help' if kind == 'help' else '/search'
+        allowed = {route} if kind == 'help' else {'/search','/recipes','/all-recipes'}
+        if not any(u.path in allowed and token in plain(parse_qs(u.query).get('q',[''])[0]).split() for u in urls):
+            return False
+        if kind == 'help':
+            article = '/help/shopping-list-overview' if c['index'] == 10 else '/help/saving-recipes'
+            if article not in paths:
+                return False
+    elif nav and nav not in paths and not (nav == '/recipe-box' and '/favorites' in paths):
+        return False
+    if c['index'] == 5 and not any(u.path == '/category/desserts' and parse_qs(u.query).get('max_time') == ['15'] for u in urls):
+        return False
+    if c['state']:
+        needed = {'list_new':'/shopping-list', 'list_edit':'/shopping-list',
+                  'meal':'/meal-plan', 'note':'/recipe-box'}[c['state']['kind']]
+        if needed not in paths and not (needed == '/recipe-box' and '/favorites' in paths):
+            return False
+    return True
 
+def entity_sections(answer, ids, catalog):
+    """Associate each paragraph/clause/table row with its named recipe.
 
-def _norm(text):
-    return re.sub(r"\s+", " ", text or "").strip().casefold()
+    Full titles and documented distinctive short titles are recognized. A
+    one-entity line can put values before its title; multi-entity lines are
+    divided at mentions. Markdown headers supply units to table cells.
+    """
+    aliases = {i: sorted({plain(catalog[i]['title']), *map(plain, ALIASES.get(i, []))}, key=len, reverse=True) for i in ids}
+    result = {i: [] for i in ids}
+    headers = None
+    active = None
+    for line in answer.splitlines():
+        if '|' in line:
+            cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+            if any(re.search(r'\b(time|minutes|saves|author)\b', cell, re.I) for cell in cells) and not any(
+                    alias in plain(line) for group in aliases.values() for alias in group):
+                headers = cells
+                continue
+            if headers and len(headers) == len(cells):
+                parts = []
+                for h, cell in zip(headers, cells):
+                    if plain(h) in {'saves', 'bookmarks'}:
+                        parts.append(cell + ' saves')
+                    elif plain(h) in {'time minutes', 'cooking time minutes'}:
+                        parts.append(cell + ' minutes')
+                    else:
+                        parts.append(f'{h}: {cell}')
+                line = '; '.join(parts)
+        text = plain(line)
+        found = []
+        for i, variants in aliases.items():
+            for alias in variants:
+                matches = list(re.finditer(r'(?<!\w)'+re.escape(alias)+r'(?!\w)', text))
+                if matches:
+                    found.extend((m.start(),m.end(),i) for m in matches)
+                    break
+        found.sort()
+        if not found:
+            if active is not None:
+                result[active].append(text)
+            continue
+        if len({i for _,_,i in found}) == 1:
+            active = found[0][2]
+            result[found[0][2]].append(text)
+        else:
+            active = None
+            for n,(start,end,i) in enumerate(found):
+                result[i].append(text[start:found[n+1][0] if n+1<len(found) else len(text)])
+    return {i: ' '.join(parts) for i,parts in result.items()}
 
+def numbers(text):
+    text = text.replace(',', '')
+    for word, value in {'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'ten':10,'fourteen':14,
+                        'fifteen':15,'twenty':20,'thirty':30,'forty-five':45,'sixty':60}.items():
+        text = re.sub(r'\b'+word+r'\b', str(value), text)
+    text = re.sub(r'\ban? (hour|minute)\b', r'1 \1', text)
+    return text
 
-def _has_all(text, *tokens):
-    value = _norm(text)
-    return all(_norm(token) in value for token in tokens)
+def durations(text):
+    text = numbers(text)
+    values = []
+    compound = r'(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|h)\s*(?:and\s*)?(\d+(?:\.\d+)?)\s*(?:minutes?|mins?|m)\b'
+    values.extend(float(h)*60+float(m) for h,m in re.findall(compound,text))
+    text = re.sub(compound, '', text)
+    pattern = r'(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?)\b'
+    for m in re.finditer(pattern, text):
+        # A comparison difference is graded separately, not an extra cook time.
+        if re.match(r'\s*(?:longer|shorter|faster|slower|more|less)\b', text[m.end():]):
+            continue
+        unit=m[2]
+        values.append(float(m[1]) * (60 if unit.startswith('h') else 1/60 if unit.startswith('s') else 1))
+    # Tables with explicit header units.
+    values += [float(v) for v in re.findall(r'time minutes\s+(\d+(?:\.\d+)?)\b',text)]
+    return values
 
+def count_values(text):
+    text = numbers(text)
+    # Original formatting with thousands separators was stripped before norm.
+    pairs = re.findall(r'\b(\d+)\s*(?:saves?|bookmarks?)\b|\b(?:saves?|bookmarks?)\s+(?:is\s+|are\s+)?(\d+)\b', text)
+    return [int(a or b) for a,b in pairs]
 
-def _has_any(text, *tokens):
-    value = _norm(text)
-    return any(_norm(token) in value for token in tokens)
-
-
-def _numbers(text):
-    cleaned = (text or "").replace(",", "")
-    return [float(value) for value in re.findall(
-        r"(?<![\w.])[-+]?\d+(?:\.\d+)?", cleaned
-    )]
-
-
-def _has_number(text, expected, tolerance=0.005):
-    return any(math.isclose(value, expected, abs_tol=tolerance, rel_tol=0)
-               for value in _numbers(text))
-
-
-def answer_ok(task_index, answer):
+def answer_ok(index, answer, catalog=None):
+    c=CONTRACTS[index]
     if not answer.strip():
         return False
-    if task_index == 0:
-        return (_has_all(answer, "pancakes") and _has_number(answer, 20))
-    if task_index == 1:
-        return _has_all(answer, "shelley albeluhn")
-    if task_index == 2:
-        time_ok = (_has_any(answer, "1 hour", "1 hr")
-                   or (_has_number(answer, 60)
-                       and _has_any(answer, "minute", "min")))
-        return _has_all(answer, "eggplant lemon pepper bowl") and time_ok
-    if task_index == 3:
-        return (_has_all(answer, "miso soup") and _has_number(answer, 15)
-                and _has_number(answer, 1820))
-    if task_index == 4:
-        titles = (
-            "creamy tomato rice with tofu",
-            "herb roasted rice with tofu",
-            "miso butter rice with tofu",
-            "lemon pepper rice with tofu",
-            "chili crisp rice with tofu",
-        )
-        return _has_any(answer, *titles)
-    if task_index == 5:
-        return (_has_all(answer, "chocolate chip cookies")
-                and _has_number(answer, 15600))
-    if task_index == 6:
-        return (_has_all(answer, "preheat", "grease", "9x5")
-                and _has_number(answer, 350))
-    if task_index == 7:
-        return _has_all(answer, "scallion and pork plate")
-    if task_index == 8:
-        return _has_all(answer, "guacamole")
-    if task_index == 9:
-        return _has_all(answer, "lasagna noodles", "ricotta cheese")
-    if task_index == 10:
-        return (_has_any(answer, "local", "benchmark mirror")
-                and _has_any(answer, "grocery ordering", "delivery")
-                and _has_any(answer, "no ", "not ", "doesn't", "does not",
-                             "without", "only local"))
-    if task_index == 11:
-        return _has_any(
-            answer,
-            "chickpea lemon pepper bowl",
-            "chicken lemon pepper bowl",
-            "eggplant lemon pepper bowl",
-        )
-    if task_index == 12:
-        return _has_all(answer, "cookpad staples")
-    if task_index == 13:
-        return _has_all(answer, "waffles", "sunday", "dinner")
-    if task_index == 14:
-        return _has_all(answer, "teriyaki salmon")
-    if task_index == 15:
-        return _has_all(answer, "quinoa")
-    if task_index == 16:
-        return _has_any(answer, "substitution", "pantry reminder",
-                        "meal prep timing")
-    if task_index == 17:
-        return (_has_all(answer, "lasagna")
-                and _has_any(answer, "longer", "takes more", "more time"))
-    if task_index == 18:
-        return _has_all(answer, "chicken lemon pepper bowl")
-    raise ValueError(f"unknown task index: {task_index}")
+    if not c['facts']:
+        # State is authoritative; do not mandate a particular success sentence.
+        return True
+    catalog = catalog or recipes()
+    answer = re.sub(r'(?<=\d),(?=\d{3}\b)', '', answer)
+    sections=entity_sections(answer,c['recipes'],catalog)
+    for rid in c['recipes']:
+        r=catalog[rid]; section=sections[rid]
+        if not section:
+            return False
+        # Reject negated assertions, while permitting truthful unknown values and
+        # exclusions such as "not reviews". Recipe names containing "no" survive.
+        facts = section
+        for title in [r['title'], *ALIASES.get(rid,[])]:
+            facts = facts.replace(plain(title), '')
+        facts = re.sub(r'(?:not (?:provided|supplied|listed|specified|available|reviews|ratings)|no (?:time|cooking time)(?: is)? (?:provided|supplied|listed))', '', facts)
+        if re.search(r'\b(?:not|never|isnt|isn t|doesnt|doesn t|incorrect|wrong|false)\b', facts):
+            return False
+        for fact in c['facts']:
+            if fact=='time':
+                expected=r['total_time_mins']; values=durations(section)
+                if expected is None:
+                    if values or not re.search(r'(?:time.*?(?:unknown|not (?:provided|supplied|listed|specified|available))|(?:unknown|unspecified).*?time)',section):
+                        return False
+                elif not values or any(abs(v-expected)>0.02 for v in values):
+                    return False
+            elif fact=='saves':
+                counts = count_values(section)
+                if not counts or any(v != r['save_count'] for v in counts):
+                    return False
+            elif fact=='author':
+                if plain(r['author_name']) not in section:
+                    return False
+                for marker in re.finditer(r'\b(?:by|author(?: is)?)\s+', section):
+                    if not section[marker.end():].startswith(plain(r['author_name'])):
+                        return False
+                # A second named catalogue author contradicts this attribution.
+                other={plain(x['author_name']) for x in catalog.values()}-{plain(r['author_name'])}
+                if any(re.search(r'\b(?:by|author)\s+'+re.escape(a)+r'\b',section) for a in other):
+                    return False
+            elif fact=='tofu':
+                values=[float(a)*(1000 if b.startswith('k') else 1) for a,b in re.findall(r'(\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?)\s+(?:of\s+)?(?:firm\s+|organic\s+|medium soft\s+)*tofu',section)]
+                if values != [220 if rid==26394567 else 500]:
+                    return False
+            elif fact=='sugar':
+                quantities = re.findall(r'(?<![\d/.])(\d+(?:\.\d+)?(?:\s+(?:and\s+)?\d+/\d+)?)\s*cups?\s+(?:of\s+)?sugar', numbers(section))
+                def cups(value):
+                    return sum(float(part.split('/')[0])/float(part.split('/')[1]) if '/' in part else float(part) for part in value.replace('and','').split())
+                expected = 4/3 if rid==367685 else 1
+                if not quantities or any(abs(cups(q)-expected)>0.005 for q in quantities):
+                    return False
+            elif fact=='eggs':
+                if re.findall(r'\b(\d+)\s+(?:large\s+)?eggs?\b',numbers(section)) != ['2']:
+                    return False
+            elif fact=='slot':
+                slot = 'monday breakfast' if rid==26400824 else 'sunday dinner'
+                if slot not in section:
+                    return False
+    if c.get('difference'):
+        # Bind the direction to lasagna, not just number overlap.
+        text=plain(answer)
+        if not re.search(r'\blasagna\b[^.\n]{0,100}\b41\s+(?:minutes?|mins?)\s+longer', text):
+            return False
+        if re.search(r'\blasagna\b[^.\n]{0,90}\b(?:shorter|faster)\b|\bcookies\b[^.\n]{0,90}\b(?:longer|slower)\b',text):
+            return False
+    return True
 
+def state_ok(c, before_path, after_path):
+    before_schema,before=database(before_path)
+    after_schema,after=database(after_path)
+    fixture_schema,fixture=database(SITE/'instance_seed/cookpad.db')
+    if before_schema != fixture_schema or before != fixture:
+        return False,'initial snapshot is not the reviewed reset fixture'
+    if before_schema != after_schema:
+        return False,'database schema changed'
+    state=c['state']
+    if not state:
+        return (before==after,'read-only database preserved')
+    kind=state['kind']; uid=state['user']
+    table={'list_new':'shopping_list','list_edit':'shopping_list','meal':'meal_plan_item','note':'recipe_box_item'}[kind]
+    for name in before:
+        if name!=table and before[name]!=after[name]:
+            return False,'unrequested changes to '+name
+    old={r['id']:r for r in before[table]}; new={r['id']:r for r in after[table]}
+    if kind=='list_new':
+        added=set(new)-set(old)
+        if len(added)!=1 or any(new.get(i)!=r for i,r in old.items()):
+            return False,'expected one new list and all previous rows unchanged'
+        row=new[added.pop()]
+        recipe=next(r for r in before['recipe'] if r['id']==state['recipe'])
+        wanted=list(dict.fromkeys(json.loads(recipe['ingredients_json'])))
+        if state.get('add'):
+            wanted.append(state['add'])
+        ok=(row['user_id']==uid and row['name']==state['name'] and json.loads(row['items_json'])==wanted)
+        return ok,'exact new list owner, name and ingredients'
+    if kind in {'list_edit','note'}:
+        targets=[r for r in old.values() if r['user_id']==uid and (
+            r.get('name')==state.get('name') if kind=='list_edit' else r.get('recipe_id')==state['recipe'])]
+        if len(targets)!=1:
+            return False,'expected one seeded target'
+        target=targets[0]; desired=dict(target)
+        if kind=='list_edit':
+            items=json.loads(target['items_json']);items.remove(state['remove']);items.append(state['add'])
+            desired['items_json']=json.dumps(items)
+        else:
+            desired['notes']=state['note']
+        if kind=='list_edit' and target['id'] in new:
+            # Whitespace differences in JSON serialization are immaterial.
+            new[target['id']]=dict(new[target['id']],items_json=json.dumps(json.loads(new[target['id']]['items_json'])))
+        expected=dict(old);expected[target['id']]=desired
+        return new==expected,'only requested list items or note changed'
+    if kind=='meal':
+        slot=lambda r:r['user_id']==uid and r['day']==state['day'] and r['meal_type']==state['meal']
+        old_slot={i for i,r in old.items() if slot(r)}
+        new_slot={i for i,r in new.items() if slot(r)}
+        if len(new_slot)!=1:
+            return False,'expected exactly one target meal'
+        row=new[next(iter(new_slot))]
+        ok=row['recipe_id']==state['recipe'] and {i:r for i,r in old.items() if i not in old_slot}=={i:r for i,r in new.items() if i not in new_slot}
+        return ok,'only requested meal slot changed'
+    return False,'unknown state contract'
 
-def _fetch_db(container, kind):
-    source = f"{container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db"
-    handle, path = tempfile.mkstemp(suffix=".db")
-    os.close(handle)
-    result = subprocess.run(
-        ["docker", "cp", source, path], capture_output=True, text=True
-    )
-    if result.returncode:
-        try:
-            os.unlink(path)
-        except OSError:
-            pass
-        return None
-    return path
-
-
-def _resolve_db(path, container, kind):
-    return path or _fetch_db(container, kind)
-
-
-def _query(db_path, sql, params=()):
-    if not db_path or not Path(db_path).exists():
-        return None
-    connection = sqlite3.connect(db_path)
+def evaluate(task_index, traj, initial_db='', after_db='', container=None):
+    checks=[]
     try:
-        return connection.execute(sql, params).fetchall()
-    except sqlite3.Error:
-        return None
-    finally:
-        connection.close()
-
-
-def _bob_lists(db_path):
-    return _query(
-        db_path,
-        "SELECT sl.id, sl.name FROM shopping_list sl "
-        "JOIN user u ON u.id=sl.user_id "
-        "WHERE u.email=? AND lower(sl.name)=lower(?) ORDER BY sl.id",
-        ("bob.c@test.com", "Cookpad Staples"),
-    )
-
-
-def _bob_sunday_dinner(db_path):
-    return _query(
-        db_path,
-        "SELECT mpi.id, r.slug FROM meal_plan_item mpi "
-        "JOIN user u ON u.id=mpi.user_id "
-        "JOIN recipe r ON r.id=mpi.recipe_id "
-        "WHERE u.email=? AND mpi.day=? AND mpi.meal_type=? ORDER BY mpi.id",
-        ("bob.c@test.com", "sunday", "dinner"),
-    )
-
-
-def _shopping_list_state_ok(initial_db, after_db):
-    before = _bob_lists(initial_db)
-    after = _bob_lists(after_db)
-    ok = before == [] and after is not None and len(after) == 1
-    return ok, f"initial={before!r}; after={after!r}"
-
-
-def _meal_plan_state_ok(initial_db, after_db):
-    before = _bob_sunday_dinner(initial_db)
-    after = _bob_sunday_dinner(after_db)
-    before_slugs = [row[1] for row in before] if before is not None else None
-    after_slugs = [row[1] for row in after] if after is not None else None
-    ok = (before_slugs == ["shrimp-scampi"]
-          and after_slugs == ["waffles"])
-    return ok, f"initial={before!r}; after={after!r}"
-
-
-STATE_CHECKS = {
-    12: ("shopping_list_after_state", _shopping_list_state_ok),
-    13: ("meal_plan_after_state", _meal_plan_state_ok),
-}
-
-
-def evaluate(task_index, traj, initial_db="", after_db="",
-             container="wh-review"):
-    if task_index not in NAV_ALTERNATIVES:
-        raise ValueError(f"unknown task index: {task_index}")
-    answer = final_answer(traj)
-    nav_ok, urls = _navigation_ok(task_index, traj)
-    checks = [
-        ("final_answer_nonempty", bool(answer), f"final={answer!r}"),
-        ("required_navigation", nav_ok, f"urls={urls!r}"),
-        ("frozen_answer", answer_ok(task_index, answer),
-         f"expected={EXPECTED[task_index]}; final={answer!r}"),
-    ]
-    if task_index in STATEFUL_TASKS:
-        initial_db = _resolve_db(initial_db, container, "instance_seed")
-        after_db = _resolve_db(after_db, container, "instance")
-        name, state_check = STATE_CHECKS[task_index]
-        ok, detail = state_check(initial_db, after_db)
-        checks.append((name, ok, detail))
-
-    passed = all(ok for _, ok, _ in checks)
-    reason = next((name for name, ok, _ in checks if not ok), "")
-    evidence = [f"[{'PASS' if ok else 'FAIL'}] {name}: {detail}"
-                for name, ok, detail in checks]
-    return {
-        "task_id": f"Cookpad--{task_index}",
-        "pass": passed,
-        "reason": reason,
-        "evidence": evidence,
-    }
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--run_dir", required=True)
-    parser.add_argument("--initial_db", default="")
-    parser.add_argument("--after_db", default="")
-    parser.add_argument(
-        "--container", default=os.environ.get("WH_CONTAINER", "wh-review")
-    )
-    parser.add_argument("--no_llm", nargs="?", const="True", default="False")
-    return parser.parse_args()
-
+        c=CONTRACTS[task_index]
+        checks.append(('navigation',navigation_ok(c,traj),'required local pages and relevant search/filter'))
+        checks.append(('answer',answer_ok(task_index,str(traj.get('final_answer') or '')),'entity-bound facts, units and polarity'))
+        ok,detail=state_ok(c,initial_db,after_db)
+        checks.append(('snapshot_state',ok,detail))
+    except (ValueError,KeyError,TypeError,sqlite3.Error,OSError) as exc:
+        checks.append(('evidence_error',False,str(exc)))
+    return dict(task_id=f'Cookpad--{task_index}',pass_=all(ok for _,ok,_ in checks),
+                reason=next((name for name,ok,_ in checks if not ok),''),
+                evidence=[f"[{'PASS' if ok else 'FAIL'}] {name}: {detail}" for name,ok,detail in checks])
 
 def main(task_index):
-    args = parse_args()
-    verdict = evaluate(
-        task_index,
-        load_run(args.run_dir),
-        initial_db=args.initial_db,
-        after_db=args.after_db,
-        container=args.container,
-    )
-    print(json.dumps(verdict, indent=2))
-    sys.exit(0 if verdict["pass"] else 1)
+    p=argparse.ArgumentParser()
+    p.add_argument('--run_dir',required=True);p.add_argument('--initial_db');p.add_argument('--after_db')
+    p.add_argument('--container');p.add_argument('--no_llm',nargs='?',const='True')
+    args=p.parse_args();run=Path(args.run_dir)
+    verdict=evaluate(task_index,json.loads((run/'trajectory.json').read_text()),
+                     args.initial_db or run/'initial.db',args.after_db or run/'after.db')
+    verdict['pass']=verdict.pop('pass_')
+    print(json.dumps(verdict,ensure_ascii=False,indent=2))
+    sys.exit(0 if verdict['pass'] else 1)
+
+if __name__=='__main__':
+    raise SystemExit('Use a task-specific verify_N.py entrypoint.')
