@@ -11,9 +11,9 @@
     <span>{{ listing.category.name }}</span>
   </div>
   <div class="reply-relay">
-    craigslist mail relay keeps your email address private unless you choose to include it in your message.
+    Local benchmark mailbox only: this reply is stored in the demo and is never sent to the original poster. Do not enter personal information.
   </div>
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>your name</label>
     <input name="name" value="{{ current_user.name if current_user.is_authenticated else '' }}">
     <label>your email</label>

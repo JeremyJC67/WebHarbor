@@ -53,5 +53,20 @@
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("[data-gallery]").forEach(setupGallery);
     document.querySelectorAll(".top-selects").forEach(submitTopSelects);
+    var sort = document.querySelector('#sort-order');
+    if (sort) sort.addEventListener('change', function () { window.location.assign(sort.value); });
+    var filters = document.querySelector('#search-filters');
+    var toggle = document.querySelector('.filter-toggle');
+    if (toggle) toggle.addEventListener('click', function () {
+      filters.hidden = !filters.hidden;
+      toggle.setAttribute('aria-expanded', String(!filters.hidden));
+    });
+    var save = document.querySelector('.cl-save-search');
+    if (save) save.addEventListener('click', function () {
+      filters.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      document.querySelector('#save-search-panel').scrollIntoView({block: 'center'});
+      document.querySelector('#save-search-panel input, #save-search-panel a').focus();
+    });
   });
 }());

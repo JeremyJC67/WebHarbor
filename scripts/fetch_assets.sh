@@ -21,7 +21,7 @@ cd "$(dirname "$0")/.."
 REPO=$(awk '/^repo:/ {print $2}' .assets-revision)
 REVISION="${ASSETS_REVISION:-$(awk '/^revision:/ {print $2}' .assets-revision)}"
 ONLY_SITE="${1:-}"
-CACHE_DIR="sites/.cache/tarballs"
+CACHE_DIR="sites/.cache/tarballs/$REVISION"
 
 if ! command -v hf >/dev/null 2>&1; then
     echo "fetch_assets: 'hf' CLI not found. Install with: pip install -U \"huggingface_hub[cli]\"" >&2
@@ -41,6 +41,11 @@ fi
 hf download "$REPO" --repo-type dataset --revision "$REVISION" \
     --include "$INCLUDE" --local-dir "$CACHE_DIR"
 
+if [[ -n "$ONLY_SITE" && ! -f "$CACHE_DIR/$ONLY_SITE.tar.gz" ]]; then
+    echo "[fetch] ERROR: $ONLY_SITE.tar.gz is absent at $REVISION; no assets extracted" >&2
+    exit 1
+fi
+
 shopt -s nullglob
 extracted=0
 for tarball in "$CACHE_DIR"/*.tar.gz; do
@@ -51,4 +56,8 @@ for tarball in "$CACHE_DIR"/*.tar.gz; do
     extracted=$((extracted + 1))
 done
 
+if (( extracted == 0 )); then
+    echo "[fetch] ERROR: no asset archives at $REVISION" >&2
+    exit 1
+fi
 echo "[fetch] done — $extracted site(s) extracted into sites/"

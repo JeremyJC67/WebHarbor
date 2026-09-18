@@ -22,7 +22,7 @@
         <a class="result-title" href="{{ url_for('listing_detail', slug=listing.slug, listing_id=listing.id) }}">{{ listing.title }}</a>
         <div class="meta"><span>{{ listing.display_price }}</span><span>{{ listing.neighborhood }}</span><span>saved {{ row.created_at.strftime("%m/%d") }}</span></div>
         {% if row.note %}<p>{{ row.note }}</p>{% endif %}
-        <form method="post" action="{{ url_for('unsave_listing', listing_id=listing.id) }}"><button>remove from saved</button></form>
+        <form method="post" action="{{ url_for('unsave_listing', listing_id=listing.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button>remove from saved</button></form>
       </div>
     </li>
     {% endfor %}
