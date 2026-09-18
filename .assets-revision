@@ -24,3 +24,8 @@ revision: 9d67d0088a7535e455a331a823b67e3a7d666161
 # Archive SHA-256: 8b83000a1fad3969968290ae537af0bbf0e0a179284f915827cffadb0fe103f3
 # The tracked migration corrects the shipped seed during fetch/build.
 site.babycenter: 8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce
+
+# Amtrak: original contributor bundle, unchanged, merged through HF PR #96.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/96
+site.amtrak: 6f432484307f76ca3c58b1d5c8f7b614dfb34f54
+site.amtrak.sha256: 22f0132a5f9bfee45a641e8172050a94bb4fc0de4ad45f1d9e52deb50eb37f34

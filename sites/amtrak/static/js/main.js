@@ -55,4 +55,20 @@ function wirePassengerFill() {
 document.addEventListener("DOMContentLoaded", () => {
   syncTripForms();
   wirePassengerFill();
+  const data = document.querySelector("#fare-summary-data");
+  if (data) {
+    const totals = JSON.parse(data.textContent);
+    const money = new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"});
+    const update = () => {
+      const selected = document.querySelector('[name="fare_slug"]:checked');
+      const total = selected && totals[selected.value];
+      if (!total) return;
+      document.querySelectorAll("#fare-summary [data-summary]").forEach((node) => {
+        const key = node.dataset.summary;
+        node.textContent = key === "reward_points" ? total[key] : money.format(total[key]);
+      });
+    };
+    document.querySelectorAll('[name="fare_slug"]').forEach((radio) => radio.addEventListener("change", update));
+    update();
+  }
 });

@@ -1650,15 +1650,29 @@ def booking_select_fare():
     if not options:
         return redirect(url_for("booking_search"))
     flow = get_flow()
+    quotes = build_fare_quotes(options)
     if request.method == "POST":
-        flow["fare_slug"] = request.form.get("fare_slug", "value")
+        fare_slug = request.form.get("fare_slug", "value")
+        if fare_slug not in {quote["slug"] for quote in quotes}:
+            abort(400, description="Choose an available fare.")
+        flow["fare_slug"] = fare_slug
         save_flow(flow)
         if flow_has_sleepers():
             return redirect(url_for("booking_rooms"))
         return redirect(url_for("booking_passengers"))
 
-    quotes = build_fare_quotes(options)
-    return render_template("booking_select_fare.html", flow=flow, options=options, quotes=quotes)
+    # Use the same pricing function as checkout, including fees and any rooms
+    # retained when the traveler revisits this page. No state writes on GET.
+    summaries = {
+        quote["slug"]: booking_summary({**flow, "fare_slug": quote["slug"]})
+        for quote in quotes
+    }
+    summary = summaries.get(flow.get("fare_slug", "value"))
+    totals = {slug: {key: value[key] for key in
+                    ("traveler_subtotal", "room_total", "service_fee", "total", "reward_points")}
+              for slug, value in summaries.items()}
+    return render_template("booking_select_fare.html", flow=flow, options=options,
+                           quotes=quotes, summary=summary, totals=totals)
 
 
 @app.route("/booking/rooms", methods=["GET", "POST"])
