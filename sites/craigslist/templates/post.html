@@ -5,7 +5,7 @@
 <div class="form-page wide">
   <p class="form-back"><a href="{{ url_for('account') }}">&lt; account</a></p>
   <h1>create a posting</h1>
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>category</label>
     <select name="category_slug" required>
       {% for cat in categories %}

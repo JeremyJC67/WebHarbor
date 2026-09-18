@@ -11,7 +11,7 @@
   </nav>
 <div class="account-grid">
   <section class="panel">
-    <h1>{{ current_user.name }}</h1>
+    <h1>{{ current_user.name }}</h1><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button>log out</button></form>
     <p>{{ current_user.email }}<br>{{ current_user.area }}{% if current_user.phone %}<br>{{ current_user.phone }}{% endif %}</p>
     <p><a href="{{ url_for('account_edit') }}">edit account settings</a></p>
     <p><a href="{{ url_for('post_listing') }}">create a posting</a></p>
@@ -26,7 +26,7 @@
         <a href="{{ url_for('listing_detail', slug=post.slug, listing_id=post.id) }}">{{ post.title }}</a>
         <span class="muted">{{ post.status }} {{ post.display_price }}</span>
         {% if post.status == "active" %}
-        <form method="post" action="{{ url_for('delete_posting', listing_id=post.id) }}"><button class="plain-button">delete</button></form>
+        <form method="post" action="{{ url_for('delete_posting', listing_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="plain-button">delete</button></form>
         {% endif %}
       </li>
       {% endfor %}
@@ -59,7 +59,7 @@
       {% for h in hidden %}
       <li>
         <a href="{{ url_for('listing_detail', slug=h.slug, listing_id=h.id) }}">{{ h.title }}</a>
-        <form method="post" action="{{ url_for('unhide_listing', listing_id=h.id) }}"><input type="hidden" name="next" value="{{ url_for('account') }}"><button class="plain-button">unhide</button></form>
+        <form method="post" action="{{ url_for('unhide_listing', listing_id=h.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ url_for('account') }}"><button class="plain-button">unhide</button></form>
       </li>
       {% endfor %}
     </ul>

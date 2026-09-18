@@ -4,7 +4,7 @@
 {% block content %}
 <div class="form-page">
   <h1>log in</h1>
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>email</label>
     <input name="email" type="email" required>
     <label>password</label>

@@ -1,26 +1,65 @@
 """Craigslist mirror - Flask app."""
+
 import hashlib
 import json
 import os
 import re
+import secrets
+import shutil
+from pathlib import Path
+from urllib.parse import urlsplit
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-from flask import Flask, abort, flash, redirect, render_template, request, Response, session, url_for
-from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
+from flask import (
+    Flask,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    Response,
+    session,
+    url_for,
+)
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 
-from seed_data import CATEGORY_GROUPS, deterministic_password, seed_benchmark_users, seed_database
+from seed_data import CATEGORY_GROUPS, REGIONS, SNAPSHOT_NOW
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = Flask(__name__, instance_path=os.path.join(BASE_DIR, "instance"))
+INSTANCE_DIR = os.environ.get("CRAIGSLIST_INSTANCE", os.path.join(BASE_DIR, "instance"))
+app = Flask(__name__, instance_path=INSTANCE_DIR)
 app.config["SECRET_KEY"] = "webharbor-craigslist-dev-key"
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'craigslist.db')}"
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"sqlite:///{os.path.join(INSTANCE_DIR, 'craigslist.db')}"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-os.makedirs(os.path.join(BASE_DIR, "instance"), exist_ok=True)
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+if not os.environ.get("CRAIGSLIST_BUILD_SEED"):
+    seed = Path(BASE_DIR, "instance_seed", "craigslist.db")
+    if not seed.is_file():
+        raise RuntimeError(
+            "Missing reviewed Craigslist seed; fetch its HF assets first."
+        )
+    expected = "d983cbf885a6c5d89207ee2cc37e133fe2d1015662ff3aa69a72c6933e3687b5"
+    if hashlib.sha256(seed.read_bytes()).hexdigest() != expected:
+        raise RuntimeError(
+            "Craigslist assets do not match this reviewed snapshot. Install the matching asset bundle; do not reuse HF PR #72's old seed."
+        )
+    if not Path(INSTANCE_DIR, "craigslist.db").exists():
+        shutil.copyfile(seed, Path(INSTANCE_DIR, "craigslist.db"))
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -41,15 +80,19 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     listings = db.relationship("Listing", backref="owner", lazy=True)
-    saved_listings = db.relationship("SavedListing", backref="user", cascade="all, delete-orphan")
-    saved_searches = db.relationship("SavedSearch", backref="user", cascade="all, delete-orphan")
+    saved_listings = db.relationship(
+        "SavedListing", backref="user", cascade="all, delete-orphan"
+    )
+    saved_searches = db.relationship(
+        "SavedSearch", backref="user", cascade="all, delete-orphan"
+    )
     messages = db.relationship("Message", backref="user", cascade="all, delete-orphan")
 
     def set_password(self, password):
-        self.password_hash = deterministic_password(self.email, password)
+        self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        return self.password_hash == deterministic_password(self.email, password)
+        return check_password_hash(self.password_hash, password)
 
 
 class Category(db.Model):
@@ -97,8 +140,12 @@ class Listing(db.Model):
     view_count = db.Column(db.Integer, default=0)
     flag_count = db.Column(db.Integer, default=0)
 
-    saved_by = db.relationship("SavedListing", backref="listing", cascade="all, delete-orphan")
-    messages = db.relationship("Message", backref="listing", cascade="all, delete-orphan")
+    saved_by = db.relationship(
+        "SavedListing", backref="listing", cascade="all, delete-orphan"
+    )
+    messages = db.relationship(
+        "Message", backref="listing", cascade="all, delete-orphan"
+    )
 
     def details(self):
         try:
@@ -116,7 +163,7 @@ class Listing(db.Model):
 
     @property
     def age_label(self):
-        delta = datetime(2026, 5, 12, 15, 0, 0) - self.posted_at
+        delta = SNAPSHOT_NOW - self.posted_at
         hours = max(1, int(delta.total_seconds() // 3600))
         if hours < 24:
             return f"{hours}h ago"
@@ -172,206 +219,147 @@ class Message(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        return None
 
 
 def slugify(value):
-    value = value.lower()
-    value = re.sub(r"[^a-z0-9]+", "-", value)
-    return value.strip("-") or "listing"
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "listing"
 
 
-def tokenize(value):
-    return [t for t in re.split(r"[^a-z0-9]+", (value or "").lower()) if len(t) > 1]
+def csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(24)
+    return session["csrf_token"]
 
 
-def normalize_phrase(value):
-    return " ".join(t for t in re.split(r"[^a-z0-9]+", (value or "").lower()) if t)
+@app.before_request
+def protect_forms():
+    if request.method == "POST":
+        supplied = request.form.get("csrf_token", "")
+        if not supplied or not secrets.compare_digest(
+            supplied, session.get("csrf_token", "")
+        ):
+            abort(400, "Invalid or missing form token")
+
+
+def local_redirect(value, fallback):
+    value = (value or "").strip()
+    parsed = urlsplit(value)
+    if (
+        value.startswith("/")
+        and not value.startswith("//")
+        and not parsed.netloc
+        and not parsed.scheme
+        and "\\" not in value
+        and not any(ord(c) < 32 for c in value)
+    ):
+        return redirect(value)
+    return redirect(fallback)
 
 
 def parse_int(value):
-    if value is None or value == "":
+    if value in (None, ""):
         return None
-    try:
-        return int(re.sub(r"[^0-9]", "", str(value)))
-    except ValueError:
-        return None
-
-
-def listing_score(listing, query):
-    tokens = tokenize(query)
-    if not tokens:
-        return 1
-    category = listing.category.name if listing.category else ""
-    details = " ".join(f"{k} {v}" for k, v in listing.details().items())
-    haystacks = {
-        "title": listing.title.lower(),
-        "category": category.lower(),
-        "area": f"{listing.area} {listing.neighborhood}".lower(),
-        "body": f"{listing.description} {details} {listing.condition} {listing.compensation} {listing.company}".lower(),
-    }
-    score = 0
-    phrase = normalize_phrase(query)
-    normalized = {key: normalize_phrase(value) for key, value in haystacks.items()}
-    if phrase:
-        if phrase in normalized["title"]:
-            score += 25
-        if phrase in normalized["body"]:
-            score += 10
-    for token in tokens:
-        if token in haystacks["title"]:
-            score += 5
-        if token in haystacks["category"]:
-            score += 3
-        if token in haystacks["area"]:
-            score += 2
-        if token in haystacks["body"]:
-            score += 1
-    return score
+    value = str(value).strip().replace(",", "").removeprefix("$")
+    if not re.fullmatch(r"[0-9]+", value):
+        abort(400, "Enter a nonnegative whole number")
+    result = int(value)
+    if result > 100000000:
+        abort(400, "Number is too large")
+    return result
 
 
 def category_groups():
     cats = {c.slug: c for c in Category.query.order_by(Category.display_order).all()}
-    groups = []
-    for group in CATEGORY_GROUPS:
-        rows = []
-        for slug, _name, _abbrev in group["columns"]:
-            if slug in cats:
-                rows.append(cats[slug])
-        groups.append({"slug": group["slug"], "name": group["name"], "categories": rows})
-    return groups
+    return [
+        {
+            "slug": g["slug"],
+            "name": g["name"],
+            "categories": [cats[c[0]] for c in g["columns"] if c[0] in cats],
+        }
+        for g in CATEGORY_GROUPS
+    ]
 
 
 def hidden_listing_ids():
     if not current_user.is_authenticated:
         return set(session.get("hidden_listing_ids", []))
-    return {h.listing_id for h in HiddenListing.query.filter_by(user_id=current_user.id).all()}
-
-
-def is_saved(listing_id):
-    if not current_user.is_authenticated:
-        return False
-    return SavedListing.query.filter_by(user_id=current_user.id, listing_id=listing_id).first() is not None
-
-
-def listing_images(listing):
-    details = listing.details()
-    values = details.get("images", [])
-    if isinstance(values, str):
-        values = [values]
-    images = []
-    if listing.image:
-        images.append(listing.image)
-    for value in values:
-        if value and value not in images:
-            images.append(value)
-    return images
-
-
-def listing_map_point(listing):
-    details = listing.details()
-    try:
-        x = float(details.get("map_x", 50))
-        y = float(details.get("map_y", 50))
-        lat = float(details.get("map_lat", 37.7749))
-        lng = float(details.get("map_lng", -122.4194))
-    except (TypeError, ValueError):
-        digest = hashlib.md5(f"{listing.id}:{listing.neighborhood}".encode()).hexdigest()
-        x = 18 + (int(digest[:2], 16) % 64)
-        y = 16 + (int(digest[2:4], 16) % 58)
-        lat = 37.7749
-        lng = -122.4194
     return {
-        "x": max(6, min(94, x)),
-        "y": max(8, min(92, y)),
-        "lat": lat,
-        "lng": lng,
+        h.listing_id for h in HiddenListing.query.filter_by(user_id=current_user.id)
     }
 
 
+def is_saved(listing_id):
+    return (
+        current_user.is_authenticated
+        and SavedListing.query.filter_by(
+            user_id=current_user.id, listing_id=listing_id
+        ).first()
+        is not None
+    )
+
+
+def listing_images(listing):
+    return list(
+        dict.fromkeys(
+            ([listing.image] if listing.image else [])
+            + listing.details().get("images", [])
+        )
+    )
+
+
 def listing_public_details(listing):
-    hidden = {"images", "map_x", "map_y", "map_lat", "map_lng"}
     return [
-        (key, value)
-        for key, value in listing.details().items()
-        if key not in hidden
+        (k, v)
+        for k, v in listing.details().items()
+        if not k.startswith("_")
+        and k not in {"images", "condition", "employment type", "company"}
     ]
 
 
-def base_listing_query(category_slug=None):
-    query = Listing.query.filter_by(status="active")
-    if category_slug:
-        category = Category.query.filter_by(slug=category_slug).first_or_404()
-        query = query.filter(Listing.category_slug == category.slug)
-    return query
-
-
-def filter_listings(category_slug=None):
-    q = request.args.get("q", "").strip()
-    area = request.args.get("area", "").strip()
-    min_price = parse_int(request.args.get("min_price"))
-    max_price = parse_int(request.args.get("max_price"))
-    has_image = request.args.get("has_image") == "1"
-    sort = request.args.get("sort", "relevance")
-    include_hidden = request.args.get("include_hidden") == "1"
-
-    query = base_listing_query(category_slug)
-    if area:
-        query = query.filter(or_(Listing.area == area, Listing.neighborhood.ilike(f"%{area}%")))
-    if min_price is not None:
-        query = query.filter(or_(Listing.price == None, Listing.price >= min_price))  # noqa: E711
-    if max_price is not None:
-        query = query.filter(or_(Listing.price == None, Listing.price <= max_price))  # noqa: E711
-    if has_image:
-        query = query.filter(Listing.image != "")
-
-    listings = query.all()
-    hidden_ids = hidden_listing_ids()
-    if not include_hidden:
-        listings = [listing for listing in listings if listing.id not in hidden_ids]
-
-    if q:
-        scored = [(listing_score(listing, q), listing) for listing in listings]
-        listings = [listing for score, listing in scored if score > 0]
-        listings.sort(key=lambda pair: (listing_score(pair, q), pair.posted_at), reverse=True)
-    elif sort == "price_asc":
-        listings.sort(key=lambda listing: (listing.price is None, listing.price or 0, -listing.posted_at.timestamp()))
-    elif sort == "price_desc":
-        listings.sort(key=lambda listing: (listing.price is None, -(listing.price or 0), -listing.posted_at.timestamp()))
-    elif sort == "oldest":
-        listings.sort(key=lambda listing: listing.posted_at)
-    else:
-        listings.sort(key=lambda listing: listing.posted_at, reverse=True)
-
-    return listings
+def search_url(**overrides):
+    values = request.args.to_dict()
+    values.update(overrides)
+    category_slug = values.pop("category", "") or (request.view_args or {}).get(
+        "category_slug", ""
+    )
+    values = {k: v for k, v in values.items() if v not in ("", None)}
+    return (
+        url_for("category_search", category_slug=category_slug, **values)
+        if category_slug
+        else url_for("search", **values)
+    )
 
 
 @app.context_processor
 def inject_globals():
-    def saved_count():
-        if not current_user.is_authenticated:
-            return 0
-        return SavedListing.query.filter_by(user_id=current_user.id).count()
-
-    return {
-        "category_groups": category_groups,
-        "is_saved": is_saved,
-        "saved_count": saved_count,
-        "listing_images": listing_images,
-        "listing_map_point": listing_map_point,
-        "listing_public_details": listing_public_details,
-    }
+    return dict(
+        category_groups=category_groups,
+        is_saved=is_saved,
+        saved_count=lambda: (
+            SavedListing.query.filter_by(user_id=current_user.id).count()
+            if current_user.is_authenticated
+            else 0
+        ),
+        listing_images=listing_images,
+        listing_public_details=listing_public_details,
+        csrf_token=csrf_token,
+        search_url=search_url,
+        regions=REGIONS,
+        snapshot_date=SNAPSHOT_NOW.strftime("%Y-%m-%d"),
+    )
 
 
 @app.route("/")
 def index():
-    featured = Listing.query.filter(Listing.image != "", Listing.status == "active").order_by(Listing.posted_at.desc()).limit(8).all()
-    recent = Listing.query.filter_by(status="active").order_by(Listing.posted_at.desc()).limit(12).all()
     counts = {
-        category.slug: Listing.query.filter_by(category_slug=category.slug, status="active").count()
-        for category in Category.query.all()
+        c.slug: Listing.query.filter_by(category_slug=c.slug, status="active").count()
+        for c in Category.query.all()
     }
-    return render_template("index.html", featured=featured, recent=recent, counts=counts)
+    return render_template("index.html", counts=counts)
 
 
 @app.route("/favicon.ico")
@@ -379,56 +367,133 @@ def favicon():
     return Response(status=204)
 
 
-@app.route("/search")
-def search():
-    listings = filter_listings()
-    return render_template(
-        "search.html",
-        listings=listings,
-        category=None,
-        query=request.args.get("q", "").strip(),
-        areas=["san francisco", "east bay", "south bay", "peninsula", "north bay", "santa cruz"],
+def filtered_listings(category_slug=None):
+    query = Listing.query.filter_by(status="active")
+    if category_slug:
+        Category.query.filter_by(slug=category_slug).first_or_404()
+        query = query.filter_by(category_slug=category_slug)
+    group = request.args.get("section", "")
+    if group:
+        if group not in {g["slug"] for g in CATEGORY_GROUPS}:
+            abort(400)
+        query = query.filter_by(category_group=group)
+    area = request.args.get("area", "")
+    if area:
+        if area not in REGIONS:
+            abort(400, "Unknown area")
+        query = query.filter_by(area=area)
+    low, high = (
+        parse_int(request.args.get("min_price")),
+        parse_int(request.args.get("max_price")),
     )
+    if low is not None and high is not None and low > high:
+        abort(400, "Minimum exceeds maximum")
+    if low is not None:
+        query = query.filter(Listing.price >= low)
+    if high is not None:
+        query = query.filter(Listing.price <= high)
+    if request.args.get("free") == "1":
+        query = query.filter(Listing.price == 0)
+    if request.args.get("has_image") == "1":
+        query = query.filter(Listing.image != "")
+    if request.args.get("posted_today") == "1":
+        query = query.filter(
+            Listing.posted_at >= SNAPSHOT_NOW.replace(hour=0, minute=0, second=0)
+        )
+    rows = [x for x in query.all() if x.id not in hidden_listing_ids()]
+    words = re.findall(r"[\w]+", request.args.get("q", "").casefold())
+
+    def score(row):
+        title = row.title.casefold()
+        hay = (
+            title
+            if request.args.get("title_only") == "1"
+            else " ".join(
+                [
+                    title,
+                    row.description.casefold(),
+                    row.neighborhood.casefold(),
+                    json.dumps(dict(listing_public_details(row))).casefold(),
+                ]
+            )
+        )
+        return (
+            sum(5 if w in title else 1 for w in words)
+            if all(w in hay for w in words)
+            else 0
+        )
+
+    if words:
+        rows = [x for x in rows if score(x)]
+    sort = request.args.get("sort", "relevance")
+    if sort == "price_asc":
+        rows.sort(key=lambda x: (x.price is None, x.price or 0, x.id))
+    elif sort == "price_desc":
+        rows.sort(key=lambda x: (x.price is None, -(x.price or 0), x.id))
+    elif sort == "oldest":
+        rows.sort(key=lambda x: (x.posted_at, x.id))
+    elif sort == "newest":
+        rows.sort(key=lambda x: (x.posted_at, x.id), reverse=True)
+    else:
+        rows.sort(key=lambda x: (score(x), x.posted_at, x.id), reverse=True)
+    return rows
 
 
-@app.route("/search/<category_slug>")
-def category_search(category_slug):
-    category = Category.query.filter_by(slug=category_slug).first_or_404()
-    listings = filter_listings(category_slug)
+@app.route("/search")
+@app.route("/search/<category_slug>", endpoint="category_search")
+def search(category_slug=None):
+    chosen = request.args.get("category", "")
+    if chosen:
+        Category.query.filter_by(slug=chosen).first_or_404()
+        args = request.args.to_dict()
+        args.pop("category")
+        args.pop("section", None)
+        return redirect(url_for("category_search", category_slug=chosen, **args))
+    category = (
+        Category.query.filter_by(slug=category_slug).first_or_404()
+        if category_slug
+        else None
+    )
     return render_template(
         "search.html",
-        listings=listings,
+        listings=filtered_listings(category_slug),
         category=category,
-        query=request.args.get("q", "").strip(),
-        areas=["san francisco", "east bay", "south bay", "peninsula", "north bay", "santa cruz"],
+        query=request.args.get("q", ""),
+        areas=REGIONS,
     )
 
 
 @app.route("/d/<slug>/<int:listing_id>.html")
 def listing_detail(slug, listing_id):
-    listing = Listing.query.get_or_404(listing_id)
-    if listing.slug != slug:
-        return redirect(url_for("listing_detail", slug=listing.slug, listing_id=listing.id), code=301)
-    listing.view_count += 1
-    db.session.commit()
-    nearby = Listing.query.filter(
-        Listing.id != listing.id,
-        Listing.category_slug == listing.category_slug,
-        Listing.status == "active",
-    ).order_by(Listing.posted_at.desc()).limit(6).all()
+    listing = Listing.query.filter_by(id=listing_id, status="active").first_or_404()
+    if slug != listing.slug:
+        return redirect(
+            url_for("listing_detail", slug=listing.slug, listing_id=listing.id),
+            code=301,
+        )
+    nearby = (
+        Listing.query.filter(
+            Listing.id != listing.id,
+            Listing.category_slug == listing.category_slug,
+            Listing.status == "active",
+        )
+        .order_by(Listing.id)
+        .limit(6)
+        .all()
+    )
     return render_template("listing_detail.html", listing=listing, nearby=nearby)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
+        user = User.query.filter_by(
+            email=request.form.get("email", "").strip().lower()
+        ).first()
+        if user and user.check_password(request.form.get("password", "")):
             login_user(user)
             flash("logged in", "success")
-            return redirect(request.args.get("next") or url_for("account"))
+            return local_redirect(request.args.get("next"), url_for("account"))
         flash("invalid email or password", "error")
     return render_template("login.html")
 
@@ -437,78 +502,121 @@ def login():
 def register():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
-        username = request.form.get("username", "").strip().lower()
-        name = request.form.get("name", "").strip() or username
+        username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        if not email or not username or not password:
-            flash("email, username, and password are required", "error")
-        elif User.query.filter(or_(User.email == email, User.username == username)).first():
+        if (
+            not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email)
+            or not username
+            or len(password) < 8
+        ):
+            flash(
+                "Enter a valid email, username and password of at least 8 characters.",
+                "error",
+            )
+        elif User.query.filter(
+            or_(User.email == email, User.username == username)
+        ).first():
             flash("that account already exists", "error")
         else:
-            user = User(email=email, username=username, name=name, area=request.form.get("area", "san francisco"))
+            area = request.form.get("area", REGIONS[0])
+            if area not in REGIONS:
+                abort(400)
+            user = User(
+                email=email,
+                username=username,
+                name=request.form.get("name", "").strip() or username,
+                area=area,
+            )
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
             login_user(user)
-            flash("account created", "success")
             return redirect(url_for("account"))
     return render_template("register.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
-    flash("logged out", "info")
     return redirect(url_for("index"))
 
 
 @app.route("/account")
 @login_required
 def account():
-    posts = Listing.query.filter_by(owner_id=current_user.id).order_by(Listing.posted_at.desc()).all()
-    searches = SavedSearch.query.filter_by(user_id=current_user.id).order_by(SavedSearch.created_at.desc()).all()
-    messages = Message.query.filter_by(user_id=current_user.id).order_by(Message.created_at.desc()).limit(5).all()
-    hidden = (Listing.query.join(HiddenListing, HiddenListing.listing_id == Listing.id)
-              .filter(HiddenListing.user_id == current_user.id)
-              .order_by(Listing.title).all())
-    return render_template("account.html", posts=posts, searches=searches, messages=messages, hidden=hidden)
+    return render_template(
+        "account.html",
+        posts=Listing.query.filter_by(owner_id=current_user.id)
+        .order_by(Listing.id.desc())
+        .all(),
+        searches=SavedSearch.query.filter_by(user_id=current_user.id)
+        .order_by(SavedSearch.id.desc())
+        .all(),
+        messages=Message.query.filter_by(user_id=current_user.id)
+        .order_by(Message.id.desc())
+        .limit(5)
+        .all(),
+        hidden=Listing.query.join(HiddenListing, HiddenListing.listing_id == Listing.id)
+        .filter(HiddenListing.user_id == current_user.id)
+        .all(),
+    )
 
 
 @app.route("/account/edit", methods=["GET", "POST"])
 @login_required
 def account_edit():
     if request.method == "POST":
-        current_user.name = request.form.get("name", current_user.name).strip()
-        current_user.area = request.form.get("area", current_user.area).strip()
-        current_user.phone = request.form.get("phone", current_user.phone).strip()
-        db.session.commit()
-        flash("account updated", "success")
-        return redirect(url_for("account"))
+        area = request.form.get("area", current_user.area)
+        phone = request.form.get("phone", "").strip()
+        if area not in REGIONS or not re.fullmatch(r"[0-9()+ .-]{7,24}", phone):
+            flash("Enter a supported area and valid phone number.", "error")
+        else:
+            current_user.name = request.form.get("name", current_user.name).strip()
+            current_user.area = area
+            current_user.phone = phone
+            db.session.commit()
+            flash("account updated", "success")
+            return redirect(url_for("account"))
     return render_template("account_edit.html")
 
 
 @app.route("/saved")
 @login_required
 def saved():
-    rows = SavedListing.query.filter_by(user_id=current_user.id).order_by(SavedListing.created_at.desc()).all()
+    rows = (
+        SavedListing.query.filter_by(user_id=current_user.id)
+        .order_by(SavedListing.id.desc())
+        .all()
+    )
     return render_template("saved.html", rows=rows)
 
 
 @app.route("/save-search", methods=["POST"])
 @login_required
 def save_search():
-    name = request.form.get("name", "").strip() or "saved craigslist search"
-    saved_search = SavedSearch(
-        user_id=current_user.id,
-        name=name,
-        query_text=request.form.get("q", "").strip(),
-        category_slug=request.form.get("category_slug", "").strip(),
-        area=request.form.get("area", "").strip(),
-        min_price=parse_int(request.form.get("min_price")),
-        max_price=parse_int(request.form.get("max_price")),
+    category = request.form.get("category_slug", "")
+    area = request.form.get("area", "")
+    if category and not Category.query.filter_by(slug=category).first():
+        abort(400)
+    if area and area not in REGIONS:
+        abort(400)
+    low, high = (
+        parse_int(request.form.get("min_price")),
+        parse_int(request.form.get("max_price")),
     )
-    db.session.add(saved_search)
+    if low is not None and high is not None and low > high:
+        abort(400)
+    row = SavedSearch(
+        user_id=current_user.id,
+        name=request.form.get("name", "").strip()[:120] or "saved search",
+        query_text=request.form.get("q", "").strip()[:180],
+        category_slug=category,
+        area=area,
+        min_price=low,
+        max_price=high,
+    )
+    db.session.add(row)
     db.session.commit()
     flash("search saved", "success")
     return redirect(url_for("account"))
@@ -517,163 +625,204 @@ def save_search():
 @app.route("/listing/<int:listing_id>/save", methods=["POST"])
 @login_required
 def save_listing(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
-    existing = SavedListing.query.filter_by(user_id=current_user.id, listing_id=listing.id).first()
-    if not existing:
-        db.session.add(SavedListing(
-            user_id=current_user.id,
-            listing_id=listing.id,
-            note=request.form.get("note", "").strip(),
-        ))
+    listing = Listing.query.filter_by(id=listing_id, status="active").first_or_404()
+    if not SavedListing.query.filter_by(
+        user_id=current_user.id, listing_id=listing.id
+    ).first():
+        db.session.add(SavedListing(user_id=current_user.id, listing_id=listing.id))
         db.session.commit()
-        flash("listing saved", "success")
-    return redirect(request.form.get("next") or url_for("listing_detail", slug=listing.slug, listing_id=listing.id))
+    flash("listing saved", "success")
+    return local_redirect(
+        request.form.get("next"),
+        url_for("listing_detail", slug=listing.slug, listing_id=listing.id),
+    )
 
 
 @app.route("/listing/<int:listing_id>/unsave", methods=["POST"])
 @login_required
 def unsave_listing(listing_id):
-    saved_row = SavedListing.query.filter_by(user_id=current_user.id, listing_id=listing_id).first()
-    if saved_row:
-        db.session.delete(saved_row)
+    row = SavedListing.query.filter_by(
+        user_id=current_user.id, listing_id=listing_id
+    ).first()
+    if row:
+        db.session.delete(row)
         db.session.commit()
-        flash("listing removed", "info")
-    return redirect(request.form.get("next") or url_for("saved"))
+    flash("listing removed", "info")
+    return local_redirect(request.form.get("next"), url_for("saved"))
 
 
 @app.route("/listing/<int:listing_id>/hide", methods=["POST"])
 def hide_listing(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
+    Listing.query.filter_by(id=listing_id, status="active").first_or_404()
     if current_user.is_authenticated:
-        existing = HiddenListing.query.filter_by(user_id=current_user.id, listing_id=listing.id).first()
-        if not existing:
-            db.session.add(HiddenListing(user_id=current_user.id, listing_id=listing.id))
+        if not HiddenListing.query.filter_by(
+            user_id=current_user.id, listing_id=listing_id
+        ).first():
+            db.session.add(
+                HiddenListing(user_id=current_user.id, listing_id=listing_id)
+            )
             db.session.commit()
     else:
-        ids = set(session.get("hidden_listing_ids", []))
-        ids.add(listing.id)
-        session["hidden_listing_ids"] = sorted(ids)
+        session["hidden_listing_ids"] = sorted(
+            set(session.get("hidden_listing_ids", [])) | {listing_id}
+        )
     flash("listing hidden", "info")
-    return redirect(request.form.get("next") or url_for("search"))
+    return local_redirect(request.form.get("next"), url_for("search"))
 
 
 @app.route("/listing/<int:listing_id>/unhide", methods=["POST"])
 def unhide_listing(listing_id):
     if current_user.is_authenticated:
-        HiddenListing.query.filter_by(user_id=current_user.id, listing_id=listing_id).delete()
-        db.session.commit()
+        row = HiddenListing.query.filter_by(
+            user_id=current_user.id, listing_id=listing_id
+        ).first()
+        if row:
+            db.session.delete(row)
+            db.session.commit()
     else:
-        ids = set(session.get("hidden_listing_ids", []))
-        ids.discard(listing_id)
-        session["hidden_listing_ids"] = sorted(ids)
-    flash("listing unhidden", "info")
-    return redirect(request.form.get("next") or url_for("account"))
+        session["hidden_listing_ids"] = [
+            i for i in session.get("hidden_listing_ids", []) if i != listing_id
+        ]
+    return local_redirect(request.form.get("next"), url_for("hidden"))
 
 
-@app.route("/listing/<int:listing_id>/flag", methods=["POST"])
-def flag_listing(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
-    listing.flag_count += 1
-    db.session.commit()
-    flash("thanks for flagging", "info")
-    return redirect(url_for("listing_detail", slug=listing.slug, listing_id=listing.id))
+@app.route("/hidden")
+def hidden():
+    rows = Listing.query.filter(Listing.id.in_(hidden_listing_ids())).all()
+    return render_template("hidden.html", rows=rows)
 
 
 @app.route("/reply/<int:listing_id>", methods=["GET", "POST"])
 def reply(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
+    listing = Listing.query.filter_by(id=listing_id, status="active").first_or_404()
     if request.method == "POST":
-        name = request.form.get("name", "").strip() or (current_user.name if current_user.is_authenticated else "craigslist user")
-        email = request.form.get("email", "").strip() or (current_user.email if current_user.is_authenticated else "anonymous@example.test")
         body = request.form.get("body", "").strip()
-        if not body:
-            flash("message body is required", "error")
+        if not body or len(body) > 5000:
+            flash("Enter a message of 1–5000 characters.", "error")
         else:
-            db.session.add(Message(
-                user_id=current_user.id if current_user.is_authenticated else None,
-                listing_id=listing.id,
-                sender_name=name,
-                sender_email=email,
-                body=body,
-                direction="outbound",
-                is_read=True,
-            ))
+            db.session.add(
+                Message(
+                    user_id=current_user.id if current_user.is_authenticated else None,
+                    listing_id=listing.id,
+                    sender_name=current_user.name
+                    if current_user.is_authenticated
+                    else request.form.get("name", "").strip(),
+                    sender_email=current_user.email
+                    if current_user.is_authenticated
+                    else request.form.get("email", "").strip(),
+                    body=body,
+                    direction="outbound",
+                    is_read=True,
+                )
+            )
             db.session.commit()
-            flash("reply sent", "success")
-            return redirect(url_for("listing_detail", slug=listing.slug, listing_id=listing.id))
+            flash("reply saved locally — no external message sent", "success")
+            return redirect(
+                url_for("listing_detail", slug=listing.slug, listing_id=listing.id)
+            )
     return render_template("reply.html", listing=listing)
 
 
 @app.route("/messages")
 @login_required
 def messages():
-    rows = Message.query.filter_by(user_id=current_user.id).order_by(Message.created_at.desc()).all()
-    unread = Message.query.filter_by(user_id=current_user.id, is_read=False).all()
-    for row in unread:
-        row.is_read = True
-    db.session.commit()
+    rows = (
+        Message.query.filter_by(user_id=current_user.id)
+        .order_by(Message.id.desc())
+        .all()
+    )
+    # Reading messages is deliberately side-effect free for snapshot grading.
     return render_template("messages.html", rows=rows)
 
 
 @app.route("/post", methods=["GET", "POST"])
 @login_required
 def post_listing():
-    categories = Category.query.order_by(Category.group_slug, Category.display_order).all()
+    categories = Category.query.order_by(Category.display_order).all()
     if request.method == "POST":
-        category = Category.query.filter_by(slug=request.form.get("category_slug", "")).first()
-        if not category:
-            flash("choose a valid category", "error")
-            return render_template("post.html", categories=categories)
-        title = request.form.get("title", "").strip()
-        description = request.form.get("description", "").strip()
-        if not title or not description:
-            flash("title and description are required", "error")
-            return render_template("post.html", categories=categories)
-        details = {
-            "posted_by": "owner",
-            "availability": request.form.get("availability", "available now").strip(),
-            "contact_preference": request.form.get("contact_preference", "email").strip(),
-        }
-        listing = Listing(
-            title=title,
-            slug=f"{slugify(title)}-{hashlib.md5((title + current_user.email).encode()).hexdigest()[:6]}",
-            category_id=category.id,
-            category_slug=category.slug,
-            category_group=category.group_slug,
-            area=request.form.get("area", current_user.area).strip(),
-            neighborhood=request.form.get("neighborhood", "").strip(),
-            price=parse_int(request.form.get("price")),
-            bedrooms=parse_int(request.form.get("bedrooms")),
-            sqft=parse_int(request.form.get("sqft")),
-            condition=request.form.get("condition", "").strip(),
-            compensation=request.form.get("compensation", "").strip(),
-            company=request.form.get("company", "").strip(),
-            employment_type=request.form.get("employment_type", "").strip(),
-            description=description,
-            details_json=json.dumps(details, sort_keys=True),
-            seller_name=current_user.name,
-            seller_email=current_user.email,
-            reply_phone=current_user.phone,
-            owner_id=current_user.id,
-            status="active",
+        category = Category.query.filter_by(
+            slug=request.form.get("category_slug", "")
+        ).first()
+        title, body = (
+            request.form.get("title", "").strip(),
+            request.form.get("description", "").strip(),
         )
-        db.session.add(listing)
-        db.session.commit()
-        flash("posting published", "success")
-        return redirect(url_for("listing_detail", slug=listing.slug, listing_id=listing.id))
+        area = request.form.get("area", current_user.area)
+        if (
+            not category
+            or not title
+            or not body
+            or len(title) > 220
+            or len(body) > 10000
+            or area not in REGIONS
+        ):
+            flash(
+                "Choose a category/area and provide a title and description.", "error"
+            )
+        else:
+            listing = Listing(
+                title=title,
+                slug=slugify(title) + "-" + secrets.token_hex(6),
+                category_id=category.id,
+                category_slug=category.slug,
+                category_group=category.group_slug,
+                area=area,
+                neighborhood=request.form.get("neighborhood", "").strip(),
+                price=parse_int(request.form.get("price"))
+                if category.group_slug in {"for_sale", "housing"}
+                else None,
+                bedrooms=parse_int(request.form.get("bedrooms"))
+                if category.group_slug == "housing"
+                else None,
+                sqft=parse_int(request.form.get("sqft"))
+                if category.group_slug == "housing"
+                else None,
+                condition=request.form.get("condition", "")
+                if category.group_slug == "for_sale"
+                else "",
+                compensation=request.form.get("compensation", "")
+                if category.group_slug == "jobs"
+                else "",
+                company=request.form.get("company", "")
+                if category.group_slug == "jobs"
+                else "",
+                employment_type=request.form.get("employment_type", "")
+                if category.group_slug == "jobs"
+                else "",
+                description=body,
+                details_json="{}",
+                image="",
+                seller_name=current_user.name,
+                seller_email=current_user.email,
+                reply_phone=current_user.phone,
+                owner_id=current_user.id,
+                status="active",
+            )
+            db.session.add(listing)
+            db.session.commit()
+            flash("posting published locally", "success")
+            return redirect(
+                url_for("listing_detail", slug=listing.slug, listing_id=listing.id)
+            )
     return render_template("post.html", categories=categories)
 
 
 @app.route("/posting/<int:listing_id>/delete", methods=["POST"])
 @login_required
 def delete_posting(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     if listing.owner_id != current_user.id:
         abort(403)
     listing.status = "deleted"
     db.session.commit()
-    flash("posting deleted", "info")
     return redirect(url_for("account"))
+
+
+@app.route("/about/<page>")
+def information(page):
+    if page not in {"help", "safety", "privacy", "terms", "about"}:
+        abort(404)
+    return render_template("information.html", page=page)
 
 
 @app.route("/_health")
@@ -681,12 +830,5 @@ def health():
     return {"ok": True, "site": "craigslist", "listings": Listing.query.count()}
 
 
-with app.app_context():
-    db.create_all()
-    seed_database(BASE_DIR, db, Category, Listing)
-    seed_benchmark_users(db, User, Listing, SavedListing, SavedSearch, Message)
-
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 40016)), debug=False)

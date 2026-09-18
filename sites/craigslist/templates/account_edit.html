@@ -5,7 +5,7 @@
 <div class="form-page">
   <p class="form-back"><a href="{{ url_for('account') }}">&lt; account</a></p>
   <h1>edit account</h1>
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>name</label>
     <input name="name" value="{{ current_user.name }}">
     <label>area</label>
