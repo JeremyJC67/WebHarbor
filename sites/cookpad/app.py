@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 # ---------------------------------------------------------------------------
 SITE_SLUG = "cookpad"
 SITE_NAME = "Cookpad"
-SITE_PORT = 40016
+SITE_PORT = 40040
 BENCHMARK_PASSWORD = "TestPass123!"
 BASE_DIR = Path(__file__).resolve().parent
 INSTANCE_DIR = BASE_DIR / "instance"
