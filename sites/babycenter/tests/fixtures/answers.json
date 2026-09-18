@@ -17,7 +17,7 @@
   {
     "raking_month": 6,
     "raking_description": "Fingers rake at objects to pick them up.",
-    "month_6_other_motor": "Can sit with support.",
+    "raking_other_motor": "Can sit with support.",
     "month_2_motor": "Can hold up head and chest while in prone position."
   },
   {

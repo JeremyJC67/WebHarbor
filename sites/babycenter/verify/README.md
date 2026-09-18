@@ -4,7 +4,10 @@ Run through `agent_demo/eval_judge.py --run_dir ABSOLUTE_RUN --verifier True`.
 The run must contain `trajectory.json`, real PNG screenshots, `initial.db` and
 `after.db`. The verifier never falls back to mutable live state.
 
-The revised tasks explicitly request a JSON final answer. Field names carry the
+Task goals are concise; a separate, compact answer-format paragraph in `ques`
+explicitly requests JSON and lists the keys. It stays visible to any runner that
+reads `ques` (not hidden in reviewer metadata or a new loader-specific field).
+Field names carry the
 entity/age relationship; numeric fields contain numbers, not sentences with
 incidental matching digits. Date strings accept ISO and written dates, ranges
 accept a two-number array or equivalent `18–22 weeks` notation, and short text
@@ -13,8 +16,13 @@ facts accept common equivalent phrasing. Ground truth stays in reviewer-only
 fields, wrong types, contradictions and wrong facts fail closed.
 
 The verifier checks three independent layers: the answer contract, navigation
-to the requested source/filter pages, and the exact database delta. It does not
-require a minimum number of steps or force arbitrary ordering between sources.
+to the requested sources, and the exact database delta. The nine expanded tasks
+allow any browser route and source order that achieves their stated outcomes;
+fixed search strings, filters and index-page visits are no longer required.
+Task 0 still requires both rendered calculator results but allows one visit to
+their shared guide and does not prescribe particular input/click events. Tasks 3 and 7 retain
+their explicitly requested filter/search workflows. No minimum action count is
+enforced. A homepage-only answer or missing source still fails.
 Clicks can use the bundled agent's numeric `index` payload. Selectors and
 reviewer-invented button labels are never required.
 
@@ -29,6 +37,10 @@ Short-task revisions add comparisons or saved-item management for IDs
 0, 1, 2, 4, 5, 6, 8, 9 and 11. All 15 tasks now use explicit answer fields.
 Sourced guides are sparse: account/calculator pages distinguish completed
 gestational weeks from the nearest linked checkpoint, as of 2026-05-29.
+Task 1 calls its additional ability field `raking_other_motor`; the former
+`month_6_other_motor` leaked the month the agent was asked to discover. Regrading
+older evidence requires an explicitly labelled field-name migration, not a
+claim that the older recording used the new prompt.
 
 The seed migration runs at fetch/build time, never during normal HTTP startup.
 HF PR #78 remains a release dependency until merged and repinned; the immutable

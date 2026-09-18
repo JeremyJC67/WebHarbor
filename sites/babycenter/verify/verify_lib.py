@@ -286,34 +286,13 @@ def run_checks(
 
     if task_number == 0:
         path("/due-date-calculator")
-        for value in ("2026-02-20", "28", "31"):
-            judge.check(
-                "calculator_input_" + value,
-                action_on(trajectory, "input", "/due-date-calculator", value),
-                value,
-            )
-        judge.check(
-            "calculator_submit",
-            action_on(trajectory, "click", "/due-date-calculator"),
-            "index or label click",
-        )
         judge.check(
             "linked_guide",
             paths_in_order(trajectory, ["/due-date-calculator", "/pregnancy/week-13"]),
             "calculator to linked guide",
         )
-        # Two separate form submissions/guide visits are required, in either
-        # equivalent recorder schema. Consecutive repeated URLs are one visit.
-        unique = []
-        for url in urls(trajectory):
-            p = url_path(url)
-            if not unique or unique[-1] != p:
-                unique.append(p)
-        judge.check(
-            "both_linked_results",
-            unique.count("/pregnancy/week-13") >= 2,
-            "open each calculator result",
-        )
+        # Both computed results must be observed. The cycles share one guide,
+        # so do not require a duplicate visit or particular input/click events.
         observations = " ".join(
             str(step.get(key, ""))
             for step in trajectory.get("steps", [])
@@ -327,41 +306,35 @@ def run_checks(
                 "due date observed in the rendered calculator result, not final answer",
             )
     elif task_number == 1:
-        source_group("/search", ["/baby/month-6", "/baby/month-2"])
-        query("/search", q="raking grasp")
-        query("/search", q="head steady")
-        filtered_source("/search", "/baby/month-6", q="raking grasp")
-        filtered_source("/search", "/baby/month-2", q="head steady")
-    elif task_number in (2, 3):
+        path("/baby/month-6")
+        path("/baby/month-2")
+    elif task_number == 2:
+        path("/articles/prenatal-screening-explained")
+        path("/articles/amniocentesis")
+    elif task_number == 3:
         query("/articles", category="Prenatal Testing", trimester="Second trimester")
-        targets = ["/articles/amniocentesis"]
-        if task_number == 2:
-            query("/articles", category="Prenatal Testing", trimester="First trimester")
-            targets.append("/articles/prenatal-screening-explained")
-        else:
-            targets.append("/articles/first-second-third-trimester-screen")
+        targets = [
+            "/articles/amniocentesis",
+            "/articles/first-second-third-trimester-screen",
+        ]
         source_group("/articles", targets)
         for target in targets:
             filtered_source(
                 "/articles",
                 target,
                 category="Prenatal Testing",
-                trimester="First trimester"
-                if target.endswith("prenatal-screening-explained")
-                else "Second trimester",
+                trimester="Second trimester",
             )
     elif task_number == 4:
-        source_group(
-            "/pregnancy/week-by-week", [f"/pregnancy/week-{w}" for w in (18, 20, 30)]
-        )
+        for week in (18, 20, 30):
+            path(f"/pregnancy/week-{week}")
     elif task_number == 5:
-        source_group("/pregnancy/week-by-week", ["/pregnancy/week-30"])
+        path("/pregnancy/week-30")
         path("/articles/fetal-growth-rate")
         account()
     elif task_number == 6:
-        source_group(
-            "/baby/month-by-month", [f"/baby/month-{m}" for m in (2, 6, 7, 10)]
-        )
+        for month in (2, 6, 7, 10):
+            path(f"/baby/month-{month}")
     elif task_number == 7:
         query("/search", q="sleep")
         source_group(
@@ -374,25 +347,11 @@ def run_checks(
         ):
             filtered_source("/search", target, q="sleep")
     elif task_number == 8:
-        for club in ("Starting Solids", "Newborn Sleep"):
-            query("/community", club=club)
-        source_group(
-            "/community",
-            [
-                "/community/starting-solids-allergens",
-                "/community/newborn-night-wakings",
-            ],
-        )
-        filtered_source(
-            "/community", "/community/starting-solids-allergens", club="Starting Solids"
-        )
-        filtered_source(
-            "/community", "/community/newborn-night-wakings", club="Newborn Sleep"
-        )
+        path("/community/starting-solids-allergens")
+        path("/community/newborn-night-wakings")
     elif task_number in (9, 11):
-        source_group(
-            "/account", ["/articles/how-births-are-classified", "/pregnancy/week-18"]
-        )
+        path("/articles/how-births-are-classified")
+        path("/pregnancy/week-18")
         account()
     elif task_number == 10:
         path("/articles/infant-sleep-approaches")

@@ -146,7 +146,7 @@ def screening(value):
 
 KEYS = [
     "cycles due_date_difference_days",
-    "raking_month raking_description month_6_other_motor month_2_motor",
+    "raking_month raking_description raking_other_motor month_2_motor",
     "serum_markers ultrasound_measurement amniocentesis_type amniocentesis_sample_method",
     "screening_component amniocentesis_sample_method",
     "week_18_scan_window week_20_blood_test week_30_rem_max_percent",
@@ -214,7 +214,7 @@ def check_answer(task, answer, judge):
                 v, r"\bfingers?\b", r"\brak", r"\b(?:pick|collect|gather|grab)"
             ),
         )
-        check("month_6_other_motor", other_motor6)
+        check("raking_other_motor", other_motor6)
         check("month_2_motor", motor2)
     elif task == 2:
 
