@@ -29,3 +29,9 @@ site.babycenter: 8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce
 # https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/96
 site.amtrak: 6f432484307f76ca3c58b1d5c8f7b614dfb34f54
 site.amtrak.sha256: 22f0132a5f9bfee45a641e8172050a94bb4fc0de4ad45f1d9e52deb50eb37f34
+
+# Cookpad: original HF PR #35 followed by reviewed replacement HF PR #99.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/99
+# One source-backed seed, 60 real recipe photos, and two original brand images.
+site.cookpad: 5e17eadcc767a4e02541030d0f86dff25f4004f1
+site.cookpad.sha256: 38802e2c7898c7005c67f59973f17d9472023ce7eca5deda13476602dab85c10
