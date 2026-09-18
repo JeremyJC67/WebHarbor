@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 41 Flask mirror sites + control plane on :8101.
+# 42 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm
 
@@ -125,7 +125,7 @@ print('AccuWeather seed DB generated at build time.')" && rm -rf /opt/WebSyn/acc
 # Upgrade the pinned Recreation.gov seed before it becomes the reset fixture.
 RUN cd /opt/WebSyn/recreation_gov && python3 migrate_seed.py
 
-EXPOSE 8101 40000-40040
+EXPOSE 8101 40000-40041
 
 # Keep the downloaded BabyCenter seed aligned with tracked source corrections.
 RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
@@ -133,5 +133,9 @@ RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
 
 # Verify every Cookpad source-backed image before shipping the pinned seed.
 RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/cookpad
+
+# Craigslist ships its reviewed seed and authentic listing photos/provenance.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/craigslist && \
+    cd /opt/WebSyn/craigslist && python3 -c "import app" && rm -rf instance
 
 CMD ["/opt/websyn_start.sh"]
