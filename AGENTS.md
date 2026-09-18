@@ -58,7 +58,7 @@ docker run -d -p 8101:8101 -p 40000-40041:40000-40041 \
   battalion7244/webharbor:latest
 ```
 
-Sites are on `40000`-`40040` in the order declared by `SITES=( ... )` in `websyn_start.sh`. Control plane:
+Sites are on `40000`-`40041` in the order declared by `SITES=( ... )` in `websyn_start.sh`. Control plane:
 
 | Method | Path                | Purpose                                   |
 |--------|---------------------|-------------------------------------------|

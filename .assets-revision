@@ -35,3 +35,9 @@ site.amtrak.sha256: 22f0132a5f9bfee45a641e8172050a94bb4fc0de4ad45f1d9e52deb50eb3
 # One source-backed seed, 60 real recipe photos, and two original brand images.
 site.cookpad: 5e17eadcc767a4e02541030d0f86dff25f4004f1
 site.cookpad.sha256: 38802e2c7898c7005c67f59973f17d9472023ce7eca5deda13476602dab85c10
+
+# Craigslist: original HF #72 followed by reviewed source-backed replacement #100.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/100
+# 78 authentic posts, 512 original photos, deterministic seed and source captures.
+site.craigslist: 60d24cc02061a7fdff15c0684441b1f5e73a33a8
+site.craigslist.sha256: 741ef266077cc56c082e5b7dd2df0e43ffa81f7a1c297bb55ac232aabe9e5f5d

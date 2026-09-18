@@ -134,4 +134,8 @@ RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
 # Verify every Cookpad source-backed image before shipping the pinned seed.
 RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/cookpad
 
+# Craigslist ships its reviewed seed and authentic listing photos/provenance.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/craigslist && \
+    cd /opt/WebSyn/craigslist && python3 -c "import app" && rm -rf instance
+
 CMD ["/opt/websyn_start.sh"]

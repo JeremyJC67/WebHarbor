@@ -30,9 +30,10 @@ supports all-keyword text, real categories/areas, price limits, title/photo/free
 snapshot-day filters and explicit sorting. Saved searches retain keyword,
 category, area and price fields only; the UI discloses this scope.
 
-This branch is based on PR #103, preserving the #5 → #60 → #103 ancestry. It has
-not been integrated with current main. The old `.assets-revision` does not contain
-this new Craigslist bundle. **Before authorized code integration, publish and
-merge the matching HF archive, pin its immutable merged revision, and validate
-a fresh fetch/build.** GitHub/HF publication and Docker publication have not been
-performed as part of this local fix.
+The integration preserves #5 → #60 → #103 → reviewed fixes using separate merge
+commits. Craigslist is appended at index 41, port 40041; existing ports are stable.
+Original HF PR #72 and replacement HF PR #100 are merged. `.assets-revision`
+pins the verified replacement at `60d24cc02061a7fdff15c0684441b1f5e73a33a8`.
+The asset inventory additionally follows the repository-wide schema; regenerate
+its managed-file section with `python tools/build_asset_inventory.py` after
+installing the matching bundle. Docker publication is a separate release step.
