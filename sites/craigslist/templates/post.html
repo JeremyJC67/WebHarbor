@@ -5,21 +5,21 @@
 <div class="form-page wide">
   <p class="form-back"><a href="{{ url_for('account') }}">&lt; account</a></p>
   <h1>create a posting</h1>
-  <form method="post" data-category-aware-post>
+  <form method="post">
     <label>category</label>
-    <select name="category_slug" required data-post-category>
+    <select name="category_slug" required>
       {% for cat in categories %}
       <option value="{{ cat.slug }}" data-group="{{ cat.group_slug }}">{{ cat.group_name }} / {{ cat.name }}</option>
       {% endfor %}
     </select>
     <label>posting title</label>
     <input name="title" required placeholder="short descriptive title">
-    <div class="form-row">
-      <div class="field-for" data-groups="for_sale,housing,services,community,gigs">
+    <div class="form-row" data-groups="for_sale housing">
+      <div>
         <label>price</label>
         <input name="price" inputmode="numeric">
       </div>
-      <div class="field-for" data-groups="for_sale">
+      <div>
         <label>condition</label>
         <select name="condition">
           <option value="">not applicable</option>
@@ -48,7 +48,7 @@
         <input name="neighborhood" placeholder="e.g. berkeley">
       </div>
     </div>
-    <div class="form-row field-for" data-groups="housing">
+    <div class="form-row" data-groups="housing">
       <div>
         <label>bedrooms</label>
         <input name="bedrooms" inputmode="numeric">
@@ -58,10 +58,9 @@
         <input name="sqft" inputmode="numeric">
       </div>
     </div>
-    <div class="field-for" data-groups="jobs">
-      <label>compensation</label>
+    <div data-groups="jobs">
+      <label>compensation or company</label>
       <input name="compensation" placeholder="$28/hr, $155k-$180k, etc.">
-      <label>company</label>
       <input name="company" placeholder="company name">
       <label>employment type</label>
       <select name="employment_type">
@@ -77,4 +76,20 @@
     <button type="submit">publish</button>
   </form>
 </div>
+<script>
+(function () {
+  var sel = document.querySelector('select[name="category_slug"]');
+  if (!sel) return;
+  function sync() {
+    var opt = sel.options[sel.selectedIndex];
+    var group = opt ? (opt.getAttribute('data-group') || '') : '';
+    document.querySelectorAll('[data-groups]').forEach(function (el) {
+      var groups = (el.getAttribute('data-groups') || '').split(' ');
+      el.style.display = groups.indexOf(group) >= 0 ? '' : 'none';
+    });
+  }
+  sel.addEventListener('change', sync);
+  sync();
+})();
+</script>
 {% endblock %}
