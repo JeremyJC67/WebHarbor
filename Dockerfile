@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 40 Flask mirror sites + control plane on :8101.
+# 43 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm
 
@@ -141,6 +141,13 @@ RUN cd /opt/WebSyn/recreation_gov && python3 migrate_seed.py
 RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
     python3 /opt/WebSyn/babycenter/migrate_seed.py
 
-EXPOSE 8101 40000-40039
+# Verify every Cookpad source-backed image before shipping the pinned seed.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/cookpad
+
+# Craigslist ships its reviewed seed and authentic listing photos/provenance.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/craigslist && \
+    cd /opt/WebSyn/craigslist && python3 -c "import app" && rm -rf instance
+
+EXPOSE 8101 40000-40042
 
 CMD ["/opt/websyn_start.sh"]

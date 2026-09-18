@@ -36,7 +36,7 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 40 sites today, scaling to 100+ together
+- **Community-driven** — 43 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
@@ -44,10 +44,10 @@ Build this checkout to run its registered web environments (published image tags
 
 ```bash
 ./scripts/build.sh webharbor:dev
-docker run -p 8101:8101 -p 40000-40039:40000-40039 webharbor:dev
+docker run -p 8101:8101 -p 40000-40042:40000-40042 webharbor:dev
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40039` to explore 40 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, and Versus`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40042` to explore 43 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, Amtrak, Cookpad, Craigslist, and Versus`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -66,12 +66,13 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **40 sites**. NVIDIA remains at index 28, UC Berkeley
+This checkout registers **43 sites**. NVIDIA remains at index 28, UC Berkeley
 remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
 31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at
 index 34. Recreation.gov remains at index 35, BoardGameGeek remains at index 36,
-CarMax remains at index 37, BabyCenter remains at index 38, and Versus is appended
-at index 39. Build the image from
+CarMax remains at index 37, BabyCenter remains at index 38, Amtrak remains at index
+39, Cookpad remains at index 40, Craigslist remains at index 41, and Versus is
+appended at index 42. Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
@@ -88,10 +89,13 @@ published Docker image automatically.
 | BoardGameGeek | 36 | 40036 | 48036 |
 | CarMax | 37 | 40037 | 48037 |
 | BabyCenter | 38 | 40038 | 48038 |
-| Versus | 39 | 40039 | 48039 |
+| Amtrak | 39 | 40039 | 48039 |
+| Cookpad | 40 | 40040 | 48040 |
+| Craigslist | 41 | 40041 | 48041 |
+| Versus | 42 | 40042 | 48042 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 40 sites and `40000-40039`;
+site's `tasks.jsonl` `web` URL agree on 43 sites and `40000-40042`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -99,7 +103,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48039:40000-40039 webharbor:dev
+docker run -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48042:40000-40042 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -120,7 +124,7 @@ The bundle contains 78 articles and 62 structured guidance sections. That archiv
 is part of the consolidated pinned dataset revision below.
 
 
-`.assets-revision` pins merged HF main commit `9d67d0088a7535e455a331a823b67e3a7d666161`, containing archives for the 38 mainline sites through CarMax. Original asset PRs #8 (Recreation.gov), #15 (CarMax), #25 (BoardGameGeek), and #66 (AccuWeather) are merged, followed by [CarMax photo supplement #95](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95). BabyCenter uses the merged per-site pin documented below, while Versus uses immutable commit `464c121a3cc6dacd318df3f76f461e70901e6e24` from the still-open [HF asset PR #90](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/90). Together these pins let `fetch_assets.sh` deliver assets for all 40 registered sites without moving the global pin. All 36 archives from the previous global pin `2aaf9d598f3e71cddd17a4efcdfee7dd7c073337` are unchanged; the three non-CarMax scoped bundles also retain their reviewed bytes. CarMax adds 11 source-backed model-year stock photos without changing its original files or seed. Seven other unavailable vehicle hero images remain explicit placeholders. The unregistered Bandcamp and Drugs.com archives are ignored by `fetch_assets.sh`. Tracked seed migrations and build-generated seeds still run during fetch/build.
+`.assets-revision` pins merged HF main commit `9d67d0088a7535e455a331a823b67e3a7d666161`, containing archives for the 38 mainline sites through CarMax. Original asset PRs #8 (Recreation.gov), #15 (CarMax), #25 (BoardGameGeek), and #66 (AccuWeather) are merged, followed by [CarMax photo supplement #95](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95). BabyCenter, Amtrak, Cookpad and Craigslist use the merged per-site pins in `.assets-revision`, while Versus uses immutable commit `464c121a3cc6dacd318df3f76f461e70901e6e24` from the still-open [HF asset PR #90](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/90). Together these pins let `fetch_assets.sh` deliver assets for all 43 registered sites without moving the global pin. All 36 archives from the previous global pin `2aaf9d598f3e71cddd17a4efcdfee7dd7c073337` are unchanged; the three non-CarMax scoped bundles also retain their reviewed bytes. CarMax adds 11 source-backed model-year stock photos without changing its original files or seed. Seven other unavailable vehicle hero images remain explicit placeholders. The unregistered Bandcamp and Drugs.com archives are ignored by `fetch_assets.sh`. Tracked seed migrations and build-generated seeds still run during fetch/build.
 
 BabyCenter, the 39th site, uses the immutable merged scoped
 pin `8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce` from

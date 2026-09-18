@@ -1,11 +1,11 @@
 # Versus mirror
 
 Offline Flask mirror of `https://versus.com/` for the WebHarbor benchmark. In the
-40-site registry it is site index 39 and runs on container port `40039`.
+43-site registry it is site index 42 and runs on container port `40042`.
 
 ```bash
-docker run -d --rm --name wh-versus -p 8101:8101 -p 40000-40039:40000-40039 webharbor:dev
-curl -so /dev/null -w "%{http_code}\n" http://localhost:40039/
+docker run -d --rm --name wh-versus -p 8101:8101 -p 40000-40042:40000-40042 webharbor:dev
+curl -so /dev/null -w "%{http_code}\n" http://localhost:40042/
 curl -X POST http://localhost:8101/reset/versus
 ```
 
