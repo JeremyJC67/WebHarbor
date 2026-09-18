@@ -18,8 +18,11 @@ container's current state. Output: `{task_id, pass, reason, evidence[]}`, exit 0
 
 Trajectories must identify the task and local origin, terminate with
 `agent_done`, contain decodable screenshots, and record visible page text as
-`observed_text_before` / `observed_text` with `url` / `url_after`.
-The shared agent now records these fields. Thoughts/answers/action parameters
+`observed_text_before` / `observed_text_after` with `url` / `url_after`.
+The shared agent records these explicit fields while retaining the existing
+pre-action `observed_text` field for other sites. Earlier Amtrak recordings that
+used `observed_text` for post-action content remain supported.
+Thoughts/answers/action parameters
 do not substitute for observed pages. Legacy runs need new recordings.
 
 ## Natural answers; structured expectations stay internal

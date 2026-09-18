@@ -47,7 +47,7 @@ Build this checkout to run its registered web environments (published image tags
 docker run -p 8101:8101 -p 40000-40039:40000-40039 webharbor:dev
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40039` to explore 40 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, and BabyCenter`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40039` to explore 40 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, and Amtrak`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -70,7 +70,8 @@ This checkout registers **40 sites**. NVIDIA remains at index 28, UC Berkeley
 remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
 31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at
 index 34. Recreation.gov remains at index 35; BoardGameGeek remains at index 36,
-CarMax remains at index 37, and BabyCenter is appended at index 38. Build the image from
+CarMax remains at index 37, BabyCenter remains at index 38, and Amtrak is appended
+at index 39 (port 40039). Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
