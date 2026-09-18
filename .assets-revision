@@ -31,3 +31,12 @@
 #     `scripts/fetch_assets.sh` installs sites/kaggle's assets from this pin.
 repo: ChilleD/WebHarbor
 revision: 64264d065cdb0b7755ee99dab356be5733d9ddef
+
+# Amtrak review candidate: the contributor's already-published immutable bundle.
+# Central dataset PR #30 is draft and does not supply this archive at the global
+# pin. This scoped source makes local fetch/build reproducible without changing
+# any other site's assets. Before code integration, publish/merge the archive in
+# ChilleD/WebHarbor and replace this scoped repository/revision with its merged pin.
+site.amtrak.repo: lxr-max/WebHarbor
+site.amtrak: eac108f14be667b7e78972b0805d116ddea931d2
+site.amtrak.sha256: 22f0132a5f9bfee45a641e8172050a94bb4fc0de4ad45f1d9e52deb50eb37f34

@@ -222,6 +222,7 @@ textarea {
 
 .utility-search input {
   flex: 1;
+  min-width: 0;
 }
 
 .nav-actions {
@@ -322,6 +323,7 @@ textarea {
 }
 
 .page-hero::after {
+  pointer-events: none;
   content: "";
   position: absolute;
   inset: auto -10% -22% auto;
@@ -887,6 +889,17 @@ textarea:focus {
   display: none;
 }
 
+/* The homepage form is narrower than the full-width booking page. */
+.compact-booking .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.compact-booking .field {
+  grid-column: span 1;
+}
+.compact-booking .field-wide {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 1100px) {
   .page-hero,
   .split-layout,
@@ -917,6 +930,15 @@ textarea:focus {
 }
 
 @media (max-width: 780px) {
+  .site-header {
+    position: static;
+  }
+
+  .utility-search .button {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
   .container {
     width: min(var(--max-width), calc(100vw - 24px));
   }
@@ -930,6 +952,7 @@ textarea:focus {
 
   .utility-search {
     min-width: 100%;
+    width: 100%;
   }
 
   .page-hero {
@@ -952,6 +975,10 @@ textarea:focus {
   .field,
   .field-wide {
     grid-column: auto;
+  }
+
+  .compact-booking .form-grid {
+    grid-template-columns: 1fr;
   }
 
   .button,

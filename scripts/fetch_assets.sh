@@ -46,50 +46,39 @@ else
     echo "[fetch] scope: ${#INCLUDES[@]} registered site(s)"
 fi
 
-INCLUDE_ARGS=()
-for pattern in "${INCLUDES[@]}"; do
-    INCLUDE_ARGS+=(--include "$pattern")
-done
-
-hf download "$REPO" --repo-type dataset --revision "$REVISION" \
-    "${INCLUDE_ARGS[@]}" --local-dir "$CACHE_DIR"
-
-shopt -s nullglob
-missing=()
-if [[ -n "$ONLY_SITE" ]]; then
-    TARBALLS=("$CACHE_DIR/$ONLY_SITE.tar.gz")
-    if [[ ! -f "${TARBALLS[0]}" ]]; then
-        echo "fetch_assets: expected archive for $ONLY_SITE" >&2
-        exit 1
-    fi
-else
-    # Every site in this checkout must have an archive at the pinned revision.
-    # Archives for sites that are not in this checkout are ignored: the dataset
-    # can legitimately carry assets that were merged ahead of their code PR, and
-    # rejecting them would make an otherwise complete pin unusable.
-    TARBALLS=()
-    for site_dir in sites/*/; do
-        [[ -d "$site_dir" ]] || continue
-        site=$(basename "$site_dir")
-        if [[ -f "$CACHE_DIR/$site.tar.gz" ]]; then
-            TARBALLS+=("$CACHE_DIR/$site.tar.gz")
-        else
-            missing+=("$site")
+# Optional site pins allow a reviewed contributor bundle to be fetched while
+# its central HF publication is pending. An explicit global revision override
+# intentionally bypasses both scoped repository and revision settings.
+TARBALLS=()
+for archive in "${INCLUDES[@]}"; do
+    site=${archive%.tar.gz}
+    [[ "$site" =~ ^[a-z0-9_]+$ && -d "sites/$site" ]] || { echo "Unknown site: $site" >&2; exit 1; }
+    asset_repo="$REPO"
+    asset_revision="$REVISION"
+    destination="$CACHE_DIR"
+    if [[ -z "${ASSETS_REVISION:-}" ]]; then
+        scoped_revision=$(awk -v key="site.$site:" '$1 == key {print $2}' .assets-revision)
+        scoped_repo=$(awk -v key="site.$site.repo:" '$1 == key {print $2}' .assets-revision)
+        if [[ -n "$scoped_revision" ]]; then
+            [[ "$scoped_revision" =~ ^[0-9a-f]{40}$ ]] || { echo "Non-immutable scoped revision for $site" >&2; exit 1; }
+            asset_revision="$scoped_revision"
+            asset_repo="${scoped_repo:-$REPO}"
+            destination="sites/.cache/tarballs/scoped/$site/$asset_revision"
+        elif [[ -n "$scoped_repo" ]]; then
+            echo "Scoped repository needs an immutable revision: $site" >&2; exit 1
         fi
-    done
-    if (( ${#missing[@]} > 0 )); then
-        echo "fetch_assets: revision $REVISION has no archive for: ${missing[*]}" >&2
-        exit 1
     fi
-    unregistered=0
-    for tarball in "$CACHE_DIR"/*.tar.gz; do
-        site=$(basename "$tarball" .tar.gz)
-        [[ -d "sites/$site" ]] || unregistered=$((unregistered + 1))
-    done
-    if (( unregistered > 0 )); then
-        echo "[fetch] ignoring $unregistered archive(s) for sites not present in this checkout"
+    hf download "$asset_repo" "$archive" --repo-type dataset --revision "$asset_revision" --local-dir "$destination"
+    tarball="$destination/$archive"
+    [[ -f "$tarball" ]] || { echo "Missing required archive: $tarball" >&2; exit 1; }
+    expected_sha=$(awk -v key="site.$site.sha256:" '$1 == key {print $2}' .assets-revision)
+    if [[ -n "$expected_sha" && -z "${ASSETS_REVISION:-}" ]]; then
+        [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]] || { echo "Invalid archive hash: $site" >&2; exit 1; }
+        actual_sha=$(sha256sum "$tarball" | cut -d' ' -f1)
+        [[ "$actual_sha" == "$expected_sha" ]] || { echo "Archive hash mismatch: $site" >&2; exit 1; }
     fi
-fi
+    TARBALLS+=("$tarball")
+done
 extracted=0
 for tarball in "${TARBALLS[@]}"; do
     site=$(basename "$tarball" .tar.gz)

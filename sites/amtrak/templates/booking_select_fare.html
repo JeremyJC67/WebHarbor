@@ -53,18 +53,9 @@
       <button class="button" type="submit">{% if flow.room_choices %}Update fare{% else %}Continue{% endif %}</button>
     </form>
 
-    <aside>
-      {{ summary_card({
-        'options': options,
-        'trip_type': flow.trip_type,
-        'passenger_count': flow.passengers|int,
-        'traveler_subtotal': quotes[0].per_traveler * (flow.passengers|int) if quotes else 0,
-        'room_total': 0,
-        'service_fee': 0,
-        'total': quotes[0].per_traveler * (flow.passengers|int) if quotes else 0,
-        'reward_points': quotes[0].points_earned if quotes else 0,
-        'passengers': flow.passenger_entries
-      }) }}
+    <aside id="fare-summary" aria-live="polite">
+      {{ summary_card(summary) }}
     </aside>
   </section>
+  <script type="application/json" id="fare-summary-data">{{ totals|tojson }}</script>
 {% endblock %}

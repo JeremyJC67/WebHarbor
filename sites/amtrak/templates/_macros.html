@@ -186,25 +186,25 @@
       </div>
       <div class="stat-card">
         <span class="kicker">Fare subtotal</span>
-        <strong>{{ summary.traveler_subtotal|currency }}</strong>
+        <strong data-summary="traveler_subtotal">{{ summary.traveler_subtotal|currency }}</strong>
       </div>
       <div class="stat-card">
         <span class="kicker">Rooms</span>
-        <strong>{{ summary.room_total|currency }}</strong>
+        <strong data-summary="room_total">{{ summary.room_total|currency }}</strong>
       </div>
       <div class="stat-card">
         <span class="kicker">Rewards</span>
-        <strong>{{ summary.reward_points }}</strong>
+        <strong data-summary="reward_points">{{ summary.reward_points }}</strong>
       </div>
     </div>
     <div class="timeline" style="margin-top: 16px;">
       <div class="timeline-item">
         <strong>Service fee</strong>
-        <div class="subtle">{{ summary.service_fee|currency }}</div>
+        <div class="subtle" data-summary="service_fee">{{ summary.service_fee|currency }}</div>
       </div>
       <div class="timeline-item">
         <strong>Total</strong>
-        <div class="confirmation-code">{{ summary.total|currency }}</div>
+        <div class="confirmation-code" data-summary="total">{{ summary.total|currency }}</div>
       </div>
     </div>
   </div>

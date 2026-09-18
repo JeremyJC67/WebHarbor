@@ -63,7 +63,7 @@ class Recorder:
         self.run_dir = run_dir
         self.shots = run_dir / "screenshots"
         if run_dir.exists():
-            shutil.rmtree(run_dir)
+            raise FileExistsError(f"Refusing to overwrite evidence: {run_dir}")
         self.shots.mkdir(parents=True)
         self.task_id = task_id
         self.steps: list[dict] = []
@@ -76,6 +76,7 @@ class Recorder:
 
     def act(self, page, action: str, params: dict, fn=None, thought: str = ""):
         url_before, title = page.url, page.title()
+        observed_before = page.locator('body').inner_text()
         if fn is not None:
             fn()
             try:
@@ -85,17 +86,31 @@ class Recorder:
         page.screenshot(path=str(self.shots / f"step_{self.n + 1:03d}.png"))
         self.steps.append({"step": self.n, "url": url_before, "title": title, "thought": thought, "action": action,
                            "params": params, "screenshot_before": f"step_{self.n:03d}.png",
-                           "screenshot_after": f"step_{self.n + 1:03d}.png"})
+                           "screenshot_after": f"step_{self.n + 1:03d}.png",
+                           "observed_text_before": observed_before,
+                           "url_after": page.url,
+                           "observed_text": page.locator('body').inner_text()})
         self.n += 1
 
     def navigate(self, page, path: str):
-        self.act(page, "navigate", {"url": BASE + path}, lambda: page.goto(BASE + path, wait_until="networkidle"))
+        links = page.locator(f'a[href="{path}"]:visible')
+        if not links.count():
+            parent = '/routes' if path.startswith('/routes/') else '/stations' if path.startswith('/stations/') else '/account' if path.startswith('/account/') else None
+            if parent:
+                self.navigate(page, parent)
+            links = page.locator(f'a[href="{path}"]:visible')
+        if not links.count():
+            raise RuntimeError(f'No visible link to {path}')
+        self.click(page, links.first, f'Follow visible link to {path}')
+
+    def inspect(self, page, locator, thought):
+        self.act(page, 'scroll', {'review_viewport_check': True}, lambda: locator.scroll_into_view_if_needed(), thought)
 
     def fill(self, page, selector: str, text: str):
         self.act(page, "input", {"index": 0, "text": text}, lambda: page.fill(selector, text))
 
     def select(self, page, selector: str, value: str):
-        self.act(page, "input", {"index": 0, "text": value}, lambda: page.select_option(selector, value))
+        self.act(page, "select_dropdown_option", {"selector": selector, "text": value}, lambda: page.select_option(selector, value))
 
     def click(self, page, locator, thought: str = ""):
         self.act(page, "click", {"index": 0}, lambda: locator.click(), thought)
@@ -395,6 +410,7 @@ def write_variant(src: Path, dst: Path, *, answer: str | None = None, steps=None
 
 
 def main() -> int:
+    from v2_drives import drive
     parser = argparse.ArgumentParser()
     parser.add_argument("--out_dir", default="runs/amtrak_matrix")
     parser.add_argument("--only", default="", help="comma-separated task numbers")
@@ -424,13 +440,12 @@ def main() -> int:
         for n in sorted(only):
             row = TASKS[n]
             run_dir = out / f"pass_{n}"
-            if n in STATEFUL:
-                reset_site()
+            reset_site()
             ctx = browser.new_context(viewport={"width": 1366, "height": 900})
             page = ctx.new_page()
             rec = Recorder(run_dir, row["id"])
             rec.start(page)
-            answer = DRIVES[n](rec, page)
+            answer = drive(n, rec, page)
             rec.done(page, answer)
             rec.write(row["ques"], row["verifier_path"], row["judge_rubric"])
             ctx.close()

@@ -81,15 +81,15 @@ BENCHMARK_EMAILS = ("alice.j@test.com", "bob.c@test.com", "carol.d@test.com", "d
 # Station aliases accepted in /booking/results query parameters (the form's
 # station_lookup resolves codes, "(CODE)" labels, station names and city names).
 STATION_ALIASES = {
-    "NYP": ("nyp", "new york", "moynihan"),
+    "NYP": ("nyp", "new york", "moynihan train hall"),
     "WAS": ("was", "washington"),
-    "PHL": ("phl", "philadelphia", "30th street"),
+    "PHL": ("phl", "philadelphia", "30th street station"),
     "CHI": ("chi", "chicago"),
     "DEN": ("den", "denver"),
-    "SEA": ("sea", "seattle", "king street"),
+    "SEA": ("sea", "seattle", "king street station"),
     "LAX": ("lax", "los angeles"),
-    "SAC": ("sac", "sacramento"),
-    "SJC": ("sjc", "san jose", "diridon"),
+    "SAC": ("sac", "sacramento", "sacramento valley station"),
+    "SJC": ("sjc", "san jose", "diridon station"),
     "PDX": ("pdx", "portland"),
 }
 
@@ -238,9 +238,11 @@ def _station_matches(value: str, code: str) -> bool:
         return False
     if text == code.casefold():
         return True
-    if re.search(r"\(([a-z0-9]{3,4})\)", text) and re.search(r"\(([a-z0-9]{3,4})\)", text).group(1) == code.casefold():
-        return True
-    return any(alias in text for alias in STATION_ALIASES.get(code, (code.casefold(),)))
+    label = re.search(r"\(([a-z0-9]{3,4})\)", text)
+    if label:
+        return label.group(1) == code.casefold()
+    aliases = STATION_ALIASES.get(code, (code.casefold(),))
+    return text in aliases or any(text == f"{alias} ({code.casefold()})" for alias in aliases)
 
 
 def _param_matches(query: dict[str, list[str]], key: str, expected: Any) -> bool:
@@ -566,7 +568,7 @@ def check_visited_any_path(judge: Judge, trajectory: dict[str, Any], name: str, 
 # SQLite state
 # --------------------------------------------------------------------------- #
 def db_query(db_path: str | os.PathLike[str], sql: str, params: Sequence[Any] = ()) -> list[sqlite3.Row]:
-    connection = sqlite3.connect(str(db_path))
+    connection = sqlite3.connect(Path(db_path).resolve().as_uri() + '?mode=ro', uri=True)
     connection.row_factory = sqlite3.Row
     try:
         return connection.execute(sql, params).fetchall()
@@ -652,6 +654,12 @@ def _validate_snapshot_contract(initial_db: str, after_db: str) -> None:
     emails = {normalize_text(r["email"]) for r in db_query(initial_db, "SELECT email FROM users")}
     if emails != set(BENCHMARK_EMAILS):
         raise ValueError(f"initial database benchmark users differ: {sorted(emails)}")
+    # Counts alone let a modified fixture redefine both the answer and the
+    # allowed state. Pin logical rows so SQLite backup/header differences are OK.
+    fixture = {t: table_rows(initial_db, t) for t in sorted(EXPECTED_TABLES)}
+    digest = hashlib.sha256(json.dumps(fixture, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+    if digest != 'f0a3b7d81075bc9bc7490dfe6bca551bc58e20e073dc761c0bfc92d4d665d9aa':
+        raise ValueError('initial snapshot differs from the reviewed immutable fixture')
     changed = [t for t in CATALOG_TABLES if table_rows(initial_db, t) != table_rows(after_db, t)]
     if changed:
         raise ValueError(f"immutable catalog tables changed: {changed}")
@@ -659,6 +667,9 @@ def _validate_snapshot_contract(initial_db: str, after_db: str) -> None:
 
 def resolve_snapshots(args: VerifyArgs, task_id: str) -> tuple[str, str]:
     """Return validated (initial_db, after_db) snapshot paths or fail closed."""
+    if not args.initial_db or not args.after_db:
+        fail_closed(task_id, "database_unavailable",
+                    "saved initial.db and after.db are required; never grade a missing snapshot against mutable live state")
     initial_db = resolve_db(args.initial_db, args.container, "instance_seed")
     after_db = resolve_db(args.after_db, args.container, "instance")
     if not initial_db or not after_db:
