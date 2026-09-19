@@ -1,23 +1,14 @@
 # Hugging Face dataset holding WebHarbor's heavy static assets.
 # Pin an immutable merged commit SHA, never a moving branch or refs/pr/<n>.
 #
-# Consolidated HF main after merging original asset PRs #8 (Recreation.gov),
-# #15 (CarMax), #25 (BoardGameGeek), #66 (AccuWeather), then CarMax supplement #95.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95
-#
-# All 36 archives from the previous global pin
-# 2aaf9d598f3e71cddd17a4efcdfee7dd7c073337 are byte-for-byte unchanged.
-# Recreation.gov, BoardGameGeek and AccuWeather retain their previously reviewed
-# archive bytes. CarMax adds 11 source-backed stock photos; every original file,
-# including its seed, is unchanged. Provenance: sites/carmax/recovered_assets.json.
-# CarMax archive SHA-256:
-# 274ac06abebf353ebb6561ab0647fed5c8a048916dd8867b9dfa951963a8d81d
-#
-# This merged revision contains archives for all 38 mainline sites through CarMax.
-# The two additional archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
+# Dataset main after merging HF PR #90 at f3ecd60ea35795eef566ee19d67140c16b200f26.
+# It contains 45 archives: all 43 registered sites plus the unregistered bandcamp and drugs_com archives, which fetch_assets.sh ignores.
+# Compared with the previous global revision 9d67d0088a7535e455a331a823b67e3a7d666161, it adds BabyCenter, Amtrak, Cookpad, Craigslist and Versus; all 38 previously registered archives and bandcamp are byte-for-byte unchanged.
+# The unregistered drugs_com archive changed from a 134-byte placeholder to a 2,092,340-byte archive.
+# versus.tar.gz is 12,183,876 bytes with SHA-256 093656316188dd7960177c9a187262de860e50c9f27a3b6658407f86d16f5cb3 and contains 111 managed members.
 # Tracked seed migrations/build-generation remain part of the build contract.
 repo: ChilleD/WebHarbor
-revision: 9d67d0088a7535e455a331a823b67e3a7d666161
+revision: f3ecd60ea35795eef566ee19d67140c16b200f26
 
 # BabyCenter: immutable merged HF PR #78 revision, preserving all prior assets.
 # https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78
@@ -41,8 +32,3 @@ site.cookpad.sha256: 38802e2c7898c7005c67f59973f17d9472023ce7eca5deda13476602dab
 # 78 authentic posts, 512 original photos, deterministic seed and source captures.
 site.craigslist: 60d24cc02061a7fdff15c0684441b1f5e73a33a8
 site.craigslist.sha256: 741ef266077cc56c082e5b7dd2df0e43ffa81f7a1c297bb55ac232aabe9e5f5d
-
-# Versus bundle from HF PR #90, which remains open, at the immutable commit below.
-# versus.tar.gz is 12,183,876 bytes with SHA-256 093656316188dd7960177c9a187262de860e50c9f27a3b6658407f86d16f5cb3.
-# The archive contains 111 managed members. All sites without a site-specific pin use the global revision.
-site.versus: 464c121a3cc6dacd318df3f76f461e70901e6e24
