@@ -31,7 +31,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[4]
 VERIFY_DIR = REPO_ROOT / "sites/phet_simulations/verify"
 DEFAULT_SEED = REPO_ROOT / "sites/phet_simulations/instance_seed/phet_simulations.db"
-BASE_URL = "http://localhost:40029/"
+BASE_URL = "http://localhost:40045/"
 STATEFUL = {13, 14}
 
 TASK_FIXTURES = {
@@ -294,7 +294,7 @@ def run_gate_probes(output, seed, python, repo_root):
     probe("task_id", "run_package_task_id", lambda _d, t: t.__setitem__("task_id", "PhET Interactive Simulations--17"))
     probe("start_url", "run_package_start_url", lambda _d, t: t.__setitem__("start_url", "https://example.com/"))
     probe("run_kind", "run_package_run_kind", lambda _d, t: t.__setitem__("run_kind", ""))
-    probe("url", "run_package_url", lambda _d, t: t["steps"][0].__setitem__("url", "http://example.com:40029/simulations"))
+    probe("url", "run_package_url", lambda _d, t: t["steps"][0].__setitem__("url", "http://example.com:40045/simulations"))
     probe("action", "run_package_action", lambda _d, t: t["steps"][0]["action_result"].__setitem__("success", False))
     probe("termination", "run_package_termination", lambda _d, t: t.__setitem__("terminated", False))
 
