@@ -8,12 +8,14 @@ which `seed_data.py` rebuilds deterministically from the tracked, upstream-sourc
 import json
 import os
 import re
+from urllib.parse import urlsplit
 
 from flask import Flask, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_bcrypt import Bcrypt
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from flask_sqlalchemy import SQLAlchemy
+from markupsafe import Markup, escape
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'instance', 'y_combinator.db')
@@ -29,6 +31,31 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 PAGE_SIZE = 24
+MARKDOWN_LINK = re.compile(r"\[([^\]\n]+)\]\(([^)\s\n]+)\)")
+
+
+@app.template_filter('safe_markdown_links')
+def safe_markdown_links(value):
+    """Render only http(s) Markdown links while escaping all other content."""
+    text = str(value or '')
+    rendered = Markup()
+    cursor = 0
+    for match in MARKDOWN_LINK.finditer(text):
+        rendered += escape(text[cursor:match.start()])
+        label, url = match.groups()
+        try:
+            parsed = urlsplit(url)
+            allowed = (parsed.scheme.lower() in {'http', 'https'} and parsed.hostname
+                       and parsed.username is None and parsed.password is None)
+        except ValueError:
+            allowed = False
+        if allowed:
+            rendered += Markup('<a href="') + escape(url) + Markup('">') + escape(label) + Markup('</a>')
+        else:
+            rendered += escape(match.group(0))
+        cursor = match.end()
+    rendered += escape(text[cursor:])
+    return rendered
 
 
 # --------------------------------------------------------------- models

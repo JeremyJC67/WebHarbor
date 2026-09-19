@@ -11,7 +11,7 @@
             <span class="pill">{{ person.group }}</span>
         </div>
     </div>
-    {% if person.bio %}<p class="prose">{{ person.bio }}</p>{% endif %}
+    {% if person.bio %}<p class="prose">{{ person.bio | safe_markdown_links }}</p>{% endif %}
     <p><a href="{{ url_for('people') }}">← All people</a></p>
 </div>
 {% endblock %}

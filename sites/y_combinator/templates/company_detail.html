@@ -33,7 +33,7 @@
 
     {% if company.long_description %}
     <h2>About</h2>
-    <p class="prose">{{ company.long_description }}</p>
+    <p class="prose">{{ company.long_description | safe_markdown_links }}</p>
     {% endif %}
 
     {% if company.founders %}
@@ -44,7 +44,7 @@
         <div>
             <h3>{{ founder.name }}</h3>
             <p class="muted">{{ founder.title }}</p>
-            {% if founder.bio %}<p>{{ founder.bio }}</p>{% endif %}
+            {% if founder.bio %}<p>{{ founder.bio | safe_markdown_links }}</p>{% endif %}
         </div>
     </div>
     {% endfor %}
