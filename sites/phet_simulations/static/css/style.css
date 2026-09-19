@@ -649,8 +649,12 @@ h1, h2, h3, h4 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
   max-width: var(--max-width); margin: 0 auto;
   padding: 1.5rem 1.25rem;
 }
-@media (max-width: 800px) { .browse-layout { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .browse-layout { grid-template-columns: minmax(0, 1fr); } }
 
+.filter-sidebar,
+.browse-results {
+  min-width: 0;
+}
 .filter-sidebar {
   font-size: 0.85rem;
 }

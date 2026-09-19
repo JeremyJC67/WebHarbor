@@ -83,6 +83,7 @@
 
       <section id="translations" class="sim-detail-section">
         <h2>Translations ({{ languages|length }})</h2>
+        <p>Translation availability reflects the catalogue snapshot harvested from PhET's metadata service on September 13, 2026.</p>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.4rem;">
           {% for l in languages %}
             <a href="{{ url_for('translation_detail', code=l.code) }}" style="font-size: 0.85rem;">{{ l.name }}</a>
