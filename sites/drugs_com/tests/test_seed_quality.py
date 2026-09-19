@@ -14,6 +14,7 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
 EXPECTED_COUNTS = {
+    "daily_med_label": 13,
     "condition": 69,
     "drug": 246,
     "drug_class": 105,
@@ -30,8 +31,9 @@ EXPECTED_COUNTS = {
 
 
 def build_in(directory, hash_seed):
-    for name in ("app.py", "seed_data.py", "seed_manifest.json"):
+    for name in ("app.py", "seed_data.py", "seed_manifest.json", "asset_inventory.json"):
         shutil.copy2(SITE / name, directory / name)
+    shutil.copytree(SITE / "static/external_cache/dailymed", directory / "static/external_cache/dailymed")
     environment = os.environ.copy()
     environment["PYTHONHASHSEED"] = str(hash_seed)
     process = subprocess.run(
@@ -61,7 +63,7 @@ def test_seed_schema_counts_constraints_and_foreign_keys():
     tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
     counts = {table: connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0] for table in tables}
     assert counts == EXPECTED_COUNTS
-    assert connection.execute("SELECT value FROM seed_metadata WHERE key='version'").fetchone()[0] == "drugs-com-source-v2"
+    assert connection.execute("SELECT value FROM seed_metadata WHERE key='version'").fetchone()[0] == "drugs-com-source-v3"
     assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
     schema = "\n".join(row[0] or "" for row in connection.execute("SELECT sql FROM sqlite_master"))
@@ -285,6 +287,6 @@ def test_seed_builder_preserves_known_good_seed_on_import_failure(tmp_path):
 
 def test_manifest_binds_catalog_and_schema_digests():
     manifest = json.loads((SITE / "seed_manifest.json").read_text())
-    assert manifest["version"] == "drugs-com-source-v2"
+    assert manifest["version"] == "drugs-com-source-v3"
     assert re.fullmatch(r"[0-9a-f]{64}", manifest["catalog_sha256"])
     assert re.fullmatch(r"[0-9a-f]{64}", manifest["schema_sha256"])
