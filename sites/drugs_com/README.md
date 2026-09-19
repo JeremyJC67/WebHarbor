@@ -19,7 +19,7 @@ PYTHONHASHSEED=0 uv run python seed_data.py
 
 The original pill descriptors still use explicitly synthetic inline SVGs. Separately, `/official-labels` contains 13 selected DailyMed product-label supplements and 13 authentic packaging-label images. They are not Drugs.com articles or pill photographs. `asset_inventory.json` binds all downloaded files, including archived SPL XML and the build-time catalog. `scripts/recover_dailymed.py` is an explicit recovery tool, never a runtime/build network dependency. HTTP handlers read the `daily_med_label` table.
 
-The replacement HF archive must include `static/images/dailymed/` and `static/external_cache/dailymed/`; the SQLite seed remains build-generated. The old pinned 134-byte HF archive cannot build this revision. Local validation does not imply that this replacement bundle has been published or merged. Before code integration, merge the asset PR, update immutable pins and the repository-wide asset manifest, and validate a fresh download/build.
+The replacement HF archive is merged through [HF #101](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/101) and the standard archive-root correction [#102](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/102). The immutable pin is `555a9aa0b02946a8bdf873ba1d59902b71564a07`; `assets-manifest.json` binds its archive bytes and extracted tree. The archive contains `drugs_com/static/images/dailymed/` and `drugs_com/static/external_cache/dailymed/`; the SQLite seed remains build-generated. The earlier 134-byte archive and rootless #101 intermediate must not be used for this revision. See [INTEGRATION_REPORT.md](INTEGRATION_REPORT.md) for full fetch/build, 43-site health/reset and browser/grading evidence.
 
 ## Tests
 

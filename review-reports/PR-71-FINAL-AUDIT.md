@@ -1,5 +1,7 @@
 # PR 71 Final Audit
 
+Historical reviewer report preserved from PR #71. Its 25-site topology and asset status are superseded by the [43-site integration report](../sites/drugs_com/INTEGRATION_REPORT.md); the original audit below is not the current release status.
+
 ## Status
 
 Release candidate validated against original PR head `73eba14579449404abf1efd5cc6b86c7b5507a7a` and upstream `main` `36004932bdf82afbe36dc14e00f66841eccf9946`. The integrated topology has 25 sites; Drugs.com is appended at container port `40024` without changing the existing site positions.
