@@ -1,6 +1,6 @@
 # Drugs.com local benchmark mirror
 
-This directory contains the Drugs.com-style WebHarbor environment. It is registered as the 25th site on container port `40024` and is intended only for deterministic software evaluation. It is not the official Drugs.com service and its fixture records are not medical guidance.
+This directory contains the Drugs.com-style WebHarbor environment. It is registered as the 43rd site on container port `40042` and is intended only for deterministic software evaluation. It is not the official Drugs.com service and its fixture records are not medical guidance.
 
 ## Runtime data
 

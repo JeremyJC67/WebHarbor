@@ -47,14 +47,20 @@ mkdir -p "$CACHE_DIR"
 echo "[fetch] huggingface.co/datasets/$REPO @ $REVISION -> sites/"
 
 if [[ -n "$ONLY_SITE" ]]; then
-    INCLUDE="$ONLY_SITE.tar.gz"
+    [[ "$ONLY_SITE" =~ ^[a-z0-9_]+$ && -d "sites/$ONLY_SITE" ]] || { echo "Unknown site: $ONLY_SITE" >&2; exit 1; }
+    INCLUDES=(--include "$ONLY_SITE.tar.gz")
     echo "[fetch] scope: $ONLY_SITE only"
 else
-    INCLUDE="*.tar.gz"
+    # The merged dataset also contains contributions not registered here.
+    # Download exactly the current site's archives, never unrelated bundles.
+    INCLUDES=()
+    for site_dir in sites/*/; do
+        [[ -d "$site_dir" ]] && INCLUDES+=(--include "$(basename "$site_dir").tar.gz")
+    done
 fi
 
 hf download "$REPO" --repo-type dataset --revision "$REVISION" \
-    --include "$INCLUDE" --local-dir "$CACHE_DIR"
+    "${INCLUDES[@]}" --local-dir "$CACHE_DIR"
 
 if [[ -n "$ONLY_SITE" ]]; then
     python3 scripts/asset_state.py verify-archive sites .assets-revision assets-manifest.json --cache "$CACHE_DIR" --site "$ONLY_SITE"

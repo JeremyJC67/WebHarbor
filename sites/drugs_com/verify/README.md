@@ -6,7 +6,7 @@ Tasks request ordinary answers, not a serialization format. Deterministic checks
 
 Saved `initial.db` and `after.db` in the run directory are the default grading inputs, including through `agent_demo/eval_judge.py --verifier True`. Explicit `--initial_db` and `--after_db` override them only as a pair. A missing or corrupt saved snapshot never silently falls back to the live preview. For a run with no snapshots, live capture must be explicitly requested with `--live_db`; it cannot reconstruct a past run reliably.
 
-The evaluator configures the trusted preview with `DRUGS_COM_ORIGIN=http://localhost:44827` (or the verifier's `--origin`). The default remains the checkout's canonical port 40024. All trajectory URLs must match that configured origin; the trajectory itself cannot authorize another host or port. In-page fragments, A-Z letter listings and reading after arrival are allowed.
+The evaluator configures the trusted preview with `DRUGS_COM_ORIGIN=http://localhost:44827` (or the verifier's `--origin`). The default remains the checkout's canonical port 40042. All trajectory URLs must match that configured origin; the trajectory itself cannot authorize another host or port. In-page fragments, A-Z letter listings and reading after arrival are allowed.
 
 The current trusted task manifest selects `verify_revised_N.py` for IDs 0, 1, 3, 4, 6, 7, 9, 11, 12, 16 and 20. These wrappers use `revised_contracts.py` for the source-label comparisons and the common evidence/snapshot checks in `verify_lib.py`. The original `verify_N.py` contracts remain for historical regression coverage; task revision is not selected by an untrusted trajectory flag. Use the verifier path in the current manifest for current tasks.
 

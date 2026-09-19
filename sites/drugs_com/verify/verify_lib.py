@@ -21,7 +21,7 @@ from PIL import Image, ImageStat
 
 SITE = "drugs_com"
 SEED_VERSION = "drugs-com-source-v3"
-EXPECTED_ORIGIN = ("http", "localhost", 40024)
+EXPECTED_ORIGIN = ("http", "localhost", 40042)
 EXPECTED_TABLES = {
     "daily_med_label",
     "condition", "drug", "drug_class", "drug_condition", "drug_image",
@@ -38,7 +38,7 @@ class Args:
     initial_db: str
     after_db: str
     container: str
-    origin: str = "http://localhost:40024"
+    origin: str = "http://localhost:40042"
     live_db: bool = False
 
 
@@ -158,7 +158,7 @@ def parse_args() -> Args:
     parser.add_argument("--initial_db", default="")
     parser.add_argument("--after_db", default="")
     parser.add_argument("--container", default=os.environ.get("WH_CONTAINER", "wh-review"))
-    parser.add_argument("--origin", default=os.environ.get("DRUGS_COM_ORIGIN", "http://localhost:40024"), help="trusted preview origin, supplied by the evaluator, not the trajectory")
+    parser.add_argument("--origin", default=os.environ.get("DRUGS_COM_ORIGIN", "http://localhost:40042"), help="trusted preview origin, supplied by the evaluator, not the trajectory")
     parser.add_argument("--live_db", action="store_true", help="explicitly allow live container fallback when no saved snapshot pair exists")
     parser.add_argument("--no_llm", action="store_true", help="accepted for compatibility; verification is deterministic")
     values = parser.parse_args()
@@ -294,7 +294,7 @@ def validate_browser_evidence(judge: Judge, trajectory: dict, run_dir: Path):
     judge.check("browser_visual_evidence_changes", len(distinct_frames) >= 2 and not unchanged_navigation, f"distinct_frames={len(distinct_frames)} unchanged_navigation={unchanged_navigation}")
 
 
-def validate_urls(judge: Judge, trajectory: dict, trusted_origin="http://localhost:40024"):
+def validate_urls(judge: Judge, trajectory: dict, trusted_origin="http://localhost:40042"):
     configured = urlsplit(trusted_origin)
     if configured.scheme not in {"http", "https"} or not configured.hostname or configured.username or configured.password or configured.path not in {"", "/"} or configured.query or configured.fragment:
         raise ValueError("invalid trusted preview origin")

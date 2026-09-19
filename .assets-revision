@@ -1,43 +1,11 @@
-# Hugging Face dataset holding WebHarbor's heavy static assets.
-# Pin an immutable merged commit SHA, never a moving branch or refs/pr/<n>.
-#
-# Consolidated HF main after merging original asset PRs #8 (Recreation.gov),
-# #15 (CarMax), #25 (BoardGameGeek), #66 (AccuWeather), then CarMax supplement #95.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/95
-#
-# All 36 archives from the previous global pin
-# 2aaf9d598f3e71cddd17a4efcdfee7dd7c073337 are byte-for-byte unchanged.
-# Recreation.gov, BoardGameGeek and AccuWeather retain their previously reviewed
-# archive bytes. CarMax adds 11 source-backed stock photos; every original file,
-# including its seed, is unchanged. Provenance: sites/carmax/recovered_assets.json.
-# CarMax archive SHA-256:
-# 274ac06abebf353ebb6561ab0647fed5c8a048916dd8867b9dfa951963a8d81d
-#
-# This merged revision contains archives for all 38 registered sites. The two
-# additional archives (bandcamp and drugs_com) are ignored by fetch_assets.sh.
-# Tracked seed migrations/build-generation remain part of the build contract.
+# All 43 registered sites use this immutable merged HF main revision.
+# Drugs.com: original HF #39, replacement #101 and archive-root correction #102.
+# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/102
+# Verified all 42 previous effective global/scoped pins are byte-identical here,
+# including BabyCenter #78, Amtrak #96, Cookpad #99 and Craigslist #100.
+# Only drugs_com.tar.gz changes: 13 DailyMed labels + 13 packaging images + catalog.
+# SHA-256: 8a9924e005d0a8a9f793f9e67bceeba0c4f2dbbe10ccf7f1afeb0a0198427b1b
+# assets-manifest.json binds every selected archive and the extracted managed tree.
+# Unregistered dataset bundles are not fetched.
 repo: ChilleD/WebHarbor
-revision: 9d67d0088a7535e455a331a823b67e3a7d666161
-
-# BabyCenter: immutable merged HF PR #78 revision, preserving all prior assets.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/78
-# Archive SHA-256: 8b83000a1fad3969968290ae537af0bbf0e0a179284f915827cffadb0fe103f3
-# The tracked migration corrects the shipped seed during fetch/build.
-site.babycenter: 8f3437ffa3b80c606687c49a5c5bbdf158f1c9ce
-
-# Amtrak: original contributor bundle, unchanged, merged through HF PR #96.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/96
-site.amtrak: 6f432484307f76ca3c58b1d5c8f7b614dfb34f54
-site.amtrak.sha256: 22f0132a5f9bfee45a641e8172050a94bb4fc0de4ad45f1d9e52deb50eb37f34
-
-# Cookpad: original HF PR #35 followed by reviewed replacement HF PR #99.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/99
-# One source-backed seed, 60 real recipe photos, and two original brand images.
-site.cookpad: 5e17eadcc767a4e02541030d0f86dff25f4004f1
-site.cookpad.sha256: 38802e2c7898c7005c67f59973f17d9472023ce7eca5deda13476602dab85c10
-
-# Craigslist: original HF #72 followed by reviewed source-backed replacement #100.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/100
-# 78 authentic posts, 512 original photos, deterministic seed and source captures.
-site.craigslist: 60d24cc02061a7fdff15c0684441b1f5e73a33a8
-site.craigslist.sha256: 741ef266077cc56c082e5b7dd2df0e43ffa81f7a1c297bb55ac232aabe9e5f5d
+revision: 555a9aa0b02946a8bdf873ba1d59902b71564a07

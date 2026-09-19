@@ -36,6 +36,13 @@ def install(archive: Path, sites: Path, expected_site: str, migrator: Path | Non
         staged_site = staging / expected_site
         if not staged_site.is_dir():
             raise ValueError(f"archive did not stage {expected_site}")
+        # Preserve main's inventory pruning, but do it inside staging so a
+        # subsequent failure never exposes a partial managed tree.
+        inventory = sites / expected_site / "asset_inventory.json"
+        if inventory.is_file():
+            from sync_assets_to_inventory import sync
+            shutil.copyfile(inventory, staged_site / "asset_inventory.json")
+            sync(staged_site)
         if not build_generated:
             seed_dir = staged_site / "instance_seed"
             for entry in seed_dir.iterdir():

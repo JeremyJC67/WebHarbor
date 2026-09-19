@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw
 SITE = Path(__file__).resolve().parents[1]
 VERIFY = Path(__file__).resolve().parent
 PYTHON = sys.executable
-ROOT = "http://localhost:40024"
+ROOT = "http://localhost:40042"
 
 
 def query(database, sql, params=()):
@@ -265,7 +265,7 @@ def test_wrong_task_id_fails(snapshots, tmp_path):
     assert_fails(0, make_run(tmp_path, 0, snapshots[0], task_id="Drugs.com--20"), snapshots)
 
 
-@pytest.mark.parametrize("origin", ["http://localhost:9", "http://127.0.0.1:40024", "http://evil.example"])
+@pytest.mark.parametrize("origin", ["http://localhost:9", "http://127.0.0.1:40042", "http://evil.example"])
 def test_noncanonical_origin_fails(origin, snapshots, tmp_path):
     initial, _after = snapshots
     steps = positive_steps(0)

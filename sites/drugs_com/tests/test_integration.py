@@ -21,7 +21,10 @@ EXPECTED = [
     "allrecipes", "amazon", "apple", "arxiv", "bbc_news", "booking", "github",
     "google_flights", "google_map", "google_search", "huggingface", "wolfram_alpha",
     "cambridge_dictionary", "coursera", "espn", "merriam_webster", "ikea", "phys_org",
-    "target", "ted", "osu", "rotten_tomatoes", "compass", "walmart_careers", "drugs_com",
+    "target", "ted", "osu", "rotten_tomatoes", "compass", "walmart_careers",
+    "fedex", "webmd_doctor", "healthline", "kaggle", "nvidia", "berkeley",
+    "bh_photo", "accuweather", "gov_uk", "imdb", "nba", "recreation_gov",
+    "boardgamegeek", "carmax", "babycenter", "amtrak", "cookpad", "craigslist", "drugs_com",
 ]
 
 
@@ -48,28 +51,28 @@ def load_control_server():
     return module
 
 
-def test_exact_25_site_registry_and_ports():
+def test_exact_43_site_registry_and_ports():
     assert shell_sites() == control_sites() == EXPECTED
     assert EXPECTED.index("rotten_tomatoes") + 40000 == 40021
     assert EXPECTED.index("compass") + 40000 == 40022
     assert EXPECTED.index("walmart_careers") + 40000 == 40023
-    assert EXPECTED.index("drugs_com") + 40000 == 40024
+    assert EXPECTED.index("drugs_com") + 40000 == 40042
 
 
-def test_task_manifest_uses_port_40024_and_complete_verifiers():
+def test_task_manifest_uses_port_40042_and_complete_verifiers():
     rows = [json.loads(line) for line in (ROOT / "sites/drugs_com/tasks.jsonl").read_text().splitlines() if line]
     assert [row["id"] for row in rows] == [f"Drugs.com--{number}" for number in range(21)]
-    assert {row["web"] for row in rows} == {"http://localhost:40024/"}
+    assert {row["web"] for row in rows} == {"http://localhost:40042/"}
     assert all((ROOT / row["verifier_path"]).is_file() for row in rows)
     assert all("answer" not in row for row in rows)
     assert all("Return only one JSON object" not in row["ques"] for row in rows)
     assert all("do not require JSON or verbatim wording" in row["judge_rubric"] for row in rows)
 
 
-def test_docker_and_docs_use_25_site_range():
+def test_docker_and_docs_use_43_site_range():
     dockerfile = (ROOT / "Dockerfile").read_text()
-    assert "25 Flask mirror sites" in dockerfile
-    assert "EXPOSE 8101 40000-40024" in dockerfile
+    assert "43 Flask mirror sites" in dockerfile
+    assert "EXPOSE 8101 40000-40042" in dockerfile
     assert "check_asset_inventory.py /opt/WebSyn/drugs_com" in dockerfile
     assert "cd /opt/WebSyn/drugs_com" in dockerfile
     assert "check_seed_databases.py /opt/WebSyn" in dockerfile
@@ -78,7 +81,7 @@ def test_docker_and_docs_use_25_site_range():
     dockerignore = set((ROOT / ".dockerignore").read_text().splitlines())
     assert {"**/.env", "**/.env.*", "**/secrets.json", "**/*.pem", "**/*.key"} <= dockerignore
     for relative in ["README.md", "AGENTS.md", "CONTRIBUTING.md", "CLAUDE.md", "agent_demo/README.md"]:
-        assert "40000-40024" in (ROOT / relative).read_text(), relative
+        assert "40000-40042" in (ROOT / relative).read_text(), relative
 
 
 def test_asset_path_contracts_are_synchronized():
@@ -121,11 +124,25 @@ def test_asset_state_binds_revision_archive_set_and_managed_tree(tmp_path):
         module.verify_state(sites, revision, state)
 
 
-def test_hf_pin_is_immutable_merged_25_archive_revision():
+def test_hf_pin_is_immutable_merged_43_archive_revision():
     text = (ROOT / ".assets-revision").read_text()
-    assert re.search(r"^revision: 18e64e4d230794f990199f3327432d26db36866f$", text, re.M)
+    assert re.search(r"^revision: 555a9aa0b02946a8bdf873ba1d59902b71564a07$", text, re.M)
     assert (ROOT / "sites/drugs_com/.build-generated-seed").is_file()
     assert (ROOT / "sites/drugs_com/asset_inventory.json").is_file()
+
+
+def test_inventory_pruning_occurs_in_staging(tmp_path):
+    sites = tmp_path / "sites"
+    site = sites / "fixture"
+    site.mkdir(parents=True)
+    (site / ".build-generated-seed").write_text("fixture-v1")
+    (site / "asset_inventory.json").write_text(json.dumps({"assets": [{"path": "static/images/kept.txt"}]}))
+    archive = tmp_path / "fixture.tar.gz"
+    _archive(archive, "fixture", [("static/images/kept.txt", b"source"), ("static/images/stale.txt", b"obsolete")])
+    process = subprocess.run([sys.executable, str(ROOT / "scripts/extract_asset_archive.py"), str(archive), str(sites), "fixture"], capture_output=True, text=True)
+    assert process.returncode == 0, process.stderr
+    assert (site / "static/images/kept.txt").read_bytes() == b"source"
+    assert not (site / "static/images/stale.txt").exists()
 
 
 def test_control_token_is_removed_from_all_site_process_environments(tmp_path, monkeypatch):
