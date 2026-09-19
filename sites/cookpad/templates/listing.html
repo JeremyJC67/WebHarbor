@@ -11,4 +11,3 @@
 <div class="recipe-grid">{% for recipe in recipes.items %}{% include "_recipe_card.html" %}{% else %}<div class="empty-state"><h2>No matching recipes</h2><p>Try fewer keywords or remove a filter.</p></div>{% endfor %}</div>
 {% if recipes.pages>1 %}<nav class="pagination" aria-label="Results pages">{% for number in range(1,recipes.pages+1) %}<a href="{{ pagination_url(number) }}" {% if number==recipes.page %}aria-current="page"{% endif %}>{{ number }}</a>{% endfor %}</nav>{% endif %}
 {% endblock %}
-

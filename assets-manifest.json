@@ -175,10 +175,14 @@
     "wolfram_alpha.tar.gz": {
       "bytes": 43099656,
       "sha256": "d210f83516e3d599a885c047542a332fff9c9bc38aef5ee2e6b262b305283a6f"
+    },
+    "y_combinator.tar.gz": {
+      "bytes": 121085653,
+      "sha256": "43c666bda84680f327ce64720b2baa2f9e427acb751fe81900967f267e9176f4"
     }
   },
-  "managed_tree_sha256": "5217565a3b796bab6a16e8deea9c187630f16df7eb235262c3fe76fc3e397bc8",
+  "managed_tree_sha256": "8f55d6d72b9b836c4e8af41af2d37579b5afc06299d4063a034936bd9fe9f37e",
   "repo": "ChilleD/WebHarbor",
-  "revision": "f3ecd60ea35795eef566ee19d67140c16b200f26",
+  "revision": "eedc1a7f85118ab835eac38e04678fa85d141973",
   "version": 1
 }

@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 44 Flask mirror sites + control plane on :8101.
+# 45 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254
 
@@ -147,9 +147,15 @@ RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/drugs_com && \
     cd /opt/WebSyn/drugs_com && rm -rf instance instance_seed && \
     PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
 
+# Y Combinator ships upstream-sourced media in the pinned asset bundle and
+# rebuilds its deterministic SQLite seed from the tracked source_data.json.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/y_combinator
+RUN cd /opt/WebSyn/y_combinator && rm -rf instance instance_seed && \
+    PYTHONHASHSEED=0 python seed_data.py && rm -rf instance
+
 # Fail closed after all registered-site seed migrations/generators.
 RUN python3 /opt/check_seed_databases.py /opt/WebSyn
 
-EXPOSE 8101 40000-40043
+EXPOSE 8101 40000-40044
 
 CMD ["/opt/websyn_start.sh"]

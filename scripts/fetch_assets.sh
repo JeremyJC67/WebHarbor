@@ -57,6 +57,7 @@ else
     for site_dir in sites/*/; do
         [[ -d "$site_dir" ]] && INCLUDES+=(--include "$(basename "$site_dir").tar.gz")
     done
+    echo "[fetch] scope: $(( ${#INCLUDES[@]} / 2 )) registered site(s)"
 fi
 
 hf download "$REPO" --repo-type dataset --revision "$REVISION" \
