@@ -1,10 +1,10 @@
 # Y Combinator mirror
 
-Offline Flask mirror of `https://www.ycombinator.com/` for the WebHarbor benchmark. In the 45-site registry it is site index 44 and runs on container port `40044`.
+Offline Flask mirror of `https://www.ycombinator.com/` for the WebHarbor benchmark. In the 46-site registry it is site index 44 and runs on container port `40044`.
 
 ```bash
 export WEBSYN_CONTROL_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
-docker run -e WEBSYN_CONTROL_TOKEN -d --rm --name wh-y-combinator -p 8101:8101 -p 40000-40044:40000-40044 webharbor:dev
+docker run -e WEBSYN_CONTROL_TOKEN -d --rm --name wh-y-combinator -p 8101:8101 -p 40000-40045:40000-40045 webharbor:dev
 curl -so /dev/null -w "%{http_code}\n" http://localhost:40044/
 curl -H "Authorization: Bearer $WEBSYN_CONTROL_TOKEN" -X POST http://localhost:8101/reset/y_combinator
 ```
