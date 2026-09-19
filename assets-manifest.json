@@ -160,6 +160,10 @@
       "bytes": 5301076,
       "sha256": "2d6a65fd37ac819e05890357b74cf463f61f3172e398356748fdbff3adc026d2"
     },
+    "versus.tar.gz": {
+      "bytes": 12183876,
+      "sha256": "093656316188dd7960177c9a187262de860e50c9f27a3b6658407f86d16f5cb3"
+    },
     "walmart_careers.tar.gz": {
       "bytes": 11458196,
       "sha256": "b84a0072c603225f29e21edfd8f8038fe02a0261a38a60f8e70ed871ea7ce77a"
@@ -173,8 +177,8 @@
       "sha256": "d210f83516e3d599a885c047542a332fff9c9bc38aef5ee2e6b262b305283a6f"
     }
   },
-  "managed_tree_sha256": "7180f13fbb7b680c16c4d503c753525cde992eb6c77e2d27396a5f7c08ef926f",
+  "managed_tree_sha256": "5217565a3b796bab6a16e8deea9c187630f16df7eb235262c3fe76fc3e397bc8",
   "repo": "ChilleD/WebHarbor",
-  "revision": "555a9aa0b02946a8bdf873ba1d59902b71564a07",
+  "revision": "f3ecd60ea35795eef566ee19d67140c16b200f26",
   "version": 1
 }

@@ -1,5 +1,5 @@
 # WebHarbor — slim, self-contained image.
-# 43 Flask mirror sites + control plane on :8101.
+# 44 Flask mirror sites + control plane on :8101.
 
 FROM python:3.12-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254
 
@@ -64,6 +64,18 @@ RUN cd /opt/WebSyn/healthline && test -f instance_seed/healthline.db && \
     PYTHONHASHSEED=0 python3 migrate_seed.py && \
     python3 prune_unreferenced_images.py --apply && rm -rf instance
 
+# Versus ships source-backed entity imagery from the pinned asset bundle.
+# The generic gate enforces exact coverage, hashes, source URLs and WebP headers.
+RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/versus
+# The seed remains code-generated; the benchmark password hash is frozen so the
+# SQLite output is byte-identical on every build.
+RUN cd /opt/WebSyn/versus && \
+    rm -rf instance instance_seed && \
+    mkdir -p instance_seed && \
+    python3 -c "from app import app" && \
+    cp instance/versus.db instance_seed/versus.db && \
+    rm -rf instance __pycache__
+
 # Berkeley's generated imagery ships in the pinned asset bundle while its SQLite
 # seed stays build-generated from tracked source — see .build-generated-seed. The
 # inventory gate enforces exact coverage + per-file SHA-256 + decode at the planned
@@ -119,8 +131,6 @@ print('AccuWeather seed DB generated at build time.')" && rm -rf /opt/WebSyn/acc
 # Upgrade the pinned Recreation.gov seed before it becomes the reset fixture.
 RUN cd /opt/WebSyn/recreation_gov && python3 migrate_seed.py
 
-EXPOSE 8101 40000-40042
-
 # Keep the downloaded BabyCenter seed aligned with tracked source corrections.
 RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/babycenter && \
     python3 /opt/WebSyn/babycenter/migrate_seed.py
@@ -139,5 +149,7 @@ RUN python3 /opt/check_asset_inventory.py /opt/WebSyn/drugs_com && \
 
 # Fail closed after all registered-site seed migrations/generators.
 RUN python3 /opt/check_seed_databases.py /opt/WebSyn
+
+EXPOSE 8101 40000-40043
 
 CMD ["/opt/websyn_start.sh"]

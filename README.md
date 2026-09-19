@@ -47,7 +47,7 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 43 sites today, scaling to 100+ together
+- **Community-driven** — 44 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
@@ -55,10 +55,10 @@ Build this checkout to run its registered web environments (published image tags
 
 ```bash
 ./scripts/build.sh webharbor:dev
-docker run -e WEBSYN_CONTROL_TOKEN -p 8101:8101 -p 40000-40042:40000-40042 webharbor:dev
+docker run -e WEBSYN_CONTROL_TOKEN -p 8101:8101 -p 40000-40043:40000-40043 webharbor:dev
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40042` to explore 43 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, Amtrak, Cookpad, Craigslist, and Drugs.com`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40043` to explore 44 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, Amtrak, Cookpad, Craigslist, Drugs.com, and Versus`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -77,12 +77,13 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **43 sites**. NVIDIA remains at index 28, UC Berkeley
+This checkout registers **44 sites**. NVIDIA remains at index 28, UC Berkeley
 remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index
 31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at
-index 34. Recreation.gov remains at index 35; BoardGameGeek remains at index 36,
-CarMax remains at index 37, BabyCenter remains at index 38, and Amtrak is appended
-at index 39 (port 40039), Cookpad at index 40 (port 40040), Craigslist at index 41 (port 40041), and Drugs.com at index 42 (port 40042). Build the image from
+index 34. Recreation.gov remains at index 35, BoardGameGeek remains at index 36,
+CarMax remains at index 37, BabyCenter remains at index 38, Amtrak remains at index
+39, Cookpad remains at index 40, Craigslist remains at index 41, Drugs.com remains
+at index 42, and Versus is appended at index 43. Build the image from
 this checkout to use this registry; publishing source does not update the
 published Docker image automatically.
 
@@ -103,9 +104,10 @@ published Docker image automatically.
 | Cookpad | 40 | 40040 | 48040 |
 | Craigslist | 41 | 40041 | 48041 |
 | Drugs.com | 42 | 40042 | 48042 |
+| Versus | 43 | 40043 | 48043 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 43 sites and `40000-40042`;
+site's `tasks.jsonl` `web` URL agree on 44 sites and `40000-40043`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -113,7 +115,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -e WEBSYN_CONTROL_TOKEN -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48042:40000-40042 webharbor:dev
+docker run -e WEBSYN_CONTROL_TOKEN -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48043:40000-40043 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -134,14 +136,7 @@ The bundle contains 78 articles and 62 structured guidance sections. That archiv
 is part of the consolidated pinned dataset revision below.
 
 
-The current `.assets-revision` consolidates all **43** registered sites at merged
-HF commit `555a9aa0b02946a8bdf873ba1d59902b71564a07`. Every previous effective
-global/scoped archive for the existing 42 sites is byte-identical. Drugs.com adds
-13 attributed DailyMed labels and packaging images through HF #101, with its
-required archive-root correction in [HF #102](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/102).
-`assets-manifest.json` binds all selected archive hashes and the extracted tree.
-Unregistered dataset archives (such as Bandcamp) are not fetched. Seed migrations
-and build-generated seeds remain part of the build contract.
+The current `.assets-revision` consolidates all **44** registered sites at merged HF commit `f3ecd60ea35795eef566ee19d67140c16b200f26`. All 44 archives from the previous global revision `555a9aa0b02946a8bdf873ba1d59902b71564a07` are byte-identical; merged HF PR #90 adds the reviewed Versus archive. Drugs.com retains its 13 attributed DailyMed labels and packaging images from HF #101 with the archive-root correction from [HF #102](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/102). `assets-manifest.json` binds all selected archive hashes and the extracted tree. The unregistered Bandcamp archive is not fetched. Seed migrations and build-generated seeds remain part of the build contract.
 
 Historical asset integration notes below describe superseded pins, not the current pin.
 

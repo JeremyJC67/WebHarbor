@@ -1,11 +1,12 @@
-# All 43 registered sites use this immutable merged HF main revision.
-# Drugs.com: original HF #39, replacement #101 and archive-root correction #102.
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/102
-# Verified all 42 previous effective global/scoped pins are byte-identical here,
-# including BabyCenter #78, Amtrak #96, Cookpad #99 and Craigslist #100.
-# Only drugs_com.tar.gz changes: 13 DailyMed labels + 13 packaging images + catalog.
-# SHA-256: 8a9924e005d0a8a9f793f9e67bceeba0c4f2dbbe10ccf7f1afeb0a0198427b1b
+# Hugging Face dataset holding WebHarbor's heavy static assets.
+# Pin an immutable merged commit SHA, never a moving branch or refs/pr/<n>.
+#
+# All 44 registered sites use this immutable dataset-main revision.
+# The previous global revision 555a9aa0b02946a8bdf873ba1d59902b71564a07 contains 44 archives; all 44 are byte-for-byte unchanged here.
+# HF PR #90 adds versus.tar.gz at the merged commit below: 12,183,876 bytes, SHA-256 093656316188dd7960177c9a187262de860e50c9f27a3b6658407f86d16f5cb3, and 111 managed members.
+# Drugs.com retains the corrected archive from HF #102, including 13 DailyMed labels, 13 packaging images and its catalog.
 # assets-manifest.json binds every selected archive and the extracted managed tree.
-# Unregistered dataset bundles are not fetched.
+# The unregistered bandcamp archive is ignored by fetch_assets.sh.
+# Tracked seed migrations/build-generation remain part of the build contract.
 repo: ChilleD/WebHarbor
-revision: 555a9aa0b02946a8bdf873ba1d59902b71564a07
+revision: f3ecd60ea35795eef566ee19d67140c16b200f26
