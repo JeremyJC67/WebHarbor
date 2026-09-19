@@ -1,19 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Conditions & Treatments A to Z - Drugs.com{% endblock %}
+{% block title %}Condition Relationship Fixtures A-Z | {{ site_name }}{% endblock %}
 {% block content %}
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
   <a href="{{ url_for('index') }}">Home</a> &rsaquo;
-  <span>Conditions & Treatments A to Z</span>
+  <span>Condition relationship fixtures A-Z</span>
 </nav>
 
-<h1>Conditions & Treatments A to Z</h1>
-<p class="muted">Browse conditions and their treatments.</p>
+<h1>Condition Relationship Fixtures A-Z</h1>
+<p class="muted">Browse deterministic condition labels and linked medication records. Links do not establish treatment guidance.</p>
 
 <div class="conditions-search-box">
-  <input type="text" id="conditions-filter-input" placeholder="Filter conditions by name..."
-         oninput="filterConditions(this.value)" aria-label="Filter conditions">
-  <span class="muted conditions-filter-hint" id="conditions-filter-hint"></span>
+  <input type="text" id="conditions-filter-input" placeholder="Filter conditions by name..." oninput="filterConditions(this.value)" aria-label="Filter conditions by name">
+  <span class="muted conditions-filter-hint" id="conditions-filter-hint" role="status" aria-live="polite"></span>
 </div>
+<noscript><style>.conditions-search-box{display:none}</style><p class="muted">All condition fixtures are shown because JavaScript filtering is unavailable.</p></noscript>
 
 <script>
   function filterConditions(q) {
@@ -39,8 +39,8 @@
   <div class="main-col">
     {% if featured_conditions and not active_letter %}
     <section class="featured-conditions is-079">
-      <h2 class="is-080">Featured Conditions</h2>
-      <p class="muted is-081">The most common conditions, ranked by number of treatment options available.</p>
+      <h2 class="is-080">Condition fixtures with the most linked records</h2>
+      <p class="muted is-081">Ordered only by exact local relationship-row count.</p>
       <ol class="is-082">
         {% for c in featured_conditions %}
           <li class="is-083">
@@ -54,7 +54,7 @@
 
     {% if top_conditions and not active_letter %}
     <section class="top-conditions is-084">
-      <h2 class="is-085">Top conditions</h2>
+      <h2 class="is-085">Selected condition fixtures</h2>
       <div class="is-053">
         {% for c in top_conditions %}
           <a class="is-086" href="{{ url_for('condition_page', slug=c.slug) }}">
@@ -72,8 +72,10 @@
         {% set has = (grouped_conditions and grouped_conditions.get(letter)) %}
         {% if not active_letter and has %}
           <a class="letter-btn" href="#letter-{{ letter }}">{{ letter }} <span class="letter-count">({{ grouped_conditions[letter]|length }})</span></a>
+        {% elif not active_letter and not has %}
+          <span class="letter-btn letter-empty" aria-disabled="true">{{ letter }}</span>
         {% else %}
-          <a class="letter-btn {% if active_letter == letter %}active{% endif %} {% if not has and not active_letter %}letter-empty{% endif %}"
+          <a class="letter-btn {% if active_letter == letter %}active{% endif %}"
              href="{{ url_for('conditions_list') }}?letter={{ letter }}">{{ letter }}</a>
         {% endif %}
       {% endfor %}
@@ -135,7 +137,7 @@
 
     <h3>Popular tools</h3>
     <ul>
-      <li><a href="{{ url_for('search') }}">Compare Drugs</a></li>
+      <li><a href="{{ url_for('compare_drugs') }}">Compare Drugs</a></li>
       <li><a href="{{ url_for('news_index') }}">Medical News</a></li>
     </ul>
   </aside>

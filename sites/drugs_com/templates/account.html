@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}My Drugs.com - {{ current_user.username }}{% endblock %}
 {% block content %}
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
   <a href="{{ url_for('index') }}">Home</a> &rsaquo; <span>My Account</span>
 </nav>
 
@@ -23,8 +23,8 @@
 
 <p class="account-welcome">Welcome back, {{ current_user.username }}! Manage your medications, reviews, and preferences below.</p>
 
-<nav class="account-tabs">
-  <a href="{{ url_for('account') }}" class="active">My Account</a>
+<nav class="account-tabs" aria-label="Account sections">
+  <a href="{{ url_for('account') }}" class="active" aria-current="page">My Account</a>
   <a href="{{ url_for('my_med_list') }}">My Med List</a>
   <a href="{{ url_for('my_reviews') }}">My Reviews</a>
   <a href="{{ url_for('account_settings') }}">Settings</a>
@@ -50,7 +50,7 @@
   <a class="btn btn-primary account-action-btn" href="{{ url_for('drug_az') }}">
     <span class="account-action-icon">+</span> Add medications
   </a>
-  <a class="btn btn-primary account-action-btn" href="{{ url_for('drug_az') }}#popular">
+  <a class="btn btn-primary account-action-btn" href="{{ url_for('drug_az') }}">
     <span class="account-action-icon">&#9733;</span> Write a review
   </a>
   <a class="btn btn-outline account-action-btn" href="{{ url_for('account_settings') }}">
@@ -95,13 +95,14 @@
           <span class="stars">{% for _ in range(stars) %}&#9733;{% endfor %}{% for _ in range(5 - stars) %}&#9734;{% endfor %}</span>
           <span class="muted">{{ r.rating }}/10</span>
         </div>
-        <strong>{{ r.title }}</strong>
+        <strong>{{ r.title }}</strong>{% if r.is_fixture %} <span class="badge">Simulated fixture</span>{% endif %}
         <p class="muted">for {{ r.condition_treated|replace('_',' ')|replace('-',' ')|title }} &middot; {{ r.created_at.strftime('%B %d, %Y') }}</p>
         <p>{{ r.body }}</p>
         <div class="review-actions">
           <a class="btn btn-outline btn-sm" href="{{ url_for('drug_review_new', slug=r.drug.slug) }}">Edit</a>
-          <form method="post" action="{{ url_for('delete_review', review_id=r.id) }}" class="review-delete" onsubmit="return confirm('Delete this review?');">
+          <form method="post" action="{{ url_for('delete_review', review_id=r.id) }}" class="review-delete">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="review-delete-confirm"><input type="checkbox" name="confirm_delete" value="1" required> Confirm delete</label>
             <button type="submit" class="btn btn-outline btn-sm">Delete</button>
           </form>
         </div>
@@ -127,7 +128,7 @@
         {% for d in recently_viewed[:5] %}
           <li>
             <a href="{{ url_for('drug_detail', slug=d.slug) }}">{{ d.generic_name|capitalize }}</a>
-            <span class="badge badge-{{ 'rx' if d.availability and 'rx' in (d.availability|lower) else 'otc' }}">{{ d.availability or 'Rx' }}</span>
+            <span class="badge badge-{{ 'rx' if d.availability and 'rx' in (d.availability|lower) else ('otc' if d.availability else 'unknown') }}">{{ d.availability or 'Not stored' }}</span>
           </li>
         {% endfor %}
       </ul>
@@ -138,6 +139,7 @@
 
   <section class="account-box">
     <h2>Account settings</h2>
+    <p class="muted">These controls save local resettable preferences only. They do not send email, alerts, interaction warnings, refill reminders, or external notifications.</p>
     <form method="post" action="{{ url_for('save_settings') }}" class="account-settings-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="settings_form" value="dashboard">
@@ -147,13 +149,13 @@
         <input id="acct-email" type="email" name="email" value="{{ current_user.email }}" required maxlength="120">
       </div>
       <fieldset class="form-fieldset">
-        <legend>Email preferences</legend>
+        <legend>Local email preference fixtures</legend>
         <label class="form-check"><input type="checkbox" name="newsletter" {% if prefs.get('newsletter', true) %}checked{% endif %}> Weekly health newsletter</label>
         <label class="form-check"><input type="checkbox" name="fda_alerts" {% if prefs.get('fda_alerts', true) %}checked{% endif %}> FDA drug alerts &amp; recalls</label>
         <label class="form-check"><input type="checkbox" name="new_approvals" {% if prefs.get('new_approvals', false) %}checked{% endif %}> New drug approvals</label>
       </fieldset>
       <fieldset class="form-fieldset">
-        <legend>Notification settings</legend>
+        <legend>Local notification preference fixtures</legend>
         <label class="form-check"><input type="checkbox" name="interaction_warnings" {% if prefs.get('interaction_warnings', true) %}checked{% endif %}> Interaction warnings for drugs in my list</label>
         <label class="form-check"><input type="checkbox" name="refill_reminders" {% if prefs.get('refill_reminders', false) %}checked{% endif %}> Refill reminders</label>
       </fieldset>

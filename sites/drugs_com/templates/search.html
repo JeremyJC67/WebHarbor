@@ -9,7 +9,7 @@
 <h1>{% if q %}Search results for "{{ q }}"{% else %}Browse drugs{% endif %}</h1>
 
 <form method="get" action="{{ url_for('search') }}" class="search-bar-top">
-  <input type="search" name="q" value="{{ q }}" placeholder="Search drugs, conditions, brand names..." class="search-input-lg">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search drugs, conditions, brand names..." class="search-input-lg" aria-label="Search drugs, conditions, and brand names">
   <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
@@ -22,7 +22,7 @@
         <a href="{{ url_for('drug_detail', slug=exact_drug.slug) }}">{{ exact_drug.generic_name|capitalize }}</a>
       </h2>
       <div class="exact-match-links">
-        <a href="{{ url_for('drug_detail', slug=exact_drug.slug) }}" class="btn btn-primary btn-sm">Full prescribing information</a>
+        <a href="{{ url_for('drug_detail', slug=exact_drug.slug) }}" class="btn btn-primary btn-sm">Open local medication fixture</a>
         <a href="{{ url_for('drug_side_effects', slug=exact_drug.slug) }}">Side effects</a>
         <a href="{{ url_for('drug_dosage', slug=exact_drug.slug) }}">Dosage</a>
         <a href="{{ url_for('drug_interactions_page', slug=exact_drug.slug) }}">Interactions</a>
@@ -46,7 +46,7 @@
     {% endif %}
     <p class="match-condition-actions">
       <a class="btn btn-primary btn-sm" href="{{ url_for('condition_page', slug=matched_condition.slug) }}">View all results for {{ matched_condition.name }} &rsaquo;</a>
-      {% if matched_condition.drug_count %}<span class="muted match-condition-count">{{ matched_condition.drug_count }} drug{{ '' if matched_condition.drug_count == 1 else 's' }} treat this condition</span>{% endif %}
+      {% if matched_condition.drug_count %}<span class="muted match-condition-count">{{ matched_condition.drug_count }} linked medication fixture{{ '' if matched_condition.drug_count == 1 else 's' }}; no treatment claim</span>{% endif %}
     </p>
   </section>
 {% endif %}
@@ -173,11 +173,11 @@
     {% endif %}
 
     {% if news_results %}
-      <h2 class="search-group-heading" id="group-news">News <span class="muted">({{ news_results|length }})</span></h2>
+      <h2 class="search-group-heading" id="group-news">Simulated news fixtures <span class="muted">({{ news_results|length }})</span></h2>
       <ul class="search-group-list">
         {% for a in news_results %}
           <li>
-            <a href="{{ url_for('news_article', article_id=a.id) }}"><strong>{{ a.title }}</strong></a>
+            <a href="{{ url_for('news_article', article_id=a.id) }}"><strong>{{ a.title }}</strong></a> <span class="badge">Simulated fixture</span>
             <span class="muted"> &mdash; {{ a.category }}{% if a.published_at %} &middot; {{ a.published_at.strftime('%b %d, %Y') }}{% endif %}</span>
           </li>
         {% endfor %}
@@ -214,7 +214,7 @@
           <li>Try searching by a brand name instead of the generic name (or vice versa).</li>
           <li>Remove a filter (drug class, condition, or availability).</li>
           <li>Browse the full <a href="{{ url_for('drug_az') }}">Drugs A-Z</a> index.</li>
-          <li>Use the <a href="{{ url_for('pill_identifier') }}">Pill Identifier</a> if you only have a pill on hand.</li>
+          <li>Use the <a href="{{ url_for('pill_identifier') }}">local descriptor matcher</a> only to search synthetic fixture fields; it cannot identify or verify a real pill.</li>
         </ul>
         {% if related_searches %}
           <div class="search-popular-fallback">

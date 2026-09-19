@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}My Reviews - Drugs.com{% endblock %}
 {% block content %}
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
   <a href="{{ url_for('index') }}">Home</a> &rsaquo;
   <a href="{{ url_for('account') }}">My Account</a> &rsaquo;
   <span>My Reviews</span>
@@ -9,10 +9,10 @@
 
 <h1>My Reviews</h1>
 
-<nav class="account-tabs">
+<nav class="account-tabs" aria-label="Account sections">
   <a href="{{ url_for('account') }}">My Account</a>
   <a href="{{ url_for('my_med_list') }}">My Med List</a>
-  <a href="{{ url_for('my_reviews') }}" class="active">My Reviews</a>
+  <a href="{{ url_for('my_reviews') }}" class="active" aria-current="page">My Reviews</a>
   <a href="{{ url_for('account_settings') }}">Settings</a>
   <a href="{{ url_for('account_subscriptions') }}">Subscriptions</a>
 </nav>
@@ -23,7 +23,7 @@
   <article class="review account-box is-314">
     <h3 class="is-013">
       <a href="{{ url_for('drug_detail', slug=r.drug.slug) }}">{{ r.drug.generic_name|capitalize }}</a>
-      <span class="muted is-315">&mdash; {{ r.title }}</span>
+      <span class="muted is-315">&mdash; {{ r.title }}{% if r.is_fixture %} (simulated fixture){% endif %}</span>
     </h3>
     <p class="muted is-223">
       Rating: <strong>{{ r.rating }}/10</strong> &middot;
@@ -35,8 +35,9 @@
     <div class="review-actions">
       <a href="{{ url_for('drug_detail', slug=r.drug.slug) }}" class="btn btn-outline btn-sm">View drug page</a>
       <a href="{{ url_for('drug_review_new', slug=r.drug.slug) }}" class="btn btn-outline btn-sm">Edit review</a>
-      <form method="post" action="{{ url_for('delete_review', review_id=r.id) }}" class="review-delete" style="display:inline;" onsubmit="return confirm('Delete this review?');">
+      <form method="post" action="{{ url_for('delete_review', review_id=r.id) }}" class="review-delete" style="display:inline;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="review-delete-confirm"><input type="checkbox" name="confirm_delete" value="1" required> Confirm delete</label>
         <button type="submit" class="btn btn-outline btn-sm">Delete</button>
       </form>
     </div>
