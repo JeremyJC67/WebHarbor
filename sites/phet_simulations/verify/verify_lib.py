@@ -20,18 +20,159 @@ Input signature (per task):
   --no_llm           skip LLM-based checks (run deterministic-only)
 Output: JSON {task_id, pass, reason, evidence[]} to stdout; exit 0 on PASS, 1 on FAIL.
 """
-import base64, json, os, re, sqlite3, subprocess, sys, tempfile, urllib.request
+import base64, ipaddress, json, os, re, sqlite3, struct, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
+from urllib.parse import urlparse
 from dataclasses import dataclass
 
 SITE = "phet_simulations"
+_LAST_RUN_PACKAGE_GATE = None
 
 # ---------------------------------------------------------------- trajectory
+def _expected_task_id():
+    """Infer the task identity without changing the 18 verifier entry points."""
+    match = re.fullmatch(r"verify_(\d+)", Path(sys.argv[0]).stem)
+    return f"PhET Interactive Simulations--{match.group(1)}" if match else None
+
+
+def _http_loopback_port(value):
+    """Return an HTTP loopback URL's effective port, or None when invalid."""
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = urlparse(value)
+        port = parsed.port or 80
+        host = parsed.hostname
+    except ValueError:
+        return None
+    if parsed.scheme != "http" or not host or parsed.username or parsed.password:
+        return None
+    if host.casefold() != "localhost":
+        try:
+            if not ipaddress.ip_address(host).is_loopback:
+                return None
+        except ValueError:
+            return None
+    return port
+
+
+def _png_dimensions(path):
+    """Read PNG dimensions from IHDR using only the Python standard library."""
+    try:
+        header = path.read_bytes()[:24]
+    except OSError:
+        return None
+    if (len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or
+            header[12:16] != b"IHDR"):
+        return None
+    return struct.unpack(">II", header[16:24])
+
+
+def _validate_run_package(traj, run_dir, shots):
+    errors = []
+
+    def fail(name, detail):
+        errors.append((name, detail))
+
+    expected = _expected_task_id()
+    task_id = traj.get("task_id")
+    if expected and task_id != expected:
+        fail("run_package_task_id", f"expected {expected!r}, got {task_id!r}")
+    elif not isinstance(task_id, str) or not task_id.strip():
+        fail("run_package_task_id", "task_id must be a non-empty string")
+
+    start_url = traj.get("start_url")
+    start_port = _http_loopback_port(start_url)
+    if start_port is None:
+        fail("run_package_start_url", f"start_url must be an HTTP loopback URL, got {start_url!r}")
+
+    run_kind = traj.get("run_kind")
+    if not isinstance(run_kind, str) or not run_kind.strip():
+        fail("run_package_run_kind", "run_kind must be a non-empty string")
+
+    steps = traj.get("steps")
+    if not isinstance(steps, list) or not steps:
+        fail("run_package_steps", "steps must be a non-empty list")
+        steps = []
+
+    referenced = []
+    for index, step in enumerate(steps, 1):
+        if not isinstance(step, dict):
+            fail("run_package_steps", f"step {index} must be an object")
+            continue
+        for field in ("url_before", "url", "url_after"):
+            value = step.get(field)
+            port = _http_loopback_port(value)
+            if port is None or start_port is None or port != start_port:
+                fail("run_package_url", f"step {index} {field} must be an HTTP loopback URL on port {start_port}, got {value!r}")
+        result = step.get("action_result")
+        if not isinstance(result, dict) or result.get("success") is not True:
+            fail("run_package_action", f"step {index} action_result.success must be true")
+        for field in ("screenshot_before", "screenshot_after"):
+            value = step.get(field)
+            if not isinstance(value, str):
+                fail("run_package_screenshot", f"step {index} {field} must name a PNG")
+                continue
+            parts = Path(value).parts
+            if not (len(parts) == 1 or (len(parts) == 2 and parts[0] == "screenshots")):
+                fail("run_package_screenshot", f"step {index} {field} must stay inside screenshots/: {value!r}")
+                continue
+            name = Path(value).name
+            if not re.fullmatch(r"step_[A-Za-z0-9_.-]+\.png", name):
+                fail("run_package_screenshot", f"step {index} {field} has invalid name {value!r}")
+                continue
+            referenced.append((index, field, name))
+
+    if traj.get("terminated") is not True:
+        fail("run_package_termination", "terminated must be true")
+    reason = traj.get("termination_reason")
+    if not isinstance(reason, str) or not reason.strip():
+        fail("run_package_termination", "termination_reason must be a non-empty string")
+
+    names = [name for _, _, name in referenced]
+    if len(names) != len(set(names)):
+        fail("run_package_screenshot", "before/after screenshot names must be unique")
+    if not shots:
+        fail("run_package_screenshot", f"no screenshots/step_*.png files found under {run_dir}")
+
+    for index, field, name in referenced:
+        if shots.get(name) is None:
+            fail("run_package_screenshot", f"step {index} {field} references missing screenshots/{name}")
+    for name, path in shots.items():
+        size = path.stat().st_size
+        dimensions = _png_dimensions(path)
+        if size < 1000:
+            fail("run_package_screenshot", f"screenshots/{name} is {size} bytes; minimum is 1000")
+        if dimensions is None:
+            fail("run_package_screenshot", f"screenshots/{name} is not a valid PNG")
+        elif dimensions[0] < 320 or dimensions[1] < 200:
+            fail("run_package_screenshot", f"screenshots/{name} is {dimensions[0]}x{dimensions[1]}; minimum is 320x200")
+
+    return errors
+
+
 def load_run(run_dir):
+    global _LAST_RUN_PACKAGE_GATE
     d = Path(run_dir)
-    traj = json.loads((d / "trajectory.json").read_text())
+    errors = []
+    try:
+        traj = json.loads((d / "trajectory.json").read_text())
+        if not isinstance(traj, dict):
+            errors.append(("run_package_trajectory", "trajectory.json must contain an object"))
+            traj = {}
+    except Exception as exc:
+        errors.append(("run_package_trajectory", f"cannot load trajectory.json: {type(exc).__name__}: {exc}"))
+        traj = {}
+    shots = {p.name: p for p in sorted((d / "screenshots").glob("step_*.png"))}
+    if not errors:
+        errors.extend(_validate_run_package(traj, d, shots))
+    _LAST_RUN_PACKAGE_GATE = {
+        "errors": errors,
+        "steps": len(traj.get("steps", [])) if isinstance(traj.get("steps"), list) else 0,
+        "screenshots": len(shots),
+    }
     traj["_run_dir"] = d
-    traj["_shots"] = {p.name: p for p in sorted((d / "screenshots").glob("step_*.png"))}
+    traj["_shots"] = shots
     return traj
 
 def step_urls(traj):
@@ -359,6 +500,17 @@ class Judge:
         return bool(cond)
 
     def emit(self):
+        gate = _LAST_RUN_PACKAGE_GATE
+        if gate is not None:
+            if gate["errors"]:
+                self.ok = False
+                self.reason = gate["errors"][0][0]
+                package_evidence = [f"[FAIL] {name}: {detail}" for name, detail in gate["errors"]]
+            else:
+                package_evidence = [
+                    f"[PASS] run_package_gate: {gate['steps']} steps and {gate['screenshots']} PNG screenshots validated"
+                ]
+            self.evidence = package_evidence + self.evidence
         print(json.dumps({"task_id": self.task_id, "pass": self.ok,
                           "reason": self.reason, "evidence": self.evidence}, indent=2))
         sys.exit(0 if self.ok else 1)
