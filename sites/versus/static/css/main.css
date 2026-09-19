@@ -273,8 +273,6 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 26px 70px; }
 .footer-col h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: 12px; }
 .footer-col a { display: block; font-size: 14px; padding: 3px 0; color: var(--ink); }
 .footer-col a:hover { color: var(--accent-2); }
-.footer-note { max-width: var(--maxw); margin: 0 auto; padding: 0 26px 34px;
-  color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 18px; }
 
 /* ---------------------------------------------------------------- narrow */
 @media (max-width: 1180px) {

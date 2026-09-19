@@ -9,7 +9,7 @@ cannot be extracted is not added to the catalogue.
 
 The scores (Versus Score, camera/ANC/fitness score, benchmark points) are NOT
 sourced. They are synthetic benchmark values and are marked as such in the
-output, the same way NOTICE.md and /about describe them.
+output and documented in NOTICE.md.
 
 Usage: build_catalogue.py > data/catalogue.json
 """

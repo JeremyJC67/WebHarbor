@@ -308,16 +308,23 @@ class VerifierTerminalState(unittest.TestCase):
                 f"{path.name} does not check where the answer was emitted from")
 
 
-class SyntheticDisclosure(unittest.TestCase):
-    """The synthetic parts must be stated in the UI, not only in the repo."""
+class UiDisclosureRemoved(unittest.TestCase):
+    """Repository disclosures must not be rendered in the site UI."""
 
-    def test_about_page_and_footer_name_what_is_synthetic(self):
-        about = (SITE_DIR / "templates" / "about.html").read_text().lower()
-        base = (SITE_DIR / "templates" / "base.html").read_text().lower()
-        for token in ("synthetic", "versus score"):
-            self.assertIn(token, about, f"/about does not mention {token}")
-            self.assertIn(token, base, f"the footer does not mention {token}")
-        self.assertIn("not affiliated", about)
+    def test_templates_do_not_render_repository_disclosures(self):
+        forbidden = (
+            "not affiliated",
+            "synthetic",
+            "benchmark mirror",
+            "offline mirror",
+            "webharbor",
+            "source-backed",
+            "versus.com",
+        )
+        for template in sorted((SITE_DIR / "templates").glob("*.html")):
+            text = template.read_text().lower()
+            for token in forbidden:
+                self.assertNotIn(token, text, f"{template.name} renders disclosure token {token}")
 
     def test_notice_exists_and_covers_imagery_and_data(self):
         notice = (SITE_DIR / "NOTICE.md").read_text().lower()

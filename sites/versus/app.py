@@ -381,17 +381,6 @@ def account():
     return render_template("account.html", saved=saved)
 
 
-@app.route("/about")
-def about():
-    """What this mirror is, and which parts of it are synthetic.
-
-    The source site is mirrored for an offline agent benchmark, so the page
-    states plainly which values are sourced and which are generated rather than
-    leaving a visitor to assume everything is real.
-    """
-    return render_template("about.html")
-
-
 @app.route("/_health")
 def health():
     return {"ok": True, "site": "versus"}

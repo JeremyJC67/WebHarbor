@@ -41,7 +41,7 @@ Product names, brands, release years, list prices and published specifications f
 manufacturers' figures. The **Versus Score, all user accounts and all saved comparisons
 are synthetic benchmark data**. The 107 entity images are real, locally stored media:
 85 are Wikimedia Commons files and 22 come from official product, campus, identity,
-press or video pages. `/about` and the footer state the distinction. See `NOTICE.md`.
+press or video pages. This distinction is documented in this README and `NOTICE.md`; the running site UI does not include repository disclosure text.
 
 ## Catalogue
 
