@@ -769,6 +769,12 @@ h1, h2, h3, h4 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
   background: #fff;
   font-size: 0.85rem;
 }
+@media (max-width: 520px) {
+  .browse-results-head { flex-wrap: wrap; align-items: flex-start; }
+  .results-active-chips { margin-left: 0; }
+  .results-sort { margin-left: 0; width: 100%; }
+  .results-sort select { flex: 1; min-width: 0; }
+}
 
 .subject-section { margin: 0 0 2.5rem; padding: 0 1.25rem; }
 .subject-section-head {
