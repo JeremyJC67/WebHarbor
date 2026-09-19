@@ -94,8 +94,8 @@
       <div class="sr-toolbar sr-toolbar-count">
         <span class="sr-count">{{ first }} - {{ last }} of {{ '{:,}'.format(results.total) }}</span>
         <span class="sr-pager">
-          {% if results.page > 1 %}<a href="{{ url_for('search', page=results.page-1, **request.args.to_dict()) }}" aria-label="Previous page">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
-          {% if results.page < results.pages %}<a href="{{ url_for('search', page=results.page+1, **request.args.to_dict()) }}" aria-label="Next page">›</a>{% else %}<span class="disabled">›</span>{% endif %}
+          {% if results.page > 1 %}<a href="{{ page_url(results.page-1) }}" aria-label="Previous page">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
+          {% if results.page < results.pages %}<a href="{{ page_url(results.page+1) }}" aria-label="Next page">›</a>{% else %}<span class="disabled">›</span>{% endif %}
         </span>
         <a class="sr-marketplace" href="{{ url_for('marketplace', q=q) }}">Search Marketplace</a>
       </div>

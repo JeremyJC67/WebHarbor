@@ -17,6 +17,9 @@ import sqlite3
 import sys
 import unicodedata
 from urllib.parse import parse_qs, urlparse
+import bcrypt
+
+from answer_checks import check_answer
 
 
 ALLOWED_HOSTS = {"localhost", "127.0.0.1"}
@@ -28,40 +31,13 @@ ALLOWED_HOSTS = {"localhost", "127.0.0.1"}
 # the WHR_EXPECTED_ORIGIN environment variable when a grader wants that.
 
 READ_ONLY_SPECS = {
-    0: {
-        "paths": ("/release/8031582", "/release/3376357"),
-        "tokens": ("1966", "242", "rs 9242", "11:24"),
-    },
-    1: {
-        "paths": ("/release/7852399", "/release/7251385"),
-        "tokens": ("1986", "cd", "cp32-5244", "bellarosa", "4:15"),
-    },
-    2: {
-        "paths": ("/release/4337598", "/release/2379219"),
-        "tokens": ("japan", "2007", "ucco-9038", "joe tarantino"),
-        "number": 7,
-    },
-    3: {
-        "paths": ("/release/9732909", "/release/8837214"),
-        # The live-faithful search card shows the full format description, so the
-        # Dolby System / Repress split is readable from the results page. The task now
-        # asks for identifier facts that only the detail pages carry.
-        "tokens": ("9732909", "8837214", "impuesto de lujo", "6649", "9417-1978"),
-        "attribution": (("6649", "9732909", "8837214"),),
-    },
-    4: {
-        "paths": ("/release/35846581",),
-        "tokens": ("colin greenwood", "as the waters cover the sea"),
-    },
-    5: {
-        "paths": ("/marketplace", "/release/19878259"),
-        "tokens": ("kelly blue", "wynton kelly", "kosmische", "8.27", ("usd", "us$"), "smj-6114", "srs-6059"),
-        "marketplace_filters": True,
-    },
-    6: {
-        "paths": ("/lists", "/list/3", "/release/4627265"),
-        "tokens": ("jeff beck", "italy", "igda 1063/64"),
-    },
+    0: {"paths": ("/release/8031582", "/release/3376357")},
+    1: {"paths": ("/release/7852399", "/release/7251385")},
+    2: {"paths": ("/release/4337598", "/release/2379219")},
+    3: {"paths": ("/release/9732909", "/release/8837214")},
+    4: {"paths": ("/release/35846581", "/release/5138247")},
+    5: {"paths": ("/marketplace", "/release/19878259"), "marketplace_filters": True},
+    6: {"paths": ("/lists", "/list/3", "/release/8468154", "/release/4627265")},
 }
 
 
@@ -155,96 +131,6 @@ def final_answer(trajectory: dict) -> str:
     return (trajectory.get("final_answer") or "").strip()
 
 
-NEGATION_WORDS = {
-    "not", "no", "never", "without", "isn't", "isnt", "aren't", "arent",
-    "wasn't", "wasnt", "doesn't", "doesnt", "didn't", "didnt",
-}
-
-
-def preceding_clause_is_negated(value: str, start: int) -> bool:
-    prefix = value[:start]
-    clause = re.split(r"(?:[.!?;:\n]+|\b(?:and|but|however|instead)\b)", prefix)[-1]
-    words = re.findall(r"[a-z0-9]+(?:'[a-z]+)?", clause)[-6:]
-    return any(word in NEGATION_WORDS for word in words)
-
-
-def affirmed(text: str, token: str) -> bool:
-    value = normalize(text)
-    target = normalize(token)
-    pattern = re.escape(target)
-    if target and target[0].isalnum():
-        pattern = rf"(?<!\w){pattern}"
-    if target and target[-1].isalnum():
-        pattern = rf"{pattern}(?!\w)"
-    for match in re.finditer(pattern, value):
-        if not preceding_clause_is_negated(value, match.start()):
-            return True
-    return False
-
-
-def contains_number(text: str, number: int) -> bool:
-    value = normalize(text)
-    patterns = [rf"(?<!\d){number}(?!\d)"]
-    if number == 7:
-        patterns.append(r"\bseven\b")
-    return any(
-        not preceding_clause_is_negated(value, match.start())
-        for pattern in patterns
-        for match in re.finditer(pattern, value)
-    )
-
-
-def associated(text: str, left: str, right: str,
-               associations: tuple[tuple[str, str], ...]) -> bool:
-    value = normalize(text)
-    left, right = normalize(left), normalize(right)
-    starts_left = [match.start() for match in re.finditer(re.escape(left), value)]
-    candidates = [
-        (normalize(candidate), match.start())
-        for _, candidate in associations
-        for match in re.finditer(re.escape(normalize(candidate)), value)
-    ]
-    for left_start in starts_left:
-        if not candidates:
-            continue
-        distance, nearest = min(
-            (abs(left_start - right_start), candidate)
-            for candidate, right_start in candidates
-        )
-        if nearest == right and distance <= 100:
-            return True
-    return False
-
-
-def attributed_to(text: str, value: str, target: str, other: str) -> bool:
-    """True when `value` is attributed to `target` rather than to `other`.
-
-    Natural phrasing names the edition before the fact ("release X lists ... 6649"),
-    so the nearest identifier *preceding* the value decides the binding; if none
-    precedes, the nearest one following it is used. A swapped attribution fails even
-    though both identifiers appear in the answer.
-    """
-    body = normalize(text)
-    value, target, other = normalize(value), normalize(target), normalize(other)
-    value_starts = [m.start() for m in re.finditer(re.escape(value), body)]
-    target_starts = [m.start() for m in re.finditer(re.escape(target), body)]
-    other_starts = [m.start() for m in re.finditer(re.escape(other), body)]
-    if not value_starts or not target_starts:
-        return False
-    for start in value_starts:
-        before = ([(start - s, True) for s in target_starts if s < start]
-                  + [(start - s, False) for s in other_starts if s < start])
-        if before:
-            if min(before)[1]:
-                return True
-            continue
-        after = ([(s - start, True) for s in target_starts if s > start]
-                 + [(s - start, False) for s in other_starts if s > start])
-        if after and min(after)[1]:
-            return True
-    return False
-
-
 def step_origins(trajectory: dict) -> list[str]:
     """Scheme://host:port for every recorded step URL, in order."""
     origins = []
@@ -290,27 +176,8 @@ def verify_read_only(index: int, trajectory: dict, judge: Judge) -> None:
     judge.check("final_answer_present", bool(answer), f"length={len(answer)}")
     for path in spec["paths"]:
         judge.check(f"visited_{path}", visited_path(trajectory, path), path)
-    missing = []
-    for token in spec["tokens"]:
-        alternatives = token if isinstance(token, tuple) else (token,)
-        if not any(affirmed(answer, option) for option in alternatives):
-            missing.append(" | ".join(alternatives))
-    judge.check("grounded_answer_fields", not missing, f"missing={missing}")
-    if "number" in spec:
-        judge.check("requested_count", contains_number(answer, spec["number"]), f"expected={spec['number']}")
-    associations = spec.get("associations", ())
-    for left, right in associations:
-        judge.check(
-            f"bind_{left}_{right}",
-            associated(answer, left, right, associations),
-            "expected descriptor is nearest to its release ID",
-        )
-    for value, target, other in spec.get("attribution", ()):
-        judge.check(
-            f"bind_{target}_{value}",
-            attributed_to(answer, value, target, other),
-            f"'{value}' must be attributed to {target}, not {other}",
-        )
+    for name, passed in check_answer(index, answer).items():
+        judge.check(f"answer_{name}", passed, "entity/property-bound natural-answer check")
     if spec.get("marketplace_filters"):
         judge.check("marketplace_filters", marketplace_filters_used(trajectory),
                     "USD + Near Mint + price ascending")
@@ -563,9 +430,9 @@ def verify_registration(before, after, trajectory, judge):
     judge.check(
         "login_succeeded_after_logout",
         visited_paths_in_order(
-            trajectory, ("/register", "/settings", "/", "/login", "/")
+            trajectory, ("/register", "/settings", "/", "/login", "/", "/settings")
         ),
-        "registration -> settings -> logout -> login -> authenticated destination",
+        "registration -> settings -> logout -> login -> home -> authenticated settings",
     )
     delta = table_delta(before, after, "users")
     judge.check("one_user_added", len(delta["added"]) == 1 and not delta["removed"] and not delta["changed"], str(delta))
@@ -576,6 +443,12 @@ def verify_registration(before, after, trajectory, judge):
                 and row["bio"] == "Digging since 2010." and row["password_hash"]
                 and row["password_hash"] != "discogs2026")
         judge.check("user_fields_match", bool(good), f"username={row['username']}")
+        try:
+            password_matches = bcrypt.checkpw(b"discogs2026", row["password_hash"].encode())
+        except (ValueError, TypeError, AttributeError):
+            password_matches = False
+        judge.check("password_authenticates", password_matches,
+                    "saved bcrypt hash must authenticate the requested password")
     else:
         judge.check("user_fields_match", False, "user missing")
     check_allowed_tables(before, after, judge, {"users"})

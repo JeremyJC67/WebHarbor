@@ -70,6 +70,40 @@ class AppTests(unittest.TestCase):
         return self.client.post("/login", query_string={"next": target} if target else {},
                                 data={"username": username, "password": "test-pass"})
 
+    def test_catalog_and_marketplace_pagination_preserves_filters(self):
+        from urllib.parse import parse_qs, urlsplit
+        import html
+        for i in range(3, 70):
+            m.db.session.add(m.Release(id=i, discogs_id=1000+i, artist_id=1,
+                                      title=f"Studio Session {i}"))
+            m.db.session.add(m.Listing(user_id=1, release_id=i, currency='GBP',
+                                      price=i, status='For Sale', media_condition='Near Mint (NM or M-)'))
+        m.db.session.commit()
+        for route, params, selector in [
+            ('/search', {'q':'Studio', 'type':'release'}, r'href="([^"]+)" aria-label="(?:Next|Previous) page"'),
+            ('/marketplace', {'currency':'GBP', 'media':'Near Mint (NM or M-)', 'sort':'price_asc'}, r'href="([^"]+)">(?:Next|Prev)</a>'),
+        ]:
+            for page in (1, 2, 3, 999):
+                with self.subTest(route=route, page=page):
+                    response = self.client.get(route, query_string={**params,'page':page})
+                    self.assertEqual(200, response.status_code)
+                    links = re.findall(selector, response.get_data(as_text=True))
+                    self.assertTrue(links)
+                    for href in links:
+                        query = parse_qs(urlsplit(html.unescape(href)).query)
+                        self.assertEqual(1, len(query['page']))
+                        for key, value in params.items(): self.assertEqual([value], query[key])
+                        self.assertEqual(200, self.client.get(html.unescape(href)).status_code)
+
+    def test_source_notes_render_as_escaped_plain_text(self):
+        r = m.db.session.get(m.Release, 1)
+        r.notes = '[url=https://www.discogs.com/label/1]Example[/url] [l=Example Records] [r1002] [b]Bold[/b] <script>alert(1)</script>'
+        m.db.session.commit()
+        body = self.client.get('/release/1001').get_data(as_text=True)
+        self.assertIn('Example Example Records Another Session Bold &lt;script&gt;', body)
+        self.assertNotIn('<script>alert(1)</script>', body)
+        self.assertNotIn('[url=', body)
+
     def listing(self, **overrides):
         data = {"release_id": "1001", "price": "42.00", "currency": "USD",
                 "media_condition": "Very Good Plus (VG+)",

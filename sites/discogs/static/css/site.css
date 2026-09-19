@@ -796,6 +796,9 @@ h3 { font-size: 1.1em; margin: 0 0 8px; }
   .ls-hero-actions { align-self: flex-start; }
   .mp-search { margin-left: 0; }
   .mp-table thead { display: none; }
+  .mp-table, .mp-table tbody { display: block; }
+  .mp-item, .mp-tabs, .mp-sorts { flex-wrap: wrap; }
+  .mp-desc { overflow-wrap: anywhere; }
   .mp-row { display: block; padding: 10px 0; }
   .mp-row td { display: block; border: 0; padding: 4px 0; }
   .mp-price, .mp-actions { text-align: left; }

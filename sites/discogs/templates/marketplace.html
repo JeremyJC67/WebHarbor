@@ -78,8 +78,8 @@
     <div class="mp-toolbar">
       <span class="mp-range">{{ first }} – {{ last }} of {{ '{:,}'.format(pag.total) }}</span>
       <span class="mp-pager">
-        {% if pag.page > 1 %}<a href="{{ url_for(request.endpoint, page=pag.page-1, **request.args.to_dict()) }}">Prev</a>{% else %}<span class="disabled">Prev</span>{% endif %}
-        {% if pag.page < pag.pages %}<a href="{{ url_for(request.endpoint, page=pag.page+1, **request.args.to_dict()) }}">Next</a>{% else %}<span class="disabled">Next</span>{% endif %}
+        {% if pag.page > 1 %}<a href="{{ page_url(pag.page-1) }}">Prev</a>{% else %}<span class="disabled">Prev</span>{% endif %}
+        {% if pag.page < pag.pages %}<a href="{{ page_url(pag.page+1) }}">Next</a>{% else %}<span class="disabled">Next</span>{% endif %}
       </span>
       {% if not heading %}
       <span class="mp-sorts">
