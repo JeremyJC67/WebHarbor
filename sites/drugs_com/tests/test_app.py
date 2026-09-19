@@ -59,7 +59,7 @@ def database_rows(path, sql, params=()):
     ("/ibuprofen/reviews", b"Simulated fixture"),
     ("/semaglutide/pregnancy", b"Stored pregnancy fixture field"),
     ("/about", b"not the official Drugs.com service"),
-    ("/_health", b"drugs-com-source-v2"),
+    ("/_health", b"drugs-com-source-v3"),
 ])
 def test_representative_routes(client, path, required):
     response = client.get(path)

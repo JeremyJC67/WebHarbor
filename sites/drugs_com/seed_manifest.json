@@ -1,8 +1,8 @@
 {
-  "bytes": 1146880,
-  "catalog_sha256": "0048909eebc40a017c99cdc08f4fab89760035bc5bcbc476c5fb3a7da4049d9f",
+  "bytes": 2088960,
+  "catalog_sha256": "34cf434c5055d028c8174f26cff608e5146887f58f37b3b181abe802c6888d82",
   "generator": "seed_data.py",
-  "schema_sha256": "6da3c89fdcb74ea817719a448c39bced05ee2b182b331b4cd6445a81f1dd390b",
-  "sha256": "edf03607f899f003f4be34471355dbc653ffaff037a1ca629552392ce769c1e5",
-  "version": "drugs-com-source-v2"
+  "schema_sha256": "b69835f0edcfcbd3566d8ded2d469316111915b7b1144d21b957fe025861bcac",
+  "sha256": "01528a87f77b41b25e8e8b50409fdfb02aa75e1cd7aef6f4c4843082bb16a1aa",
+  "version": "drugs-com-source-v3"
 }

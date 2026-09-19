@@ -107,7 +107,7 @@ app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
 _secure_cookies = os.environ.get("DRUGS_COM_SECURE_COOKIES", "0") == "1"
 app.config["SESSION_COOKIE_SECURE"] = _secure_cookies
 app.config["REMEMBER_COOKIE_SECURE"] = _secure_cookies
-SEED_VERSION = "drugs-com-source-v2"
+SEED_VERSION = "drugs-com-source-v3"
 SEED_EPOCH = datetime(2026, 7, 9, 23, 14, 52)
 
 
@@ -553,6 +553,35 @@ class LifestyleInteraction(db.Model):
 class SeedMetadata(db.Model):
     key = db.Column(db.String(80), primary_key=True)
     value = db.Column(db.String(200), nullable=False)
+
+
+class DailyMedLabel(db.Model):
+    """One explicitly selected product label, not a generic-drug monograph."""
+    drug_id = db.Column(db.Integer, db.ForeignKey("drug.id"), primary_key=True)
+    data_json = db.Column(db.Text, nullable=False)
+    drug = db.relationship("Drug", backref=db.backref("official_label", uselist=False))
+
+    @property
+    def data(self):
+        return json.loads(self.data_json)
+
+
+def seed_official_labels():
+    if DailyMedLabel.query.count():
+        return
+    # Build-time input from the HF bundle. HTTP handlers only read SQLite.
+    path = Path(BASE_DIR) / "static/external_cache/dailymed/catalog.json"
+    inventory = json.loads((Path(BASE_DIR) / "asset_inventory.json").read_text())
+    expected = next(row["sha256"] for row in inventory["assets"]
+                    if row["path"] == "static/external_cache/dailymed/catalog.json")
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != expected:
+        raise RuntimeError("DailyMed seed input differs from the reviewed inventory")
+    records = json.loads(raw)
+    for record in sorted(records, key=lambda item: item["slug"]):
+        drug = Drug.query.filter_by(slug=record["slug"]).one()
+        db.session.add(DailyMedLabel(drug_id=drug.id, data_json=json.dumps(record, sort_keys=True, ensure_ascii=False)))
+    db.session.flush()
 
 
 def _public_reviews_query():
@@ -4221,6 +4250,7 @@ def recompute_drug_ratings():
 
 
 _CATALOG_DIGEST_QUERIES = {
+    "daily_med_label": "SELECT drug_id,data_json FROM daily_med_label ORDER BY drug_id",
     "condition": "SELECT id,name,slug,description,drug_count FROM condition ORDER BY id",
     "drug": "SELECT id,generic_name,slug,brand_names_json,drug_class_id,availability,csa_schedule,pregnancy_risk,pronunciation,description,uses,warnings,dosage,side_effects,interactions_text,faq_json,is_featured,conditions_json,related_drugs_json,reviewer_name,reviewer_credential,last_updated FROM drug ORDER BY id",
     "drug_class": "SELECT id,name,slug,description FROM drug_class ORDER BY id",
@@ -4266,6 +4296,7 @@ def _load_seed_manifest():
 
 def _validate_seed_state(require_marker=True, *, canonical=False, verify_manifest=True):
     counts = {
+        "daily_med_label": DailyMedLabel.query.count(),
         "drug_class": DrugClass.query.count(),
         "drug": Drug.query.count(),
         "drug_image": DrugImage.query.count(),
@@ -4279,6 +4310,7 @@ def _validate_seed_state(require_marker=True, *, canonical=False, verify_manifes
         "lifestyle_interaction": LifestyleInteraction.query.count(),
     }
     expected = {
+        "daily_med_label": 13,
         "drug_class": 105,
         "drug": 246,
         "drug_image": 104,
@@ -4292,6 +4324,7 @@ def _validate_seed_state(require_marker=True, *, canonical=False, verify_manifes
         "lifestyle_interaction": 11,
     }
     static_tables = {
+        "daily_med_label",
         "drug_class", "drug", "drug_image", "drug_interaction", "condition",
         "drug_condition", "news_article", "lifestyle_interaction",
     }
@@ -4340,6 +4373,7 @@ def seed_database():
         return
 
     domain_models = (
+        DailyMedLabel,
         DrugClass, Drug, DrugImage, DrugInteraction, DrugReview, Condition,
         DrugCondition, NewsArticle, SavedDrug, User, LifestyleInteraction,
     )
@@ -4364,6 +4398,7 @@ def seed_database():
         seed_supplemental()
         seed_pregnancy_risks()
         seed_lifestyle_interactions()
+        seed_official_labels()
         db.session.add(SeedMetadata(key="version", value=SEED_VERSION))
         db.session.flush()
         _validate_seed_state(canonical=True, verify_manifest=False)
@@ -4770,6 +4805,20 @@ def _build_default_faq(drug):
             "a": f"Stored dosage fixture: {drug.dosage} This is unverified software-evaluation data, not an instruction.",
         })
     return items
+
+
+@app.route("/official-labels")
+def official_labels():
+    labels = DailyMedLabel.query.join(Drug).order_by(Drug.generic_name).all()
+    return render_template("official_labels.html", labels=labels)
+
+
+@app.route("/<slug>/official-label")
+def official_label(slug):
+    drug = Drug.query.filter_by(slug=slug).first_or_404()
+    if drug.official_label is None:
+        abort(404)
+    return render_template("official_label.html", drug=drug, label=drug.official_label.data)
 
 
 @app.route("/<slug>")

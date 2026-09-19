@@ -23,6 +23,7 @@
   <a href="{{ url_for('drug_detail', slug=drug.slug) }}" class="drug-page-type-tab active" aria-current="page">Consumer</a>
   <a href="{{ url_for('drug_pro_monograph', slug=drug.slug) }}" class="drug-page-type-tab">Professional</a>
   <a href="{{ url_for('drug_faq_page', slug=drug.slug) }}" class="drug-page-type-tab">FAQ</a>
+  {% if drug.official_label %}<a href="{{ url_for('official_label', slug=drug.slug) }}" class="drug-page-type-tab">DailyMed source label</a>{% endif %}
 </div>
 
 <article class="drug-detail">

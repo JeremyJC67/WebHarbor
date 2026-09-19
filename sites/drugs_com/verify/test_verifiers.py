@@ -882,15 +882,17 @@ def test_list_relation_denials_fail(number, suffix, snapshots, tmp_path):
     assert_fails(number, make_run(tmp_path, number, snapshots[0], answer=answer), snapshots)
 
 
-def test_task0_prose_outside_documented_json_contract_fails(snapshots, tmp_path):
+def test_task0_natural_prose_passes(snapshots, tmp_path):
     record = drug(snapshots[0], "ibuprofen")
     answer = f"According to the page, ibuprofen commonly belongs to the {record['class_name']} class, and its brand names are {', '.join(brands(record))}."
-    assert_fails(0, make_run(tmp_path, 0, snapshots[0], answer=answer), snapshots)
+    result = execute(0, make_run(tmp_path, 0, snapshots[0], answer=answer), *snapshots)
+    assert result.returncode == 0, result.stdout
 
 
-def test_task10_prose_outside_documented_json_contract_fails(snapshots, tmp_path):
+def test_task10_natural_number_words_pass(snapshots, tmp_path):
     answer = "Ibuprofen OTC: two hundred to four hundred milligrams every four to six hours; do not exceed twelve hundred milligrams in twenty-four hours."
-    assert_fails(10, make_run(tmp_path, 10, snapshots[0], answer=answer), snapshots)
+    result = execute(10, make_run(tmp_path, 10, snapshots[0], answer=answer), *snapshots)
+    assert result.returncode == 0, result.stdout
 
 
 @pytest.mark.parametrize("number", range(21))

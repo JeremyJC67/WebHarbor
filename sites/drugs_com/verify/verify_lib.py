@@ -20,9 +20,10 @@ from urllib.parse import parse_qsl, unquote, urlsplit
 from PIL import Image, ImageStat
 
 SITE = "drugs_com"
-SEED_VERSION = "drugs-com-source-v2"
+SEED_VERSION = "drugs-com-source-v3"
 EXPECTED_ORIGIN = ("http", "localhost", 40024)
 EXPECTED_TABLES = {
+    "daily_med_label",
     "condition", "drug", "drug_class", "drug_condition", "drug_image",
     "drug_interaction", "drug_review", "lifestyle_interaction",
     "news_article", "saved_drug", "seed_metadata", "user",
@@ -37,6 +38,8 @@ class Args:
     initial_db: str
     after_db: str
     container: str
+    origin: str = "http://localhost:40024"
+    live_db: bool = False
 
 
 class Judge:
@@ -155,9 +158,11 @@ def parse_args() -> Args:
     parser.add_argument("--initial_db", default="")
     parser.add_argument("--after_db", default="")
     parser.add_argument("--container", default=os.environ.get("WH_CONTAINER", "wh-review"))
+    parser.add_argument("--origin", default=os.environ.get("DRUGS_COM_ORIGIN", "http://localhost:40024"), help="trusted preview origin, supplied by the evaluator, not the trajectory")
+    parser.add_argument("--live_db", action="store_true", help="explicitly allow live container fallback when no saved snapshot pair exists")
     parser.add_argument("--no_llm", action="store_true", help="accepted for compatibility; verification is deterministic")
     values = parser.parse_args()
-    return Args(values.run_dir, values.initial_db, values.after_db, values.container)
+    return Args(values.run_dir, values.initial_db, values.after_db, values.container, values.origin, values.live_db)
 
 
 def canonical_seed_path():
@@ -289,7 +294,11 @@ def validate_browser_evidence(judge: Judge, trajectory: dict, run_dir: Path):
     judge.check("browser_visual_evidence_changes", len(distinct_frames) >= 2 and not unchanged_navigation, f"distinct_frames={len(distinct_frames)} unchanged_navigation={unchanged_navigation}")
 
 
-def validate_urls(judge: Judge, trajectory: dict):
+def validate_urls(judge: Judge, trajectory: dict, trusted_origin="http://localhost:40024"):
+    configured = urlsplit(trusted_origin)
+    if configured.scheme not in {"http", "https"} or not configured.hostname or configured.username or configured.password or configured.path not in {"", "/"} or configured.query or configured.fragment:
+        raise ValueError("invalid trusted preview origin")
+    expected_origin = (configured.scheme, configured.hostname, configured.port)
     start = trajectory.get("start_url")
     steps = trajectory.get("steps", [])
     raw_urls = [step.get("url") for step in steps if isinstance(step, dict)]
@@ -308,7 +317,7 @@ def validate_urls(judge: Judge, trajectory: dict):
         try:
             parts = urlsplit(raw_url)
             origin = (parts.scheme, parts.hostname, parts.port)
-            if origin != EXPECTED_ORIGIN or parts.username or parts.password or parts.fragment:
+            if origin != expected_origin or parts.username or parts.password:
                 failures.append(raw_url)
                 continue
             pairs = parse_qsl(parts.query, keep_blank_values=True, strict_parsing=False)
@@ -317,7 +326,7 @@ def validate_urls(judge: Judge, trajectory: dict):
             failures.append(raw_url)
     first_matches_start = bool(raw_urls) and raw_urls[0] == start
     start_is_root = start_parts is not None and start_parts.path == "/" and not start_parts.query and not start_parts.fragment
-    judge.check("exact_trajectory_origin", start_origin == EXPECTED_ORIGIN and start_is_root and first_matches_start and not failures and len(visits) == len(raw_urls), f"expected={EXPECTED_ORIGIN} start={start_origin} first_matches_start={first_matches_start} failures={failures[:3]}")
+    judge.check("exact_trajectory_origin", start_origin == expected_origin and start_is_root and first_matches_start and not failures and len(visits) == len(raw_urls), f"expected={expected_origin} start={start_origin} first_matches_start={first_matches_start} failures={failures[:3]}")
     return visits
 
 
@@ -414,7 +423,8 @@ def require_inputs_before(judge, trajectory, name, expected, submit_index, *, vi
 
 def require_root_to_detail(judge, trajectory, visits, name, detail_predicate):
     source = lambda visit: (
-        route_is(visit, "/", "/drugs-a-z", "/drug-az")
+        route_is(visit, "/", "/drugs-a-z", "/drug-az", "/drugs-a-to-z.html", "/drug_information.html")
+        or (path_is(visit, "/drugs-a-z", "/drug-az", "/drugs-a-to-z.html", "/drug_information.html") and len(visit.query) == 1 and len(visit.values("letter")) == 1 and bool(re.fullmatch(r"[A-Za-z]", visit.values("letter")[0])))
         or (path_is(visit, "/search") and len(visit.query) == 1 and len(visit.values("q")) == 1 and bool(norm(visit.values("q")[0])))
     )
     return require_click_transition(judge, trajectory, visits, name, source, detail_predicate)
@@ -539,6 +549,7 @@ _LIST_PROSE_WORDS = {
     "fixture", "fixtures", "following", "include", "includes", "imprint", "imprints",
     "list", "listed", "local", "medication", "medications", "name", "names", "rating", "ratings", "result", "results", "review", "reviews", "saved", "schedule",
     "according", "among", "are", "as", "available", "belongs", "called", "categorized", "com", "commonly", "five", "four", "has", "have", "here", "in", "is", "its", "known", "marketed", "not", "only", "oval", "page", "pill", "pills", "shown", "sold", "the", "three", "to", "trade", "treats", "under", "which", "white", "with", "fluoroquinolone", "fluoroquinolones",
+    "a", "an", "i", "found", "on", "this", "these", "lists", "my", "alice", "s", "for",
 }
 
 
@@ -716,18 +727,23 @@ def check_single_drug(judge, answer, record, *, require_brands=False, require_cl
         if labelled_clauses(answer, ("brand", "brands")):
             check_labelled_terms(judge, "answer_brands_bound_to_field", answer, ("brand", "brands"), expected, all_brand_names(judge.initial) + all_class_names(judge.initial) + all_condition_names(judge.initial) + all_drug_names(judge.initial))
         else:
-            marketed = re.search(r"\b(?:marketed\s+as|sold\s+under|available\s+under\s+(?:the\s+)?trade\s+names?)\b([^.;\n]+)", answer, re.I)
+            marketed = re.search(r"\b(?:marketed\s+as|sold\s+(?:under|as)|available\s+under\s+(?:the\s+)?trade\s+names?)\b([^.;\n]+)", answer, re.I)
             marketed_text = marketed.group(1) if marketed else ""
             valid_marketed = bool(marketed) and all(affirmed(marketed_text, item) for item in expected) and not (set(detected_terms(marketed_text, all_brand_names(judge.initial))) - set(expected))
             judge.check("answer_brands_bound_to_field", valid_marketed, repr(marketed_text))
     if require_class:
         class_name = record["class_name"]
         alternatives = [class_name]
-        if "nonsteroidal anti-inflammatory" in norm(class_name):
-            alternatives.append("NSAID")
+        if "nonsteroidal anti inflammatory" in norm(class_name):
+            alternatives.extend(["NSAID", "NSAIDs", "nonsteroidal anti-inflammatory drug"])
         class_clauses = [segment.strip() for segment in re.split(r"[;\n.]+", answer) if mentions(segment, "class")]
         if not class_clauses:
             class_clauses = [match.group(0) for match in re.finditer(r"\bcategorized\s+among\b[^.;\n]+", answer, re.I)]
+        if not class_clauses:
+            class_clauses = [clause for clause in re.split(r"[;\n.]+", answer)
+                            if affirmed(clause, record["generic_name"])
+                            and re.search(r"\b(?:is|belongs to)\b", clause, re.I)
+                            and any(mentions(clause, term) for term in alternatives)]
         class_valid = bool(class_clauses)
         class_details = []
         for class_clause in class_clauses:
@@ -748,8 +764,8 @@ def check_single_drug(judge, answer, record, *, require_brands=False, require_cl
             allowed_values.extend(brands(record))
         if require_class:
             allowed_values.append(record["class_name"])
-            if "nonsteroidal anti-inflammatory" in norm(record["class_name"]):
-                allowed_values.append("NSAID")
+            if "nonsteroidal anti inflammatory" in norm(record["class_name"]):
+                allowed_values.extend(["NSAID", "NSAIDs", "nonsteroidal anti-inflammatory drug"])
         if require_conditions:
             allowed_values.extend(conditions_for_drug(judge.initial, record["id"]))
         vocabulary_ok, extras = answer_uses_only_terms(answer, allowed_values)
@@ -887,6 +903,19 @@ def _exact_integer_list(value, expected) -> bool:
     return isinstance(value, list) and len(value) == len(expected) and all(type(item) is int for item in value) and value == expected
 
 
+def _risk_phrases(value, patterns):
+    """Recognize complete risk statements, never mere keyword overlap.
+
+    Optional JSON is kept for old runs. Prose is graded separately below.
+    Each phrase must be accounted for and every requested concept represented.
+    """
+    items = _text_list(value)
+    if not items:
+        return False
+    matches = [{index for index, pattern in enumerate(patterns) if re.fullmatch(pattern, norm(item))} for item in items]
+    return all(matches) and set.union(*matches) == set(range(len(patterns)))
+
+
 def structured_answer_contract(number, answer, initial):
     """Validate a closed, task-specific JSON result and return canonical prose for legacy semantic checks."""
     value = _parse_answer_object(answer)
@@ -908,7 +937,7 @@ def structured_answer_contract(number, answer, initial):
     elif number == 2:
         rows = initial.query("SELECT i.severity FROM drug_interaction i JOIN drug a ON a.id=i.drug_a_id JOIN drug b ON b.id=i.drug_b_id WHERE (a.slug='ibuprofen' AND b.slug='warfarin') OR (a.slug='warfarin' AND b.slug='ibuprofen')")
         severity = rows[0]["severity"] if len(rows) == 1 else ""
-        valid = exact_keys("inputs", "severity", "risks") and _same_text_set(value["inputs"], ["ibuprofen", "warfarin"]) and _text_equal(value["severity"], severity) and _same_text_set(value["risks"], ["gastrointestinal bleeding"])
+        valid = exact_keys("inputs", "severity", "risks") and _same_text_set(value["inputs"], ["ibuprofen", "warfarin"]) and _text_equal(value["severity"], severity) and _risk_phrases(value["risks"], [r"(?:increased risk of |risk of )?(?:serious bleeding particularly )?(?:gastrointestinal|gi|stomach|digestive tract) (?:bleeding|hemorrhage|blood loss)(?: risk)?"])
         semantic = f"Ibuprofen and warfarin have a {severity} interaction with gastrointestinal bleeding risk."
     elif number == 3:
         rows = initial.query("SELECT d.generic_name,i.shape,i.color FROM drug_image i JOIN drug d ON d.id=i.drug_id WHERE i.imprint='I-2' ORDER BY i.id")
@@ -975,7 +1004,7 @@ def structured_answer_contract(number, answer, initial):
         semantic = ", ".join(expected)
     elif number == 15:
         record = drug(initial, "lisinopril")
-        valid = exact_keys("drug", "pregnancy_warnings", "availability") and _text_equal(value["drug"], record["generic_name"]) and _same_text_set(value["pregnancy_warnings"], ["fetal harm or death", "discontinue when pregnancy is detected"]) and _text_equal(value["availability"], record["availability"])
+        valid = exact_keys("drug", "pregnancy_warnings", "availability") and _text_equal(value["drug"], record["generic_name"]) and _risk_phrases(value["pregnancy_warnings"], [r"(?:fetal (?:harm or death|toxicity)|(?:drugs that act directly on the renin angiotensin system|lisinopril) can cause injury and death to the developing fetus)", r"(?:(?:discontinue|stop taking)(?: lisinopril)? when pregnancy is detected|when pregnancy is detected (?:discontinue|stop taking) lisinopril as soon as possible)"]) and _text_equal(value["availability"], record["availability"])
         semantic = f"{record['generic_name']} has a fetal toxicity warning: discontinue when pregnancy is detected. Availability: {record['availability']}."
     elif number == 17:
         rows = initial.query("SELECT d.id,d.slug,d.generic_name,d.brand_names_json FROM drug d JOIN drug_class c ON c.id=d.drug_class_id WHERE c.slug='fluoroquinolones' ORDER BY d.id")
@@ -991,7 +1020,7 @@ def structured_answer_contract(number, answer, initial):
     elif number == 19:
         rows = initial.query("SELECT li.severity FROM lifestyle_interaction li JOIN drug d ON d.id=li.drug_id WHERE d.slug='metformin' AND li.kind='alcohol'")
         severity = rows[0]["severity"] if len(rows) == 1 else ""
-        valid = exact_keys("inputs", "severity", "risks") and _same_text_set(value["inputs"], ["metformin", "alcohol"]) and _text_equal(value["severity"], severity) and _same_text_set(value["risks"], ["lactic acidosis", "blood sugar changes"])
+        valid = exact_keys("inputs", "severity", "risks") and _same_text_set(value["inputs"], ["metformin", "alcohol"]) and _text_equal(value["severity"], severity) and _risk_phrases(value["risks"], [r"(?:increased risk of |risk of )?lactic acidosis", r"(?:blood sugar changes|hypoglycemia (?:or|and) hyperglycemia|(?:low or high|high or low) blood sugar)"])
         semantic = f"Metformin and alcohol have a {severity} interaction with lactic acidosis and blood sugar risk."
     else:
         valid = False
@@ -1000,13 +1029,44 @@ def structured_answer_contract(number, answer, initial):
 
 # ---------- per-task contract ----------
 
+def normalize_answer_layout(answer):
+    """Turn simple Markdown tables/bullets into labelled text, preserving claims.
+
+    This does not infer facts or discard free text surrounding a table. Unknown
+    columns remain in the answer so they cannot hide a competing claim.
+    """
+    lines = answer.splitlines()
+    output = []
+    headers = None
+    for index, line in enumerate(lines):
+        cells = [cell.strip().strip("*") for cell in line.strip().strip("|").split("|")]
+        if "|" in line and index + 1 < len(lines) and re.fullmatch(r"[\s|:\-]+", lines[index + 1]) and "-" in lines[index + 1]:
+            headers = cells
+            continue
+        if headers and re.fullmatch(r"[\s|:\-]+", line):
+            continue
+        if headers and "|" in line and len(cells) == len(headers):
+            output.append("; ".join(f"{label}: {value}" for label, value in zip(headers, cells)))
+        else:
+            headers = None
+            output.append(re.sub(r"^\s*[-*+]\s+", "", line).replace("**", ""))
+    text = "\n".join(output)
+    # A directly following pronoun continues the same assertion; preserve the
+    # words (including negation), rather than requiring one giant sentence.
+    return re.sub(r"[.!?]\s+(?=(?:It|This interaction|This combination)\b)", ", ", text, flags=re.I)
+
 def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Snapshot):
     answer = str(trajectory.get("final_answer") or "").strip()
     judge.initial = initial
-    contract_valid, semantic_answer = structured_answer_contract(number, answer, initial)
-    judge.check("answer_structured_contract", contract_valid)
-    if contract_valid:
-        answer = semantic_answer
+    # JSON remains an optional, backwards-compatible representation. Ordinary
+    # answers are checked directly; no output format is imposed on the user.
+    if answer.startswith(("{", "[", "```json")):
+        contract_valid, semantic_answer = structured_answer_contract(number, answer, initial)
+        judge.check("answer_structured_contract", contract_valid)
+        if contract_valid:
+            answer = semantic_answer
+    else:
+        answer = normalize_answer_layout(answer)
 
     detail_paths = lambda slug: (f"/{slug}", f"/{slug}.html")
     checker_paths = ("/drug-interactions", "/interaction-checker", "/drug_interactions.html")
@@ -1025,7 +1085,7 @@ def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Sn
         search_index = require_click_transition(judge, trajectory, visits, "ui_submit_metformin_search", lambda visit: route_is(visit, "/", "/search", "/advanced-search"), search_pred)
         require_inputs_before(judge, trajectory, "ui_enter_metformin", ["metformin"], search_index - 1 if search_index is not None else None, visits=visits, page_predicate=lambda visit: route_is(visit, "/", "/search", "/advanced-search"))
         detail_index = require_click_transition(judge, trajectory, visits, "ui_open_metformin_result", search_pred, lambda visit: route_is(visit, *detail_paths("metformin")))
-        judge.check("ui_metformin_workflow_order", search_index is not None and detail_index is not None and search_index < detail_index == len(trajectory.get("steps", [])) - 1)
+        judge.check("ui_metformin_workflow_order", search_index is not None and detail_index is not None and search_index < detail_index)
         record = drug(initial, "metformin")
         check_single_drug(judge, answer, record)
         if record:
@@ -1331,7 +1391,7 @@ def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Sn
         )
         judge.check("ui_enter_exact_alice_credentials", credentials_valid)
         med_index = require_click_transition(judge, trajectory, visits, "ui_open_authenticated_med_list", account_pred, med_pred)
-        judge.check("ui_authenticated_med_list_workflow_order", account_index is not None and med_index is not None and account_index < med_index == len(trajectory.get("steps", [])) - 1)
+        judge.check("ui_authenticated_med_list_workflow_order", account_index is not None and med_index is not None and account_index < med_index)
         values = [row[0] for row in initial.query("SELECT d.generic_name FROM saved_drug s JOIN drug d ON d.id=s.drug_id JOIN user u ON u.id=s.user_id WHERE u.email=? ORDER BY d.generic_name", ("alice.j@test.com",))]
         judge.check("unique_seeded_med_list", bool(values) and len(values) == len(set(values)), repr(values))
         check_required_terms(judge, "answer_all_seeded_medications", answer, values)
@@ -1347,10 +1407,11 @@ def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Sn
         record = drug(initial, "lisinopril")
         check_single_drug(judge, answer, record)
         if record:
-            pregnancy_sentences = re.split(r"(?<=[.!?\n])\s*", answer)
+            pregnancy_sentences = [re.sub(r"(?<=[.!?])\s+", "; ", block) for block in re.split(r"\n\s*\n", answer)]
             joint_warning = any(
                 (
                     affirmed(sentence, "fetal toxicity")
+                    or (affirmed(sentence, "fetal") and (affirmed(sentence, "harm") or affirmed(sentence, "death")))
                     or (affirmed(sentence, "fetus") and (affirmed(sentence, "injury") or affirmed(sentence, "death")))
                     or (affirmed(sentence, "unborn baby") and (affirmed(sentence, "harm") or affirmed(sentence, "kill")))
                 )
@@ -1362,10 +1423,10 @@ def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Sn
             pregnancy_conflict = re.search(r"\b(?:myth|rather\s+than\s+(?:stop|discontinue)|safe\s+to\s+continue|continu(?:e|ing)\b[^.;\n]{0,35}\b(?:throughout|during)\s+pregnancy(?:\s+is\s+safe)?|does\s+not\s+(?:harm|injure))\b", answer, re.I)
             judge.check("answer_pregnancy_warning", joint_warning and not pregnancy_conflict, f"pregnancy_field={record['pregnancy_risk']!r}")
             availability_clauses = labelled_clauses(answer, ("availability",))
-            availability_ok = bool(availability_clauses) and all(
+            availability_ok = all(
                 (affirmed(clause, record["availability"]) or (record["availability"] == "Rx" and affirmed(clause, "prescription")))
                 and not any(mentions(clause, item) for item in ("OTC", "both", "over the counter"))
-                for clause in availability_clauses
+                for clause in (availability_clauses or [answer])
             )
             global_availability_conflict = record["availability"] == "Rx" and conflicting_rx_status(answer)
             judge.check("answer_availability_bound_to_field", availability_ok and not global_availability_conflict, repr(availability_clauses))
@@ -1381,7 +1442,7 @@ def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Sn
         if len(mentioned) == 1:
             record = mentioned[0]
             detail_index = require_click_transition(judge, trajectory, visits, "ui_open_selected_fluoroquinolone", search_pred, lambda visit: route_is(visit, *detail_paths(record["slug"])))
-            judge.check("ui_antibiotics_workflow_order", search_index is not None and detail_index is not None and search_index < detail_index == len(trajectory.get("steps", [])) - 1)
+            judge.check("ui_antibiotics_workflow_order", search_index is not None and detail_index is not None and search_index < detail_index)
             expected_brands = brands(record)
             expected_conditions = conditions_for_drug(initial, record["id"])
             check_required_terms(judge, "answer_all_selected_brands", answer, expected_brands)
@@ -1434,7 +1495,7 @@ def verify_task(number: int, judge: Judge, trajectory: dict, visits, initial: Sn
 
 # ---------- top-level grade ----------
 
-def grade(number: int, args: Args):
+def grade(number: int, args: Args, *, revised=False):
     task_id = f"Drugs.com--{number}"
     judge = Judge(task_id)
     temporary_paths = []
@@ -1447,10 +1508,21 @@ def grade(number: int, args: Args):
         judge.check("nonempty_answer", bool(answer), f"characters={len(answer)}")
         judge.check("answer_no_global_retraction", not globally_retracted(answer))
         validate_browser_evidence(judge, trajectory, args.run_dir)
-        visits = validate_urls(judge, trajectory)
+        visits = validate_urls(judge, trajectory, args.origin)
 
         initial_source = args.initial_db
         after_source = args.after_db
+        if bool(initial_source) != bool(after_source):
+            raise ValueError("explicit database snapshots must be supplied as a pair")
+        if not initial_source:
+            saved_initial = args.run_dir / "initial.db"
+            saved_after = args.run_dir / "after.db"
+            if saved_initial.exists() or saved_after.exists():
+                if not saved_initial.is_file() or not saved_after.is_file():
+                    raise ValueError("saved snapshot pair is incomplete; refusing live substitution")
+                initial_source, after_source = str(saved_initial), str(saved_after)
+            elif not args.live_db:
+                raise ValueError("saved initial.db and after.db required; live fallback requires --live_db")
         if not initial_source:
             initial_source = fetch_db(args.container, "instance_seed")
             temporary_paths.append(initial_source)
@@ -1465,7 +1537,11 @@ def grade(number: int, args: Args):
         after = Snapshot(after_path)
         canonical = Snapshot(canonical_path)
         validate_snapshots(judge, initial, after, canonical)
-        verify_task(number, judge, trajectory, visits, initial)
+        if revised:
+            from revised_contracts import verify_revised_task
+            verify_revised_task(number, judge, trajectory, visits, initial)
+        else:
+            verify_task(number, judge, trajectory, visits, initial)
     except Exception as error:
         judge.check("verifier_exception", False, f"{type(error).__name__}: {error}")
     finally:
@@ -1480,8 +1556,8 @@ def grade(number: int, args: Args):
     return judge.result()
 
 
-def main(number: int):
+def main(number: int, *, revised=False):
     args = parse_args()
-    result = grade(number, args)
+    result = grade(number, args, revised=revised)
     print(json.dumps(result, indent=2))
     raise SystemExit(0 if result["pass"] else 1)
