@@ -83,6 +83,7 @@ a:hover { text-decoration: none; }
 .gf-search:focus-within { background: #fff; box-shadow: 0 1px 6px rgba(32,33,36,.28); }
 .gf-search-icon { width: 20px; height: 20px; fill: var(--text-2); flex: none; }
 .gf-search input {
+  min-width: 0;
   border: 0; background: transparent; outline: none; flex: 1;
   font-size: 15px; font-family: inherit; color: var(--text);
 }
@@ -533,6 +534,8 @@ a.rail-title:hover { color: var(--blue); }
 
 /* ------------------------------------------------ account chooser + SSO */
 
+.mobile-navigation { display: none; }
+
 .acct-card {
   max-width: 450px; margin: 26px auto; border: 1px solid var(--line);
   border-radius: 28px; padding: 44px 40px 32px;
@@ -815,3 +818,35 @@ html[data-theme="dark"] .gf-brand-sub { color: var(--text-2); }
 .spark-line.down { stroke: var(--down); }
 .spark-fill.up { fill: var(--up); opacity: .16; }
 .spark-fill.down { fill: var(--down); opacity: .14; }
+
+/* Preserve access to account navigation without consuming the mobile column. */
+@media (max-width: 760px) {
+  .gf-header { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 16px; }
+  .gf-brand { grid-row: 1; }
+  .gf-header-actions { grid-row: 2; flex-wrap: wrap; }
+  .gf-search { grid-row: 3; max-width: none; }
+  .gf-shell { display: block; padding: 0 16px 24px; }
+  .gf-rail-left { display: none; }
+  .gf-main { padding: 16px 0; }
+  .mobile-navigation { display: block; margin: 0 16px; border-bottom: 1px solid var(--line); }
+  .mobile-navigation summary { padding: 12px 0; cursor: pointer; }
+  .mobile-navigation nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 12px; }
+  .mobile-navigation nav a { padding: 8px 12px; background: var(--surface-3); border-radius: 18px; }
+  .index-cards { grid-auto-columns: 160px; overflow-x: auto; padding-bottom: 8px; }
+  .q-head, .q-ident { min-width: 0; flex-wrap: wrap; }
+  .q-name { overflow-wrap: anywhere; }
+  .q-tabs, .range-tabs { overflow-x: auto; }
+  .q-tabs a, .range-tabs a { flex: none; }
+  .chart-toolbar { flex-wrap: wrap; }
+  .stats-grid, .about-grid { grid-template-columns: minmax(0, 1fr); }
+  .stats-grid > div + div { border-left: 0; padding-left: 0; margin-left: 0; }
+  .consensus { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .form-inline { flex-wrap: wrap; }
+  .form-inline .form-row { min-width: 0 !important; max-width: 100%; }
+  .form-row input, .form-row select { min-width: 0; max-width: 100%; }
+  .table-wrap { max-width: 100%; }
+  .auth-wrap, .acct-card { max-width: 100%; padding: 24px 16px; }
+  .chart-readout { max-width: calc(100% - 20px); white-space: normal; }
+  .summary-item { min-width: 0; }
+  .settings-pop { left: 0; right: auto; }
+}

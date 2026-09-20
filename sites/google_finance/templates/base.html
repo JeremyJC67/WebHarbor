@@ -72,6 +72,23 @@
   </nav>
 </header>
 
+<details class="mobile-navigation">
+  <summary>Lists, portfolios and sectors</summary>
+  <nav aria-label="Lists and portfolios">
+    <a href="{{ url_for('lists_index') }}">Lists</a>
+    {% for wl in nav_watchlists %}
+      <a href="{{ url_for('list_detail', list_id=wl.id) }}">{{ wl.name }}</a>
+    {% endfor %}
+    <a href="{{ url_for('portfolios_index') }}">Portfolios</a>
+    {% for p in nav_portfolios %}
+      <a href="{{ url_for('portfolio_detail', pid=p.id) }}">{{ p.name }}</a>
+    {% endfor %}
+    {% for s in sector_indexes %}
+      <a href="{{ url_for('quote', symbol=s.slug) }}">{{ s.industry }}</a>
+    {% endfor %}
+  </nav>
+</details>
+
 <div class="gf-shell">
 
   <aside class="gf-rail gf-rail-left">
@@ -171,7 +188,7 @@
 
 <footer class="gf-footer">
   <div class="gf-footer-inner">
-    <span>Market data is delayed. Figures shown are a frozen snapshot as of {{ market_close_label }}.</span>
+    <span>Synthetic market data and news for this demo. Scenario date: {{ market_close_label }}.</span>
     <nav>
       <a href="{{ url_for('markets', slug='indexes') }}">Indexes</a>
       <a href="{{ url_for('markets', slug='most-active') }}">Most active</a>

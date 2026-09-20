@@ -17,7 +17,7 @@
       <div class="stat-row"><dt>Quarterly dividend</dt><dd>{{ '${:,.2f}'.format(q.quarterly_dividend) }}</dd></div>
       <div class="stat-row"><dt>Ex-dividend date</dt><dd>{{ q.ex_dividend_date }}</dd></div>
     {% elif inst.kind == 'stock' %}
-      <div class="stat-row"><dt>Dividend yield</dt><dd>—</dd></div>
+      <div class="stat-row"><dt>Dividend yield</dt><dd>No dividend</dd></div>
     {% endif %}
     {% if q.pe_ratio %}<div class="stat-row"><dt>P/E ratio</dt><dd>{{ '{:,.2f}'.format(q.pe_ratio) }}</dd></div>{% endif %}
     <div class="stat-row"><dt>52-wk high</dt><dd>{{ pv(inst, q.wk52_high) }}</dd></div>

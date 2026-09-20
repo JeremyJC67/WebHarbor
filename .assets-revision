@@ -5,9 +5,6 @@
 # is a git revision (branch name like `main`, a tag, or a specific commit
 # sha). Override at runtime with the ASSETS_REVISION env var.
 repo: ChilleD/WebHarbor
-# Pinned to HF PR #47 (adds google_finance.tar.gz on top of current main) so
-# this PR builds end-to-end before the assets PR is merged. This ref contains
-# all 17 site tarballs. Maintainer: once
-# https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/47 is merged,
-# bump this to the merged commit SHA on main.
-revision: refs/pr/47
+# Reviewed source assets from HF PR #47; this immutable commit is not merged.
+# Merge the required asset PR before integrating code into main.
+revision: 078d02198fbccb7825ccb7c4b41f6ab828ca7b9d
