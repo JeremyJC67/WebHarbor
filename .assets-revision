@@ -1,5 +1,5 @@
-# All 48 registered sites use this immutable merged HF main revision.
-# Google Finance HF #47 is merged; all 51 previous dataset files are unchanged.
+# All 49 registered sites use this immutable merged HF main revision.
+# Bandcamp HF #94 is merged; all 51 unrelated dataset files are unchanged.
 # assets-manifest.json binds archives and the extracted managed tree.
 repo: ChilleD/WebHarbor
-revision: 796f28e11ccff84e7a658898d0ee1b0ae9f279ab
+revision: e82d584da9eb2b138f8db71fb28f50438860b17d

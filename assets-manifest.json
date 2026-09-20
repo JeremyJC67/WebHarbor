@@ -28,6 +28,10 @@
       "bytes": 4631617,
       "sha256": "8b83000a1fad3969968290ae537af0bbf0e0a179284f915827cffadb0fe103f3"
     },
+    "bandcamp.tar.gz": {
+      "bytes": 19070269,
+      "sha256": "63b81ffdcafc3738f5a91dbb18680126140e294074cf437c6730ba3acf83b68b"
+    },
     "bbc_news.tar.gz": {
       "bytes": 277319440,
       "sha256": "1cfb0881f80fa47dc4345c3dbe7da239d210690398dbb6815dd90548fd3d0121"
@@ -193,8 +197,8 @@
       "sha256": "43c666bda84680f327ce64720b2baa2f9e427acb751fe81900967f267e9176f4"
     }
   },
-  "managed_tree_sha256": "69fa0ec75b026d3596c7958067433cb4a6c5d12f3d5ec646dd598f4886dc4863",
+  "managed_tree_sha256": "01ceff507cd3d0002bcbe43e86b6ff195946618cc5864ad87ff095071362afc8",
   "repo": "ChilleD/WebHarbor",
-  "revision": "796f28e11ccff84e7a658898d0ee1b0ae9f279ab",
+  "revision": "e82d584da9eb2b138f8db71fb28f50438860b17d",
   "version": 1
 }
