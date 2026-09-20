@@ -66,7 +66,7 @@ def complete(path, index):
 def trajectory(index, answer=None, urls=None):
     return dict(task_id=f'Bandcamp--{index}', start_url=ORIGIN + '/',
                 final_answer=CASES[index][0] if answer is None else answer,
-                steps=[dict(url=u) for u in ([ORIGIN + CASES[index][1]] if urls is None else urls)])
+                steps=[dict(url=u) for u in (([ORIGIN + '/discover?genre=ambient&scene=tokyo-japan'] if index == 1 else [ORIGIN + '/discover?genre=pop&scene=london-united-kingdom'] if index == 11 else []) + [ORIGIN + CASES[index][1]] if urls is None else urls)])
 
 
 class VerifierTests(unittest.TestCase):

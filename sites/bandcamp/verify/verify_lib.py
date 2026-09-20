@@ -13,6 +13,8 @@ import sys
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
+from answer_facts import price_answer, duration_answer, color_answer
+
 TASK_COUNT = 18
 STATEFUL_TASKS = {3, 4, 7, 8}
 # Every business column participates in equality, including unqueried fields.
@@ -212,9 +214,13 @@ def navigation_ok(index, traj, before=None):
     for step in traj['steps']:
         if not isinstance(step, dict) or not isinstance(step.get('url', ''), str):
             raise ValueError('invalid step URL')
-        url = urlsplit(step.get('url', ''))
-        if not url.username and not url.password and (url.scheme, url.hostname, url.port) == origin:
-            pages.append(url)
+        for key in ('url', 'url_after'):
+            raw = step.get(key, '')
+            if not isinstance(raw, str):
+                raise ValueError('invalid observed URL')
+            url = urlsplit(raw)
+            if not url.username and not url.password and (url.scheme, url.hostname, url.port) == origin:
+                pages.append(url)
     if index == 5:
         return any(p.path.rstrip('/') == '/compare/releases' and
                    {tuple(parse_qs(p.query).get(k, [])) for k in ('left', 'right')} ==
@@ -224,6 +230,21 @@ def navigation_ok(index, traj, before=None):
         # URLs establish page relevance, NOT the authenticated principal.
         paths = (*PAGES[9], '/orders/' + latest['order_number'])
         return any(p.path in paths for p in pages)
+    if index in (1, 11):
+        # A Discover visit alone does not prove the requested filter use.
+        # Accept any non-default filter, not a prescribed query or sequence.
+        discover_seen = False
+        for page in pages:
+            query = parse_qs(page.query, keep_blank_values=True)
+            if page.path.rstrip('/') == '/discover':
+                filters = ('q', 'genre', 'scene', 'format', 'tag', 'sort')
+                if any(len(query.get(k, [])) > 1 for k in filters):
+                    continue
+                filtered = any(query.get(k, [''])[0] not in ('', 'all', 'new') for k in filters)
+                discover_seen |= filtered if index == 1 else True
+            if discover_seen and page.path.rstrip('/') in PAGES[index]:
+                return True
+        return False
     return any(p.path.rstrip('/') in PAGES[index] for p in pages)
 
 
@@ -518,6 +539,12 @@ def fact_context_ok(index, answer, before):
 
 
 def answer_ok(index, answer, before=None):
+    if index in (0, 10, 12, 13):
+        return price_answer(index, answer)
+    if index == 6:
+        return duration_answer(answer)
+    if index == 17:
+        return color_answer(answer)
     if index in (9, 11):
         return (order_answer if index == 9 else format_answer)(answer, before)[0]
     text = norm(answer)
@@ -556,16 +583,8 @@ def answer_ok(index, answer, before=None):
         return False
     def has(*tokens):
         return all(re.search(r'(?<!\w)' + re.escape(t) + r'(?!\w)', value) for t in tokens)
-    def price(amount):
-        return bool(re.search(r'(?<![\w.])\$?' + re.escape(amount) + r'(?:0)?(?!\d|\.\d)', value))
-    if index in (0, 10, 12):
-        amount = {0: r'15(?:\.00)?', 10: r'8\.50?', 12: r'27(?:\.00)?'}[index]
-        if re.fullmatch(r'\$?' + amount + r'\s*(?:usd|dollars)?[.!]?', value.strip()):
-            return True
-    if index == 0:
-        return bool(has('cassette') and (price('15.0') or price('15')))
     if index == 1:
-        return bool(has('between stations') and re.search(r'\b(?:third track|3rd track|track (?:3|three))\b', value))
+        return bool(has('between stations') and re.search(r'\b(?:third (?:track|song)|3rd (?:track|song)|(?:track|song) (?:3|three))\b', value))
     if index == 2:
         winner = re.sub(r'glow pair', 'loser', value)
         if re.fullmatch(r'(?:the\s+)?pair(?:\s+option)?(?:\s*(?:at|:|\()?\s*\$?22(?:\.00)?\)?)?[.!]?', winner.strip()):
@@ -580,23 +599,12 @@ def answer_ok(index, answer, before=None):
         return bool(re.search(r'tidal memory.{0,25}\b(?:is |runs |lasts )?(?:the )?(?:longer|longest)\b|harbor burn.{0,25}\b(?:is )?(?:the )?shorter\b', value)
                     and not re.search(r'harbor burn.{0,20}\b(?:is )?(?:the )?longer\b|tidal memory.{0,20}\b(?:is )?(?:the )?shorter\b', value)
                     and not re.search(r'tidal memory.{0,15}17:55|harbor burn.{0,15}20:10', value))
-    if index == 6:
-        return bool(re.search(r'\b4:31\b|\b271\s*(?:s|seconds)\b|\b4\s*(?:minutes|min)\s*(?:and )?31\s*(?:seconds|sec)\b', value))
-    if index == 10:
-        return bool(has('digital') and price('8.5'))
-    if index == 12:
-        return bool(has('signed') and (price('27') or price('27.0')))
-    if index == 13:
-        return bool(has('digital') and price('9.5') and not re.search(r'\b(?:most expensive|costliest|priciest)\b', value))
     if index == 14:
         return bool(has('between stations') and re.search(r'\bfavou?rite(?: track)?\b', value))
     if index == 15:
         return bool(has('static bloom') and not re.search(r'\b(?:oldest|earliest)\b', value))
     if index == 16:
         return bool(has('wide exit') and not re.search(r'\b(?:first|opening|penultimate)\b', value))
-    if index == 17:
-        remainder = re.sub(r"\b(?:salt meadow(?:'s)?|field notes tote|the|two|available|color|colour|colors|colours|variants|options|are|is|and|in|for|comes|tote|natural|forest)\b", ' ', value)
-        return bool(has('natural', 'forest') and not re.search(r'[a-z0-9]', remainder))
     raise ValueError('unknown task')
 
 

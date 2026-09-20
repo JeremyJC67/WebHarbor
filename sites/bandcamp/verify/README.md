@@ -23,3 +23,19 @@ python3 -B sites/bandcamp/verify/verify_0.py --run_dir runs/bandcamp-0
 
 `test_seed.sql` 从已审计的合成 seed 导出完整真实 schema/数据，正例由独立 SQL 和手写回答建立，不从 verifier PASS 常量生成。fixture、HTTP 诊断和 no-op 都不是纯视觉 E2E 成绩。
 根共享 `agent_demo/eval_judge.py` 的 `success/pass` 缺陷不在本目录修复；调用方必须把 exit 0/1 作为健康判分、exit 2 作为基础设施错误。
+
+
+## PR 104 regression fixes
+
+Prices, durations and tote colors are checked in `answer_facts.py`. Price checks
+bind each amount to a format/edition, reject incorrect currency and contradictory
+amounts, and accept common spelled-out numbers and equivalent cent amounts.
+Durations bind to track numbers/titles; prose, compact lists and labelled tables
+are supported, but arbitrary English entailment is not claimed. Unknown or
+ambiguous measurement claims may be conservatively rejected.
+
+Tasks 1 and 11 require observed same-origin Discover navigation before the album
+page; task 1 additionally requires an applied non-default filter. Either `url`
+or `url_after` can supply an observed page. Target URLs inside another page's
+query string do not count. No particular search phrase or filter combination is
+mandated. State comparisons remain snapshot-only and unchanged.
