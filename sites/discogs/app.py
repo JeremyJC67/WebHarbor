@@ -10,6 +10,7 @@ import re
 import math
 import json
 import random
+import sys
 from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
@@ -24,6 +25,11 @@ from flask_login import (LoginManager, UserMixin, login_user, logout_user,
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_bcrypt import Bcrypt
 from sqlalchemy import or_, and_, func, desc, asc, case
+
+# seed_data imports models from app. Keep the CLI entrypoint and imported module
+# identical, just as the supervisor's `from app import app` launch does.
+if __name__ == "__main__":
+    sys.modules["app"] = sys.modules[__name__]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INSTANCE_DIR = os.environ.get("DISCOGS_INSTANCE_DIR", os.path.join(BASE_DIR, "instance"))
@@ -573,6 +579,30 @@ def local_return(target, fallback):
 
 def return_to_page(fallback):
     return redirect(local_return(request.referrer, fallback))
+
+
+@app.template_global()
+def page_url(page):
+    """Replace the current page without duplicating it or losing filters."""
+    params = request.args.to_dict(flat=False)
+    params["page"] = page
+    return url_for(request.endpoint, **(request.view_args or {}), **params)
+
+
+@app.template_filter("discogs_text")
+def discogs_text(value):
+    """Display source BBCode as plain text; Jinja still escapes all HTML."""
+    text = re.sub(r"\[url(?:=[^\]]*)?\](.*?)\[/url\]", r"\1", value or "", flags=re.I | re.S)
+    text = re.sub(r"\[(?:a|l|r|m)=([^\]]+)\]", r"\1", text, flags=re.I)
+    text = re.sub(r"\[(/?)(?:b|i|u)\]", "", text, flags=re.I)
+    def reference(match):
+        kind, identity = match.group(1).lower(), int(match.group(2))
+        model = {"r": Release, "m": Master, "a": Artist, "l": Label}[kind]
+        entity = (Release.query.filter_by(discogs_id=identity).first()
+                  if kind == "r" else db.session.get(model, identity))
+        return ((getattr(entity, "title", None) or getattr(entity, "name", None))
+                if entity else f"{ {'r': 'Release', 'm': 'Master', 'a': 'Artist', 'l': 'Label'}[kind]} {identity}")
+    return re.sub(r"\[([ralm])(\d+)\]", reference, text, flags=re.I)
 
 
 @app.template_global()

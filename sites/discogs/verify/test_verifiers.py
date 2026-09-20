@@ -10,7 +10,11 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import bcrypt
 from pathlib import Path
+from test_answer_checks import GOOD
+
+REGISTRATION_HASH = bcrypt.hashpw(b"discogs2026", bcrypt.gensalt(rounds=4)).decode()
 
 
 VERIFY_DIR = Path(__file__).resolve().parent
@@ -283,7 +287,7 @@ class VerifierTests(unittest.TestCase):
                 next_id(connection, "users"),
                 "craterunner99",
                 "craterunner99@test.com",
-                "$2b$12$fixture-hash-not-the-plaintext-password",
+                REGISTRATION_HASH,
                 "Portland, USA",
                 "Casey Runner",
                 "Digging since 2010.",
@@ -437,7 +441,16 @@ class VerifierTests(unittest.TestCase):
                 self.mutate_rating_review,
             ),
         }
-        return cases[task]
+        steps, answer, mutate = cases[task]
+        if task in GOOD:
+            answer = GOOD[task]
+        if task == 4:
+            steps.append(navigate("/release/5138247"))
+        if task == 6:
+            steps.insert(2, navigate("/release/8468154"))
+        if task == 12:
+            steps.append(navigate("/settings"))
+        return steps, answer, mutate
 
     def test_all_positive_cases_pass(self) -> None:
         for task in range(15):
@@ -782,7 +795,7 @@ class VerifierTests(unittest.TestCase):
             2: "Japan's 2007 UCCO-9038 version is the one with seven tracks; digital remastering is credited to Joe Tarantino.",
             3: "The extra Impuesto de lujo line, Num. 6649, is printed on release 9732909. "
                "Release 8837214 stops at two identifiers. Both carry Deposito Legal B. 9417-1978.",
-            5: "At US$8.27, kosmische's Kelly Blue by Wynton Kelly was cheapest. The detail page lists SRS-6059 plus SMJ-6114.",
+            5: "At US$8.27, kosmische's Kelly Blue by Wynton Kelly was cheapest. The label catalog numbers are SRS-6059 plus SMJ-6114. Legacy US catalog numbers: 12-298 and RLP 12-298.",
         }
         for task, answer in alternatives.items():
             with self.subTest(task=task):
@@ -790,6 +803,17 @@ class VerifierTests(unittest.TestCase):
                 code, verdict = self.run_verifier(task, steps, answer)
                 self.assertEqual(0, code, verdict)
                 self.assertTrue(verdict["pass"], verdict)
+
+    def test_registration_requires_a_usable_matching_hash(self):
+        for value in ('invalid-hash', bcrypt.hashpw(b'wrong-password', bcrypt.gensalt(rounds=4)).decode()):
+            with self.subTest(value=value):
+                def corrupt(connection):
+                    self.mutate_registration(connection)
+                    connection.execute("UPDATE users SET password_hash=? WHERE username='craterunner99'", (value,))
+                steps, answer, _ = self.positive_case(12)
+                code, verdict = self.run_verifier(12, steps, answer, corrupt)
+                self.assertNotEqual(0, code, verdict)
+                self.assertIn('password_authenticates', verdict['reason'])
 
 
 if __name__ == "__main__":
