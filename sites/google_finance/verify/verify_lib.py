@@ -1,75 +1,20 @@
 #!/usr/bin/env python3
-"""Deterministic grading helpers for the Google Finance benchmark tasks.
+"""Google Finance deterministic grading entrypoints."""
 
-Every read-only task requires both the frozen answer and navigation to the
-page(s) that expose it.  The portfolio-write task additionally compares the
-seed and live SQLite databases, so a plausible self-report cannot pass when
-the requested state was not created.
-"""
 import argparse
 import json
-import math
 import os
-import re
-import sqlite3
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
-from urllib.parse import unquote
 
+from answer_checks import answer_ok
+from navigation import navigation_ok
+from state_checks import state_ok
 
 SITE = "google_finance"
 TASK_COUNT = 20
-
-
-def _alt(*groups):
-    """One valid navigation alternative made from required URL groups."""
-    return tuple(tuple(g) if isinstance(g, (list, tuple)) else (g,)
-                 for g in groups)
-
-
-# Each task has one or more acceptable navigation alternatives.  Every group
-# in an alternative must match at least one trajectory URL.  A group can hold
-# aliases (for example chooser OR password login).
-NAV_ALTERNATIVES = {
-    0: (_alt("region=latam", "/quote/ibov"),),
-    1: (_alt("/quote/ko"),),
-    2: (_alt("/quote/nvda", "range=1y"),),
-    3: (_alt("/quote/btc-usd"),),
-    4: (_alt("/currency-converter", "amount=2500", "from=usd", "to=jpy"),),
-    5: (_alt("/quote/ba", "/news/ba-boeing-co-outlines-a-multi-year"),),
-    6: (_alt("/quote/intc", "tab=analysis"),),
-    7: (_alt("/quote/googl", "tab=financials"),),
-    8: (_alt("/quote/wmt", "tab=financials", "statement=balance"),),
-    9: (_alt("/quote/cvx", "tab=financials", "statement=income", "period=annual"),),
-    10: (_alt("/quote/nvda", "range=1y"),),
-    11: (_alt("/quote/xle", "tab=holdings"),),
-    12: (_alt("/quote/msft", "tab=earnings"),),
-    13: (
-        _alt("/compare", "lmt", "rtx", "hon"),
-        _alt("/quote/lmt", "/quote/rtx", "/quote/hon"),
-    ),
-    14: (_alt(
-        "/markets/most-active", "/quote/intc", "/quote/nvda",
-        "/quote/t:", "/quote/tsla", "/quote/f:",
-    ),),
-    15: (_alt(
-        "/markets/climate-leaders", "/quote/nvda", "/quote/aapl",
-        "/quote/msft", "/quote/googl", "/quote/v:", "/quote/ma:",
-    ),),
-    16: (_alt(
-        "/search", "q=utility", "/quote/aep", "/quote/d:",
-        "/quote/duk", "/quote/exc", "/quote/nee", "/quote/so:",
-    ),),
-    17: (_alt(
-        ("/accounts/chooser", "/login"), "/lists/2", "/quote/ko",
-        "/quote/pg", "/quote/xom", "/quote/duk", "/quote/o:",
-        "/quote/vz",
-    ),),
-    18: (_alt(("/accounts/chooser", "/login"), "/portfolios/2"),),
-    19: (_alt(("/accounts/chooser", "/login"), "/portfolios/"),),
-}
 
 
 PASS_ANSWERS = {
@@ -121,217 +66,73 @@ EXPECTED = {
 
 
 def load_run(run_dir):
-    path = Path(run_dir) / "trajectory.json"
-    return json.loads(path.read_text())
+    return json.loads((Path(run_dir) / "trajectory.json").read_text())
 
 
-def step_urls(traj):
-    return [unquote(str(step.get("url", ""))).casefold()
-            for step in traj.get("steps", [])]
-
-
-def final_answer(traj):
-    return str(traj.get("final_answer") or "").strip()
-
-
-def _navigation_ok(task_index, traj):
-    urls = step_urls(traj)
-    for alternative in NAV_ALTERNATIVES[task_index]:
-        if all(any(any(needle.casefold() in url for needle in group)
-                   for url in urls) for group in alternative):
-            return True, urls
-    return False, urls
-
-
-def _norm(text):
-    return re.sub(r"\s+", " ", text or "").strip().casefold()
-
-
-def _has_all(text, *tokens):
-    value = _norm(text)
-    return all(_norm(token) in value for token in tokens)
-
-
-def _has_any(text, *tokens):
-    value = _norm(text)
-    return any(_norm(token) in value for token in tokens)
-
-
-def _numbers(text):
-    cleaned = (text or "").replace(",", "")
-    return [float(value) for value in re.findall(
-        r"(?<![\w.])[-+]?\d+(?:\.\d+)?", cleaned
-    )]
-
-
-def _has_number(text, expected, tolerance=0.005):
-    return any(math.isclose(value, expected, abs_tol=tolerance, rel_tol=0)
-               for value in _numbers(text))
-
-
-def _has_numbers(text, *expected):
-    return all(_has_number(text, value) for value in expected)
-
-
-def answer_ok(task_index, answer):
-    if not answer.strip():
-        return False
-    if task_index == 0:
-        return (_has_any(answer, "ibovespa", "ibov")
-                and _has_numbers(answer, 5, 187092.70, 184438.47))
-    if task_index == 1:
-        return _has_all(answer, "oct", "2026") and _has_numbers(answer, 4, 0.44)
-    if task_index == 2:
-        return (_has_all(answer, "biggest one-day drop", "3.5")
-                and _has_number(answer, 9))
-    if task_index == 3:
-        return _has_numbers(answer, 299489.06, 110249.89)
-    if task_index == 4:
-        return (_has_all(answer, "jpy")
-                and _has_numbers(answer, 404676.0, 161.8704))
-    if task_index == 5:
-        return _has_all(answer, "south china morning post", "jul", "24", "2026")
-    if task_index == 6:
-        return _has_all(answer, "hold") and _has_numbers(answer, 14, 104.21)
-    if task_index == 7:
-        return _has_all(answer, "jun 2026") and _has_numbers(answer, 98.36, 22.77)
-    if task_index == 8:
-        return _has_all(answer, "jun 2026") and _has_numbers(answer, 506.63, 385.10)
-    if task_index == 9:
-        return _has_number(answer, 182.60) and _has_all(answer, "2025")
-    if task_index == 10:
-        return _has_number(answer, -18.57)
-    if task_index == 11:
-        return (_has_any(answer, "marathon petroleum", "mpc")
-                and _has_number(answer, 12.69))
-    if task_index == 12:
-        return _has_all(answer, "jun 2025") and _has_number(answer, 9.08)
-    if task_index == 13:
-        return (_has_any(answer, "honeywell", "hon")
-                and _has_numbers(answer, 16.47, 22.45, 26.97))
-    if task_index == 14:
-        return _has_all(answer, "ford") and _has_number(answer, 32.19)
-    if task_index == 15:
-        return (_has_all(answer, "mastercard")
-                and _has_numbers(answer, 26, 2.03))
-    if task_index == 16:
-        return (_has_any(answer, "southern company", "southern co")
-                and _has_number(answer, 3.41))
-    if task_index == 17:
-        return _has_all(answer, "realty income") and _has_number(answer, 4.49)
-    if task_index == 18:
-        return _has_all(answer, "nvda") and _has_numbers(answer, 33.23, 121.64)
-    if task_index == 19:
-        return _has_numbers(answer, 9203.00, 22.71)
-    raise ValueError(f"unknown task index: {task_index}")
-
-
-def _fetch_db(container, kind):
-    source = f"{container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db"
-    handle, path = tempfile.mkstemp(suffix=".db")
-    os.close(handle)
-    result = subprocess.run(
-        ["docker", "cp", source, path], capture_output=True, text=True
-    )
-    if result.returncode:
-        try:
-            os.unlink(path)
-        except OSError:
-            pass
-        return None
-    return path
-
-
-def _resolve_db(path, container, kind):
-    return path or _fetch_db(container, kind)
-
-
-def _bank_basket_rows(db_path):
-    if not db_path or not Path(db_path).exists():
-        return None
-    connection = sqlite3.connect(db_path)
-    try:
-        return connection.execute(
-            "SELECT p.cash, i.ticker, l.shares, l.cost_basis "
-            "FROM portfolios p JOIN users u ON u.id=p.user_id "
-            "LEFT JOIN portfolio_lots l ON l.portfolio_id=p.id "
-            "LEFT JOIN instruments i ON i.id=l.instrument_id "
-            "WHERE u.email=? AND p.name=? ORDER BY l.id",
-            ("alice.j@test.com", "Bank basket"),
-        ).fetchall()
-    except sqlite3.Error:
-        return None
-    finally:
-        connection.close()
-
-
-def _state_ok(initial_db, after_db):
-    before = _bank_basket_rows(initial_db)
-    after = _bank_basket_rows(after_db)
-    if before is None or after is None:
-        return False, f"initial={before!r}; after={after!r}"
-    created = before == [] and len(after) == 1
-    if not created:
-        return False, f"initial={before!r}; after={after!r}"
-    cash, ticker, shares, cost = after[0]
-    exact = (
-        math.isclose(cash, 5000.0, abs_tol=0.005)
-        and ticker == "JPM"
-        and math.isclose(shares, 25.0, abs_tol=0.0001)
-        and math.isclose(cost, 300.0, abs_tol=0.005)
-    )
-    return exact, f"initial={before!r}; after={after!r}"
-
-
-def evaluate(task_index, traj, initial_db="", after_db="", container="wh-review"):
-    if task_index not in NAV_ALTERNATIVES:
-        raise ValueError(f"unknown task index: {task_index}")
-    answer = final_answer(traj)
-    nav_ok, urls = _navigation_ok(task_index, traj)
+def evaluate(task_index, traj, initial_db="", after_db="", container=""):
+    answer = str(traj.get("final_answer") or "").strip()
+    nav_ok, pages = navigation_ok(task_index, traj)
     checks = [
-        ("final_answer_nonempty", bool(answer), f"final={answer!r}"),
-        ("required_navigation", nav_ok, f"urls={urls!r}"),
-        ("frozen_answer", answer_ok(task_index, answer),
-         f"expected={EXPECTED[task_index]}; final={answer!r}"),
+        ("final_answer_nonempty", bool(answer), "Answer must be nonempty"),
+        ("required_navigation", nav_ok, f"observed pages={pages!r}"),
+        (
+            "frozen_answer",
+            answer_ok(task_index, answer),
+            "Check labelled facts, entities, units, dates and polarity",
+        ),
     ]
     if task_index == 19:
-        initial_db = _resolve_db(initial_db, container, "instance_seed")
-        after_db = _resolve_db(after_db, container, "instance")
-        ok, detail = _state_ok(initial_db, after_db)
+        ok, detail = state_ok(initial_db, after_db)
         checks.append(("portfolio_after_state", ok, detail))
-
-    passed = all(ok for _, ok, _ in checks)
-    reason = next((name for name, ok, _ in checks if not ok), "")
-    evidence = [f"[{'PASS' if ok else 'FAIL'}] {name}: {detail}"
-                for name, ok, detail in checks]
     return {
         "task_id": f"Google Finance--{task_index}",
-        "pass": passed,
-        "reason": reason,
-        "evidence": evidence,
+        "pass": all(ok for _, ok, _ in checks),
+        "reason": next((name for name, ok, _ in checks if not ok), ""),
+        "evidence": [
+            f"[{'PASS' if ok else 'FAIL'}] {name}: {detail}"
+            for name, ok, detail in checks
+        ],
     }
 
 
-def parse_args():
+def resolve_snapshots(args, directory):
+    if args.initial_db or args.after_db:
+        return args.initial_db, args.after_db
+    run_dir = Path(args.run_dir)
+    initial = run_dir / "initial_state.db"
+    after = run_dir / "after_state.db"
+    if initial.exists() or after.exists():
+        # Never combine one saved snapshot with unrelated live state.
+        return str(initial), str(after)
+    if not args.container:
+        return "", ""
+    paths = []
+    for kind in ("instance_seed", "instance"):
+        target = str(Path(directory) / (kind + ".db"))
+        result = subprocess.run(
+            [
+                "docker",
+                "cp",
+                f"{args.container}:/opt/WebSyn/{SITE}/{kind}/{SITE}.db",
+                target,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        paths.append(target if result.returncode == 0 else "")
+    return tuple(paths)
+
+
+def main(task_index):
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_dir", required=True)
     parser.add_argument("--initial_db", default="")
     parser.add_argument("--after_db", default="")
-    parser.add_argument(
-        "--container", default=os.environ.get("WH_CONTAINER", "wh-review")
-    )
-    parser.add_argument("--no_llm", nargs="?", const="True", default="False")
-    return parser.parse_args()
-
-
-def main(task_index):
-    args = parse_args()
-    verdict = evaluate(
-        task_index,
-        load_run(args.run_dir),
-        initial_db=args.initial_db,
-        after_db=args.after_db,
-        container=args.container,
-    )
+    parser.add_argument("--container", default=os.environ.get("WH_CONTAINER", ""))
+    parser.add_argument("--no_llm", nargs="?", const="True", default="True")
+    args = parser.parse_args()
+    with tempfile.TemporaryDirectory(prefix="google-finance-grade-") as temp:
+        initial, after = resolve_snapshots(args, temp) if task_index == 19 else ("", "")
+        verdict = evaluate(task_index, load_run(args.run_dir), initial, after)
     print(json.dumps(verdict, indent=2))
     sys.exit(0 if verdict["pass"] else 1)

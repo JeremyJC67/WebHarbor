@@ -1339,6 +1339,7 @@ def quote(symbol):
                    fin_chart=chart)
     elif tab == 'earnings':
         ctx['earnings'] = (EarningsRow.query.filter_by(instrument_id=inst.id)
+                           .filter(EarningsRow.report_date <= MD.MARKET_DATE.isoformat())
                            .order_by(EarningsRow.report_date.desc()).all())
     elif tab == 'analysis':
         ratings = (AnalystRating.query.filter_by(instrument_id=inst.id)
