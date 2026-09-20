@@ -38,7 +38,7 @@ SITES = [
     'imdb',
     'nba', 'recreation_gov', 'boardgamegeek', 'carmax', 'babycenter', 'amtrak',
     'cookpad', 'craigslist', 'drugs_com', 'versus', 'y_combinator',
-    'phet_simulations', 'discogs',
+    'phet_simulations', 'discogs', 'google_finance',
 ]
 BASE_PORT = 40000
 WEBSYN_DIR = '/opt/WebSyn'

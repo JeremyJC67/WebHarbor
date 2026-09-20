@@ -1,8 +1,5 @@
-# All 47 registered sites use this immutable merged HF main revision.
-# Original Discogs HF #24 then reviewed replacement #76 are merged.
-# All 50 previously existing dataset files remain byte-identical.
-# Discogs archive SHA-256: e42edef309a0fb44c2fda86d4e6f1472a3a84535013c700dabe629761e0be594
-# assets-manifest.json binds registered archives and the extracted managed tree.
-# Unregistered dataset bundles are not fetched. Tracked seed migrations still apply.
+# All 48 registered sites use this immutable merged HF main revision.
+# Google Finance HF #47 is merged; all 51 previous dataset files are unchanged.
+# assets-manifest.json binds archives and the extracted managed tree.
 repo: ChilleD/WebHarbor
-revision: ebe2e47a2ce53196ab8a4b18f22b56c7082b5004
+revision: 796f28e11ccff84e7a658898d0ee1b0ae9f279ab

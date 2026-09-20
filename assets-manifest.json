@@ -92,6 +92,10 @@
       "bytes": 71817970,
       "sha256": "0160886ff1dfc60918fb55077f651e4c8ea4a478d0cbd8b3b99da8baf0a65464"
     },
+    "google_finance.tar.gz": {
+      "bytes": 4549408,
+      "sha256": "296f7390e72d6f8d9851f86be1ea6ebb3ee33de22c51115591859e36b5475563"
+    },
     "google_flights.tar.gz": {
       "bytes": 217387533,
       "sha256": "9851543f0c185e88a12c10989437e9df03832b062c33593392bd2ae76642f392"
@@ -189,8 +193,8 @@
       "sha256": "43c666bda84680f327ce64720b2baa2f9e427acb751fe81900967f267e9176f4"
     }
   },
-  "managed_tree_sha256": "ab84cee0be1e68d42962a43eceac08e044e9ecd5054df8b90fd35e1a025fcffe",
+  "managed_tree_sha256": "69fa0ec75b026d3596c7958067433cb4a6c5d12f3d5ec646dd598f4886dc4863",
   "repo": "ChilleD/WebHarbor",
-  "revision": "ebe2e47a2ce53196ab8a4b18f22b56c7082b5004",
+  "revision": "796f28e11ccff84e7a658898d0ee1b0ae9f279ab",
   "version": 1
 }
