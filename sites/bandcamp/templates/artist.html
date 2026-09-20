@@ -13,7 +13,7 @@
             <div class="release-tags">
                 <span>{{ artist.label.name }}</span>
                 <span>{{ artist.follow_count }} followers</span>
-                <span>{{ collection_count }} collection adds</span>
+                <span>{{ collection_count }} collection add{{ '' if collection_count == 1 else 's' }}</span>
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
     </div>
 </section>
 
-<section class="container section-block">
+<section class="container section-block" id="merch">
     <div class="section-head">
         <div>
             <p class="eyebrow">Merch</p>

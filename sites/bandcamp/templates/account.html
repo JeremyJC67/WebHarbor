@@ -16,10 +16,10 @@
     </div>
 
     <div class="stats-grid">
-        <a class="stat-card" href="{{ url_for('collection') }}"><strong>{{ collection_count }}</strong><span>collection items</span></a>
+        <a class="stat-card" href="{{ url_for('collection') }}"><strong>{{ collection_count }}</strong><span>collection item{{ '' if collection_count == 1 else 's' }}</span></a>
         <a class="stat-card" href="{{ url_for('wishlist') }}"><strong>{{ wishlist_count }}</strong><span>wishlist saves</span></a>
         <a class="stat-card" href="{{ url_for('cart') }}"><strong>{{ cart_count }}</strong><span>cart entries</span></a>
-        <a class="stat-card" href="{{ url_for('orders') }}"><strong>{{ orders|length }}</strong><span>recent orders shown</span></a>
+        <a class="stat-card" href="{{ url_for('orders') }}"><strong>{{ orders|length }}</strong><span>recent order{{ '' if orders|length == 1 else 's' }} shown</span></a>
     </div>
 
     <div class="section-head compact">
@@ -34,7 +34,7 @@
                 </div>
                 <div>
                     <strong>{{ order.total|money }}</strong>
-                    <span>{{ order.item_count() }} items</span>
+                    <span>{{ order.item_count() }} item{{ '' if order.item_count() == 1 else 's' }}</span>
                 </div>
             </a>
         {% endfor %}

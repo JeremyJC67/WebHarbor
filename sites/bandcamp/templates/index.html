@@ -1,99 +1,88 @@
 {% extends "base.html" %}
 {% from "_cards.html" import album_card, merch_card, artist_card %}
-{% block title %}Bandcamp Mirror{% endblock %}
+{% block title %}Bandcamp{% endblock %}
 {% block content %}
-<section class="hero-shell">
-    <div class="container hero-grid">
-        <div class="hero-copy">
-            <p class="eyebrow">Music discovery + commerce + fan collection</p>
-            <h1>Discover albums, buy merch, and build a fan library without leaving the local mirror.</h1>
-            <p>The layout borrows Bandcamp's clean blue header, narrow content columns, and merch-aware discovery flow while staying fully local and deterministic.</p>
-            <div class="hero-actions">
-                <a class="button-primary" href="{{ url_for('discover') }}">Browse discover</a>
-                <a class="button-secondary" href="{{ url_for('compare_releases') }}">Compare releases</a>
-            </div>
-            <div class="support-box">
-                <strong>{{ support_total|money }}</strong>
-                <span>supported through seeded fan orders in this local mirror</span>
-            </div>
+<section class="home-hero container">
+    <h1>Sample purchases total <span class="fact"><span>{{ support_total|money }}</span></span> in this fictional catalog.</h1>
+</section>
+
+<section class="container section-block">
+    <div class="feed-head">
+        <div class="feed-head-left">
+            <h2>Sample purchases</h2>
+            <span class="feed-status" id="feed-status">paused</span>
+            <span class="feed-note">Recorded examples; not live sales.</span>
         </div>
-        <div class="hero-stack">
-            {% for album in featured_albums[:3] %}
-                <a class="hero-release" href="{{ url_for('album_page', slug=album.slug) }}">
-                    <img src="{{ url_for('static', filename=album.cover_image) }}" alt="{{ album.title }} cover">
-                    <div>
-                        <strong>{{ album.title }}</strong>
-                        <span>{{ album.artist.name }}</span>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
+        <button class="feed-toggle" id="feed-toggle" type="button">unpause</button>
+    </div>
+    <div class="selling-now" id="selling-now">
+        {% for row in support_feed %}
+            <a class="sell-card" href="{% if row.item.album %}{{ url_for('album_page', slug=row.item.album.slug) }}{% else %}{{ url_for('merch_page', slug=row.item.merch_item.slug) }}{% endif %}">
+                <img src="{{ url_for('static', filename=row.item.image_path) }}" alt="{{ row.item.title }}" loading="lazy">
+                <div class="sold">Sold for {{ row.item.unit_price|money }}</div>
+                <div class="when">{{ row.flag }} {{ row.when }}</div>
+            </a>
+        {% endfor %}
     </div>
 </section>
 
 <section class="container section-block">
-    <div class="section-head">
+    <div class="section-head compact">
         <div>
-            <p class="eyebrow">Featured releases</p>
-            <h2>Albums with full format, merch, comment, and collection flows</h2>
+            <h2>New and notable</h2>
+            <p>Fresh drops across scenes and labels.</p>
         </div>
-        <a href="{{ url_for('discover') }}">Open discover</a>
+        <a href="{{ url_for('discover', sort='new') }}">Explore more</a>
     </div>
     <div class="card-grid release-grid">
-        {% for album in featured_albums %}
+        {% for album in new_releases[:8] %}
             {{ album_card(album) }}
         {% endfor %}
     </div>
 </section>
 
-<section class="container section-block editorial-grid">
-    <div class="editorial-panel">
-        <p class="eyebrow">Bandcamp-style editorial</p>
-        <h2>Recent fan support</h2>
-        <div class="support-feed">
-            {% for item in support_items %}
-                <a class="support-item" href="{% if item.album %}{{ url_for('album_page', slug=item.album.slug) }}{% else %}{{ url_for('merch_page', slug=item.merch_item.slug) }}{% endif %}">
-                    <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.title }}">
-                    <div>
-                        <strong>{{ item.title }}</strong>
-                        <span>{{ item.artist_name }}</span>
-                        <span>{{ item.unit_price|money }} / {{ item.variant_label }}</span>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="editorial-panel pale">
-        <p class="eyebrow">Editorial picks</p>
-        <h2>Spotlighted discovery paths</h2>
-        <div class="artist-stack">
-            {% for album in editorial %}
-                {{ artist_card(album.artist) }}
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
 <section class="container section-block">
-    <div class="section-head">
+    <div class="section-head compact">
         <div>
-            <p class="eyebrow">New releases</p>
-            <h2>Fresh drops across scenes and labels</h2>
+            <h2>Bandcamp Daily</h2>
+            <p>Read articles on the latest releases, learn about niche genres, and explore global music scenes.</p>
         </div>
-        <a href="{{ url_for('discover', sort='new') }}">Newest first</a>
+        <a href="{{ url_for('editorial_page') }}">Explore more editorial</a>
     </div>
-    <div class="card-grid release-grid">
-        {% for album in new_releases[:8] %}
-            {{ album_card(album, show_scene=False) }}
+    <div class="daily-strip">
+        {% for story in daily %}
+            <a class="daily-cell" href="{{ url_for('album_page', slug=story.album.slug) }}">
+                <img src="{{ url_for('static', filename=story.album.cover_image) }}" alt="{{ story.album.title }}" loading="lazy">
+                <p class="eyebrow">{{ story.kicker }}</p>
+                <h3>{{ story.album.title }}</h3>
+                <p class="daily-byline">by {{ story.album.artist.name }}</p>
+            </a>
         {% endfor %}
     </div>
 </section>
 
+{% if album_of_the_day %}
 <section class="container section-block">
-    <div class="section-head">
+    <div class="album-of-day">
+        <a class="aod-cover" href="{{ url_for('album_page', slug=album_of_the_day.slug) }}">
+            <img src="{{ url_for('static', filename=album_of_the_day.cover_image) }}" alt="{{ album_of_the_day.title }}" loading="lazy">
+        </a>
+        <div class="aod-copy">
+            <p class="eyebrow">Album of the Day</p>
+            <h2><a href="{{ url_for('album_page', slug=album_of_the_day.slug) }}">{{ album_of_the_day.title }}</a></h2>
+            <p class="release-byline">by <a href="{{ url_for('artist_page', slug=album_of_the_day.artist.slug) }}">{{ album_of_the_day.artist.name }}</a></p>
+            <p>{{ album_of_the_day.story[:220] }}{% if album_of_the_day.story|length > 220 %}...{% endif %}</p>
+            <p class="aod-meta">{{ album_of_the_day.primary_genre.name }} / {{ album_of_the_day.scene.name.split(',')[0] }} / released {{ album_of_the_day.release_date|compactdate }}</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="container section-block">
+    <div class="section-head compact">
         <div>
-            <p class="eyebrow">Merch table</p>
-            <h2>Shirts, posters, totes, slipmats, cassettes, and collector add-ons</h2>
+            <h2>Merch</h2>
+            <p>Shirts, posters, totes, slipmats, cassettes, and collector add-ons.</p>
         </div>
         <a href="{{ url_for('discover', view='merch', format='shirt') }}">Explore merch</a>
     </div>
@@ -105,11 +94,25 @@
 </section>
 
 <section class="container section-block">
-    <div class="section-head">
+    <div class="section-head compact">
         <div>
-            <p class="eyebrow">Scenes</p>
-            <h2>Browse releases by city and local movement</h2>
+            <h2>Artists to follow</h2>
+            <p>Independent artists building their own catalogues.</p>
         </div>
+        <a href="{{ url_for('artists_page') }}">Most supported</a>
+    </div>
+    <div class="editorial-panel">
+        <div class="artist-stack">
+            {% for album in editorial %}
+                {{ artist_card(album.artist) }}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="container section-block">
+    <div class="section-head compact">
+        <h2>Scenes</h2>
     </div>
     <div class="scene-grid">
         {% for scene in scenes %}

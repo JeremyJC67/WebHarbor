@@ -5,7 +5,7 @@
 <section class="container section-block discover-layout">
     <aside class="filters-panel">
         <h1>Discover</h1>
-        <p>Filter the local mirror by genre, scene, tag, and format the way a fan would narrow Bandcamp's discover flow.</p>
+        <p>Filter releases by genre, scene, tag, and format.</p>
         <form class="filters-form" method="get">
             <label>Search
                 <input type="search" name="q" value="{{ query }}" placeholder="ambient, tote, Berlin...">
@@ -58,6 +58,13 @@
     </aside>
 
     <div class="discover-main">
+        <div class="genre-row">
+            <a class="genre-chip{% if not selected_genre or selected_genre == 'all' %} active{% endif %}" href="{{ url_for('discover') }}">all genres</a>
+            {% for genre in genres %}
+                <a class="genre-chip{% if selected_genre == genre.slug %} active{% endif %}" href="{{ url_for('discover', genre=genre.slug) }}">{{ genre.name }}</a>
+            {% endfor %}
+        </div>
+
         {% if featured_album %}
             <article class="focus-release">
                 <img src="{{ url_for('static', filename=featured_album.cover_image) }}" alt="{{ featured_album.title }} cover">
