@@ -7,6 +7,7 @@
 <p class="muted">{{ pag.total }} items wanted</p>
 
 <div class="card">
+  <div class="table-scroll" role="region" aria-label="Wantlist items" tabindex="0">
   <table style="width: 100%; border-collapse: collapse;">
     <thead>
       <tr style="text-align: left; border-bottom: 1px solid #ddd;">
@@ -28,7 +29,7 @@
         </td>
         <td style="padding: 6px;">
           <a href="{{ url_for('release_detail', rid=w.release.discogs_id or w.release.id) }}"><strong>{{ w.release.title }}</strong></a>
-          <div class="muted tiny">{{ w.release.artist.name }} · {{ w.release.year or '' }}</div>
+          <div class="muted tiny">{{ w.release.display_artist }} · {{ w.release.year or '' }}</div>
         </td>
         <td style="padding: 6px;" class="tiny">{{ w.min_grade }}</td>
         <td style="padding: 6px;" class="tiny">{{ w.release.lowest_price|price }}</td>
@@ -46,6 +47,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% if not pag.items %}<p class="empty">Wantlist is empty.</p>{% endif %}
   {{ m.pagination(pag, 'user_wantlist', params={'username': u.username}) }}
 </div>

@@ -7,13 +7,14 @@
 <p class="muted">{{ pag.total }} items</p>
 
 <div class="tabs">
-  {% for f in ['All'] + folders %}
+  {% for f in [unfiltered] + folders %}
     <a href="{{ url_for('user_collection', username=u.username, folder=f) }}"
        class="{% if folder == f %}active{% endif %}">{{ f }}</a>
   {% endfor %}
 </div>
 
 <div class="card">
+  <div class="table-scroll" role="region" aria-label="Collection items" tabindex="0">
   <table style="width: 100%; border-collapse: collapse;">
     <thead>
       <tr style="text-align: left; border-bottom: 1px solid #ddd;">
@@ -36,7 +37,7 @@
         </td>
         <td style="padding: 6px;">
           <a href="{{ url_for('release_detail', rid=c.release.discogs_id or c.release.id) }}"><strong>{{ c.release.title }}</strong></a>
-          <div class="muted tiny">{{ c.release.artist.name }} · {{ c.release.year or '' }}</div>
+          <div class="muted tiny">{{ c.release.display_artist }} · {{ c.release.year or '' }}</div>
         </td>
         <td style="padding: 6px;" class="tiny">{{ c.release.label_str }}</td>
         <td style="padding: 6px;" class="tiny">{{ c.release.primary_format }}</td>
@@ -55,6 +56,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% if not pag.items %}<p class="empty">No items in this folder.</p>{% endif %}
   {{ m.pagination(pag, 'user_collection', params={'username': u.username, 'folder': folder}) }}
 </div>
