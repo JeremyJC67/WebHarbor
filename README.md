@@ -34,7 +34,7 @@ WebHarbor takes a different approach. We leverage coding agent (e.g., Claude Cod
 - **Deep features unlocked** — carts, checkouts, accounts, all fully testable
 - **Evolving** — harder tasks drive richer mirrors; the environment grows with agents
 - **RL-ready** — sub-second database resets between rollouts
-- **Community-driven** — 48 sites today, scaling to 100+ together
+- **Community-driven** — 49 sites today, scaling to 100+ together
 
 ## 🚀 Quickstart
 
@@ -42,10 +42,10 @@ Build this checkout to run its registered web environments (published image tags
 
 ```bash
 ./scripts/build.sh webharbor:dev
-docker run -e WEBSYN_CONTROL_TOKEN -p 8101:8101 -p 40000-40047:40000-40047 webharbor:dev
+docker run -e WEBSYN_CONTROL_TOKEN -p 8101:8101 -p 40000-40048:40000-40048 webharbor:dev
 ```
 
-Then point your agent at `http://localhost:40000` through `http://localhost:40047` to explore 48 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, Amtrak, Cookpad, Craigslist, Drugs.com, Versus, Y Combinator, PhET Interactive Simulations, Discogs, and Google Finance`.
+Then point your agent at `http://localhost:40000` through `http://localhost:40048` to explore 49 local mirrors of WebVoyager sites: `Allrecipes, Amazon, Apple, ArXiv, BBC News, Booking, GitHub, Google Flights, Google Maps, Google Search, Hugging Face, Wolfram Alpha, Cambridge Dictionary, Coursera, ESPN, Merriam-Webster, IKEA, Phys.org, Target, TED, Ohio State University, Rotten Tomatoes, Compass, Walmart Careers, FedEx, WebMD Doctor, Healthline, Kaggle, NVIDIA, UC Berkeley, B&H Photo, AccuWeather, GOV.UK, IMDb, NBA, Recreation.gov, BoardGameGeek, CarMax, BabyCenter, Amtrak, Cookpad, Craigslist, Drugs.com, Versus, Y Combinator, PhET Interactive Simulations, Discogs, Google Finance, and Bandcamp`.
 
 For sub-second reset between rollouts, expose the control plane and call `/reset/<site>`:
 
@@ -64,7 +64,7 @@ git clone https://github.com/aiming-lab/WebHarbor && cd WebHarbor
 
 ### Site registry
 
-This checkout registers **48 sites**. NVIDIA remains at index 28, UC Berkeley remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index 31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at index 34. Recreation.gov remains at index 35, BoardGameGeek remains at index 36, CarMax remains at index 37, BabyCenter remains at index 38, Amtrak remains at index 39, Cookpad remains at index 40, Craigslist remains at index 41, Drugs.com remains at index 42, Versus remains at index 43, Y Combinator remains at index 44, PhET Interactive Simulations remains at index 45, Discogs remains at index 46, and Google Finance is appended at index 47. Build the image from this checkout to use this registry; publishing source does not update the published Docker image automatically.
+This checkout registers **49 sites**. NVIDIA remains at index 28, UC Berkeley remains at index 29, B&H Photo remains at index 30, AccuWeather remains at index 31, GOV.UK remains at index 32, IMDb remains at index 33 and NBA remains at index 34. Recreation.gov remains at index 35, BoardGameGeek remains at index 36, CarMax remains at index 37, BabyCenter remains at index 38, Amtrak remains at index 39, Cookpad remains at index 40, Craigslist remains at index 41, Drugs.com remains at index 42, Versus remains at index 43, Y Combinator remains at index 44, PhET Interactive Simulations remains at index 45, Discogs remains at index 46, and Google Finance remains at index 47, and Bandcamp is appended at index 48. Build the image from this checkout to use this registry; publishing source does not update the published Docker image automatically.
 
 | Site | Registry position | Container port | Example local review host port |
 | --- | --- | --- | --- |
@@ -88,9 +88,10 @@ This checkout registers **48 sites**. NVIDIA remains at index 28, UC Berkeley re
 | PhET Interactive Simulations | 45 | 40045 | 48045 |
 | Discogs | 46 | 40046 | 48046 |
 | Google Finance | 47 | 40047 | 48047 |
+| Bandcamp | 48 | 40048 | 48048 |
 
 `websyn_start.sh`, `control_server.py`, the `Dockerfile` `EXPOSE` line and every
-site's `tasks.jsonl` `web` URL agree on 48 sites and `40000-40047`;
+site's `tasks.jsonl` `web` URL agree on 49 sites and `40000-40048`;
 `scripts/check_site_registry.py` (run by `scripts/check_assets.sh`) fails when they
 drift.
 
@@ -98,7 +99,7 @@ After preparing the candidate assets and building `webharbor:dev`, the local
 review deployment uses:
 
 ```bash
-docker run -e WEBSYN_CONTROL_TOKEN -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48047:40000-40047 webharbor:dev
+docker run -e WEBSYN_CONTROL_TOKEN -p 127.0.0.1:48080:8101 -p 127.0.0.1:48000-48048:40000-40048 webharbor:dev
 ```
 
 NVIDIA inherits the site contribution from @KaKituken
@@ -119,7 +120,7 @@ The bundle contains 78 articles and 62 structured guidance sections. That archiv
 is part of the consolidated pinned dataset revision below.
 
 
-The current `.assets-revision` pins all **48** registered sites to merged HF commit `796f28e11ccff84e7a658898d0ee1b0ae9f279ab`. Google Finance [HF #47](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/47) is merged, preserving all 51 previous dataset files byte-for-byte. Its reviewed archive has SHA-256 `296f7390e72d6f8d9851f86be1ea6ebb3ee33de22c51115591859e36b5475563`. `assets-manifest.json` binds all selected archives and the extracted managed tree. Unregistered bundles are not fetched; tracked seed migrations and generation remain part of the build contract.
+The current `.assets-revision` pins the **48 previously integrated** sites to merged HF commit `796f28e11ccff84e7a658898d0ee1b0ae9f279ab`. Google Finance [HF #47](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/47) is merged, preserving all 51 previous dataset files byte-for-byte. Its reviewed archive has SHA-256 `296f7390e72d6f8d9851f86be1ea6ebb3ee33de22c51115591859e36b5475563`. `assets-manifest.json` binds all selected archives and the extracted managed tree. Bandcamp requires [HF #94](https://huggingface.co/datasets/ChilleD/WebHarbor/discussions/94) to merge and a subsequent immutable pin/manifest update before this branch can use the standard full fetch/build workflow. Its original archive must remain byte-identical (`63b81ffdcafc3738f5a91dbb18680126140e294074cf437c6730ba3acf83b68b`). Unregistered bundles are not fetched; tracked seed migrations and generation remain part of the build contract.
 
 Historical asset integration notes below describe superseded pins, not the current pin.
 
