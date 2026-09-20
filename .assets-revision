@@ -1,14 +1,8 @@
-# Hugging Face dataset holding WebHarbor's heavy static assets.
-# Pin an immutable merged commit SHA, never a moving branch or refs/pr/<n>.
-#
-# All 46 registered sites use this immutable dataset-main revision.
-# The previous global revision eedc1a7f85118ab835eac38e04678fa85d141973 contains 46 archives: 45 registered-site archives plus the unregistered Bandcamp archive. All 46 are byte-for-byte unchanged here.
-# Merged HF PR #86 adds phet_simulations.tar.gz: 10,319,041 bytes, SHA-256 7ed4831ed1218bf95456a6156f82dbd769b909fb630434e042f6e6cd1987a65f, with 150 managed archive members.
-# This revision therefore contains 47 archives: all 46 registered sites plus the unregistered Bandcamp archive.
-# The revision descends from eedc1a7f85118ab835eac38e04678fa85d141973, which includes the Y Combinator archive from HF PR #83 and the reviewed Versus archive from HF PR #90.
-# Drugs.com retains the corrected archive from HF #102, including 13 attributed DailyMed labels, 13 packaging images and its catalog.
-# assets-manifest.json binds every registered-site archive and the extracted managed tree.
-# The unregistered Bandcamp archive is ignored by fetch_assets.sh.
-# Tracked seed migrations/build-generation remain part of the build contract.
+# All 47 registered sites use this immutable merged HF main revision.
+# Original Discogs HF #24 then reviewed replacement #76 are merged.
+# All 50 previously existing dataset files remain byte-identical.
+# Discogs archive SHA-256: e42edef309a0fb44c2fda86d4e6f1472a3a84535013c700dabe629761e0be594
+# assets-manifest.json binds registered archives and the extracted managed tree.
+# Unregistered dataset bundles are not fetched. Tracked seed migrations still apply.
 repo: ChilleD/WebHarbor
-revision: df9a1b44a8c5639decc450706a20ac838e21716b
+revision: ebe2e47a2ce53196ab8a4b18f22b56c7082b5004

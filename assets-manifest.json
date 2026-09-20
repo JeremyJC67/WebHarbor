@@ -72,6 +72,10 @@
       "bytes": 16967864,
       "sha256": "741ef266077cc56c082e5b7dd2df0e43ffa81f7a1c297bb55ac232aabe9e5f5d"
     },
+    "discogs.tar.gz": {
+      "bytes": 111903367,
+      "sha256": "e42edef309a0fb44c2fda86d4e6f1472a3a84535013c700dabe629761e0be594"
+    },
     "drugs_com.tar.gz": {
       "bytes": 2092340,
       "sha256": "8a9924e005d0a8a9f793f9e67bceeba0c4f2dbbe10ccf7f1afeb0a0198427b1b"
@@ -185,8 +189,8 @@
       "sha256": "43c666bda84680f327ce64720b2baa2f9e427acb751fe81900967f267e9176f4"
     }
   },
-  "managed_tree_sha256": "ae41eb3d3e039f8ce9990d33c61a27ca18c16b45d6bbd7af5765295130c5bdbf",
+  "managed_tree_sha256": "ab84cee0be1e68d42962a43eceac08e044e9ecd5054df8b90fd35e1a025fcffe",
   "repo": "ChilleD/WebHarbor",
-  "revision": "df9a1b44a8c5639decc450706a20ac838e21716b",
+  "revision": "ebe2e47a2ce53196ab8a4b18f22b56c7082b5004",
   "version": 1
 }
