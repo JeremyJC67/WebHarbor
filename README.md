@@ -1,16 +1,3 @@
-<div align="center">
-
-## Control-plane authentication
-
-The current source requires a bearer token of at least 32 characters for control-plane requests. Before the Docker examples below, set:
-
-```bash
-export WEBSYN_CONTROL_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
-```
-
-Pass it with `docker run -e WEBSYN_CONTROL_TOKEN`. Site browsing does not require this token; it is removed from site-process environments. Build from this checkout: previously published images may use an older registry/authentication contract.
-
-
 <h1>⚓ WebHarbor</h1>
 <h3>Docking Real Websites for Evolving GUI Agent Environments</h3>
 
